@@ -12,7 +12,28 @@
         <hr class="my-2 text-black">
 
         <div>
-            <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+
+            <ng-container *ngIf="menuItems">
+                <div *ngFor="let menuItem of menuItems; let i = index">
+                    <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+                        <i class="{{ menuItem?.icon }}"></i>
+                        <div class="flex justify-between w-full items-center" (click)="dropDown()">
+                            <span class="text-[15px] ml-4 text-back">{{ menuItem?.displayText }}</span>
+                            <span class="text-md" id="arrow" *ngIf="menuItem?.subMenuItems?.length">
+                                <i class="ph-caret-up"></i>
+                            </span>
+                        </div>
+                    </div>
+    
+                    <ng-container *ngIf="menuItem?.subMenuItems?.length">
+                        <div class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto">
+                            <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1" *ngFor="let subMenu of menuItem?.subMenuItems">{{ subMenu?.displayText }}</h1>
+                        </div>
+                    </ng-container>
+                </div>
+            </ng-container>
+            
+            <!-- <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
                 <i class="ph-gauge"></i>
                 <span class="text-[15px] ml-4 text-back">Dashboard</span>
             </div>
@@ -30,7 +51,7 @@
                 <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1">Assigned VA</h1>
                 <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1">Coded VA</h1>
                 <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1">Discordants</h1>
-            </div>
+            </div> -->
             <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[50vh]  hover:bg-blue-600">
                 <i class="ph-sign-out rotate-180"></i>
                 <span class="text-[15px] ml-4 text-back">Logout</span>
