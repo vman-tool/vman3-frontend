@@ -8,10 +8,9 @@ import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 })
 export class BodyComponent {
   @ViewChild('sidebar') sidebar: ElementRef | undefined;
-  @ViewChild('subMenu') subMenu: ElementRef | undefined;
-  @ViewChild('subMenuIcon') subMenuIcon: ElementRef | undefined;
   humburgerHidden: Boolean = true;
   menuItems: any;
+  selectedItem?: number;
 
   constructor(@Inject(DOCUMENT) private document: Document) { }
 
@@ -24,13 +23,23 @@ export class BodyComponent {
         },
         {
           displayText: 'PCVA',
-          icon: 'ph-gauge',
+          icon: 'flaticon-stethoscope',
           route: '/dashboard',
           subMenuItems: [
             { 
-              displayText: 'Dashboard',
-              icon: 'ph-gauge',
-              route: '/dashboard',
+              displayText: 'All Assigned',
+              icon: '',
+              route: '/all-assigned',
+            },
+            { 
+              displayText: 'Coded VA',
+              icon: '',
+              route: '/coded-va',
+            },
+            { 
+              displayText: 'Discordants',
+              icon: '',
+              route: '/discordants',
             }
           ]
         }
@@ -44,11 +53,11 @@ export class BodyComponent {
         this.humburgerHidden =!this.humburgerHidden;
       }
     }
-    dropDown() {
-      // TODO: Re think logic for dropdown functionality on the submenu
-     if(this.subMenu && this.subMenuIcon){
-       this.subMenu.nativeElement.classList.toggle('hidden')
-       this.subMenuIcon?.nativeElement.classList.toggle('rotate-180')
-     }
+    dropDown(i: number) {
+      if (this.selectedItem === i){
+        this.selectedItem = undefined;
+      } else {
+        this.selectedItem = i
+      }
     }
 }
