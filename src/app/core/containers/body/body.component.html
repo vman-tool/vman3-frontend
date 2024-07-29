@@ -1,0 +1,42 @@
+<span class="absolute text-black text-4xl top-5 left-4 cursor-pointer" (click)="Openbar($event)" [hidden]="humburgerHidden">
+    <i class="ph-list px-2 bg-white rounded-md"></i>
+</span>
+<div #sidebar class="sidebar fixed top-0 bottom-0 lg:left-0 left-[-300px] duration-1000
+    p-2 w-[300px] overflow-y-auto text-center bg-white-600 shadow h-screen">
+    <div class="text-black text-xl">
+        <div class="p-2.5 mt-1 flex items-center rounded-md ">
+            <i class="flaticon-user"></i>
+            <h1 class="text-[15px]  ml-3 text-xl text-black font-bold">VMan3</h1>
+            <i class="flaticon-close ml-20 cursor-pointer text-[15px]" (click)="Openbar($event)"></i>
+        </div>
+        <hr class="my-2 text-black">
+
+        <div>
+            <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+                <i class="ph-gauge"></i>
+                <span class="text-[15px] ml-4 text-back">Dashboard</span>
+            </div>
+
+            <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
+                <i class="flaticon-stethoscope"></i>
+                <div class="flex justify-between w-full items-center" (click)="dropDown()">
+                    <span class="text-[15px] ml-4 text-back">PCVA</span>
+                    <span class="text-md" id="arrow">
+                        <i #subMenuIcon class="ph-caret-up"></i>
+                    </span>
+                </div>
+            </div>
+            <div class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto" #subMenu>
+                <h1 class="cursor-pointer p-2 hover:bg-gray-700 rounded-md mt-1">Assigned VA</h1>
+                <h1 class="cursor-pointer p-2 hover:bg-gray-700 rounded-md mt-1">Coded VA</h1>
+                <h1 class="cursor-pointer p-2 hover:bg-gray-700 rounded-md mt-1">Discordants</h1>
+            </div>
+            <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[50vh]  hover:bg-blue-600">
+                <i class="ph-sign-out rotate-180"></i>
+                <span class="text-[15px] ml-4 text-back">Logout</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+

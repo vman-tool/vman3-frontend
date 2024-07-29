@@ -26,12 +26,17 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
+              "src/assets",
+              "src/assets/fonts",
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "public",
+                "output": "/assets/"
               }
             ],
             "styles": [
+              "src/assets/css/phosphor.css",
+              "src/assets/css/flaticon.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -88,9 +93,13 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/assets",
+              "src/assets/fonts"
             ],
             "styles": [
+              "src/assets/css/phosphor.css",
+              "src/assets/css/flaticon.css",
               "src/styles.scss"
             ],
             "scripts": []
