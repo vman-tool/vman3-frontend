@@ -10,7 +10,7 @@ export class BodyComponent {
   @ViewChild('sidebar') sidebar: ElementRef | undefined;
   humburgerHidden: Boolean = true;
   menuItems: any;
-  selectedItem?: number;
+  selectedItem?: number = 0;
 
   constructor(@Inject(DOCUMENT) private document: Document) { }
 
