@@ -54,10 +54,6 @@ export class BodyComponent {
       }
     }
     dropDown(i: number) {
-      if (this.selectedItem === i){
-        this.selectedItem = undefined;
-      } else {
-        this.selectedItem = i
-      }
+      this.selectedItem = this.selectedItem === i ? undefined : i;
     }
 }

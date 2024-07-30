@@ -6,6 +6,7 @@ import { SharedModule } from '../shared/shared.module';
 import { BodyComponent } from './containers/body/body.component';
 import { HeaderComponent } from './containers/header/header.component';
 import { FooterComponent } from './containers/footer/footer.component';
+import { MaterialModule } from '../material/material.module';
 
 
 
@@ -19,6 +20,7 @@ import { FooterComponent } from './containers/footer/footer.component';
   imports: [
     CommonModule,
     CoreRoutingModule,
+    MaterialModule,
     SharedModule
   ],
   exports: [

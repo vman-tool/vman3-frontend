@@ -8,6 +8,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from './app-routing.module';
 import { NgxBootstrapIconsModule, allIcons } from 'ngx-bootstrap-icons';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 // import { CsrfInterceptorService } from './core/interceptors/csrf-interceptor.service';
 
 // import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -25,7 +26,8 @@ import { NgxBootstrapIconsModule, allIcons } from 'ngx-bootstrap-icons';
   ],
   providers: [
     // { provide: HTTP_INTERCEPTORS, useClass: CsrfInterceptorService, multi: true },
-    provideHttpClient(withInterceptorsFromDi())
+    provideHttpClient(withInterceptorsFromDi()),
+    provideAnimationsAsync()
   ],
   bootstrap: [AppComponent]
 })
