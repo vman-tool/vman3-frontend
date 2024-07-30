@@ -42,7 +42,19 @@ export class AuthService {
       .set('password', password);
     
     headers.set('Content-Type', 'application/x-www-form-urlencoded');
-    return this.http!.post(`${this.API_URL}/accounts/login/`, formData, {headers: headers})
+    return this.http!.post(`${this.API_URL}/auth/login/`, formData, {headers: headers}).pipe(
+      map((response: any) => {
+        if(this.success){
+          this.saveUserData(response)
+          // this.router!.navigate(['/']);
+        }
+        return response
+      }),
+      catchError((error: any) => {
+        console.log("Error: ", error)
+        return of(error);
+      })
+    )
   }
   
   change_password(old_password: string, new_password: string): Observable<any>{
@@ -66,12 +78,12 @@ export class AuthService {
       password: password
     }
 
-    return this.http!.post(`${this.API_URL}/token/`, userObject, { headers: headers })
+    return this.http!.post(`${this.API_URL}/auth/login`, userObject, { headers: headers })
     .pipe(
       map((response: any) => {
         if(this.success){
           this.saveUserData(response)
-          this.router!.navigate(['/']);
+          // this.router!.navigate(['/']);
         }
         return response
       }),
@@ -83,10 +95,12 @@ export class AuthService {
   }
   
   refresh_token(): Observable<any>{
-    const refreshObject = {
-      refresh: localStorage.getItem("refresh_token")
-    }
-    return this.http!.post(`${this.API_URL}/token/refresh/`, refreshObject).pipe(
+    const refresh_token = localStorage.getItem("refresh_token")!
+
+    const headers = new HttpHeaders();
+    headers.set('refresh_token', refresh_token);
+
+    return this.http!.post(`${this.API_URL}/auth/refresh/`, null, {headers : headers}).pipe(
       mergeMap((response: any) => {
         return response
       }),
@@ -97,7 +111,7 @@ export class AuthService {
   }
 
   get_user(): Observable<any> {
-    return this.http!.get(`${this.API_URL}/accounts/current-user/`).pipe(
+    return this.http!.get(`${this.API_URL}/users/me/`).pipe(
       mergeMap((response: any) => {
         localStorage.setItem("current_user", JSON.stringify(response))
         return of(response)
@@ -109,18 +123,13 @@ export class AuthService {
   }
 
   saveUserData(response: any) {
-    localStorage.setItem("access_token", response?.access)
-    localStorage.setItem("refresh_token", response?.refresh)
-
-    const access_details: any = jwtDecode(response.access)
-    const refresh_details: any = jwtDecode(response.refresh)
-
-    console.log("Access Details", access_details)
-    console.log("Refresh Details", refresh_details)
+    localStorage.setItem("access_token", response?.access_token)
+    localStorage.setItem("refresh_token", response?.refresh_token)
     
-    // localStorage.setItem("access_token_expiry", String(access_details?.exp))
-    // localStorage.setItem("refresh_token_expiry", String(refresh_details?.exp))
-    // localStorage.setItem("user_details", JSON.stringify(access_details))
+    localStorage.setItem("access_token_expiry", response.expires_in)
+    localStorage.setItem("current_user", JSON.stringify(response.user))
+
+    console.log(localStorage.getItem("current_user"))
     // this.get_user().subscribe({
     //   next: () => {
     //     AuthEmitters.authEmitter.emit(true)
@@ -132,8 +141,6 @@ export class AuthService {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("access_token_expiry");
-    localStorage.removeItem("refresh_token_expiry");
-    localStorage.removeItem("user_details")
     localStorage.removeItem("current_user");
   }
   

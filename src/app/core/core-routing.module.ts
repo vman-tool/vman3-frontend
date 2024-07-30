@@ -1,20 +1,22 @@
-import { PreloadAllModules, RouterModule, Routes } from "@angular/router";
+import { RouterModule, Routes } from "@angular/router";
 import { CoreComponent } from "./core.component";
 import { NgModule } from "@angular/core";
+import { LoginComponent } from "./components/login/login.component";
+import { authGuard } from "./guards/auth.guard";
 
 
 const routes: Routes = [
   {
     path: '',
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     component: CoreComponent,
     children: [
     ],
   },
-//   {
-//     path: "login",
-//     component: LoginComponent,
-//   },
+  {
+    path: "login",
+    component: LoginComponent,
+  },
 ];
 
 

@@ -58,7 +58,7 @@ export class CsrfInterceptorService {
         return of(requestError);
       }),
       map((response: any) => {
-        ErrorEmitters.successEmitter.emit(response?.body?.message || response?.statusText);
+        ErrorEmitters.successEmitter.emit();
         return response;
       })
     );
@@ -69,9 +69,13 @@ export class CsrfInterceptorService {
     const access_token = localStorage.getItem('access_token');
     const csrfHeader = 'X-CSRFToken';
     const authHeader = 'Authorization';
+    
+    let headers : any;
 
-    let headers : any = {
-      [csrfHeader]: csrfToken,
+    if (csrfToken) {
+      headers = {
+        [csrfHeader]: csrfToken,
+      }
     }
     headers = access_token ? {
       ...headers,
