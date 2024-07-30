@@ -8,6 +8,7 @@ import {
 } from '@angular/material/snack-bar';
 import { AuthService } from '../services/authentication/auth.service';
 import { ErrorEmitters } from '../emitters/error.emitters';
+import { is_authenticated } from '../../shared/helpers/auth.helpers';
 
 
 @Injectable({
@@ -35,7 +36,7 @@ export class CsrfInterceptorService {
     }
 
     return next.handle(modifiedRequest).pipe(
-      catchError((requestError: HttpErrorResponse): Observable<any> => {
+      catchError(async (requestError: HttpErrorResponse): Promise<Observable<any>> => {
         if ((requestError.status === 401 || requestError.status === 403) && refresh_token_time && now < Number(refresh_token_time)){
           return this.authService.refresh_token().pipe(
             mergeMap((response) => {
@@ -47,9 +48,9 @@ export class CsrfInterceptorService {
             })
           )
         }
-        
-        if (refresh_token_time && now > Number(refresh_token_time)){
-          this.authService.logout();
+        let authenticated = await is_authenticated()
+        if(!is_authenticated){
+          // TODO: Show login popup
         }
         const errorMessage = requestError?.error?.message ? requestError?.error?.message : 
           requestError?.error?.error ? requestError?.error?.error :

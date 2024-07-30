@@ -64,41 +64,14 @@ export class AuthService {
     }
     let formData = new FormData();
     formData.append("data", JSON.stringify(data))
-    return this.http!.post(`${this.API_URL}/accounts/change-password/`, formData)
-  }
-  
-  get_superuser_status(): Observable<any>{
-    return this.http!.get(`${this.API_URL}/accounts/check-super-user/`)
-  }
-
-  request_token(username: string, password: string): Observable<any>{
-    const headers = new HttpHeaders();
-    const userObject = {
-      username: username,
-      password: password
-    }
-
-    return this.http!.post(`${this.API_URL}/auth/login`, userObject, { headers: headers })
-    .pipe(
-      map((response: any) => {
-        if(this.success){
-          this.saveUserData(response)
-          // this.router!.navigate(['/']);
-        }
-        return response
-      }),
-      catchError((error: any) => {
-        console.log("Error: ", error)
-        return of(error);
-      })
-    )
+    return this.http!.post(`${this.API_URL}/auth/change-password/`, formData)
   }
   
   refresh_token(): Observable<any>{
     const refresh_token = localStorage.getItem("refresh_token")!
 
     const headers = new HttpHeaders();
-    headers.set('refresh_token', refresh_token);
+    headers.set('refresh-token', refresh_token);
 
     return this.http!.post(`${this.API_URL}/auth/refresh/`, null, {headers : headers}).pipe(
       mergeMap((response: any) => {
@@ -126,10 +99,10 @@ export class AuthService {
     localStorage.setItem("access_token", response?.access_token)
     localStorage.setItem("refresh_token", response?.refresh_token)
     
-    localStorage.setItem("access_token_expiry", response.expires_in)
-    localStorage.setItem("current_user", JSON.stringify(response.user))
+     const now = new Date().getTime()/1000;
 
-    console.log(localStorage.getItem("current_user"))
+    localStorage.setItem("access_token_expiry", (now + Number(response.expires_in)).toString())
+    localStorage.setItem("current_user", JSON.stringify(response.user))
     // this.get_user().subscribe({
     //   next: () => {
     //     AuthEmitters.authEmitter.emit(true)

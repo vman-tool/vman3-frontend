@@ -8,8 +8,8 @@
     p-2 w-[300px] overflow-y-auto text-center bg-white-600 shadow h-screen">
     <div class="text-black text-xl">
         <div class="p-2.5 mt-1 flex items-center rounded-md ">
-            <i class="flaticon-user"></i>
-            <h1 class="text-[15px]  ml-3 text-xl text-black font-bold">VMan3</h1>
+            <i class="flaticon-user mb-3"></i>
+            <h4 class="text-[15px]  ml-3 text-xl text-black font-bold">VMan3</h4>
             <i class="flaticon-close ml-20 cursor-pointer text-[15px]" (click)="Openbar($event)"></i>
         </div>
         <hr class="my-2 text-black">
@@ -30,7 +30,7 @@
     
                     <ng-container *ngIf="menuItem?.subMenuItems?.length">
                         <div class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? '' : 'hidden'}}">
-                            <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1" *ngFor="let subMenu of menuItem?.subMenuItems">{{ subMenu?.displayText }}</h1>
+                            <p class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1" *ngFor="let subMenu of menuItem?.subMenuItems">{{ subMenu?.displayText }}</p>
                         </div>
                     </ng-container>
                 </div>

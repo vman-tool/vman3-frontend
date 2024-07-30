@@ -55,7 +55,7 @@ export class LoginComponent implements OnInit {
               panelClass: 'snack-success',
               duration: 3 * 1000,
             })
-            // this.router.navigate(['/'])
+            this.router.navigate(['/'])
           }
         },
         error: (error: any) => {

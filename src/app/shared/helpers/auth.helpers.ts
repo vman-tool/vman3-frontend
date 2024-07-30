@@ -11,7 +11,7 @@ export async function is_authenticated(): Promise<boolean> {
     let is_authenticated: boolean = false;
     const access_token_time = localStorage.getItem('access_token_expiry');
 
-    if (now > Number(access_token_time)) {
+    if (access_token_time && now > Number(access_token_time)) {
         let authservice = inject(AuthService);
         try {
             const response = await lastValueFrom(authservice.refresh_token());
