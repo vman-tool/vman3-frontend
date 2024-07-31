@@ -1,9 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import { Observable, catchError, map, mergeMap, of} from 'rxjs';
-import { jwtDecode } from 'jwt-decode';
 import { ErrorEmitters } from '../../emitters/error.emitters';
 import { environment } from '../../../environments/environment';
 import { AuthEmitters } from '../../emitters/auth.emitters';
@@ -18,7 +16,6 @@ export class AuthService {
 
   constructor(
     private http?: HttpClient,
-    private cookieService?: CookieService,
     private router?: Router,
   ) { 
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
@@ -30,7 +27,6 @@ export class AuthService {
   }
 
   logout() {
-    this.cookieService!.delete("csrftoken");
     this.clearLocalStorage();
     this.router!.navigate(['/login']);
   }
@@ -46,7 +42,6 @@ export class AuthService {
       map((response: any) => {
         if(this.success){
           this.saveUserData(response)
-          // this.router!.navigate(['/']);
         }
         return response
       }),
@@ -73,14 +68,7 @@ export class AuthService {
     const headers = new HttpHeaders();
     headers.set('refresh-token', refresh_token);
 
-    return this.http!.post(`${this.API_URL}/auth/refresh/`, null, {headers : headers}).pipe(
-      mergeMap((response: any) => {
-        return response
-      }),
-      catchError((error: any) => {
-        return of(error)
-      })
-    )
+    return this.http!.post(`${this.API_URL}/auth/refresh/`, null, {headers : headers})
   }
 
   get_user(): Observable<any> {
@@ -96,18 +84,18 @@ export class AuthService {
   }
 
   saveUserData(response: any) {
-    localStorage.setItem("access_token", response?.access_token)
-    localStorage.setItem("refresh_token", response?.refresh_token)
-    
-     const now = new Date().getTime()/1000;
+    this.clearUserData()
 
-    localStorage.setItem("access_token_expiry", (now + Number(response.expires_in)).toString())
-    localStorage.setItem("current_user", JSON.stringify(response.user))
-    // this.get_user().subscribe({
-    //   next: () => {
-    //     AuthEmitters.authEmitter.emit(true)
-    //   }
-    // });
+    setTimeout(() => {
+      localStorage.setItem("access_token", response?.access_token)
+      localStorage.setItem("refresh_token", response?.refresh_token)
+      
+       const now = new Date().getTime()/1000;
+  
+      localStorage.setItem("access_token_expiry", (now + Number(response.expires_in)).toString())
+      localStorage.setItem("current_user", JSON.stringify(response.user))
+      AuthEmitters.authEmitter.emit(true);
+    }, 100)
   }
   
   clearUserData() {

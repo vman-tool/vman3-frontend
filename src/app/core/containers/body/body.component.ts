@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
+import { AuthService } from '../../services/authentication/auth.service';
 
 @Component({
   selector: 'app-body',
@@ -12,7 +13,7 @@ export class BodyComponent {
   menuItems: any;
   selectedItem?: number = 0;
 
-  constructor(@Inject(DOCUMENT) private document: Document) { }
+  constructor( private authService: AuthService) { }
 
     ngOnInit(): void {
       this.menuItems = [
@@ -53,7 +54,11 @@ export class BodyComponent {
         this.humburgerHidden =!this.humburgerHidden;
       }
     }
-    dropDown(i: number) {
+    onSelectMenu(i: number) {
       this.selectedItem = this.selectedItem === i ? undefined : i;
+    }
+
+    onLogout(){
+      this.authService.logout();
     }
 }

@@ -1,16 +1,19 @@
-import { CanActivateFn, Router, ActivatedRoute } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { is_authenticated } from '../../shared/helpers/auth.helpers';
 import { inject } from '@angular/core';
+import { AuthService } from '../services/authentication/auth.service';
 
 export const authGuard: CanActivateFn = async (route, state) => {
-  const authenticated = await is_authenticated()
+  const authService = inject(AuthService);
+  const router =  inject(Router)
+
   
-  // TODO: Get the current path and store it in a local storage so that we can use it later.
-  // const current_route = inject(ActivatedRoute).
-
+  const current_route = router.url
+  localStorage.setItem('current_route', current_route)
+  
+  const authenticated =  await is_authenticated(authService)
   if(!authenticated){
-    inject(Router).navigate(['login'])
+    router.navigate(['login'])
   }
-
-  return authenticated ;
+  return authenticated
 };

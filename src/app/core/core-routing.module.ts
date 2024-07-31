@@ -9,9 +9,7 @@ const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
-    component: CoreComponent,
-    children: [
-    ],
+    component: CoreComponent
   },
   {
     path: "login",

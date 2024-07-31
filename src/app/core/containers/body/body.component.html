@@ -4,7 +4,7 @@
 <span class="absolute text-black text-4xl top-5 left-4 cursor-pointer" (click)="Openbar($event)" [hidden]="humburgerHidden">
     <i class="ph-list px-2 bg-white rounded-md"></i>
 </span>
-<div #sidebar class="sidebar fixed top-0 bottom-0 lg:left-0 left-[-300px] sm:left-[100px] duration-1000
+<div #sidebar class="sidebar fixed top-0 bottom-0 lg:left-0 left-[-300px] overflow-hidden sm:left-[100px] duration-1000
     p-2 w-[300px] overflow-y-auto text-center bg-white-600 shadow h-screen">
     <div class="text-black text-xl">
         <div class="p-2.5 mt-1 flex items-center rounded-md ">
@@ -14,13 +14,13 @@
         </div>
         <hr class="my-2 text-black">
 
-        <div>
+        <div class="overflow-hidden">
 
             <ng-container *ngIf="menuItems">
                 <div *ngFor="let menuItem of menuItems; let i = index">
                     <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-gray-400 {{ i == selectedItem ? 'bg-gray-400' : ''}}">
                         <i class="{{ menuItem?.icon }}"></i>
-                        <div class="flex justify-between w-full items-center" (click)="dropDown(i)">
+                        <div class="flex justify-between w-full items-center" (click)="onSelectMenu(i)">
                             <span class="text-[15px] ml-4 text-back">{{ menuItem?.displayText }}</span>
                             <span class="text-md" id="arrow" *ngIf="menuItem?.subMenuItems?.length">
                                 <i class="ph-caret-down {{ i == selectedItem ? 'rotate-180' : ''}}"></i>
@@ -35,7 +35,7 @@
                     </ng-container>
                 </div>
             </ng-container>
-            <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[50vh]  hover:bg-blue-600">
+            <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[50vh]  hover:bg-gray-400" (click)="onLogout()">
                 <i class="ph-sign-out rotate-180"></i>
                 <span class="text-[15px] ml-4 text-back">Logout</span>
             </div>

@@ -1,6 +1,5 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { CookieService } from 'ngx-cookie-service';
+import { inject, Injectable } from '@angular/core';
 import { Observable, catchError, map, mergeMap, of } from 'rxjs';
 import { 
   MatSnackBarHorizontalPosition, 
@@ -8,7 +7,8 @@ import {
 } from '@angular/material/snack-bar';
 import { AuthService } from '../services/authentication/auth.service';
 import { ErrorEmitters } from '../emitters/error.emitters';
-import { is_authenticated } from '../../shared/helpers/auth.helpers';
+import { Router } from '@angular/router';
+import { AuthEmitters } from '../emitters/auth.emitters';
 
 
 @Injectable({
@@ -20,45 +20,35 @@ export class CsrfInterceptorService {
   verticalPosition: MatSnackBarVerticalPosition = 'top';
 
   constructor(
-    private cookieService: CookieService,
-    private authService: AuthService,
+    private authService: AuthService
   ) { }
 
   refresh: boolean = true;
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> | Observable<any> | any {
     const now = new Date().getTime()/1000;
-    const refresh_token_time = localStorage.getItem('refresh_token_expiry');
+    const access_token_expiry = localStorage.getItem('access_token_expiry')!
 
     let modifiedRequest = this.addHeaders(request)
-    if (now > Number(refresh_token_time)) {
-      this.authService.logout();
-    }
 
     return next.handle(modifiedRequest).pipe(
       catchError(async (requestError: HttpErrorResponse): Promise<Observable<any>> => {
-        if ((requestError.status === 401 || requestError.status === 403) && refresh_token_time && now < Number(refresh_token_time)){
+        if ((requestError.status === 401 || requestError.status === 403)){
           return this.authService.refresh_token().pipe(
             mergeMap((response) => {
-              this.authService.clearUserData()
-              setTimeout(() => {
-                this.authService.saveUserData(response)
-              }, 100)
+              this.authService.saveUserData(response)
               return next.handle(this.addHeaders(modifiedRequest))
+            }),
+            catchError((error) => {
+              console.log("Refresh retry")
+              this.authService.logout()
+              return of(error)
             })
           )
         }
-        let authenticated = await is_authenticated()
-        if(!is_authenticated){
-          // TODO: Show login popup
-        }
-        const errorMessage = requestError?.error?.message ? requestError?.error?.message : 
-          requestError?.error?.error ? requestError?.error?.error :
-            requestError?.error?.detail ? requestError?.error?.detail : requestError?.message
-        ErrorEmitters.errorEmitter.emit(errorMessage);
         return of(requestError);
       }),
-      map((response: any) => {
+      map((response: any) => {        
         ErrorEmitters.successEmitter.emit();
         return response;
       })
@@ -66,18 +56,10 @@ export class CsrfInterceptorService {
   }
 
   addHeaders(request: HttpRequest<any>): HttpRequest<any> {
-    const csrfToken = this.cookieService.get('csrftoken');
     const access_token = localStorage.getItem('access_token');
-    const csrfHeader = 'X-CSRFToken';
     const authHeader = 'Authorization';
     
     let headers : any;
-
-    if (csrfToken) {
-      headers = {
-        [csrfHeader]: csrfToken,
-      }
-    }
     headers = access_token ? {
       ...headers,
       [authHeader] : `Bearer ${access_token}`

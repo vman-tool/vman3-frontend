@@ -7,7 +7,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from './app-routing.module';
-import { NgxBootstrapIconsModule, allIcons } from 'ngx-bootstrap-icons';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { CsrfInterceptorService } from './core/interceptors/csrfinterceptor.service';
 // import { CsrfInterceptorService } from './core/interceptors/csrf-interceptor.service';
@@ -22,7 +21,6 @@ import { CsrfInterceptorService } from './core/interceptors/csrfinterceptor.serv
     BrowserModule,
     BrowserAnimationsModule,
     CommonModule,
-    NgxBootstrapIconsModule.pick(allIcons),
     AppRoutingModule,
   ],
   providers: [
