@@ -79,15 +79,16 @@ export class LoginComponent implements OnInit {
         {
           next: (response: any)=> {
             this.username = undefined;
-              failed = false
-              this.snackBar.open("Successfully logged in", "close", {
-                horizontalPosition: this.horizontalPosition,
-                verticalPosition: this.verticalPosition,
-                panelClass: 'snack-success',
-                duration: 3 * 1000,
-              })
+            failed = false 
+            setTimeout(() =>{
               this.navigate()
-            
+              this.snackBar.open("Successfully logged in", "close", {
+                  horizontalPosition: this.horizontalPosition,
+                  verticalPosition: this.verticalPosition,
+                  panelClass: 'snack-success',
+                  duration: 3 * 1000,
+                })
+            }, 100)
           },
           error: (error: any) => {
             failed = false
