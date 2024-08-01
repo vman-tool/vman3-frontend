@@ -1,24 +1,40 @@
-<header class="bg-white">
+<header class="bg-white relative">
     <nav class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
-        <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-            <a href="#" class="text-sm font-semibold leading-6 text-gray-900"><i class="flaticon-user"></i></a>
+        <div class="lg:flex lg:flex-1 lg:justify-end">
+            <button type="button"
+                class="flex mx-3 text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                id="user-menu-button" aria-expanded="false" (click)="toggleDropdown()">
+                <span class="sr-only">Open user menu</span>
+                <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                    alt="user photo" />
+            </button>
+        </div>
+        <!-- Dropdown menu -->
+        <div *ngIf="isDropdownOpen"
+            class="absolute top-full right-0 z-50 w-56 text-base list-none bg-white rounded divide-y divide-gray-100 shadow"
+            id="dropdown">
+            <div class="py-3 px-4">
+                <span class="block text-sm font-semibold text-gray-600">Chris Kimaryo</span>
+            </div>
+            <ul class="py-1 text-gray-500 dark:text-gray-400" aria-labelledby="dropdown">
+                <li>
+                    <a href="#"
+                        class="block py-2 px-4 text-sm hover:bg-gray-400 hover:text-white">My
+                        profile</a>
+                </li>
+                <li>
+                    <a href="#"
+                        class="block py-2 px-4 text-sm hover:bg-gray-400 hover:text-white">Account
+                        settings</a>
+                </li>
+            </ul>
+            <ul class="py-1 text-gray-500 dark:text-gray-400" aria-labelledby="dropdown">
+                <li>
+                    <a href="#"
+                        class="block py-2 px-4 text-sm hover:bg-gray-400 hover:text-white">Sign
+                        out</a>
+                </li>
+            </ul>
         </div>
     </nav>
-    <!-- Mobile menu, show/hide based on menu open state. -->
-    <div class="lg:hidden" role="dialog" aria-modal="true">
-        <!-- Background backdrop, show/hide based on slide-over state. -->
-        <div class="fixed inset-0 z-10"></div>
-        <div
-            class="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-            <div class="flex items-center justify-end">
-                <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700">
-                    <i class="flaticon-user"></i>
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                        aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
 </header>
