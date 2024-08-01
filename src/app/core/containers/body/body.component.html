@@ -1,63 +1,24 @@
-<span class="absolute text-black text-4xl top-5 left-4 cursor-pointer" (click)="Openbar($event)" [hidden]="humburgerHidden">
-    <i class="ph-list px-2 bg-white rounded-md"></i>
-</span>
-<div #sidebar class="sidebar fixed top-0 bottom-0 lg:left-0 left-[-300px] duration-1000
-    p-2 w-[300px] overflow-y-auto text-center bg-white-600 shadow h-screen">
-    <div class="text-black text-xl">
-        <div class="p-2.5 mt-1 flex items-center rounded-md ">
-            <i class="flaticon-user"></i>
-            <h1 class="text-[15px]  ml-3 text-xl text-black font-bold">VMan3</h1>
-            <i class="flaticon-close ml-20 cursor-pointer text-[15px]" (click)="Openbar($event)"></i>
-        </div>
-        <hr class="my-2 text-black">
-
-        <div>
-
-            <ng-container *ngIf="menuItems">
-                <div *ngFor="let menuItem of menuItems; let i = index">
-                    <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-                        <i class="{{ menuItem?.icon }}"></i>
-                        <div class="flex justify-between w-full items-center" (click)="dropDown(i)">
-                            <span class="text-[15px] ml-4 text-back">{{ menuItem?.displayText }}</span>
-                            <span class="text-md" id="arrow" *ngIf="menuItem?.subMenuItems?.length">
-                                <i class="ph-caret-up {{ i == selectedItem ? 'rotate-180' : ''}}"></i>
-                            </span>
-                        </div>
-                    </div>
-    
-                    <ng-container *ngIf="menuItem?.subMenuItems?.length">
-                        <div class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? 'hidden' : ''}}">
-                            <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1" *ngFor="let subMenu of menuItem?.subMenuItems">{{ subMenu?.displayText }}</h1>
-                        </div>
-                    </ng-container>
-                </div>
-            </ng-container>
+<div class="grid grid-cols-12 items-stretch mt-5">
+    <div class="col-span-4 ml-[30px] grid grid-cols-12 items-stretch">
+            <div class="col-span-1 mt-2">
+                <span class="text-black text-4xl cursor-pointer" (click)="Openbar($event)">
+                    <i class="ph-list px-2 bg-white rounded-md"></i>
+                </span>
+            </div>
             
-            <!-- <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-                <i class="ph-gauge"></i>
-                <span class="text-[15px] ml-4 text-back">Dashboard</span>
+            <div class="col-span-2 flex items-center rounded-md align-right">
+                <img src="../../../../assets/images/vman-logo.png" alt="VMan3-icon" class="h-12 mb-4" />
             </div>
+    </div>
+    <div class="col-span-8">
+        <app-header></app-header>
+    </div>
+</div>
 
-            <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-blue-600">
-                <i class="flaticon-stethoscope"></i>
-                <div class="flex justify-between w-full items-center" (click)="dropDown()">
-                    <span class="text-[15px] ml-4 text-back">PCVA</span>
-                    <span class="text-md" id="arrow">
-                        <i #subMenuIcon class="ph-caret-up"></i>
-                    </span>
-                </div>
-            </div>
-            <div class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto" #subMenu>
-                <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1">Assigned VA</h1>
-                <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1">Coded VA</h1>
-                <h1 class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1">Discordants</h1>
-            </div> -->
-            <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[50vh]  hover:bg-blue-600">
-                <i class="ph-sign-out rotate-180"></i>
-                <span class="text-[15px] ml-4 text-back">Logout</span>
-            </div>
-
-        </div>
+<div class="relative flex h-screen">
+    <app-sidebar *ngIf="sidebarHidden"></app-sidebar>
+    <div class="content-area absolute top-0 {{ sidebarHidden ? 'ml-[400px]' : 'ml-[100px]'}}">
+        <router-outlet></router-outlet>
     </div>
 </div>
 
