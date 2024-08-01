@@ -37,11 +37,13 @@ export class CsrfInterceptorService {
             return this.authService.refresh_token().pipe(
               switchMap((response) => {
                 this.refreshRequests += 1
+                console.log("refresh called in intercetor and succeeded!")
                 if (response.status === 200) {
                   this.authService.saveUserData(response);
                   modifiedRequest = this.addHeaders(request); // Update the headers with the new token
                   return next.handle(modifiedRequest);
                 } else {
+                  console.log("refresh called in intercetor and failed!")
                   this.authService.logout();
                   return throwError(() => requestError);
                 }
@@ -52,6 +54,11 @@ export class CsrfInterceptorService {
                 return throwError(() => error);
               })
             );
+          }
+          else {
+            console.log("refresh called more than once and failed!")
+            this.authService.logout();
+            return throwError(() => requestError);
           }
         }
         return throwError(() => requestError);

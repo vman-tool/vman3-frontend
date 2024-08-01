@@ -25,7 +25,7 @@ export class BodyComponent {
         {
           displayText: 'PCVA',
           icon: 'flaticon-stethoscope',
-          route: '/dashboard',
+          route: '/pcva',
           subMenuItems: [
             { 
               displayText: 'All Assigned',

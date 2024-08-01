@@ -8,33 +8,33 @@ import { lastValueFrom } from 'rxjs';
  */
 export async function is_authenticated(authService: AuthService): Promise<boolean> {
     const now = new Date().getTime() / 1000;
-    let is_authenticated: boolean = false;
+    let authenticated: boolean = false;
     const access_token_time = localStorage.getItem('access_token_expiry');
     
     if (access_token_time && now > Number(access_token_time)) {
         try {
             const response = await lastValueFrom(authService.refresh_token())
-            if (response.status === 200) {
+            if (response?.access_token && response.refresh_token) {
                 authService.saveUserData(response);
-                is_authenticated = true;
+                authenticated = true;
             } else {
-                is_authenticated = false;
+                authenticated = false;
             }
         } catch (error) {
             authService
-            is_authenticated = false;
+            authenticated = false;
         }
     } else {
         try {
-            is_authenticated = localStorage.getItem('access_token') && localStorage.getItem('access_token')!.length > 0 ? true : false;
+            authenticated = localStorage.getItem('access_token') && localStorage.getItem('access_token')!.length > 0 ? true : false;
         } catch (err) {
-            is_authenticated = false;
+            authenticated = false;
         }
     }
 
-    if(!is_authenticated){
+    if(!authenticated){
         authService.logout()
     }
 
-    return is_authenticated;
+    return authenticated;
 }

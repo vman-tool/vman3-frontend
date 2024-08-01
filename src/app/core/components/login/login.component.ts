@@ -55,11 +55,13 @@ export class LoginComponent implements OnInit {
       if (new Date().getTime()/1000 > parseFloat(access_expiry_token)){
         this.authService.refresh_token().subscribe({
           next: (response) => {
+            console.log("Refreshing token called in login and succeeded!")
             this.authService.saveUserData(response)
             const current_route = localStorage.getItem("current_route")
             this.router.navigate([current_route == 'login' ? '/': current_route])
           },
           error: (error: any) => {
+            console.log("Refreshing token called in login and failed!")
             this.authService.logout()
             failed = false
             this.snackBar.open("Session expired. Please login again", "close", {

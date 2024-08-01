@@ -25,7 +25,7 @@ import { FormsModule } from '@angular/forms';
     CoreRoutingModule,
     MaterialModule,
     FormsModule,
-    SharedModule
+    SharedModule,
   ],
   exports: [
     CoreComponent

@@ -2,14 +2,23 @@ import { RouterModule, Routes } from "@angular/router";
 import { CoreComponent } from "./core.component";
 import { NgModule } from "@angular/core";
 import { LoginComponent } from "./components/login/login.component";
-import { authGuard } from "./guards/auth.guard";
+import { authGuard } from "../shared/guards/auth.guard";
 
 
 const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
-    component: CoreComponent
+    component: CoreComponent,
+    children: [
+      {
+          // PCVA module
+          path: 'pcva',
+          loadChildren: () => import('../modules/pcva/pcva.module').then(
+            (importation) => importation.PcvaModule
+          ),
+        },
+    ]
   },
   {
     path: "login",
