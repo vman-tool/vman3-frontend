@@ -27,10 +27,10 @@ export class SidebarComponent {
           route: '/pcva',
           subMenuItems: [
             { 
-              displayText: 'Doctors',
+              displayText: 'Coders',
               icon: 'flaticon-stethoscope',
               icon_asset: "",
-              route: '/doctors',
+              route: '/coders',
             },
             { 
               displayText: 'All Assigned',
@@ -80,9 +80,14 @@ export class SidebarComponent {
 
       ]
     }
-    onSelectMenu(menuIndex: number, subMenuIndex: number = 0): void {
+    onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
       this.selectedItem = this.selectedItem === menuIndex && !subMenuIndex ? undefined : menuIndex;
-      this.selectedSubMenu = menuIndex+subMenuIndex;
+      
+      if(subMenuIndex){
+        this.selectedSubMenu = menuIndex+subMenuIndex;
+      } else {
+        this.selectedSubMenu = 0
+      }
     }
 
     onLogout(){

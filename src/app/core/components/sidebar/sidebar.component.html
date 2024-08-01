@@ -21,8 +21,8 @@
                         <div
                             class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? '' : 'hidden'}}">
                             <p routerLink="{{menuItem?.route + subMenu?.route}}"
-                                class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1 {{ selectedSubMenu === i+subIndex ? 'text-blue-600' : '' }}"
-                                (click)="onSelectMenu(i, subIndex)"
+                                class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1 {{ selectedSubMenu === i+(subIndex+1) ? 'text-blue-600' : '' }}"
+                                (click)="onSelectMenu(i, subIndex+1)"
                                 *ngFor="let subMenu of menuItem?.subMenuItems; let subIndex = index;">
                                 <i class="{{subMenu?.icon }}"></i>
                                 {{ subMenu?.displayText }}</p> <br>
