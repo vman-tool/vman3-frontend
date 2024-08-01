@@ -13,16 +13,15 @@ export async function is_authenticated(authService: AuthService): Promise<boolea
     
     if (access_token_time && now > Number(access_token_time)) {
         try {
-            lastValueFrom(authService.refresh_token()).then((response) => {
-                console.log("authenticated")
-                if (response.status === 200) {
-                    authService.saveUserData(response);
-                    is_authenticated = true;
-                } else {
-                    is_authenticated = false;
-                }
-            })
+            const response = await lastValueFrom(authService.refresh_token())
+            if (response.status === 200) {
+                authService.saveUserData(response);
+                is_authenticated = true;
+            } else {
+                is_authenticated = false;
+            }
         } catch (error) {
+            authService
             is_authenticated = false;
         }
     } else {
@@ -31,6 +30,10 @@ export async function is_authenticated(authService: AuthService): Promise<boolea
         } catch (err) {
             is_authenticated = false;
         }
+    }
+
+    if(!is_authenticated){
+        authService.logout()
     }
 
     return is_authenticated;

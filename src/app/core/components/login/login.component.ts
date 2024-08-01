@@ -50,7 +50,7 @@ export class LoginComponent implements OnInit {
   onLogin(e: any){
     e.stopPropagation()
     let failed = true;
-    const access_expiry_token = localStorage.getItem('access_token_expiry');
+    const access_expiry_token = localStorage.getItem('access_token_expiry') || undefined;
     if (access_expiry_token){
       if (new Date().getTime()/1000 > parseFloat(access_expiry_token)){
         this.authService.refresh_token().subscribe({
@@ -74,8 +74,7 @@ export class LoginComponent implements OnInit {
     if(this.username && this.password){
       this.authService.login(this.username, this.password).pipe(tap((response) =>{
         this.password = undefined;
-      }))
-      .subscribe(
+      })).subscribe(
         {
           next: (response: any)=> {
             this.username = undefined;
@@ -83,30 +82,30 @@ export class LoginComponent implements OnInit {
             setTimeout(() =>{
               this.navigate()
               this.snackBar.open("Successfully logged in", "close", {
-                  horizontalPosition: this.horizontalPosition,
-                  verticalPosition: this.verticalPosition,
-                  panelClass: 'snack-success',
+                horizontalPosition: this.horizontalPosition,
+                verticalPosition: this.verticalPosition,
+                panelClass: 'snack-success',
                   duration: 3 * 1000,
                 })
-            }, 100)
-          },
-          error: (error: any) => {
-            failed = false
-            this.snackBar.open("Invalid username/password", "close",{
-              horizontalPosition: this.horizontalPosition,
-              verticalPosition: this.verticalPosition,
-              duration: 3 * 1000,
-            })
-          },
-          complete: () => {
-            if(failed){
-              this.snackBar.open("Invalid username/password", "close", {
+              }, 100)
+            },
+            error: (error: any) => {
+              failed = false
+              this.snackBar.open("Invalid username/password", "close",{
                 horizontalPosition: this.horizontalPosition,
                 verticalPosition: this.verticalPosition,
                 duration: 3 * 1000,
               })
+            },
+            complete: () => {
+              if(failed){
+                this.snackBar.open("Invalid username/password", "close", {
+                  horizontalPosition: this.horizontalPosition,
+                  verticalPosition: this.verticalPosition,
+                  duration: 3 * 1000,
+                })
+              }
             }
-          }
         }
       )
     }

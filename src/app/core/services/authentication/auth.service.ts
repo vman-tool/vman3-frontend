@@ -32,12 +32,13 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<any>{
-    const headers = new HttpHeaders();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded'
+    });
     const formData = new HttpParams()
       .set('username', username)
       .set('password', password);
     
-    headers.set('Content-Type', 'application/x-www-form-urlencoded');
     return this.http!.post(`${this.API_URL}/auth/login/`, formData, {headers: headers}).pipe(
       map((response: any) => {
         if(this.success){
@@ -65,10 +66,13 @@ export class AuthService {
   refresh_token(): Observable<any>{
     const refresh_token = localStorage.getItem("refresh_token")!
 
-    const headers = new HttpHeaders();
-    headers.set('refresh-token', refresh_token);
+    const headers = new HttpHeaders({
+      'refresh-token': refresh_token
+    });
 
-    return this.http!.post(`${this.API_URL}/auth/refresh/`, null, {headers : headers})
+    return this.http!.post(
+      `${this.API_URL}/auth/refresh/`, null, { headers }
+    )
   }
 
   get_user(): Observable<any> {
