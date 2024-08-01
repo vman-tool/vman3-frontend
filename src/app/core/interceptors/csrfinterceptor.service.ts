@@ -40,7 +40,7 @@ export class CsrfInterceptorService {
                 console.log("refresh called in intercetor and succeeded!")
                 if (response.status === 200) {
                   this.authService.saveUserData(response);
-                  modifiedRequest = this.addHeaders(request); // Update the headers with the new token
+                  modifiedRequest = this.addHeaders(request);
                   return next.handle(modifiedRequest);
                 } else {
                   console.log("refresh called in intercetor and failed!")

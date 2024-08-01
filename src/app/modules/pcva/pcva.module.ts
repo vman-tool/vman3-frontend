@@ -8,6 +8,7 @@ import { AllAssignedComponent } from './components/all-assigned/all-assigned.com
 import { CodedVaComponent } from './components/coded-va/coded-va.component';
 import { DiscordantsVaComponent } from './components/discordants-va/discordants-va.component';
 import { CodersComponent } from './components/coders/coders.component';
+import { DoctorsComponent } from './components/doctors/doctors.component';
 
 
 
@@ -17,7 +18,8 @@ import { CodersComponent } from './components/coders/coders.component';
     AllAssignedComponent,
     CodedVaComponent,
     DiscordantsVaComponent,
-    CodersComponent
+    CodersComponent,
+    DoctorsComponent
   ],
   imports: [
     CommonModule,

@@ -1,4 +1,4 @@
-<div class="grid grid-cols-12 items-stretch top-3 top-0">
+<div class="grid grid-cols-12 items-stretch mt-5">
     <div class="col-span-4 ml-[30px] grid grid-cols-12 items-stretch">
             <div class="col-span-1 mt-2">
                 <span class="text-black text-4xl cursor-pointer" (click)="Openbar($event)">
@@ -7,8 +7,7 @@
             </div>
             
             <div class="col-span-2 flex items-center rounded-md align-right">
-                <i class="flaticon-user mb-3"></i>
-                <h4 class="text-[15px]  ml-3 text-xl text-black font-bold">VMan3</h4>
+                <img src="../../../../assets/images/vman-logo.png" alt="VMan3-icon" class="h-12 mb-4" />
             </div>
     </div>
     <div class="col-span-8">
@@ -16,43 +15,10 @@
     </div>
 </div>
 
-<div class="relative flex h-screen overflow-y-auto">
-    <div #sidebar class="sidebar top-0 bottom-0 lg:left-0 left-[-300px] overflow-hidden sm:left-[100px] duration-1000
-        p-2 w-[300px] text-center bg-white-600 shadow h-screen">
-        <div class="text-black text-xl">
-    
-            <div class="overflow-hidden">
-    
-                <ng-container *ngIf="menuItems">
-                    <div *ngFor="let menuItem of menuItems; let i = index">
-                        <div class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-gray-400 {{ i == selectedItem ? 'bg-gray-400' : ''}}">
-                            <i class="{{ menuItem?.icon }}"></i>
-                            <div class="flex justify-between w-full items-center" (click)="onSelectMenu(i)">
-                                <span class="text-[15px] ml-4 text-back">{{ menuItem?.displayText }}</span>
-                                <span class="text-md" id="arrow" *ngIf="menuItem?.subMenuItems?.length">
-                                    <i class="ph-caret-down {{ i == selectedItem ? 'rotate-180' : ''}}"></i>
-                                </span>
-                            </div>
-                        </div>
-        
-                        <ng-container *ngIf="menuItem?.subMenuItems?.length">
-                            <div class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? '' : 'hidden'}}">
-                                <ng-container *ngFor="let subMenu of menuItem?.subMenuItems">
-                                    <p routerLink="{{menuItem?.route + subMenu?.route}}" class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1">{{ subMenu?.displayText }}</p> <br>
-                                </ng-container>
-                            </div>
-                        </ng-container>
-                    </div>
-                </ng-container>
-                <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[50vh]  hover:bg-gray-400" (click)="onLogout()">
-                    <i class="ph-sign-out rotate-180"></i>
-                    <span class="text-[15px] ml-4 text-back">Logout</span>
-                </div>
-    
-            </div>
-        </div>
-    </div>
-    <div class="content-area absolute top-0 {{ humburgerHidden ? 'ml-[400px]' : 'ml-[100px]'}}">
+<div class="relative flex h-screen">
+    <app-sidebar *ngIf="sidebarHidden"></app-sidebar>
+    <div class="content-area absolute top-0 {{ sidebarHidden ? 'ml-[400px]' : 'ml-[100px]'}}">
         <router-outlet></router-outlet>
     </div>
 </div>
+
