@@ -1,14 +1,12 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CookieService } from 'ngx-cookie-service';
-import { Observable, catchError, map, mergeMap, of } from 'rxjs';
-import { 
-  MatSnackBarHorizontalPosition, 
-  MatSnackBarVerticalPosition 
-} from '@angular/material/snack-bar';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
+import { MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { AuthService } from '../services/authentication/auth.service';
 import { ErrorEmitters } from '../emitters/error.emitters';
-
+import { Router } from '@angular/router';
+import { AuthEmitters } from '../emitters/auth.emitters';
 
 @Injectable({
   providedIn: 'root'
@@ -19,43 +17,51 @@ export class CsrfInterceptorService {
   verticalPosition: MatSnackBarVerticalPosition = 'top';
 
   constructor(
-    private cookieService: CookieService,
     private authService: AuthService,
-  ) { }
+    private router: Router
+  ) {}
 
   refresh: boolean = true;
+  refreshRequests: number = 0;
 
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> | Observable<any> | any {
-    const now = new Date().getTime()/1000;
-    const refresh_token_time = localStorage.getItem('refresh_token_expiry');
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const now = new Date().getTime() / 1000;
+    const access_token_expiry = localStorage.getItem('access_token_expiry');
 
-    let modifiedRequest = this.addHeaders(request)
-    if (now > Number(refresh_token_time)) {
-      this.authService.logout();
-    }
+    let modifiedRequest = this.addHeaders(request);
 
     return next.handle(modifiedRequest).pipe(
-      catchError((requestError: HttpErrorResponse): Observable<any> => {
-        if ((requestError.status === 401 || requestError.status === 403) && refresh_token_time && now < Number(refresh_token_time)){
-          return this.authService.refresh_token().pipe(
-            mergeMap((response) => {
-              this.authService.clearUserData()
-              setTimeout(() => {
-                this.authService.saveUserData(response)
-              }, 100)
-              return next.handle(this.addHeaders(modifiedRequest))
-            })
-          )
+      catchError((requestError: HttpErrorResponse) => {
+        if (requestError.status === 401 || requestError.status === 403) {
+          if(this.refreshRequests < 1){
+            return this.authService.refresh_token().pipe(
+              switchMap((response) => {
+                this.refreshRequests += 1
+                console.log("refresh called in intercetor and succeeded!")
+                if (response.status === 200) {
+                  this.authService.saveUserData(response);
+                  modifiedRequest = this.addHeaders(request);
+                  return next.handle(modifiedRequest);
+                } else {
+                  console.log("refresh called in intercetor and failed!")
+                  this.authService.logout();
+                  return throwError(() => requestError);
+                }
+              }),
+              catchError((error) => {
+                this.refreshRequests += 1
+                this.authService.logout();
+                return throwError(() => error);
+              })
+            );
+          }
+          else {
+            console.log("refresh called more than once and failed!")
+            this.authService.logout();
+            return throwError(() => requestError);
+          }
         }
-        
-        if (refresh_token_time && now > Number(refresh_token_time)){
-          this.authService.logout();
-        }
-        const errorMessage = requestError?.error?.message ? requestError?.error?.message : 
-          requestError?.error?.error ? requestError?.error?.error :
-            requestError?.error?.detail ? requestError?.error?.detail : requestError?.message
-        ErrorEmitters.errorEmitter.emit(errorMessage);
-        return of(requestError);
+        return throwError(() => requestError);
       }),
       map((response: any) => {
         ErrorEmitters.successEmitter.emit();
@@ -65,25 +71,15 @@ export class CsrfInterceptorService {
   }
 
   addHeaders(request: HttpRequest<any>): HttpRequest<any> {
-    const csrfToken = this.cookieService.get('csrftoken');
     const access_token = localStorage.getItem('access_token');
-    const csrfHeader = 'X-CSRFToken';
     const authHeader = 'Authorization';
-    
-    let headers : any;
+    let headers = request.headers;
 
-    if (csrfToken) {
-      headers = {
-        [csrfHeader]: csrfToken,
-      }
+    if (!request.url.includes('auth/refresh')) {
+      headers = access_token ? headers.set(authHeader, `Bearer ${access_token}`) : headers;
     }
-    headers = access_token ? {
-      ...headers,
-      [authHeader] : `Bearer ${access_token}`
-    } : headers
-
     return request.clone({
-      setHeaders: headers,
+      headers,
       withCredentials: true
     });
   }

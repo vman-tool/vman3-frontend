@@ -1,9 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import { Observable, catchError, map, mergeMap, of} from 'rxjs';
-import { jwtDecode } from 'jwt-decode';
 import { ErrorEmitters } from '../../emitters/error.emitters';
 import { environment } from '../../../environments/environment';
 import { AuthEmitters } from '../../emitters/auth.emitters';
@@ -18,7 +16,6 @@ export class AuthService {
 
   constructor(
     private http?: HttpClient,
-    private cookieService?: CookieService,
     private router?: Router,
   ) { 
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
@@ -30,23 +27,22 @@ export class AuthService {
   }
 
   logout() {
-    this.cookieService!.delete("csrftoken");
     this.clearLocalStorage();
     this.router!.navigate(['/login']);
   }
 
   login(username: string, password: string): Observable<any>{
-    const headers = new HttpHeaders();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded'
+    });
     const formData = new HttpParams()
       .set('username', username)
       .set('password', password);
     
-    headers.set('Content-Type', 'application/x-www-form-urlencoded');
     return this.http!.post(`${this.API_URL}/auth/login/`, formData, {headers: headers}).pipe(
       map((response: any) => {
         if(this.success){
           this.saveUserData(response)
-          // this.router!.navigate(['/']);
         }
         return response
       }),
@@ -64,49 +60,18 @@ export class AuthService {
     }
     let formData = new FormData();
     formData.append("data", JSON.stringify(data))
-    return this.http!.post(`${this.API_URL}/accounts/change-password/`, formData)
-  }
-  
-  get_superuser_status(): Observable<any>{
-    return this.http!.get(`${this.API_URL}/accounts/check-super-user/`)
-  }
-
-  request_token(username: string, password: string): Observable<any>{
-    const headers = new HttpHeaders();
-    const userObject = {
-      username: username,
-      password: password
-    }
-
-    return this.http!.post(`${this.API_URL}/auth/login`, userObject, { headers: headers })
-    .pipe(
-      map((response: any) => {
-        if(this.success){
-          this.saveUserData(response)
-          // this.router!.navigate(['/']);
-        }
-        return response
-      }),
-      catchError((error: any) => {
-        console.log("Error: ", error)
-        return of(error);
-      })
-    )
+    return this.http!.post(`${this.API_URL}/auth/change-password/`, formData)
   }
   
   refresh_token(): Observable<any>{
     const refresh_token = localStorage.getItem("refresh_token")!
 
-    const headers = new HttpHeaders();
-    headers.set('refresh_token', refresh_token);
+    const headers = new HttpHeaders({
+      'refresh-token': refresh_token
+    });
 
-    return this.http!.post(`${this.API_URL}/auth/refresh/`, null, {headers : headers}).pipe(
-      mergeMap((response: any) => {
-        return response
-      }),
-      catchError((error: any) => {
-        return of(error)
-      })
+    return this.http!.post(
+      `${this.API_URL}/auth/refresh/`, null, { headers }
     )
   }
 
@@ -123,18 +88,18 @@ export class AuthService {
   }
 
   saveUserData(response: any) {
-    localStorage.setItem("access_token", response?.access_token)
-    localStorage.setItem("refresh_token", response?.refresh_token)
-    
-    localStorage.setItem("access_token_expiry", response.expires_in)
-    localStorage.setItem("current_user", JSON.stringify(response.user))
+    this.clearUserData()
 
-    console.log(localStorage.getItem("current_user"))
-    // this.get_user().subscribe({
-    //   next: () => {
-    //     AuthEmitters.authEmitter.emit(true)
-    //   }
-    // });
+    setTimeout(() => {
+      localStorage.setItem("access_token", response?.access_token)
+      localStorage.setItem("refresh_token", response?.refresh_token)
+      
+       const now = new Date().getTime()/1000;
+  
+      localStorage.setItem("access_token_expiry", (now + Number(response.expires_in)).toString())
+      localStorage.setItem("current_user", JSON.stringify(response.user))
+      AuthEmitters.authEmitter.emit(true);
+    }, 100)
   }
   
   clearUserData() {

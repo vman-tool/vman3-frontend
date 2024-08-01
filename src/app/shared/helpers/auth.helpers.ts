@@ -6,31 +6,35 @@ import { lastValueFrom } from 'rxjs';
  * Checks if user is authenticated from localstorage.
  * @returns The true if user is authenticated and vice versa
  */
-export async function is_authenticated(): Promise<boolean> {
+export async function is_authenticated(authService: AuthService): Promise<boolean> {
     const now = new Date().getTime() / 1000;
-    let is_authenticated: boolean = false;
+    let authenticated: boolean = false;
     const access_token_time = localStorage.getItem('access_token_expiry');
-
-    if (now > Number(access_token_time)) {
-        let authservice = inject(AuthService);
+    
+    if (access_token_time && now > Number(access_token_time)) {
         try {
-            const response = await lastValueFrom(authservice.refresh_token());
-            if (response.status === 200) {
-                authservice.saveUserData(response);
-                is_authenticated = true;
+            const response = await lastValueFrom(authService.refresh_token())
+            if (response?.access_token && response.refresh_token) {
+                authService.saveUserData(response);
+                authenticated = true;
             } else {
-                is_authenticated = false;
+                authenticated = false;
             }
         } catch (error) {
-            is_authenticated = false;
+            authService
+            authenticated = false;
         }
     } else {
         try {
-            is_authenticated = localStorage.getItem('access_token') && localStorage.getItem('access_token')!.length > 0 ? true : false;
+            authenticated = localStorage.getItem('access_token') && localStorage.getItem('access_token')!.length > 0 ? true : false;
         } catch (err) {
-            is_authenticated = false;
+            authenticated = false;
         }
     }
 
-    return is_authenticated;
+    if(!authenticated){
+        authService.logout()
+    }
+
+    return authenticated;
 }
