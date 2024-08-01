@@ -6,7 +6,6 @@ import { CodedVaComponent } from "./components/coded-va/coded-va.component";
 import { DiscordantsVaComponent } from "./components/discordants-va/discordants-va.component";
 import { AllAssignedComponent } from "./components/all-assigned/all-assigned.component";
 import { CodersComponent } from "./components/coders/coders.component";
-import { DoctorsComponent } from "./components/doctors/doctors.component";
 
 
 const routes: Routes = [
@@ -19,11 +18,6 @@ const routes: Routes = [
         // PCVA All Assigned Component
         path: '',
         component: PcvaComponent,
-      },
-      {
-        // PCVA All Doctors
-        path: 'doctors',
-        component: DoctorsComponent,
       },
       {
         // PCVA All Assigned Component

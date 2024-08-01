@@ -27,10 +27,10 @@ export class SidebarComponent {
           route: '/pcva',
           subMenuItems: [
             { 
-              displayText: 'Doctors',
+              displayText: 'Coders',
               icon: 'flaticon-stethoscope',
               icon_asset: "",
-              route: '/doctors',
+              route: '/coders',
             },
             { 
               displayText: 'All Assigned',
