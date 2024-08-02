@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CodersService } from '../../services/coders/coders.service';
 import { catchError, map, Observable } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AssignVaComponent } from '../../dialogs/assign-va/assign-va.component';
 
 @Component({
@@ -34,13 +34,14 @@ export class CodersComponent implements OnInit {
   }
 
   onAssignCoder(e: Event, coder: any){
-    this.dialog.open(AssignVaComponent, {
-      width: "80%",
-      height: "80%",
-      data: {
-        coder: coder
-      }
-    })
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "80vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      coder: coder
+    }
+    this.dialog.open(AssignVaComponent, dialogConfig)
   }
 
 }

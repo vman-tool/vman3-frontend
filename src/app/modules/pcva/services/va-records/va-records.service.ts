@@ -22,4 +22,8 @@ export class VaRecordsService {
     
     return this.http.get(`${this.API_URL}/pcva${params}`);
   }
+  
+  assignVARecords(data: any) {
+    return this.http.post(`${this.API_URL}/pcva/assign-va`, data);
+  }
 }

@@ -1,5 +1,64 @@
-<h4>{{coder?.name}}</h4>
 
-<div class=" overflow-y-auto">
-    {{ vaRecords$ | async | json }}
-</div>
+<h2 mat-dialog-title class="text-center">{{coder?.name}}</h2>
+<mat-dialog-content>
+    <div *ngIf="{
+        vaRecords: vaRecords$ | async
+    } as params">
+        <div class="m-2" *ngIf="!params?.vaRecords && loadingData">
+            <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
+            </mat-progress-bar>
+        </div>
+        <table class="w-full divide-y divide-gray-200 table-auto" *ngIf="params?.vaRecords">
+            <thead *ngIf="params?.vaRecords?.data?.length">
+                <tr>
+                    <th
+                        class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <input id="customCheckLogin" (click)="onSelectVA($event, params?.vaRecords?.data)" type="checkbox" class="form-checkbox border-0 rounded text-gray-800 ml-1 w-4 h-4"
+                            style="transition: all 0.15s ease 0s;" [checked]="selectedVAs.length === params?.vaRecords?.data?.length"/>
+                    </th>
+                    <th
+                        *ngFor="let header of headers;"
+                        class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        {{ header }}
+                    </th>
+                    <th
+                        class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *ngIf="params?.vaRecords?.data?.length">
+                    
+                    <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
+                        *ngFor="let va of params?.vaRecords?.data; let i = index">
+                            <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                                <input (click)="onSelectVA($event, va?.instanceid)" id="customCheckLogin" type="checkbox" class="form-checkbox border-0 rounded text-gray-800 ml-1 w-4 h-4"
+                                    style="transition: all 0.15s ease 0s;" [checked]="selectedVAs.includes(va?.instanceid)" />
+                            </td>
+                            <td class="px-5 py-3 border-b border-gray-200 text-sm" *ngFor="let header of headers;">
+                                <p class="text-gray-900 whitespace-no-wrap">{{ va[header] }}</p>
+                            </td>
+                            <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-user-plus-bold"></i></a>
+                            </td>
+                    </tr>
+                </ng-container>
+                <ng-container *ngIf="!params?.vaRecords?.data?.length">
+                    <tr class="bg-gray-200">
+                        <td colspan="5" class="px-5 py-3 text-center text-gray-900">No va record was found</td>
+                    </tr>
+                </ng-container>
+            </tbody>
+            
+        </table>
+        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.vaRecords?.data?.length">
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
+        </div>
+    </div>
+    
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button mat-dialog-close>Close</button>
+    <button mat-button (click)="onAssignVA($event)">Assign Selected</button>
+</mat-dialog-actions>
