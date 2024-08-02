@@ -1,0 +1,84 @@
+import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { VaRecordsService } from '../../services/va-records/va-records.service';
+import { map, Observable } from 'rxjs';
+
+@Component({
+  selector: 'app-assign-va',
+  templateUrl: './assign-va.component.html',
+  styleUrl: './assign-va.component.scss'
+})
+export class AssignVaComponent implements OnInit, AfterViewInit {
+  vaRecords$?: Observable<any>
+  page_number?: number;
+  limit?: number;
+  paging?: boolean;
+  include_assignments?: boolean;
+  coder: any;
+  headers: any;
+  loadingData: boolean = false;
+  selectedVAs: string[] = []
+  
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private matDialogRef: MatDialogRef<AssignVaComponent>,
+    private vaRecordsService: VaRecordsService
+  ) {
+    this.coder = data?.coder
+  }
+
+  ngOnInit(): void {
+    this.loadingData = true
+    this.vaRecords$ = this.vaRecordsService.getVARecords(this.paging, this.page_number, this.limit, this.include_assignments).pipe(
+      map((response: any) => {
+        this.headers = Object.keys(response?.data[0])
+        this.loadingData = false
+        return response
+      })
+    )
+  }
+
+  ngAfterViewInit() {
+    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
+    if (dialogElement) {
+      (dialogElement as HTMLElement).style.maxWidth = '80vw';
+      (dialogElement as HTMLElement).style.minWidth = '0';
+    }
+  }
+
+  onSelectVA(e: Event, selectedVA: string | any[]){
+    if(e.target instanceof HTMLInputElement && e.target.checked){
+      if(typeof selectedVA === 'object'){
+        this.selectedVAs = selectedVA?.map((selected: any) => selected?.instanceid)
+      }
+      if(typeof selectedVA === 'string'){
+        this.selectedVAs = [
+          ...this.selectedVAs,
+          selectedVA
+        ]
+      }
+    } else {
+      if(typeof selectedVA === 'object'){
+        this.selectedVAs = []
+      }
+      if(typeof selectedVA === 'string'){
+        this.selectedVAs = this.selectedVAs.filter(va => va!== selectedVA)
+      }
+    }
+  }
+
+  onAssignVA(e: Event){
+    const data = {
+      vaIds: this.selectedVAs,
+      coder: this.coder?.uuid
+    }
+    this.vaRecordsService.assignVARecords(data).subscribe({
+      next: (response: any) => {
+        this.matDialogRef.close(true)
+      },
+      error: (error: any) => {
+        console.error(error)
+      }
+    })
+  }
+}

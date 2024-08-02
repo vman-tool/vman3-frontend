@@ -22,6 +22,11 @@ export class SidebarComponent {
           route: '/'
         },
         {
+          displayText: 'VA Records ',
+          icon_asset: '../../../../assets/icons/ind-record.svg',
+          route: '/records',
+        },
+        {
           displayText: 'PCVA',
           icon_asset: "../../../../assets/icons/pcva.svg",
           route: '/pcva',
@@ -51,11 +56,6 @@ export class SidebarComponent {
               route: '/discordants',
             }
           ]
-        },
-        {
-          displayText: 'Data Map',
-          icon_asset: "../../../../assets/icons/data-map.svg",
-          route: '/pcva',
         },
         {
           displayText: 'Data Quality',

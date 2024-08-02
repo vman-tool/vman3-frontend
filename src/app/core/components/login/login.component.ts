@@ -43,6 +43,8 @@ export class LoginComponent implements OnInit {
         const current_route = localStorage.getItem("current_route") || "/"
         const to_route = current_route === '/login' || current_route === 'login' ? '/': current_route
         this.router.navigate([to_route])
+      } else {
+        this.authService.logout()
       }
     }
   }
@@ -51,28 +53,6 @@ export class LoginComponent implements OnInit {
     e.stopPropagation()
     let failed = true;
     const access_expiry_token = localStorage.getItem('access_token_expiry') || undefined;
-    if (access_expiry_token){
-      if (new Date().getTime()/1000 > parseFloat(access_expiry_token)){
-        this.authService.refresh_token().subscribe({
-          next: (response) => {
-            console.log("Refreshing token called in login and succeeded!")
-            this.authService.saveUserData(response)
-            const current_route = localStorage.getItem("current_route")
-            this.router.navigate([current_route == 'login' ? '/': current_route])
-          },
-          error: (error: any) => {
-            console.log("Refreshing token called in login and failed!")
-            this.authService.logout()
-            failed = false
-            this.snackBar.open("Session expired. Please login again", "close", {
-              horizontalPosition: this.horizontalPosition,
-              verticalPosition: this.verticalPosition,
-              duration: 3 * 1000,
-            })
-          }
-        });
-      }
-    }
     if(this.username && this.password){
       this.authService.login(this.username, this.password).pipe(tap((response) =>{
         this.password = undefined;

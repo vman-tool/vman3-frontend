@@ -35,40 +35,30 @@ export class CsrfInterceptorService {
       catchError(async (requestError: HttpErrorResponse) => {
         if (requestError.status === 401 || requestError.status === 403) {
           if(this.refreshRequests < 1){
-            console.log("refresh token in interceptor")
-            const authenticated = await is_authenticated(this.authService)
-            if(!authenticated){
-              console.log("refresh token in interceptor failed")
-              this.authService.logout();
-              return throwError(() => requestError);
-            } else {
-              console.log("refresh token in interceptor succeeded!")
-              modifiedRequest = this.addHeaders(request); // Update the headers with the new token
-              return next.handle(modifiedRequest);
-            }
-            // return this.authService.refresh_token().pipe(
-            //   switchMap((response) => {
-            //     this.refreshRequests += 1
-            //     console.log("refresh called in intercetor and succeeded!")
-            //     if (response.status === 200) {
-            //       this.authService.saveUserData(response);
-            //       modifiedRequest = this.addHeaders(request); // Update the headers with the new token
-            //       return next.handle(modifiedRequest);
-            //     } else {
-            //       console.log("refresh called in intercetor and failed!")
-            //       this.authService.logout();
-            //       return throwError(() => requestError);
-            //     }
-            //   }),
-            //   catchError((error) => {
-            //     this.refreshRequests += 1
-            //     this.authService.logout();
-            //     return throwError(() => error);
-            //   })
-            // );
+            return this.authService.refresh_token().pipe(
+              switchMap((response) => {
+                this.refreshRequests++
+                localStorage.setItem("Refresh-Response", JSON.stringify(response))
+                if (response.status === 200) {
+                  console.log("refresh called in intercetor and succeeded!",)
+                  this.authService.saveUserData(response);
+                  modifiedRequest = this.addHeaders(request); // Update the headers with the new token
+                  return next.handle(modifiedRequest);
+                } else {
+                  console.log("refresh called in intercetor and failed!")
+                  this.authService.logout();
+                  return throwError(() => requestError);
+                }
+              }),
+              catchError((error) => {
+                this.refreshRequests++
+                this.authService.logout();
+                return throwError(() => error);
+              })
+            );
           }
           else {
-            console.log("refresh called more than on!")
+            console.log("refresh called more than one time!")
             this.authService.logout();
             return throwError(() => requestError);
           }
