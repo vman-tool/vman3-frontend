@@ -12,23 +12,27 @@ const routes: Routes = [
       {
         // Core module
         path: '',
-        loadChildren: () => import('./core/core.module').then(
-          (importation) => importation.CoreModule
-        ),
+        loadChildren: () =>
+          import('./core/core.module').then(
+            (importation) => importation.CoreModule
+          ),
       },
-    //   {
-    //   path: '**',
-    //     component: NotFoundComponent,
-    //   },
+
+      //   {
+      //   path: '**',
+      //     component: NotFoundComponent,
+      //   },
     ],
   },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, {
-    useHash: true,
-    preloadingStrategy: PreloadAllModules,
-  })],
-  exports: [RouterModule]
+  imports: [
+    RouterModule.forRoot(routes, {
+      useHash: true,
+      preloadingStrategy: PreloadAllModules,
+    }),
+  ],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
