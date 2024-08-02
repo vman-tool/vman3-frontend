@@ -4,14 +4,14 @@ import { AuthService } from '../../services/authentication/auth.service';
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss'
+  styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
   menuItems: any;
   selectedItem?: number = 0;
   selectedSubMenu: number = 0;
 
-  constructor( private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
     ngOnInit(): void {
       this.menuItems = [
@@ -77,20 +77,20 @@ export class SidebarComponent {
           icon_asset: "../../../../assets/icons/settings.svg",
           route: '/pcva',
         },
-
       ]
     }
     onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
-      this.selectedItem = this.selectedItem === menuIndex && !subMenuIndex ? undefined : menuIndex;
-      
-      if(subMenuIndex){
-        this.selectedSubMenu = menuIndex+subMenuIndex;
-      } else {
-        this.selectedSubMenu = 0
-      }
-    }
+    this.selectedItem =
+      this.selectedItem === menuIndex && !subMenuIndex ? undefined : menuIndex;
 
-    onLogout(){
-      this.authService.logout();
+    if (subMenuIndex) {
+      this.selectedSubMenu = menuIndex + subMenuIndex;
+    } else {
+      this.selectedSubMenu = 0;
     }
+  }
+
+  onLogout() {
+    this.authService.logout();
+  }
 }
