@@ -2,6 +2,7 @@ import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
 import { map, Observable } from 'rxjs';
+import { flatten, keyBy }  from 'lodash';
 
 @Component({
   selector: 'app-assign-va',
@@ -18,6 +19,7 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
   headers: any;
   loadingData: boolean = false;
   selectedVAs: string[] = []
+  assignments: any = [];
   
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -32,8 +34,29 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
     this.vaRecords$ = this.vaRecordsService.getVARecords(this.paging, this.page_number, this.limit, this.include_assignments).pipe(
       map((response: any) => {
         this.headers = Object.keys(response?.data[0])
+        const lastHeader = this.headers[this.headers.length - 1]
+        this.headers = this.headers?.filter((header: string) => header !== lastHeader)
+        let responseWithoutAssignments = response?.data?.map((va: any) => {
+          this.assignments = [
+            ...this.assignments,
+            ...va[lastHeader]
+          ]
+          delete va[lastHeader]
+          return va
+        })
+
+        
+        this.assignments = keyBy(flatten(this.assignments?.map((assignment: any) => {
+          return {
+            vaId: assignment?.vaId,
+            coder: assignment?.coder?.uuid
+          }
+        })), 'vaId')
         this.loadingData = false
-        return response
+        return {
+          ...response,
+          data: responseWithoutAssignments
+        }
       })
     )
   }
