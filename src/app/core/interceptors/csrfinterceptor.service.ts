@@ -7,6 +7,7 @@ import { AuthService } from '../services/authentication/auth.service';
 import { ErrorEmitters } from '../emitters/error.emitters';
 import { Router } from '@angular/router';
 import { AuthEmitters } from '../emitters/auth.emitters';
+import { is_authenticated } from '../../shared/helpers/auth.helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -31,32 +32,43 @@ export class CsrfInterceptorService {
     let modifiedRequest = this.addHeaders(request);
 
     return next.handle(modifiedRequest).pipe(
-      catchError((requestError: HttpErrorResponse) => {
+      catchError(async (requestError: HttpErrorResponse) => {
         if (requestError.status === 401 || requestError.status === 403) {
           if(this.refreshRequests < 1){
-            return this.authService.refresh_token().pipe(
-              switchMap((response) => {
-                this.refreshRequests += 1
-                console.log("refresh called in intercetor and succeeded!")
-                if (response.status === 200) {
-                  this.authService.saveUserData(response);
-                  modifiedRequest = this.addHeaders(request);
-                  return next.handle(modifiedRequest);
-                } else {
-                  console.log("refresh called in intercetor and failed!")
-                  this.authService.logout();
-                  return throwError(() => requestError);
-                }
-              }),
-              catchError((error) => {
-                this.refreshRequests += 1
-                this.authService.logout();
-                return throwError(() => error);
-              })
-            );
+            console.log("refresh token in interceptor")
+            const authenticated = await is_authenticated(this.authService)
+            if(!authenticated){
+              console.log("refresh token in interceptor failed")
+              this.authService.logout();
+              return throwError(() => requestError);
+            } else {
+              console.log("refresh token in interceptor succeeded!")
+              modifiedRequest = this.addHeaders(request); // Update the headers with the new token
+              return next.handle(modifiedRequest);
+            }
+            // return this.authService.refresh_token().pipe(
+            //   switchMap((response) => {
+            //     this.refreshRequests += 1
+            //     console.log("refresh called in intercetor and succeeded!")
+            //     if (response.status === 200) {
+            //       this.authService.saveUserData(response);
+            //       modifiedRequest = this.addHeaders(request); // Update the headers with the new token
+            //       return next.handle(modifiedRequest);
+            //     } else {
+            //       console.log("refresh called in intercetor and failed!")
+            //       this.authService.logout();
+            //       return throwError(() => requestError);
+            //     }
+            //   }),
+            //   catchError((error) => {
+            //     this.refreshRequests += 1
+            //     this.authService.logout();
+            //     return throwError(() => error);
+            //   })
+            // );
           }
           else {
-            console.log("refresh called more than once and failed!")
+            console.log("refresh called more than on!")
             this.authService.logout();
             return throwError(() => requestError);
           }
