@@ -7,9 +7,16 @@ import { authGuard } from '../shared/guards/auth.guard';
 const routes: Routes = [
   {
     path: '',
+
     canActivate: [authGuard],
+
     component: CoreComponent,
     children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
       {
         // PCVA module
         path: 'pcva',
