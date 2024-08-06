@@ -14,7 +14,7 @@ export class SubmissionsComponent {
   dataSubmissions: SubmissionsDataModel[] = [];
   pageNumber: number = 1;
   limit: number = 10;
-  totalRecords: number = 0;
+  totalRecords: number | undefined;
   message: string = '';
   errorMessage: string | null = null;
 
