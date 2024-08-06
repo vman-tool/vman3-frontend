@@ -26,7 +26,7 @@ const routes: Routes = [
           ),
       },
       {
-        // PCVA module
+        // Records module
         path: 'records',
         loadChildren: () =>
           import('../modules/records/records.module').then(
@@ -34,7 +34,15 @@ const routes: Routes = [
           ),
       },
       {
-        // PCVA module
+        // Map module
+        path: 'data-map',
+        loadChildren: () =>
+          import('../modules/maps/maps.module').then(
+            (importation) => importation.MapsModule
+          ),
+      },
+      {
+        // dashboard module
         path: 'dashboard',
         loadChildren: () =>
           import('../modules/dashboard/dashboard.module').then(
