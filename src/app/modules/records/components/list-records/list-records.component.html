@@ -1,7 +1,4 @@
-<div class="flex justify-end mb-4">
-  <img src="assets/icons/filter.svg" class="h-5 cursor-pointer" (click)="openFilterDialog()" alt="Filter Records" />
-</div>
-
+<app-va-filters></app-va-filters>
 <div class="relative w-full overflow-x-auto shadow-md sm:rounded-lg">
   <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -49,7 +46,8 @@
       </tr>
     </tbody>
   </table>
-  <nav class="flex flex-wrap items-center justify-between pt-4 flex-column md:flex-row" aria-label="Table navigation">
+  <nav class="flex flex-wrap items-center justify-between p-5 pt-4 flex-column md:flex-row"
+    aria-label="Table navigation">
     <span class="block w-full mb-4 text-sm font-normal text-gray-500 dark:text-gray-400 md:mb-0 md:inline md:w-auto">
       Showing <span class="font-semibold text-gray-900 dark:text-white">{{ (pageNumber - 1) * limit + 1 }}-{{
         (pageNumber * limit < totalRecords) ? pageNumber * limit : totalRecords }}</span> of <span

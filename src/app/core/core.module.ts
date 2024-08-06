@@ -11,8 +11,6 @@ import { LoginComponent } from './components/login/login.component';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 
-
-
 @NgModule({
   declarations: [
     CoreComponent,
@@ -20,7 +18,7 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
     BodyComponent,
     FooterComponent,
     LoginComponent,
-    SidebarComponent
+    SidebarComponent,
   ],
   imports: [
     CommonModule,
@@ -29,8 +27,6 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
     FormsModule,
     SharedModule,
   ],
-  exports: [
-    CoreComponent
-  ]
+  exports: [CoreComponent],
 })
-export class CoreModule { }
+export class CoreModule {}

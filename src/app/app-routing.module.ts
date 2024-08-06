@@ -10,18 +10,10 @@ const routes: Routes = [
     component: AppComponent,
     children: [
       {
-        // Core module
         path: '',
         loadChildren: () =>
-          import('./core/core.module').then(
-            (importation) => importation.CoreModule
-          ),
+          import('./core/core.module').then((m) => m.CoreModule),
       },
-
-      //   {
-      //   path: '**',
-      //     component: NotFoundComponent,
-      //   },
     ],
   },
 ];

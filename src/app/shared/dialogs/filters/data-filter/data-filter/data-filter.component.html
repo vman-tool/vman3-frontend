@@ -1,0 +1,39 @@
+<div *ngIf="isLoading" class="flex items-center justify-center w-full h-full p-16 ">
+  <div class="w-32 h-32 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+</div>
+<div *ngIf="!isLoading" class="p-6">
+
+  <span class="mb-4 text-2xl ">Filter Records</span>
+  <div class="my-10"></div>
+  <div class="space-y-4">
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Start Date</mat-label>
+      <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>End Date</mat-label>
+      <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Locations</mat-label>
+      <mat-select [(ngModel)]="selectedLocations" multiple>
+        <mat-option *ngFor="let location of allLocations" [value]="location">{{ location }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="flex justify-end mt-4 space-x-4">
+    <button (click)="onNoClick()"
+      class="px-4 py-2 text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Cancel</button>
+    <button (click)="resetFilters()"
+      class="px-4 py-2 text-gray-700 bg-yellow-300 rounded-md hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">Reset</button>
+    <button (click)="applyFilters()"
+      class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Apply</button>
+  </div>
+</div>
