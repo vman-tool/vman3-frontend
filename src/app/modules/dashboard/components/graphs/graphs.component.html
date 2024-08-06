@@ -1,0 +1,38 @@
+<app-va-filters></app-va-filters>
+<div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+  <!-- Skeleton Loader for Bar Chart -->
+  <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
+    <div class="w-64 h-72">
+    </div>
+  </div>
+  <!-- Skeleton Loader for Doughnut Chart -->
+  <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
+    <div class="w-64 h-72">
+    </div>
+  </div>
+</div>
+<ng-template #chartsContent>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <!-- Bar Chart -->
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <span class="mb-4 text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
+      <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
+        [legend]="barChartLegend" [type]="barChartType">
+      </canvas>
+    </div>
+
+    <!-- Doughnut Chart -->
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <span class="mb-4 text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span>
+      <div class="flex justify-center w-full">
+        <div class="w-64 h-64">
+          <canvas baseChart [datasets]="doughnutChartData.datasets" [labels]="doughnutChartData.labels"
+            [options]="doughnutChartOptions" [legend]="doughnutChartLegend" [type]="doughnutChartType">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<app-submissions> </app-submissions>

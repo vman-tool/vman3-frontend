@@ -1,7 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  OnInit,
+  runInInjectionContext,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ListRecordsService } from '../../services/list-records/list-records.service';
-import { DataFilterComponent } from '../../dialogs/data-filter/data-filter/data-filter.component';
+import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
+import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
 
 @Component({
   selector: 'app-list-records',
@@ -15,14 +22,26 @@ export class ListRecordsComponent implements OnInit {
   totalRecords: number = 0;
   message: string = '';
   error: string | null = null;
-  startDate?: string;
-  endDate?: string;
-  locations: string[] = [];
+  filterData: { locations: string[]; startDate?: string; endDate?: string } = {
+    locations: [],
+    startDate: undefined,
+    endDate: undefined,
+  };
 
   constructor(
     private listRecordsService: ListRecordsService,
-    public dialog: MatDialog
-  ) {}
+    public dialog: MatDialog,
+    private filterService: FilterService
+  ) {
+    this.filterService = inject(FilterService);
+    this.setupEffect();
+  }
+  setupEffect() {
+    effect(() => {
+      this.filterData = this.filterService.filterData();
+      this.loadRecords();
+    });
+  }
 
   ngOnInit(): void {
     this.loadRecords();
@@ -33,9 +52,9 @@ export class ListRecordsComponent implements OnInit {
       .getRecordsData(
         this.pageNumber,
         this.limit,
-        this.startDate,
-        this.endDate,
-        this.locations
+        this.filterData.startDate,
+        this.filterData.endDate,
+        this.filterData.locations
       )
       .subscribe((response) => {
         this.data = response.data;
@@ -43,27 +62,6 @@ export class ListRecordsComponent implements OnInit {
         this.message = response.message;
         this.error = response.error;
       });
-  }
-
-  openFilterDialog(): void {
-    const dialogRef = this.dialog.open(DataFilterComponent, {
-      width: '700px',
-      data: {
-        startDate: this.startDate,
-        endDate: this.endDate,
-        locations: this.locations,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.startDate = result.startDate;
-        this.endDate = result.endDate;
-        this.locations = result.locations;
-        this.pageNumber = 1; // Reset to the first page
-        this.loadRecords();
-      }
-    });
   }
 
   goToPreviousPage(): void {

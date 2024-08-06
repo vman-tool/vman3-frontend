@@ -26,6 +26,14 @@ const routes: Routes = [
             (importation) => importation.RecordsModule
           ),
       },
+      {
+        // PCVA module
+        path: 'dashboard',
+        loadChildren: () =>
+          import('../modules/dashboard/dashboard.module').then(
+            (importation) => importation.DashboardModule
+          ),
+      },
     ],
   },
   {
