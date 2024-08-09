@@ -8,8 +8,8 @@ export const authGuard: CanActivateFn = async (route, state) => {
   const router =  inject(Router)
 
   
-  const current_route = router.url
-  localStorage.setItem('current_route', current_route)
+  const latest_route = router.url
+  localStorage.setItem("latest_route", latest_route)
   
   const authenticated =  await is_authenticated(authService)
   if(!authenticated){

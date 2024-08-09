@@ -38,7 +38,7 @@ export class CsrfInterceptorService {
             return this.authService.refresh_token().pipe(
               switchMap((response) => {
                 this.refreshRequests++
-                localStorage.setItem("Refresh-Response", JSON.stringify(response))
+                console.log("Refresh-Response: ", response)
                 if (response.status === 200) {
                   console.log("refresh called in intercetor and succeeded!",)
                   this.authService.saveUserData(response);
