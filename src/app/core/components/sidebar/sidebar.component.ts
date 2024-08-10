@@ -75,7 +75,7 @@ export class SidebarComponent {
       {
         displayText: 'Settings',
         icon_asset: '../../../../assets/icons/settings.svg',
-        route: '/pcva',
+        route: '/settings',
       },
     ];
   }

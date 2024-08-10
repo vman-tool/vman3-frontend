@@ -3,12 +3,13 @@ import { CoreComponent } from './core.component';
 import { NgModule } from '@angular/core';
 import { LoginComponent } from './components/login/login.component';
 import { authGuard } from '../shared/guards/auth.guard';
+import { SettingsGuard } from '../shared/guards/system-config.guard';
 
 const routes: Routes = [
   {
     path: '',
 
-    canActivate: [authGuard],
+    canActivate: [authGuard, SettingsGuard],
 
     component: CoreComponent,
     children: [
@@ -24,6 +25,7 @@ const routes: Routes = [
           import('../modules/pcva/pcva.module').then(
             (importation) => importation.PcvaModule
           ),
+        canActivate: [SettingsGuard],
       },
       {
         // Records module
@@ -32,6 +34,7 @@ const routes: Routes = [
           import('../modules/records/records.module').then(
             (importation) => importation.RecordsModule
           ),
+        canActivate: [SettingsGuard],
       },
       {
         // Map module
@@ -39,6 +42,15 @@ const routes: Routes = [
         loadChildren: () =>
           import('../modules/maps/maps.module').then(
             (importation) => importation.MapsModule
+          ),
+        canActivate: [SettingsGuard],
+      },
+      {
+        // Map module
+        path: 'settings',
+        loadChildren: () =>
+          import('../modules/settings/settings.module').then(
+            (importation) => importation.SettingsModule
           ),
       },
       {
@@ -48,6 +60,7 @@ const routes: Routes = [
           import('../modules/dashboard/dashboard.module').then(
             (importation) => importation.DashboardModule
           ),
+        canActivate: [SettingsGuard],
       },
     ],
   },
