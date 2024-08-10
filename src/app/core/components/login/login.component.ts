@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { AfterViewInit, Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -15,7 +15,7 @@ import { AuthService } from "../../services/authentication/auth.service";
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, AfterViewInit {
   username?: string;
   password?: string;
   authenticated?: boolean;
@@ -32,7 +32,9 @@ export class LoginComponent implements OnInit {
     AuthEmitters.authEmitter.subscribe((authenticated: boolean) => {
       this.authenticated = authenticated;
     })
-
+  }
+  
+  ngAfterViewInit(){
     this.navigate();
   }
 
@@ -40,7 +42,7 @@ export class LoginComponent implements OnInit {
     const access_expiry_token = localStorage.getItem('access_token_expiry');
     if (access_expiry_token){
       if (new Date().getTime()/1000 < parseFloat(access_expiry_token)){
-        const current_route = localStorage.getItem("current_route") || "/"
+        const current_route = localStorage.getItem("latest_route") || "/"
         const to_route = current_route === '/login' || current_route === 'login' ? '/': current_route
         this.router.navigate([to_route])
       } else {

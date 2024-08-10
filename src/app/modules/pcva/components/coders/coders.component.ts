@@ -23,11 +23,11 @@ export class CodersComponent implements OnInit {
     this.loadingData = true
     this.codersData$ = this.codersService.getCoders(true).pipe(
       map((response) => {
-        // this.loadingData = false
+        this.loadingData = false
        return response;
       }),
       catchError((error: any) => {
-        // this.loadingData = false
+        this.loadingData = false
         return error;
       })
     );
