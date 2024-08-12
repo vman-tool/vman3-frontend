@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, map, mergeMap, of} from 'rxjs';
 import { ErrorEmitters } from '../../emitters/error.emitters';
-import { environment } from '../../../environments/environment';
 import { AuthEmitters } from '../../emitters/auth.emitters';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
