@@ -2,21 +2,20 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
 import { odkConfigModel } from '../interface';
+import { ConfigService } from 'app/app.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConnectionsService {
-  API_URL: string = environment.API_URL;
   private odkApiConfigCache: any = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private configService: ConfigService) {}
 
   saveConnectionData(data: odkConfigModel): Observable<any> {
     return this.http
-      .post<any>(`${this.API_URL}/settings/system_configs`, data)
+      .post<any>(`${this.configService.API_URL}/settings/system_configs`, data)
       .pipe(
         map((response: any) => response),
         tap(() => {
@@ -39,7 +38,7 @@ export class ConnectionsService {
       return of({ data: this.odkApiConfigCache });
     } else {
       return this.http
-        .get<any>(`${this.API_URL}/settings/system_configs`, {})
+        .get<any>(`${this.configService.API_URL}/settings/system_configs`, {})
         .pipe(
           map((response: any) => response),
           tap((response: any) => {

@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 // import { AppRoutingModule } from './app-routing.module';
@@ -14,9 +14,17 @@ import { AppRoutingModule } from './app-routing.module';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { CsrfInterceptorService } from './core/interceptors/csrfinterceptor.service';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { ConfigService } from './app.service';
+import { lastValueFrom, Observable } from 'rxjs';
 // import { CsrfInterceptorService } from './core/interceptors/csrf-interceptor.service';
 
 // import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+export function initializeApp(configService: ConfigService) {
+  return async () => {
+    return await configService.loadConfig();
+  }
+}
 
 @NgModule({
   declarations: [AppComponent],
@@ -27,6 +35,12 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
     AppRoutingModule,
   ],
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeApp,
+      deps: [ConfigService],
+      multi: true
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: CsrfInterceptorService,
@@ -39,3 +53,4 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
   bootstrap: [AppComponent],
 })
 export class AppModule {}
+

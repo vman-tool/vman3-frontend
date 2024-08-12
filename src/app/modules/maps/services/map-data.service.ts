@@ -1,19 +1,21 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { ConfigService } from 'app/app.service';
+import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { ErrorEmitters } from '../../../core/emitters/error.emitters';
-import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MapDataService {
-  API_URL: string = environment.API_URL;
   error?: string;
   success?: boolean;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error;
     });
@@ -41,7 +43,7 @@ export class MapDataService {
       params = params.set('locations', locations.join(','));
     }
 
-    return this.http.get<any>(`${this.API_URL}/records/maps`, { params }).pipe(
+    return this.http.get<any>(`${this.configService.API_URL}/records/maps`, { params }).pipe(
       map((response: any) => response),
       catchError((error: any) => {
         console.log('Error: ', error);

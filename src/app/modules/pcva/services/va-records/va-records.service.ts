@@ -1,15 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../../../../../environments/environment';
+import { ConfigService } from 'app/app.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VaRecordsService {
 
-  API_URL: string = environment.API_URL;
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private configService: ConfigService) { }
 
   getVARecords(paging?: boolean, page_number?: number, limit?: number, include_assignments?: boolean) {
     // TODO: PASS permissions for coders to get filtered coders
@@ -20,10 +18,10 @@ export class VaRecordsService {
     params = params?.length && include_assignments ? params+`&include_assignment=${include_assignments}` : include_assignments ? params+`?include_assignment=${include_assignments}` : params;
 
     
-    return this.http.get(`${this.API_URL}/pcva${params}`);
+    return this.http.get(`${this.configService.API_URL}/pcva${params}`);
   }
   
   assignVARecords(data: any) {
-    return this.http.post(`${this.API_URL}/pcva/assign-va`, data);
+    return this.http.post(`${this.configService.API_URL}/pcva/assign-va`, data);
   }
 }

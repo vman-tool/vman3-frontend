@@ -15,3 +15,14 @@ Run `ng generate component component-name` to generate a new component. You can 
 ## Build
 
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+
+## Configuration
+Set ```config.json``` inside assets folder with value
+
+```
+{
+  "API_URL": "http://backend-url"
+}
+```
+
+So that it runs in development mode.

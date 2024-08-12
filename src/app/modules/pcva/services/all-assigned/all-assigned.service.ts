@@ -1,15 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../../../../../environments/environment';
+import { ConfigService } from 'app/app.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AllAssignedService {
-  API_URL: string  = environment.API_URL
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private configService: ConfigService
   ) { }
 
   getAssignedVARecords(pager?: {paging?: boolean, page_number?: number, limit?: number}, include_deleted?: string, va_id?: string, coder?: any) {
@@ -24,7 +24,7 @@ export class AllAssignedService {
     params = params?.length && coder ? params+`&coder=${coder}` : coder ? params+`?coder=${coder}` : params
 
     
-    return this.http.get(`${this.API_URL}/pcva/va-assignments${params}`);
+    return this.http.get(`${this.configService.API_URL}/pcva/va-assignments${params}`);
   }
   
 }

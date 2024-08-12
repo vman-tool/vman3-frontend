@@ -2,10 +2,10 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, catchError, of } from 'rxjs';
 import { ErrorEmitters } from '../../../../core/emitters/error.emitters';
-import { environment } from '../../../../../environments/environment';
 import * as XLSX from 'xlsx';
 import * as FileSaver from 'file-saver';
 import { SubmissionsDataModel } from '../../interface';
+import { ConfigService } from 'app/app.service';
 const EXCEL_TYPE =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
 const EXCEL_EXTENSION = '.xlsx';
@@ -13,11 +13,13 @@ const EXCEL_EXTENSION = '.xlsx';
   providedIn: 'root',
 })
 export class SubmissionsService {
-  API_URL: string = environment.API_URL;
   error?: string;
   success?: boolean;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error;
     });
@@ -48,7 +50,7 @@ export class SubmissionsService {
     }
     console.log('Loading records');
     return this.http
-      .get<any>(`${this.API_URL}/statistics/submissions`, { params })
+      .get<any>(`${this.configService.API_URL}/statistics/submissions`, { params })
       .pipe(
         map((response: any) => response),
         catchError((error: any) => {
