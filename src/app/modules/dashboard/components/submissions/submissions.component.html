@@ -54,7 +54,7 @@
         </td>
 
         }
-        <tr *ngFor="let record of dataSubmissions; let i = index" class="border-b dark:bg-gray-800 dark:border-gray-700 {{ i % 2 !== 0 ? 'bg-gray-200' : '' }}">
+        <tr *ngFor="let record of dataSubmissions; let i = index" class="border-b text-gray-600 dark:bg-gray-800 dark:border-gray-700 {{ i % 2 !== 0 ? 'bg-gray-200' : '' }}">
           <td class="px-6 py-4">{{ record.region }}</td>
           <td class="px-6 py-4">{{ record.district }}</td>
           <td class="px-6 py-4">{{ record.count }}</td>
