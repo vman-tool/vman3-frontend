@@ -1,0 +1,48 @@
+<div class="max-w-4xl p-8 bg-white rounded-lg ">
+  <span class="mb-6 text-2xl font-semibold">Data Connection Settings</span>
+
+  <!-- ODK API Section -->
+  <div class="my-8">
+    <div class="mb-4 text-xl font-normal">ODK API</div>
+    <hr class="">
+    <div *ngIf="isLoading && odkApiData==null" class="flex items-center justify-center p-4 ">
+      <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+    </div>
+    <div *ngIf="hasOdkApiData; else noOdkApiData">
+      <div class="flex items-center justify-between">
+        <div>
+          <p><strong>Central URL:</strong> {{ odkApiData?.url }}</p>
+          <p><strong>Central Username:</strong> {{ odkApiData?.username }}</p>
+          <p><strong>Form ID:</strong> {{ odkApiData?.form_id }}</p>
+        </div>
+        <button (click)="editOdkApi()"
+          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Edit
+        </button>
+      </div>
+    </div>
+    <ng-template #noOdkApiData>
+      @if(!isLoading){
+      <button (click)="addOdkApi()"
+        class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Add ODK API
+      </button>
+      }
+    </ng-template>
+  </div>
+
+
+  <!-- CSV Upload Section -->
+  <!-- <hr class="my-8">
+  <div class="mb-8">
+    <span class="mb-4 text-xl font-semibold">Upload CSV</span>
+    <app-upload-csv></app-upload-csv>
+  </div> -->
+
+  <!-- Add New User Section -->
+  <!-- <hr class="my-8">
+  <div>
+    <span class="mb-4 text-xl font-semibold">Add new user</span>
+    <app-add-new-user></app-add-new-user>
+  </div> -->
+</div>

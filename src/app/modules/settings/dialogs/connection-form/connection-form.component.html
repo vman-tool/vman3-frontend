@@ -1,0 +1,55 @@
+<div class="p-8 bg-white rounded-lg shadow-md">
+  <span class="mb-4 text-xl font-semibold">ODK API CONFIG</span>
+  <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div>
+      <label class="block text-gray-700">Central URL</label>
+      <input type="text" [(ngModel)]="url"
+        class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+    </div>
+    <div>
+      <label class="block text-gray-700">Central Username</label>
+      <input type="text" [(ngModel)]="username"
+        class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+    </div>
+    <div>
+      <label class="block text-gray-700">Password</label>
+      <input type="text" [(ngModel)]="password"
+        class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+    </div>
+    <div>
+      <label class="block text-gray-700">Form ID</label>
+
+      <input type="text" [(ngModel)]="form_id"
+        class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+
+    </div>
+    <div>
+      <label class="block text-gray-700">Project ID</label>
+
+      <input type="text" [(ngModel)]="project_id"
+        class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+
+    </div>
+    <div>
+      <label class="block text-gray-700">Api version</label>
+
+      <input type="text" [(ngModel)]="api_version"
+        class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+
+    </div>
+  </div>
+  <div class="flex justify-end mt-6 space-x-4">
+    <button (click)="onCancel()" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">Cancel</button>
+    <button (click)="onSave()" class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
+      @if(isLoading){
+
+      <div class="flex items-center justify-center h-full">
+        <div class="w-8 h-8 border-4 border-white rounded-full border-t-transparent animate-spin"></div>
+      </div>
+      } @else{
+      Save
+      }
+
+    </button>
+  </div>
+</div>
