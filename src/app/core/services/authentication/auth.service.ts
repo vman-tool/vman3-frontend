@@ -38,7 +38,7 @@ export class AuthService {
     const formData = new HttpParams()
       .set('username', username)
       .set('password', password);
-    return this.http!.post(`${this.configService.API_URL}/auth/login/`, formData, {headers: headers}).pipe(
+    return this.http!.post(`${this.configService.API_URL}/auth/login/`, formData, {headers: headers, withCredentials: true}).pipe(
       map((response: any) => {
         if(this.success){
           this.saveUserData(response)
