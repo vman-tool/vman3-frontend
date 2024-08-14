@@ -38,7 +38,7 @@ export class AuthService {
     const formData = new HttpParams()
       .set('username', username)
       .set('password', password);
-    return this.http!.post(`${this.configService.API_URL}/auth/login/`, formData, {headers: headers, withCredentials: true}).pipe(
+    return this.http!.post(`${this.configService.API_URL}/auth/login`, formData, {headers: headers, withCredentials: true}).pipe(
       map((response: any) => {
         if(this.success){
           this.saveUserData(response)
@@ -59,7 +59,7 @@ export class AuthService {
     }
     let formData = new FormData();
     formData.append("data", JSON.stringify(data))
-    return this.http!.post(`${this.configService.API_URL}/auth/change-password/`, formData)
+    return this.http!.post(`${this.configService.API_URL}/auth/change-password`, formData)
   }
   
   refresh_token(): Observable<any>{
@@ -70,12 +70,12 @@ export class AuthService {
     });
 
     return this.http!.post(
-      `${this.configService.API_URL}/auth/refresh/`, null, { headers }
+      `${this.configService.API_URL}/auth/refresh`, null, { headers }
     )
   }
 
   get_user(): Observable<any> {
-    return this.http!.get(`${this.configService.API_URL}/users/me/`).pipe(
+    return this.http!.get(`${this.configService.API_URL}/users/me`).pipe(
       mergeMap((response: any) => {
         localStorage.setItem("current_user", JSON.stringify(response))
         return of(response)
