@@ -4,9 +4,14 @@ This project uses Angular v18.1.1.
 
 ## Development server
 
+Run 'git clone https://github.com/vman-tool/vman3-frontend' to copy the project local then,
+
+Run 'cd vman3-frontend ' to change to the project directory,
+
 Run 'npm install' to install dependencies then,
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+
 
 ## Code scaffolding
 
