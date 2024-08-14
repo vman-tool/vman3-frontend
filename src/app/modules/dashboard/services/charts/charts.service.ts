@@ -1,18 +1,20 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, catchError, of } from 'rxjs';
-import { ErrorEmitters } from '../../../../core/emitters/error.emitters';
-import { environment } from '../../../../environments/environment';
+import { ConfigService } from 'app/app.service';
+import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChartsService {
-  API_URL: string = environment.API_URL;
   error?: string;
   success?: boolean;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error;
     });
@@ -41,7 +43,7 @@ export class ChartsService {
     }
     console.log('Loading records');
     return this.http
-      .get<any>(`${this.API_URL}/statistics/charts`, { params })
+      .get<any>(`${this.configService.API_URL}/statistics/charts`, { params })
       .pipe(
         map((response: any) => response),
         catchError((error: any) => {

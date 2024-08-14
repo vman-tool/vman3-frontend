@@ -1,15 +1,13 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { ConfigService } from 'app/app.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CodersService {
 
-  API_URL: string = environment.API_URL;
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private configService: ConfigService) { }
 
   getCoders(paging?: boolean, page?: number, pageSize?: number) {
     // TODO: PASS permissions for coders to get filtered coders
@@ -19,6 +17,6 @@ export class CodersService {
     params = params?.length && pageSize ? params+`&limit=${pageSize}` : pageSize ? params+`?limit=${pageSize}` : params;
 
     
-    return this.http.get(`${this.API_URL}/users${params}`);
+    return this.http.get(`${this.configService.API_URL}/users${params}`);
   }
 }

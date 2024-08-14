@@ -2,9 +2,9 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, map, mergeMap, of} from 'rxjs';
-import { ErrorEmitters } from '../../emitters/error.emitters';
-import { environment } from '../../../environments/environment';
-import { AuthEmitters } from '../../emitters/auth.emitters';
+import { ConfigService } from 'app/app.service';
+import { ErrorEmitters } from 'app/core/emitters/error.emitters';
+import { AuthEmitters } from 'app/core/emitters/auth.emitters';
 
 @Injectable({
   providedIn: 'root'
@@ -12,12 +12,12 @@ import { AuthEmitters } from '../../emitters/auth.emitters';
 export class AuthService {
   error?: string;
   success?: boolean;
-  API_URL: string = environment.API_URL
 
   constructor(
+    private configService: ConfigService,
     private http?: HttpClient,
     private router?: Router,
-  ) { 
+  ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error
     })
@@ -38,8 +38,7 @@ export class AuthService {
     const formData = new HttpParams()
       .set('username', username)
       .set('password', password);
-    
-    return this.http!.post(`${this.API_URL}/auth/login/`, formData, {headers: headers}).pipe(
+    return this.http!.post(`${this.configService.API_URL}/auth/login`, formData, {headers: headers, withCredentials: true}).pipe(
       map((response: any) => {
         if(this.success){
           this.saveUserData(response)
@@ -60,7 +59,7 @@ export class AuthService {
     }
     let formData = new FormData();
     formData.append("data", JSON.stringify(data))
-    return this.http!.post(`${this.API_URL}/auth/change-password/`, formData)
+    return this.http!.post(`${this.configService.API_URL}/auth/change-password`, formData)
   }
   
   refresh_token(): Observable<any>{
@@ -71,12 +70,12 @@ export class AuthService {
     });
 
     return this.http!.post(
-      `${this.API_URL}/auth/refresh/`, null, { headers }
+      `${this.configService.API_URL}/auth/refresh`, null, { headers }
     )
   }
 
   get_user(): Observable<any> {
-    return this.http!.get(`${this.API_URL}/users/me/`).pipe(
+    return this.http!.get(`${this.configService.API_URL}/users/me`).pipe(
       mergeMap((response: any) => {
         localStorage.setItem("current_user", JSON.stringify(response))
         return of(response)

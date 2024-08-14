@@ -65,7 +65,7 @@ export class SidebarComponent {
       {
         displayText: 'Data Map',
         icon_asset: '../../../../assets/icons/data-map.svg',
-        route: '/pcva',
+        route: '/data-map',
       },
       {
         displayText: 'CCVA',
@@ -75,7 +75,7 @@ export class SidebarComponent {
       {
         displayText: 'Settings',
         icon_asset: '../../../../assets/icons/settings.svg',
-        route: '/pcva',
+        route: '/settings',
       },
     ];
   }
