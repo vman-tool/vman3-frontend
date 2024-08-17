@@ -1,24 +1,23 @@
 <div class="grid grid-cols-12 items-stretch mt-3">
-    <div class="col-span-4 ml-[30px] grid grid-cols-12 items-stretch">
-            <div class="col-span-1 mt-3">
-                <span class="text-black text-4xl cursor-pointer" (click)="Openbar($event)">
-                    <i class="ph-list px-2 bg-white rounded-md"></i>
-                </span>
-            </div>
-            
-            <div class="col-span-2 flex items-center rounded-md align-right">
-                <img src="../../../../assets/images/vman-logo.png" alt="VMan3-icon" class="h-12 mb-4" />
-            </div>
+  <div class="col-span-4 ml-[30px] grid grid-cols-12 items-stretch">
+    <div class="col-span-1 mt-3">
+      <span class="text-black text-4xl cursor-pointer" (click)="Openbar($event)">
+        <i class="ph-list px-2 bg-white rounded-md"></i>
+      </span>
     </div>
-    <div class="col-span-8 relative top-[-20px]">
-        <app-header></app-header>
+
+    <div class="col-span-2 flex items-center rounded-md align-right">
+      <img src="../../../../assets/images/vman-logo.png" alt="VMan3-icon" class="h-12 mb-4" />
     </div>
+  </div>
+  <div class="col-span-8 relative top-[-20px]">
+    <app-header></app-header>
+  </div>
 </div>
 
 <div class="relative flex">
-    <app-sidebar *ngIf="sidebarHidden"></app-sidebar>
-    <div class="top-0 {{ sidebarHidden ? 'w-[80%]' : 'ml-[100px] w-[90%]'}}">
-        <router-outlet></router-outlet>
-    </div>
+  <app-sidebar *ngIf="sidebarHidden"></app-sidebar>
+  <div class="top-0 {{ sidebarHidden ? 'w-[80%]' : 'ml-[100px] w-[90%]'}} px-4">
+    <router-outlet></router-outlet>
+  </div>
 </div>
-
