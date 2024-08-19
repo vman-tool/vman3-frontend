@@ -11,15 +11,18 @@ import { flatten, keyBy }  from 'lodash';
 })
 export class AssignVaComponent implements OnInit, AfterViewInit {
   vaRecords$?: Observable<any>
-  page_number?: number;
+  pageNumber?: number = 0;
+  pageSizeOptions = [10, 20, 50, 100]
   limit?: number;
   paging?: boolean;
-  include_assignments?: boolean;
+  include_assignments?: boolean = true;
   coder: any;
   headers: any;
   loadingData: boolean = false;
   selectedVAs: string[] = []
-  assignments: any = [];
+  assignments: any = {};
+  responsestore: any;
+  lastHeader?: string;
   
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -30,23 +33,31 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.loadVARecords();
+  }
+
+  loadVARecords(){
     this.loadingData = true
-    this.vaRecords$ = this.vaRecordsService.getVARecords(this.paging, this.page_number, this.limit, this.include_assignments).pipe(
+    this.vaRecords$ = this.vaRecordsService.getVARecords(this.paging, this.pageNumber, this.limit, this.include_assignments).pipe(
       map((response: any) => {
-        this.headers = Object.keys(response?.data[0])
-        const lastHeader = this.headers[this.headers.length - 1]
-        this.headers = this.headers?.filter((header: string) => header !== lastHeader)
+        if(!this.headers){
+          this.headers = Object.keys(response?.data[0])
+          this.lastHeader = this.headers[this.headers.length - 1]
+          this.headers = this.headers?.filter((header: string) => header !== this.lastHeader)
+        }
+
+        let tempAssignments: any = [];
+
         let responseWithoutAssignments = response?.data?.map((va: any) => {
-          this.assignments = [
-            ...this.assignments,
-            ...va[lastHeader]
-          ]
-          delete va[lastHeader]
+          tempAssignments = [
+            ...tempAssignments,
+            ...va[this.lastHeader!]
+          ] 
           return va
         })
 
         
-        this.assignments = keyBy(flatten(this.assignments?.map((assignment: any) => {
+        this.assignments = keyBy(flatten(tempAssignments?.map((assignment: any) => {
           return {
             vaId: assignment?.vaId,
             coder: assignment?.coder?.uuid
@@ -66,6 +77,7 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
     if (dialogElement) {
       (dialogElement as HTMLElement).style.maxWidth = '80vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
+      (dialogElement as HTMLElement).style.borderRadius = '10px !important';
     }
   }
 
@@ -103,5 +115,11 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
         console.error(error)
       }
     })
+  }
+
+  onPageChange(event: any) {
+    this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
+    this.limit = Number(event?.pageSize);
+    this.loadVARecords();
   }
 }

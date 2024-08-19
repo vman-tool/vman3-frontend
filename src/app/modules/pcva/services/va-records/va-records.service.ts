@@ -13,7 +13,7 @@ export class VaRecordsService {
     // TODO: PASS permissions for coders to get filtered coders
     let params = paging ? `?paging=${paging}`: '';
 
-    params = params?.length && page_number ? params+`&page=${page_number}` : page_number ? params+`?page=${page_number}` : params;
+    params = params?.length && page_number ? params+`&page_number=${page_number}` : page_number ? params+`?page_number=${page_number}` : params;
     params = params?.length && limit ? params+`&limit=${limit}` : limit ? params+`?limit=${limit}` : params;
     params = params?.length && include_assignments ? params+`&include_assignment=${include_assignments}` : include_assignments ? params+`?include_assignment=${include_assignments}` : params;
 
