@@ -10,24 +10,39 @@ import { catchError, map, Observable } from 'rxjs';
 export class AllAssignedComponent implements OnInit {
   assignedVas$?: Observable<any>
   loadingData: boolean = false;
-
+  headers: any;
+  
+  pageNumber?: number = 0;
+  pageSizeOptions = [10, 20, 50, 100]
+  limit?: number;
+  paging?: boolean;
 
   constructor(private allAssignedService: AllAssignedService){}
 
   ngOnInit(): void {
+    this.loadAssignedVas();
+  }
+
+  loadAssignedVas() {
     this.loadingData = true
     const current_user = JSON.parse(localStorage.getItem('current_user') || '{}');
     this.assignedVas$ = this.allAssignedService.getAssignedVARecords(
       {
         paging: true,
-        page_number: 1,
-        limit: 10,
+        page_number: this.pageNumber,
+        limit: this.limit,
       },
       "false",
       undefined,
       current_user?.uuid
     ).pipe(
-      map((response) => {
+      map((response: any) => {
+        if(!this.headers){
+          this.headers = Object.keys(response?.data[0]?.vaId)
+        }
+
+        // TODO: Add total records for pagination to work 
+        
         this.loadingData = false
        return response;
       }),
@@ -36,6 +51,16 @@ export class AllAssignedComponent implements OnInit {
         return error;
       })
     )
+  }
+
+  onPageChange(event: any) {
+    this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
+    this.limit = Number(event?.pageSize);
+    this.loadAssignedVas();
+  }
+
+  onOpenVA(va: any){
+    console.log(va)
   }
 
 }

@@ -28,6 +28,7 @@ export class AuthService {
 
   logout() {
     this.clearLocalStorage();
+    localStorage.setItem("latest_route", this.router!.url)
     this.router!.navigate(['/login']);
   }
 

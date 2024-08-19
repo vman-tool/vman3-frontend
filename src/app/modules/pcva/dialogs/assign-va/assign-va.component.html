@@ -50,7 +50,7 @@
                                 </td>
                             </tr>
                         </ng-container>
-                        <ng-container *ngIf="!params?.vaRecords?.data?.length">
+                        <ng-container *ngIf="!params?.vaRecords?.data?.length && !loadingData">
                             <tr class="bg-gray-200">
                                 <td colspan="5" class="px-5 py-3 text-center text-gray-900">No va record was found</td>
                             </tr>
