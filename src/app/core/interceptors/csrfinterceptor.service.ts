@@ -35,8 +35,10 @@ export class CsrfInterceptorService {
       catchError(async (requestError: HttpErrorResponse) => {
         if (requestError.status === 401 || requestError.status === 403) {
           if(this.refreshRequests < 1){
+
+            localStorage.setItem("latest_route", this.router!.url)
             return this.authService.refresh_token().pipe(
-              switchMap((response) => {
+              map((response) => {
                 this.refreshRequests++
                 console.log("Refresh-Response: ", response)
                 if (response.status === 200) {

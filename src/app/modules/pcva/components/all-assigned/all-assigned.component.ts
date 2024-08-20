@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AllAssignedService } from '../../services/all-assigned/all-assigned.service';
 import { catchError, map, Observable } from 'rxjs';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { ViewVaComponent } from '../../dialogs/view-va/view-va.component';
 
 @Component({
   selector: 'app-all-assigned',
@@ -17,7 +19,7 @@ export class AllAssignedComponent implements OnInit {
   limit?: number;
   paging?: boolean;
 
-  constructor(private allAssignedService: AllAssignedService){}
+  constructor(private allAssignedService: AllAssignedService, public dialog: MatDialog){}
 
   ngOnInit(): void {
     this.loadAssignedVas();
@@ -60,7 +62,14 @@ export class AllAssignedComponent implements OnInit {
   }
 
   onOpenVA(va: any){
-    console.log(va)
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "80vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      va: va
+    }
+    this.dialog.open(ViewVaComponent, dialogConfig)
   }
 
 }

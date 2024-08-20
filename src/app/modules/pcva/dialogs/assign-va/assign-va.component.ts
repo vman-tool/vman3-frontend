@@ -75,9 +75,9 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
     if (dialogElement) {
-      (dialogElement as HTMLElement).style.maxWidth = '80vw';
+      (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
-      (dialogElement as HTMLElement).style.borderRadius = '10px !important';
+      (dialogElement as HTMLElement).style.borderRadius = '5px';
     }
   }
 
