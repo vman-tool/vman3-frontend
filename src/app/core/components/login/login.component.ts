@@ -54,7 +54,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
   onLogin(e: any){
     e.stopPropagation()
     let failed = true;
-    const access_expiry_token = localStorage.getItem('access_token_expiry') || undefined;
     if(this.username && this.password){
       this.authService.login(this.username, this.password).pipe(tap((response) =>{
         this.password = undefined;

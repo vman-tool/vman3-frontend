@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { AuthService } from '../../services/authentication/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,7 +12,7 @@ export class SidebarComponent {
   selectedItem?: number = 0;
   selectedSubMenu: number = 0;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.menuItems = [
@@ -78,6 +79,13 @@ export class SidebarComponent {
         route: '/settings',
       },
     ];
+
+    for(var i = 0; i < this.menuItems.length; i++){
+      if(this.router!.url.includes(this.menuItems[i]?.route)){
+        this.selectedItem = i;
+        break
+      }
+    }
   }
   onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
     this.selectedItem =
