@@ -2,12 +2,15 @@
     vaRecord: vaRecord$ | async
 } as params">
     <div class="mt-4 ml-4">
-        <span class="px-2 text-2xl text-start">ALL ASSIGNED </span>
+        <span class="px-2 text-2xl text-start">VA RECORD </span>
     </div>
-    <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-8 p-4">
+    <div class="grid grid-cols-12">
+        <div class="col-span-8 p-4 h-[650px] overflow-auto">
+            <div class="pt-2 pb-2">
+                <span class="px-2 text-xl text-start">VA Details </span>
+            </div>
             <table class="w-full divide-y divide-gray-200 table-auto">
-                <thead *ngIf="params?.vaRecord?.data?.length">
+                <thead *ngIf="params?.vaRecord?.data?.length && odkQuestions?.length">
                     <tr class="bg-white sticky top-0 z-10">
                         <th>
                            ID 
@@ -21,7 +24,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <ng-container *ngIf="params?.vaRecord?.data && odkQuestions">
+                    <ng-container *ngIf="params?.vaRecord?.data?.length && odkQuestions?.length">
                         
                         <tr *ngFor="let question of odkQuestions; let i = index">
                             @if(params?.vaRecord?.data[0][question?.key] && question?.key !== 'deviceid'){
@@ -48,10 +51,21 @@
                     
                 </tbody>
             </table>
+            @if(!odkQuestions?.length){
+                <table class="table">
+                    <tr class="w-full divide-y divide-gray-200 table-auto">
+                        <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap text-center">Please, load ODK questions to be able to view this ODK</p>
+                        </td>
+                    </tr>
+                </table>
+            }
         </div>
         <div class="col-span-4 p-4">
             <div class="sticky top-0 z-10">
-                4-column content
+                <div class="mt-2 mb-2">
+                    <span class="px-2 text-xl text-start">VA Summary </span>
+                </div>
             </div>
         </div>
     </div>

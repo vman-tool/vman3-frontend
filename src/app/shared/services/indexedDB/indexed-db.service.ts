@@ -43,12 +43,14 @@ export class IndexedDBService {
   }
   
   async addQuestionsAsObject(questions: any) {
-    const db = await this.dbPromise;
-    let item = {
-      key: "questions_object",
-      value: questions
-    };
-    await db.put('odk_questions', item);
+    if(Object.keys(questions).length){
+      const db = await this.dbPromise;
+      let item = {
+        key: "questions_object",
+        value: questions
+      };
+      await db.put('odk_questions', item);
+    }
     return Promise.resolve("Questions as object added successfully to the local database");
   }
 
