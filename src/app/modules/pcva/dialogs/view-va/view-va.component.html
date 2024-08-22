@@ -26,15 +26,15 @@
                 <tbody>
                     <ng-container *ngIf="params?.vaRecord?.data?.length && odkQuestions?.length">
                         
-                        <tr *ngFor="let question of odkQuestions; let i = index">
+                        <tr *ngFor="let question of odkQuestions; let i = index" [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
                             @if(params?.vaRecord?.data[0][question?.key] && question?.key !== 'deviceid'){
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm " [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
+                                <td class="px-5 py-3 border-b border-gray-200 text-sm ">
                                     <p class="text-gray-900 whitespace-no-wrap">{{ question?.key }}</p>
                                 </td>
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm " [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
+                                <td class="px-5 py-3 border-b border-gray-200 text-sm ">
                                     <p class="text-gray-900 whitespace-no-wrap">{{ question?.value?.label }}</p>
                                 </td>
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm " [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
+                                <td class="px-5 py-3 border-b border-gray-200 text-sm ">
                                     @if(question?.value?.options?.length === 0){
                                         <p class="text-gray-900 whitespace-no-wrap">{{ params?.vaRecord?.data[0][question?.key] }}</p>
                                     } @else {
