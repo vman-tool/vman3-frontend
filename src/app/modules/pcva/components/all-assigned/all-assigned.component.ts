@@ -65,6 +65,7 @@ export class AllAssignedComponent implements OnInit {
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
     dialogConfig.width = "80vw";
+    dialogConfig.height = "70vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       va: va

@@ -17,7 +17,7 @@ const routes: Routes = [
       {
         // PCVA All Assigned Component
         path: '',
-        component: PcvaComponent,
+        component: CodersComponent,
       },
       {
         // PCVA All Assigned Component
