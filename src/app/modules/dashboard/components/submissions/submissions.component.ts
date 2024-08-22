@@ -50,7 +50,7 @@ export class SubmissionsComponent {
         this.filterData.locations
       )
       .subscribe(
-        (response: ResponseMainModel) => {
+        (response: ResponseMainModel<any>) => {
           this.dataSubmissions = response.data as [];
           this.totalRecords = response.total;
           this.isLoading = false; // Set loading to false when data is fetched
