@@ -1,41 +1,44 @@
-<div class="sidebar top-0 bottom-0 lg:left-0 left-[-300px] sm:left-[100px] duration-1000
+<div class="sidebar  lg:left-0 left-[-300px] sm:left-[100px] duration-1000
         p-2 w-[300px] text-center bg-white-600 h-screen">
-    <div class="text-black text-xl">
-        <div>
-            <ng-container *ngIf="menuItems">
-                <div *ngFor="let menuItem of menuItems; let i = index">
-                    <div
-                        class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-gray-400 {{ i == selectedItem ? 'bg-gray-400' : ''}}">
-                        <img *ngIf="menuItem?.icon_asset" src="{{ menuItem?.icon_asset }}"
-                            alt="{{menuItem?.displayText}}-icon" class="h-5" />
-                        <i *ngIf="menuItem?.icon" class="{{ menuItem?.icon }}"></i>
-                        <div [routerLink]="menuItem?.route" class="flex justify-between w-full items-center" (click)="onSelectMenu(i)">
-                            <span class="text-[15px] ml-4 text-back">{{ menuItem?.displayText }}</span>
-                            <span class="text-md" id="arrow" *ngIf="menuItem?.subMenuItems?.length">
-                                <i class="ph-caret-down {{ i == selectedItem ? 'rotate-180' : ''}}"></i>
-                            </span>
-                        </div>
-                    </div>
-
-                    <ng-container *ngIf="menuItem?.subMenuItems?.length">
-                        <div
-                            class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? '' : 'hidden'}}">
-                            <p routerLink="{{menuItem?.route + subMenu?.route}}"
-                                class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1 {{ selectedSubMenu === i+(subIndex+1) ? 'text-blue-600' : '' }}"
-                                (click)="onSelectMenu(i, subIndex+1)"
-                                *ngFor="let subMenu of menuItem?.subMenuItems; let subIndex = index;">
-                                <i class="{{subMenu?.icon }}"></i>
-                                {{ subMenu?.displayText }}</p> <br>
-                        </div>
-                    </ng-container>
-                </div>
-            </ng-container>
-            <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[100px]  hover:bg-gray-400"
-                (click)="onLogout()">
-                <i class="ph-sign-out rotate-180"></i>
-                <span class="text-[15px] ml-4 text-back">Logout</span>
+  <div class="text-xl text-black">
+    <div>
+      <ng-container *ngIf="menuItems">
+        <div *ngFor="let menuItem of menuItems; let i = index">
+          <div
+            class="p-2.5 mt-2 flex items-center rounded-md px-4 duration-300 cursor-pointer  hover:bg-gray-200 {{ i == selectedItem ? 'bg-gray-200' : ''}}">
+            <img *ngIf="menuItem?.icon_asset" src="{{ menuItem?.icon_asset }}" alt="{{menuItem?.displayText}}-icon"
+              class="h-5" />
+            <i *ngIf="menuItem?.icon" class="{{ menuItem?.icon }}"></i>
+            <div [routerLink]="menuItem?.route" class="flex items-center justify-between w-full"
+              (click)="onSelectMenu(i)">
+              <span class="text-[15px] ml-4 text-back">{{ menuItem?.displayText }}</span>
+              <span class="text-md" id="arrow" *ngIf="menuItem?.subMenuItems?.length">
+                <i class="ph-caret-down {{ i == selectedItem ? 'rotate-180' : ''}}"></i>
+              </span>
             </div>
+          </div>
 
+          <ng-container *ngIf="menuItem?.subMenuItems?.length">
+            <div
+              class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? '' : 'hidden'}}">
+              <p routerLink="{{menuItem?.route + subMenu?.route}}"
+                class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1 {{ selectedSubMenu === i+(subIndex+1) ? 'text-blue-600' : '' }}"
+                (click)="onSelectMenu(i, subIndex+1)"
+                *ngFor="let subMenu of menuItem?.subMenuItems; let subIndex = index;">
+                <i class="{{subMenu?.icon }}"></i>
+                {{ subMenu?.displayText }}
+              </p> <br>
+            </div>
+          </ng-container>
         </div>
+      </ng-container>
+      <div
+        class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[100px]  hover:bg-gray-400"
+        (click)="onLogout()">
+        <i class="rotate-180 ph-sign-out"></i>
+        <span class="text-[15px] ml-4 text-back">Logout</span>
+      </div>
+
     </div>
+  </div>
 </div>

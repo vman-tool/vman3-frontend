@@ -1,0 +1,173 @@
+<div class="max-w-4xl p-8 bg-white rounded-lg shadow-sm">
+  <span class="mb-6 text-2xl font-semibold">Settings</span>
+  <!-- Tab Navigation -->
+  <div class="border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+      <li class="me-2">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group"
+          (click)="selectedTab = 'system-config'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'system-config',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'system-config'
+         }">
+          <i class="fas fa-cogs me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'system-config',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'system-config'
+           }"></i>
+          <span class="text-lg font-normal">System Configuration</span>
+        </a>
+      </li>
+      <li class="me-2">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group" (click)="selectedTab = 'odk-api'"
+          [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'odk-api',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'odk-api'
+         }">
+          <i class="fas fa-network-wired me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'odk-api',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'odk-api'
+           }"></i>
+          <span class="text-lg font-normal">ODK Api</span>
+        </a>
+      </li>
+      <li class="me-2">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group"
+          (click)="selectedTab = 'field-mapping'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'field-mapping',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'field-mapping'
+         }">
+          <i class="fas fa-table me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'field-mapping',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'field-mapping'
+           }"></i>
+
+          <span class="text-lg font-normal">Field Mapping</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Tab Content -->
+  <div *ngIf="selectedTab === 'system-config'" id="system-config" class="mt-4 tab-content">
+    <!-- System Configuration Section -->
+    <div class="my-8">
+      <!-- <div class="mb-4 text-xl font-normal">System Configuration</div> -->
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+
+      <div *ngIf="isLoading && !odkApiData" class="flex items-center justify-center p-4 ">
+        <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+      </div>
+
+      <div *ngIf="systemConfigData; else NosystemConfigData"
+        class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
+        <div>
+          <p><strong>Application Name:</strong> {{systemConfigData.app_name ||''}}</p>
+          <p><strong>Page Title:</strong> {{ systemConfigData.page_title ||'' }}</p>
+          <p><strong>Page Subtitle:</strong> {{ systemConfigData.page_subtitle || ''
+            }}</p>
+          <p><strong>Admin Level_1:</strong> {{ systemConfigData.admin_level1 || '' }}</p>
+          <p><strong>Admin Level_2:</strong> {{ systemConfigData.admin_level2 || '' }}</p>
+          <p><strong>Admin Level_3:</strong> {{ systemConfigData.admin_level3 || '' }}</p>
+          <p><strong>Admin Level_4:</strong> {{ systemConfigData.admin_level4 || '' }}</p>
+        </div>
+        @if(!isLoading){
+        <button (click)="editForm('system_configs')"
+          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Edit
+        </button>
+        }
+      </div>
+      <ng-template #NosystemConfigData>
+
+        <button *ngIf="!isLoading" (click)="editForm('system_configs')"
+          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Add System Configuration
+        </button>
+
+      </ng-template>
+
+    </div>
+  </div>
+
+  <div *ngIf="selectedTab === 'odk-api'" id="odk-api" class="mt-4 tab-content">
+    <!-- ODK API Section -->
+    <div class="my-8">
+      <!-- <div class="mb-4 text-xl font-normal">ODK api</div>  -->
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <div *ngIf="isLoading && !odkApiData" class="flex items-center justify-center p-4 ">
+        <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+      </div>
+      <div *ngIf="odkApiData; else noOdkApiData">
+        <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
+          <div>
+            <p><strong>Central URL:</strong> {{ odkApiData.url }}</p>
+            <p><strong>Central Username:</strong> {{ odkApiData.username }}</p>
+            <p><strong>Central Password:</strong> {{ odkApiData.password ? '*'.repeat(odkApiData.password.length) : ''
+              }}</p>
+            <p><strong>Form ID:</strong> {{ odkApiData.form_id }}</p>
+            <p><strong>Project Id</strong> {{ odkApiData.project_id }}</p>
+            <p><strong>ApI Version:</strong> {{ odkApiData.api_version }}</p>
+
+          </div>
+          <button (click)="editForm('odk_api_configs')"
+            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Edit
+          </button>
+        </div>
+      </div>
+      <ng-template #noOdkApiData>
+
+        <button (click)="addOdkApi()"
+          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Add ODK API
+        </button>
+      </ng-template>
+    </div>
+  </div>
+
+  <div *ngIf="selectedTab === 'field-mapping'" id="field-mapping" class="mt-4 tab-content">
+    <!-- Field Mapping Section -->
+    <div class="my-8">
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <div *ngIf="isLoading && !fieldMappingData" class="flex items-center justify-center p-4 ">
+        <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+      </div>
+      <div *ngIf="fieldMappingData; else noFieldMappingData">
+        <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
+          <div>
+            <p><strong>Table Name:</strong> {{ fieldMappingData.table_name }}</p>
+            <p><strong>Table Details:</strong> {{ fieldMappingData.table_details }}</p>
+            <p><strong>Instance ID:</strong> {{ fieldMappingData.instance_id }}</p>
+            <p><strong>VA ID:</strong> {{ fieldMappingData.va_id }}</p>
+            <p><strong>Consent ID:</strong> {{ fieldMappingData.consent_id }}</p>
+            <p><strong>Date:</strong> {{ fieldMappingData.date }}</p>
+            <p><strong>Location Level 1:</strong> {{ fieldMappingData.location_level1 }}</p>
+            <p><strong>Location Level 2:</strong> {{ fieldMappingData.location_level2 }}</p>
+            <p><strong>Deceased Gender:</strong> {{ fieldMappingData.deceased_gender }}</p>
+            <p><strong>Is Adult:</strong> {{ fieldMappingData.is_adult }}</p>
+            <p><strong>Is Child:</strong> {{ fieldMappingData.is_child }}</p>
+            <p><strong>Is Neonate:</strong> {{ fieldMappingData.is_neonate }}</p>
+            <p><strong>Interviewer Name:</strong> {{ fieldMappingData.interviewer_name }}</p>
+            <p><strong>Interviewer Phone:</strong> {{ fieldMappingData.interviewer_phone }}</p>
+            <p><strong>Interviewer Sex:</strong> {{ fieldMappingData.interviewer_sex }}</p>
+            <!-- <p><strong>Respondent Gender:</strong> {{ fieldMappingData.respondent_gender }}</p>
+          <p><strong>Respondent Name:</strong> {{ fieldMappingData.respondent_name }}</p>
+          <p><strong>Respondent Phone:</strong> {{ fieldMappingData.respondent_phone }}</p>
+          <p><strong>Respondent Relationship:</strong> {{ fieldMappingData.respondent_relationship }}</p>
+          <p><strong>GPS Coordinates:</strong> {{ fieldMappingData.gps_coordinates }}</p>
+          <p><strong>GPS Accuracy:</strong> {{ fieldMappingData.gps_accuracy }}</p> -->
+          </div>
+          <button *ngIf="!isLoading" (click)="editForm('field_mapping')"
+            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Edit
+          </button>
+        </div>
+      </div>
+      <ng-template #noFieldMappingData>
+        <button *ngIf="!isLoading" (click)="editForm('field_mapping')"
+          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Add Field Mapping
+        </button>
+      </ng-template>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+<div class="p-4 bg-white rounded shadow-md">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
+      <p class="text-lg font-semibold">Progress: {{ progress }}%</p>
+      <p class="text-lg font-semibold">Elapsed Time: {{ elapsedTime | number:'1.0-2' }}s</p>
+    </div>
+    <button class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="manualSync()">
+      Manual Sync
+    </button>
+  </div>
+  <div class="relative pt-1">
+    <div class="flex h-2 mb-4 overflow-hidden text-xs bg-blue-200 rounded">
+      <div [style.width.%]="progress"
+        class="flex flex-col justify-center text-center text-white bg-blue-500 shadow-none whitespace-nowrap">
+      </div>
+    </div>
+  </div>
+</div>

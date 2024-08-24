@@ -1,33 +1,58 @@
 <app-va-filters></app-va-filters>
-<div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+<div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 md:grid-cols-3">
   <!-- Skeleton Loader for Bar Chart -->
   <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
-    <div class="w-64 h-72">
+    <div class="w-full h-60 md:h-72">
     </div>
   </div>
   <!-- Skeleton Loader for Doughnut Chart -->
   <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
-    <div class="w-64 h-72">
+    <div class="w-full h-60 md:h-72">
+    </div>
+  </div>
+  <!-- Skeleton Loader for Polar Area Chart -->
+  <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
+    <div class="w-full h-60 md:h-72">
     </div>
   </div>
 </div>
+
 <ng-template #chartsContent>
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
     <!-- Bar Chart -->
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
-      <span class="mb-4 text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
-      <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
-        [legend]="barChartLegend" [type]="barChartType">
-      </canvas>
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg ">
+      <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
+      <div class="flex justify-center w-full">
+        <div class="w-full h-60 md:h-72">
+
+          <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
+            [legend]="barChartLegend" [type]="barChartType">
+          </canvas>
+        </div>
+      </div>
     </div>
 
     <!-- Doughnut Chart -->
     <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
-      <span class="mb-4 text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span>
+      <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span>
       <div class="flex justify-center w-full">
-        <div class="w-64 h-64">
+        <div class="w-full h-60 md:h-72">
           <canvas baseChart [datasets]="doughnutChartData.datasets" [labels]="doughnutChartData.labels"
             [options]="doughnutChartOptions" [legend]="doughnutChartLegend" [type]="doughnutChartType">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Polar Area Chart -->
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
+      <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Gender Distribution (Polar Area
+        Chart)</span>
+      <div class="flex justify-center w-full">
+        <div class="w-full h-60 md:h-72">
+          <canvas baseChart [data]="polarAreaChartData" [options]="polarAreaChartOptions" [type]="'polarArea'"
+            [legend]="true">
           </canvas>
         </div>
       </div>
@@ -35,4 +60,4 @@
   </div>
 </ng-template>
 
-<app-submissions> </app-submissions>
+<app-submissions></app-submissions>

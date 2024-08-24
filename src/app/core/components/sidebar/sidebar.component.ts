@@ -77,6 +77,26 @@ export class SidebarComponent {
         displayText: 'Settings',
         icon_asset: '../../../../assets/icons/settings.svg',
         route: '/settings',
+        subMenuItems: [
+          {
+            displayText: 'Configurations',
+            icon: 'flaticon-setting', // Replace with the actual Flaticon class for a gear/settings icon
+            icon_asset: '',
+            route: '/configurations',
+          },
+          {
+            displayText: 'Data Synchronization',
+            icon: 'flaticon-target', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon_asset: '',
+            route: '/sync',
+          },
+          {
+            displayText: 'Users',
+            icon: 'flaticon-people', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon_asset: '',
+            route: '/users',
+          },
+        ],
       },
     ];
 

@@ -77,7 +77,7 @@ export class GraphsComponent implements OnInit {
     });
   }
   ngOnInit() {
-    this.loadStatistics();
+    // this.loadStatistics();
   }
 
   public barChartOptions: ChartOptions = {
@@ -157,6 +157,7 @@ export class GraphsComponent implements OnInit {
       )
       .subscribe(
         (data) => {
+          console.log(data);
           this.processBarChartData(data.data.monthly_submissions);
           this.doughnutChartData = {
             ...this.doughnutChartData, // Keep other properties intact
@@ -171,6 +172,21 @@ export class GraphsComponent implements OnInit {
               },
             ],
           };
+          // Process polar area chart data
+          this.polarAreaChartData = {
+            ...this.polarAreaChartData,
+            datasets: [
+              {
+                ...this.polarAreaChartData.datasets[0],
+                data: [
+                  data.data.distribution_by_gender.male || 0,
+                  data.data.distribution_by_gender.female || 0,
+                  data.data.distribution_by_gender.other || 0,
+                ],
+              },
+            ],
+          };
+
           this.isLoading = false; // Set loading to false when data is fetched
           this.cdr.detectChanges(); // Trigger change detection to update the chart
         },
@@ -180,4 +196,46 @@ export class GraphsComponent implements OnInit {
         }
       );
   }
+
+  // Explicitly define the type as 'polarArea'
+  public polarAreaChartType: ChartType = 'polarArea';
+
+  // Data for the Polar Area Chart
+  // Data for the Polar Area Chart
+  public polarAreaChartData: ChartData<'polarArea'> = {
+    labels: ['Male', 'Female', 'Other'], // Labels for the chart segments
+    datasets: [
+      {
+        data: [0, 0, 0], // Initial empty data
+        backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'], // Segment colors
+        borderColor: ['#36A2EB', '#FF6384', '#FFCE56'], // Border colors
+        borderWidth: 1, // Border width for segments
+      },
+    ],
+  };
+
+  // Polar Area Chart options
+  public polarAreaChartOptions: ChartOptions<'polarArea'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        beginAtZero: true,
+        ticks: {
+          callback: (tickValue: number | string) => {
+            if (typeof tickValue === 'number') {
+              return `${tickValue}%`; // Append percentage sign if it's a number
+            }
+            return tickValue; // Return as-is if it's not a number (e.g., a string)
+          },
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+      },
+    },
+  };
 }
