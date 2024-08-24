@@ -28,6 +28,16 @@ export class SidebarComponent {
         route: '/records',
       },
       {
+        displayText: 'Data Quality',
+        icon_asset: '../../../../assets/icons/data.svg',
+        route: '/data-quality',
+      },
+      {
+        displayText: 'Data Map',
+        icon_asset: '../../../../assets/icons/data-map.svg',
+        route: '/data-map',
+      },
+      {
         displayText: 'PCVA',
         icon_asset: '../../../../assets/icons/pcva.svg',
         route: '/pcva',
@@ -57,16 +67,6 @@ export class SidebarComponent {
             route: '/discordants',
           },
         ],
-      },
-      {
-        displayText: 'Data Quality',
-        icon_asset: '../../../../assets/icons/data.svg',
-        route: '/data-quality',
-      },
-      {
-        displayText: 'Data Map',
-        icon_asset: '../../../../assets/icons/data-map.svg',
-        route: '/data-map',
       },
       {
         displayText: 'CCVA',

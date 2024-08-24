@@ -62,6 +62,14 @@ const routes: Routes = [
           ),
         canActivate: [SettingsGuard],
       },
+      {
+        // dashboard module
+        path: 'ccva',
+        loadChildren: () =>
+          import('../modules/ccva/ccva.module').then(
+            (importation) => importation.CcvaModule
+          )
+      },
     ],
   },
   {

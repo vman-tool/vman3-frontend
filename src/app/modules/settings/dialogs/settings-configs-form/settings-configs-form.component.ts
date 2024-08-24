@@ -87,32 +87,28 @@ export class SettingsConfigsFormComponent implements OnInit {
   }
 
   loadDropdownData(): void {
-    this.settingsConfigService.getTables().subscribe(
-      (tables: string[]) => {
-        this.tables = tables;
-      },
-      (error) => {
-        console.error('Error loading tables:', error);
-      }
-    );
+    // this.settingsConfigService.getTables().subscribe(
+    //   (tables: string[]) => {
+    //     this.tables = tables;
+    //   },
+    //   (error) => {
+    //     console.error('Error loading tables:', error);
+    //   }
+    // );
 
-    this.settingsConfigService.getFields().subscribe(
-      (fields: string[]) => {
-        this.fields = fields;
-      },
-      (error) => {
-        console.error('Error loading fields:', error);
-      }
-    );
+    // this.settingsConfigService.getFields().subscribe(
+    //   (fields: string[]) => {
+    //     this.fields = fields;
+    //   },
+    //   (error) => {
+    //     console.error('Error loading fields:', error);
+    //   }
+    // );
   }
 
   loadConfigData(): void {
     this.settingsConfigService.getSettingsConfig().subscribe((config) => {
-      if (config !== null) {
-        this.systemConfigForm.patchValue(config.system_configs || {});
-        this.fieldMappingForm.patchValue(config.field_mapping || {});
-        this.odkApiConfigForm.patchValue(config.odk_api_configs || {});
-      } else {
+      if (!config) {
         this.snackBar.open(
           'Default settings are loaded , please edit to match the correct settings, or save to use the default settings',
           'Close',
@@ -120,8 +116,9 @@ export class SettingsConfigsFormComponent implements OnInit {
             duration: 3000,
           }
         );
-
-        if (config!.field_mapping === null) {
+      } else {
+        
+        if (!Object.keys(config!?.field_mapping).length) {
           const fieldMappingPayload: FieldMapping = {
             table_name: 'table_name',
             table_details: 'table details',
@@ -146,8 +143,11 @@ export class SettingsConfigsFormComponent implements OnInit {
             intv_gps_acc: 'accuracy',
           };
           this.fieldMappingForm.patchValue(fieldMappingPayload || {});
+        } else {
+          this.fieldMappingForm.patchValue(config?.field_mapping);
         }
-        if (config!.system_configs === null) {
+
+        if (!Object.keys(config!?.system_configs).length) {
           const systemConfig: SystemConfig = {
             app_name: 'VMan33',
             page_title: 'The United Republic of Tanzania',
@@ -159,8 +159,11 @@ export class SettingsConfigsFormComponent implements OnInit {
             map_center: '[-6.3, 34.8]',
           };
           this.systemConfigForm.patchValue(systemConfig || {});
+        } else {
+          this.systemConfigForm.patchValue(config?.system_configs);
         }
-        if (config!.odk_api_configs === null) {
+
+        if (!Object.keys(config!?.odk_api_configs).length) {
           const odkConfigPayload: OdkConfigModel = {
             url: 'https://central.iact.co.tz',
             username: 'admin@vman.net',
@@ -170,6 +173,8 @@ export class SettingsConfigsFormComponent implements OnInit {
             api_version: 'v1',
           };
           this.odkApiConfigForm.patchValue(odkConfigPayload || {});
+        } else {
+          this.odkApiConfigForm.patchValue(config?.odk_api_configs || {});
         }
       }
     });
@@ -180,7 +185,8 @@ export class SettingsConfigsFormComponent implements OnInit {
       this.settingsConfigService
         .saveConnectionData('system_configs', this.systemConfigForm.value)
         .subscribe(
-          (response) => {
+          {
+            next: (response) => {
             this.snackBar.open(
               'System configuration saved successfully',
               'Close',
@@ -190,10 +196,11 @@ export class SettingsConfigsFormComponent implements OnInit {
             );
             this.dialogRef.close(true);
           },
-          (error) => {
+          error: (error) => {
             this.snackBar.open('Failed to save system configuration', 'Close', {
               duration: 3000,
             });
+          }
           }
         );
     } else {

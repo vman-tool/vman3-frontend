@@ -26,13 +26,13 @@ export class SettingsGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    if (state.url === '/settings') {
+    if (state.url.includes('/settings')) {
       return of(true); // Allow access to /settings without checking the config
     }
 
     return this.settingsConfigsService.getSettingsConfig(true).pipe(
       map((config: settingsConfigData | null) => {
-        if (config && config.odk_api_configs) {
+        if (config && Object.keys(config.odk_api_configs).length && Object.keys(config.odk_api_configs).length && Object.keys(config.field_mapping).length) {
           return true;
         } else {
           this.snackBar.open(
