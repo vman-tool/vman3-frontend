@@ -16,21 +16,21 @@
     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="px-6 py-3">Region</th>
-          <th scope="col" class="px-6 py-3">District</th>
-          <th scope="col" class="px-6 py-3">Count</th>
-          <th scope="col" class="px-6 py-3">Last Submission</th>
-          <th scope="col" class="px-6 py-3">Adults</th>
-          <th scope="col" class="px-6 py-3">Children</th>
-          <th scope="col" class="px-6 py-3">Neonates</th>
-          <th scope="col" class="px-6 py-3">Male</th>
-          <th scope="col" class="px-6 py-3">Female</th>
+          <th scope="col" class="w-2/12 px-6 py-4">Region</th>
+          <th scope="col" class="w-2/12 px-6 py-4">District</th>
+          <th scope="col" class="w-1/12 px-6 py-4">Count</th>
+          <th scope="col" class="w-2/12 px-6 py-4">Last Submission</th>
+          <th scope="col" class="w-1/12 px-6 py-4">Adults</th>
+          <th scope="col" class="w-1/12 px-6 py-4">Children</th>
+          <th scope="col" class="w-1/12 px-6 py-4">Neonates</th>
+          <th scope="col" class="w-1/12 px-6 py-4">Male</th>
+          <th scope="col" class="w-1/12 px-6 py-4">Female</th>
         </tr>
       </thead>
     </table>
 
     <!-- Table Body with Scroll -->
-    <div class="overflow-y-auto h-[25vh]"> <!-- Adjust height as needed -->
+    <div class="overflow-y-auto h-[25vh]">
       <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <tbody>
           <!-- Display this if no records are found -->
@@ -40,7 +40,7 @@
           </tr>
           <!-- Display this while loading -->
           <tr *ngIf="isLoading">
-            <td colspan="9" class="py-6 text-center bg-gray-200 animate-pulse">
+            <td colspan="9" class="h-full py-6 text-center bg-gray-200 animate-pulse">
               <div class="flex items-center justify-center h-full">
                 <!-- Loading Spinner -->
               </div>
@@ -48,16 +48,16 @@
           </tr>
           <!-- Display records -->
           <tr *ngFor="let record of dataSubmissions; let i = index"
-            class="border-b text-gray-600 dark:bg-gray-800 dark:border-gray-700 {{ i % 2 !== 0 ? 'bg-gray-200' : '' }}">
-            <td class="px-6 py-4">{{ record.region }}</td>
-            <td class="px-6 py-4">{{ record.district }}</td>
-            <td class="px-6 py-4">{{ record.count }}</td>
-            <td class="px-6 py-4">{{ record.lastSubmission }}</td>
-            <td class="px-6 py-4">{{ record.adults }}</td>
-            <td class="px-6 py-4">{{ record.children }}</td>
-            <td class="px-6 py-4">{{ record.neonates }}</td>
-            <td class="px-6 py-4">{{ record.male }}</td>
-            <td class="px-6 py-4">{{ record.female }}</td>
+            class="border-b text-left text-gray-600 dark:bg-gray-800 dark:border-gray-700 {{ i % 2 !== 0 ? 'bg-gray-200' : '' }}">
+            <td class="w-2/12 px-6 py-4 text-left">{{ record.region }}</td>
+            <td class="w-2/12 px-6 py-4 text-left">{{ record.district }}</td>
+            <td class="w-1/12 px-6 py-4 text-left">{{ record.count }}</td>
+            <td class="w-2/12 px-6 py-4 text-left">{{ record.lastSubmission }}</td>
+            <td class="w-1/12 px-6 py-4 text-left">{{ record.adults }}</td>
+            <td class="w-1/12 px-6 py-4 text-left">{{ record.children }}</td>
+            <td class="w-1/12 px-6 py-4 text-left">{{ record.neonates }}</td>
+            <td class="w-1/12 px-6 py-4 text-left">{{ record.male }}</td>
+            <td class="w-1/12 px-6 py-4 text-left">{{ record.female }}</td>
           </tr>
         </tbody>
       </table>
@@ -67,15 +67,15 @@
     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
       <tfoot class="text-xs font-semibold text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <td class="px-6 py-3">Total</td>
-          <td class="px-6 py-3"></td>
-          <td class="px-6 py-3">{{ getTotalCount() }}</td>
-          <td class="px-6 py-3"></td>
-          <td class="px-6 py-3">{{ getTotalAdults() }}</td>
-          <td class="px-6 py-3">{{ getTotalChildren() }}</td>
-          <td class="px-6 py-3">{{ getTotalNeonates() }}</td>
-          <td class="px-6 py-3">{{ getTotalMale() }}</td>
-          <td class="px-6 py-3">{{ getTotalFemale() }}</td>
+          <td class="w-2/12 px-6 py-4 text-left">Total</td>
+          <td class="w-2/12 px-6 py-4 text-left"></td>
+          <td class="w-1/12 px-6 py-4 text-left">{{ getTotalCount() }}</td>
+          <td class="w-2/12 px-6 py-4 text-left"></td>
+          <td class="w-1/12 px-6 py-4 text-left">{{ getTotalAdults() }}</td>
+          <td class="w-1/12 px-6 py-4 text-left">{{ getTotalChildren() }}</td>
+          <td class="w-1/12 px-6 py-4 text-left">{{ getTotalNeonates() }}</td>
+          <td class="w-1/12 px-6 py-4 text-left">{{ getTotalMale() }}</td>
+          <td class="w-1/12 px-6 py-4 text-left">{{ getTotalFemale() }}</td>
         </tr>
       </tfoot>
     </table>
