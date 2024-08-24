@@ -9,13 +9,15 @@ export class VaRecordsService {
 
   constructor(private http: HttpClient, private configService: ConfigService) { }
 
-  getVARecords(paging?: boolean, page_number?: number, limit?: number, include_assignments?: boolean) {
+  getVARecords(paging?: boolean, page_number?: number, limit?: number, include_assignments?: boolean, format_records: boolean = true, va_id?: string) {
     // TODO: PASS permissions for coders to get filtered coders
     let params = paging ? `?paging=${paging}`: '';
 
-    params = params?.length && page_number ? params+`&page=${page_number}` : page_number ? params+`?page=${page_number}` : params;
+    params = params?.length && page_number ? params+`&page_number=${page_number}` : page_number ? params+`?page_number=${page_number}` : params;
     params = params?.length && limit ? params+`&limit=${limit}` : limit ? params+`?limit=${limit}` : params;
     params = params?.length && include_assignments ? params+`&include_assignment=${include_assignments}` : include_assignments ? params+`?include_assignment=${include_assignments}` : params;
+    params = params?.length && va_id ? params+`&va_id=${va_id}` : va_id ? params+`?va_id=${va_id}` : params;
+    params = params?.length ? params+`&format_records=${format_records}` : params+`?format_records=${format_records}`;
 
     
     return this.http.get(`${this.configService.API_URL}/pcva${params}`);
@@ -23,5 +25,10 @@ export class VaRecordsService {
   
   assignVARecords(data: any) {
     return this.http.post(`${this.configService.API_URL}/pcva/assign-va`, data);
+  }
+
+  getQuestions(va_questions_ids?: string[]){
+    const params = va_questions_ids?.length ? `?questions_keys=${va_questions_ids.join(',')}` : ""
+    return this.http.get(`${this.configService.API_URL}/pcva/form_questions${params}`);
   }
 }
