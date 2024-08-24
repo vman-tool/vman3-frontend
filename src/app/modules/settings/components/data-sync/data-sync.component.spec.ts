@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ConnectionsComponent } from './connections.component';
+import { DataSyncComponent } from './data-sync.component';
 
-describe('ConnectionsComponent', () => {
-  let component: ConnectionsComponent;
-  let fixture: ComponentFixture<ConnectionsComponent>;
+describe('DataSyncComponent', () => {
+  let component: DataSyncComponent;
+  let fixture: ComponentFixture<DataSyncComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConnectionsComponent]
+      imports: [DataSyncComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ConnectionsComponent);
+    fixture = TestBed.createComponent(DataSyncComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

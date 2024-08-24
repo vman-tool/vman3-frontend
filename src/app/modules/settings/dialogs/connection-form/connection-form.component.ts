@@ -1,4 +1,5 @@
-import { ConnectionsService } from './../../services/connections.service';
+import { SettingConfigService } from '../../services/settings_configs.service';
+
 import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -7,8 +8,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-connection-form',
-  standalone: true,
-  imports: [FormsModule, MatProgressSpinnerModule],
+  // standalone: true,
+  // imports: [FormsModule, MatProgressSpinnerModule],
   templateUrl: './connection-form.component.html',
   styleUrl: './connection-form.component.scss',
 })
@@ -23,7 +24,7 @@ export class ConnectionFormComponent {
   constructor(
     public dialogRef: MatDialogRef<ConnectionFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private connectionsService: ConnectionsService,
+    private settingConfigService: SettingConfigService,
     private snackBar: MatSnackBar
   ) {
     this.url = data?.url || '';
@@ -56,8 +57,8 @@ export class ConnectionFormComponent {
     }
 
     this.isLoading = true;
-    this.connectionsService
-      .saveConnectionData({
+    this.settingConfigService
+      .saveConnectionData('odk_api_configs', {
         url: this.url,
         username: this.username,
         password: this.password,
