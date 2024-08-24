@@ -3,6 +3,7 @@ import { AllAssignedService } from '../../services/all-assigned/all-assigned.ser
 import { catchError, map, Observable } from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ViewVaComponent } from '../../dialogs/view-va/view-va.component';
+import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
 
 @Component({
   selector: 'app-all-assigned',
@@ -71,6 +72,18 @@ export class AllAssignedComponent implements OnInit {
       va: va
     }
     this.dialog.open(ViewVaComponent, dialogConfig)
+  }
+  
+  onCodeVA(va: any){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "80vw";
+    dialogConfig.height = "70vh";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      va: va
+    }
+    this.dialog.open(CodeVaComponent, dialogConfig)
   }
 
 }

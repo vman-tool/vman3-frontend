@@ -61,7 +61,7 @@ export class SidebarComponent {
       {
         displayText: 'Data Quality',
         icon_asset: '../../../../assets/icons/data.svg',
-        route: '/pcva',
+        route: '/data-quality',
       },
       {
         displayText: 'Data Map',
@@ -71,7 +71,7 @@ export class SidebarComponent {
       {
         displayText: 'CCVA',
         icon_asset: '../../../../assets/icons/ccva.svg',
-        route: '/pcva',
+        route: '/ccva',
       },
       {
         displayText: 'Settings',
@@ -83,7 +83,18 @@ export class SidebarComponent {
     for(var i = 0; i < this.menuItems.length; i++){
       if(this.router!.url.includes(this.menuItems[i]?.route)){
         this.selectedItem = i;
-        break
+        
+        if(this.menuItems[i].subMenuItems?.length){
+          for(var j = 1; j < this.menuItems[i]?.subMenuItems?.length; j++){
+            if(this.router!.url.includes(this.menuItems[i].subMenuItems[j]?.route)){
+              this.selectedSubMenu = i+(j+1);
+              break;
+            }
+            if(!this.selectedSubMenu){
+              this.selectedSubMenu = i+1;
+            }
+          }
+        }
       }
     }
   }
@@ -94,7 +105,7 @@ export class SidebarComponent {
     if (subMenuIndex) {
       this.selectedSubMenu = menuIndex + subMenuIndex;
     } else {
-      this.selectedSubMenu = 0;
+      this.selectedSubMenu = menuIndex + 1;
     }
   }
 
