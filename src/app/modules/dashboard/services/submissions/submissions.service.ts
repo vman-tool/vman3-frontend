@@ -48,7 +48,6 @@ export class SubmissionsService {
     if (locations && locations.length > 0) {
       params = params.set('locations', locations.join(','));
     }
-    console.log('Loading records');
     return this.http
       .get<any>(`${this.configService.API_URL}/statistics/submissions`, { params })
       .pipe(

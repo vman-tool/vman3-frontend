@@ -1,13 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-
-
-::ng-deep .cdk-overlay-pane.mat-mdc-dialog-panel {
-    max-width: 80vw;
-    /* or any other value you need */
-    min-width: 0;
-    /* or adjust as needed */
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }

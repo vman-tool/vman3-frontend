@@ -16,14 +16,19 @@ import { CsrfInterceptorService } from './core/interceptors/csrfinterceptor.serv
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ConfigService } from './app.service';
 import { lastValueFrom, Observable } from 'rxjs';
+import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
 // import { CsrfInterceptorService } from './core/interceptors/csrf-interceptor.service';
 
 // import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+// const config: SocketIoConfig = {
+//   url: 'http://localhost:8080/vman/api/v1',
+//   options: {},
+// };
 
 export function initializeApp(configService: ConfigService) {
   return async () => {
     return await configService.loadConfig();
-  }
+  };
 }
 
 @NgModule({
@@ -33,13 +38,14 @@ export function initializeApp(configService: ConfigService) {
     BrowserAnimationsModule,
     CommonModule,
     AppRoutingModule,
+    // SocketIoModule.forRoot(config),
   ],
   providers: [
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,
       deps: [ConfigService],
-      multi: true
+      multi: true,
     },
     {
       provide: HTTP_INTERCEPTORS,
@@ -53,4 +59,3 @@ export function initializeApp(configService: ConfigService) {
   bootstrap: [AppComponent],
 })
 export class AppModule {}
-

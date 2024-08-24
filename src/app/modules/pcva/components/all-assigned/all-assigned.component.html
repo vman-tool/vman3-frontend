@@ -9,68 +9,46 @@
       <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
       </mat-progress-bar>
     </div>
-    <div class="overflow-x-auto">
+    <div class="overflow-x-none">
       <div class="w-full overflow-hidden">
-        <table class="w-full divide-y divide-gray-200 table-auto" *ngIf="params?.assignedVas">
-          <thead *ngIf="params?.assignedVas?.data?.length">
-            <tr>
-              <th
-                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Name
-              </th>
-              <th
-                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Email
-              </th>
-              <th
-                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Location
-              </th>
-              <th
-                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Phone
-              </th>
-              <th
-                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <ng-container *ngIf="params?.assignedVas?.data?.length">
-              <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }" *ngFor="let coder of params?.assignedVas?.data; let i = index">
-                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ coder?.name }}</p>
-                </td>
-                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ coder?.email }}</p>
-                </td>
-                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ coder?.location ? coder?.location :
-                    "-" }}</p>
-                </td>
-                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ coder?.phone ? coder?.phone : "-" }}
-                  </p>
-                </td>
-                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                  <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-user-plus-bold"></i></a>
-                </td>
+        <div class="overflow-y-auto">
+          <table class="w-full divide-y divide-gray-200 table-auto">
+            <thead *ngIf="params?.assignedVas?.data?.length">
+              <tr class="bg-white sticky top-0 z-10">
+                <th *ngFor="let header of headers;"
+                  class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {{ header }}
+                </th>
+                <th
+                  class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Action
+                </th>
               </tr>
-            </ng-container>
-            <ng-container *ngIf="!params?.assignedVas?.data?.length">
-              <tr class="bg-gray-200">
-                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No coder was found</td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
-        <div class="flex flex-col px-5 py-2 bg-white border-t xs:flex-row" *ngIf="params?.assignedVas?.data?.length">
-          <mat-paginator [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
+            </thead>
+            <tbody>
+              <ng-container *ngIf="params?.assignedVas?.data?.length">
+                <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }" *ngFor="let va of params?.assignedVas?.data; let i = index">
+                  <td class="px-5 py-3 border-b border-gray-200 text-sm" *ngFor="let header of headers;">
+                    <p class="text-gray-900 whitespace-no-wrap">{{ va?.vaId[header] }}</p>
+                  </td>
+                  <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                    <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer" (click)="onOpenVA(va?.vaId)"><i class="ph-eye"></i></a>
+                    <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer ml-2" (click)="onCodeVA(va?.vaId)"><i class="flaticon-stethoscope"></i></a>
+                  </td>
+                </tr>
+              </ng-container>
+              <ng-container *ngIf="!params?.assignedVas?.data?.length && !loadingData">
+                <tr class="bg-gray-200">
+                  <td colspan="5" class="px-5 py-3 text-center text-gray-900">No va record was found</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
         </div>
-      </div>
-      <div *ngIf="!params?.assignedVas && !loadingData">
-        <p>Could not get assignments.</p>
+        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.assignedVas?.total > 0">
+          <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="params?.assignedVas?.total"
+            [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
+        </div>
       </div>
     </div>
   </div>

@@ -9,6 +9,8 @@ import { CodedVaComponent } from './components/coded-va/coded-va.component';
 import { DiscordantsVaComponent } from './components/discordants-va/discordants-va.component';
 import { CodersComponent } from './components/coders/coders.component';
 import { AssignVaComponent } from './dialogs/assign-va/assign-va.component';
+import { ViewVaComponent } from './dialogs/view-va/view-va.component';
+import { CodeVaComponent } from './dialogs/code-va/code-va.component';
 
 
 
@@ -19,7 +21,9 @@ import { AssignVaComponent } from './dialogs/assign-va/assign-va.component';
     CodedVaComponent,
     DiscordantsVaComponent,
     CodersComponent,
-    AssignVaComponent
+    AssignVaComponent,
+    ViewVaComponent,
+    CodeVaComponent
   ],
   imports: [
     CommonModule,

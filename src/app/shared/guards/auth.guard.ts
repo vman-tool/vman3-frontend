@@ -6,10 +6,6 @@ import { AuthService } from '../../core/services/authentication/auth.service';
 export const authGuard: CanActivateFn = async (route, state) => {
   const authService = inject(AuthService);
   const router =  inject(Router)
-
-  
-  const latest_route = router.url
-  localStorage.setItem("latest_route", latest_route)
   
   const authenticated =  await is_authenticated(authService)
   if(!authenticated){

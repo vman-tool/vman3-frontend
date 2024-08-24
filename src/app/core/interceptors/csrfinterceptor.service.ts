@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { from, lastValueFrom, Observable, of, throwError } from 'rxjs';
 import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
 import { MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { AuthService } from '../services/authentication/auth.service';
@@ -25,10 +25,26 @@ export class CsrfInterceptorService {
   refresh: boolean = true;
   refreshRequests: number = 0;
 
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+
+  
+  intercept(request: HttpRequest<any>, next: HttpHandler) {
     const now = new Date().getTime() / 1000;
     const access_token_expiry = localStorage.getItem('access_token_expiry');
+    
+    localStorage.setItem("latest_route", this.router!.url)
 
+    //TODO: Old interceptor logic
+    // if (access_token_expiry && now > (Number(access_token_expiry))) {
+    //   lastValueFrom(this.authService.refresh_token()).then((response: any) => {
+    //     console.log("This refresher one is called: ",response)
+    //     if (response?.access_token && response.refresh_token) {
+    //         this.authService.saveUserData(response);
+    //     } else {
+    //         this.authService.logout()
+    //     }
+    //   })
+    // }
+    
     let modifiedRequest = this.addHeaders(request);
 
     return next.handle(modifiedRequest).pipe(
@@ -36,13 +52,13 @@ export class CsrfInterceptorService {
         if (requestError.status === 401 || requestError.status === 403) {
           if(this.refreshRequests < 1){
             return this.authService.refresh_token().pipe(
-              switchMap((response) => {
+              map((response) => {
                 this.refreshRequests++
                 console.log("Refresh-Response: ", response)
                 if (response.status === 200) {
                   console.log("refresh called in intercetor and succeeded!",)
                   this.authService.saveUserData(response);
-                  modifiedRequest = this.addHeaders(request); // Update the headers with the new token
+                  modifiedRequest = this.addHeaders(request);
                   return next.handle(modifiedRequest);
                 } else {
                   console.log("refresh called in intercetor and failed!")
@@ -51,7 +67,6 @@ export class CsrfInterceptorService {
                 }
               }),
               catchError((error) => {
-                this.refreshRequests++
                 this.authService.logout();
                 return throwError(() => error);
               })
@@ -71,6 +86,7 @@ export class CsrfInterceptorService {
       })
     );
   }
+
 
   addHeaders(request: HttpRequest<any>): HttpRequest<any> {
     const access_token = localStorage.getItem('access_token');
