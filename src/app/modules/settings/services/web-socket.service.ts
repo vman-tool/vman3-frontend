@@ -1,70 +1,50 @@
-// import { Injectable } from '@angular/core';
-// import { Socket } from 'ngx-socket-io';
-// import { Observable, Subject } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
 
-// @Injectable({
-//   providedIn: 'root',
-// })
-// export class WebsocketService {
-//   private reconnectInterval = 3000; // 3 seconds
-//   private reconnectAttempts = 10;
-//   private connectionStatus$: Subject<boolean> = new Subject<boolean>();
+@Injectable({
+  providedIn: 'root',
+})
+export class WebSockettService {
+  private socket: WebSocket | undefined;
+  private messageSubject: Subject<string> = new Subject<string>();
 
-//   constructor(private socket: Socket) {}
+  connect(url: string): void {
+    this.socket = new WebSocket(url);
 
-//   public connect(authToken: string) {
-//     // Pass the authentication token during the WebSocket handshake
-//     // this.socket.ioSocket.opts.query = {};
-//     this.socket.connect();
-//     this.registerEventHandlers();
-//   }
+    this.socket.onopen = (event) => {
+      console.log('WebSocket connection opened:', event);
+    };
 
-//   public disconnect() {
-//     this.socket.disconnect();
-//     this.connectionStatus$.next(false);
-//   }
+    this.socket.onmessage = (event) => {
+      console.log('Message from server:', typeof event.data);
+      this.messageSubject.next(event.data); // Emit the received message to subscribers
+    };
 
-//   public sendMessage(message: string) {
-//     this.socket.emit('message', message);
-//   }
+    this.socket.onerror = (event) => {
+      console.error('WebSocket error:', event);
+    };
 
-//   public onMessage(): Observable<string> {
-//     return this.socket.fromEvent('message');
-//   }
+    this.socket.onclose = (event) => {
+      console.log('WebSocket connection closed:', event);
+    };
+  }
 
-//   public onConnectionStatus(): Observable<boolean> {
-//     return this.connectionStatus$.asObservable();
-//   }
+  // Expose the message observable so components can subscribe to it
+  get messages(): Observable<string> {
+    return this.messageSubject.asObservable();
+  }
 
-//   private registerEventHandlers() {
-//     this.socket.on('connect', () => {
-//       this.connectionStatus$.next(true);
-//     });
+  sendMessage(message: string): void {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(message);
+    } else {
+      console.error('WebSocket connection is not open. Cannot send message.');
+    }
+  }
 
-//     this.socket.on('disconnect', () => {
-//       this.connectionStatus$.next(false);
-//       this.attemptReconnect();
-//     });
-
-//     this.socket.on('connect_error', (error: any) => {
-//       console.error('WebSocket connection error:', error);
-//     });
-//   }
-
-//   private attemptReconnect() {
-//     let attempts = 0;
-//     const reconnectIntervalId = setInterval(() => {
-//       if (attempts >= this.reconnectAttempts) {
-//         clearInterval(reconnectIntervalId);
-//         console.error('WebSocket reconnection attempts exhausted.');
-//       } else {
-//         attempts++;
-//         this.socket.connect();
-//         // if (this.socket.connected) {
-//         // clearInterval(reconnectIntervalId);
-//         // this.connectionStatus$.next(true);
-//         // }
-//       }
-//     }, this.reconnectInterval);
-//   }
-// }
+  disconnect(): void {
+    if (this.socket) {
+      this.socket.close();
+    }
+  }
+}

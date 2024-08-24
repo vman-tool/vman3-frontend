@@ -2,7 +2,7 @@
 import { DataSyncService } from './../../services/data_sync.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { catchError, retry, Subscription, throwError } from 'rxjs';
-import { WebSockettService } from '../../services/t';
+import { WebSockettService } from '../../services/web-socket.service';
 
 @Component({
   selector: 'app-data-sync',
