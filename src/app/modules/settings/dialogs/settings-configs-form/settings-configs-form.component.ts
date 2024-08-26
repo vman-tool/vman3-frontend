@@ -109,7 +109,6 @@ export class SettingsConfigsFormComponent implements OnInit {
   loadConfigData(): void {
     this.settingsConfigService.getSettingsConfig().subscribe((config) => {
       if (!config) {
-        this.patchFormCOnfigurations(config);
         this.snackBar.open(
           'Default settings are loaded , please edit to match the correct settings, or save to use the default settings',
           'Close',
@@ -117,9 +116,8 @@ export class SettingsConfigsFormComponent implements OnInit {
             duration: 3000,
           }
         );
-      } else {
-        this.patchFormCOnfigurations(config);
       }
+      this.patchFormCOnfigurations(config);
     });
   }
 
