@@ -223,7 +223,7 @@ export class SettingsConfigsFormComponent implements OnInit {
             deceased_gender: 'id10019',
             is_adult: 'isadult',
             is_child: 'ischild',
-            is_neonate: 'isneonatal',
+            is_neonate: 'isneonate',
             interviewer_name: 'id10010',
             interviewer_phone: 'id10010phone',
             interviewer_sex: 'id10010b',
