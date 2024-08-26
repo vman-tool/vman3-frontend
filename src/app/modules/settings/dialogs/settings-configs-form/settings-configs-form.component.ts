@@ -66,7 +66,7 @@ export class SettingsConfigsFormComponent implements OnInit {
       deceased_gender: [''],
       is_adult: [''],
       is_child: [''],
-      i_neonate: [''],
+      is_neonate: [''],
       interviewer_name: ['', Validators.required],
       interviewer_phone: [''],
       interviewer_sex: [''],
@@ -95,7 +95,6 @@ export class SettingsConfigsFormComponent implements OnInit {
     //     console.error('Error loading tables:', error);
     //   }
     // );
-
     // this.settingsConfigService.getFields().subscribe(
     //   (fields: string[]) => {
     //     this.fields = fields;
@@ -108,85 +107,85 @@ export class SettingsConfigsFormComponent implements OnInit {
 
   loadConfigData(): void {
     this.settingsConfigService.getSettingsConfig().subscribe((config) => {
-      if (!config) {
-        this.snackBar.open(
-          'Default settings are loaded , please edit to match the correct settings, or save to use the default settings',
-          'Close',
-          {
-            duration: 3000,
-          }
-        );
+      if (!config || !Object.keys(config.field_mapping || {}).length) {
+        this.showDefaultMessage();
+        const fieldMappingPayload: FieldMapping = {
+          table_name: 'table_name',
+          table_details: 'table details',
+          instance_id: 'instanceid',
+          va_id: 'VA ID',
+          consent_id: 'id10013',
+          date: 'today',
+          location_level1: 'id10005r',
+          location_level2: 'id10005d',
+          deceased_gender: 'id10019',
+          is_adult: 'isadult',
+          is_child: 'ischild',
+          is_neonate: 'isneonatal',
+          interviewer_name: 'id10010',
+          interviewer_phone: 'id10010phone',
+          interviewer_sex: 'id10010b',
+          resp_gender: 'id10007a',
+          resp_name: 'Id10007',
+          resp_phone: 'id10007Phone',
+          resp_relationship: 'id10008',
+          intv_gps: 'coordinates',
+          intv_gps_acc: 'accuracy',
+        };
+        this.fieldMappingForm.patchValue(fieldMappingPayload);
       } else {
-        
-        if (!Object.keys(config!?.field_mapping).length) {
-          const fieldMappingPayload: FieldMapping = {
-            table_name: 'table_name',
-            table_details: 'table details',
-            instance_id: 'instanceid',
-            va_id: 'VA ID',
-            consent_id: 'id10013',
-            date: 'today',
-            location_level1: 'id10005r',
-            location_level2: 'id10005d',
-            deceased_gender: 'id10019',
-            is_adult: 'isadult',
-            is_child: 'ischild',
-            is_neonate: 'isneonatal',
-            interviewer_name: 'id10010',
-            interviewer_phone: 'id10010phone',
-            interviewer_sex: 'id10010b',
-            resp_gender: 'id10007a',
-            resp_name: 'Id10007',
-            resp_phone: 'id10007Phone',
-            resp_relationship: 'id10008',
-            intv_gps: 'coordinates',
-            intv_gps_acc: 'accuracy',
-          };
-          this.fieldMappingForm.patchValue(fieldMappingPayload || {});
-        } else {
-          this.fieldMappingForm.patchValue(config?.field_mapping);
-        }
+        this.fieldMappingForm.patchValue(config.field_mapping);
+      }
 
-        if (!Object.keys(config!?.system_configs).length) {
-          const systemConfig: SystemConfig = {
-            app_name: 'VMan33',
-            page_title: 'The United Republic of Tanzania',
-            page_subtitle: 'Verbal Autopsy Management Dashboard',
-            admin_level1: 'Region',
-            admin_level2: 'District',
-            admin_level3: 'Ward',
-            admin_level4: 'Village',
-            map_center: '[-6.3, 34.8]',
-          };
-          this.systemConfigForm.patchValue(systemConfig || {});
-        } else {
-          this.systemConfigForm.patchValue(config?.system_configs);
-        }
+      if (!config || !Object.keys(config.system_configs || {}).length) {
+        this.showDefaultMessage();
+        const systemConfig: SystemConfig = {
+          app_name: 'VMan3',
+          page_title: 'The United Republic of Tanzania',
+          page_subtitle: 'Verbal Autopsy Management Dashboard',
+          admin_level1: 'Region',
+          admin_level2: 'District',
+          admin_level3: 'Ward',
+          admin_level4: 'Village',
+          map_center: '[-6.3, 34.8]',
+        };
+        this.systemConfigForm.patchValue(systemConfig);
+      } else {
+        this.systemConfigForm.patchValue(config.system_configs);
+      }
 
-        if (!Object.keys(config!?.odk_api_configs).length) {
-          const odkConfigPayload: OdkConfigModel = {
-            url: 'https://central.iact.co.tz',
-            username: 'admin@vman.net',
-            password: 'welcome2vman',
-            form_id: 'WHOVA_V1_5_3_TZV1',
-            project_id: '2', // Using string to match the interface
-            api_version: 'v1',
-          };
-          this.odkApiConfigForm.patchValue(odkConfigPayload || {});
-        } else {
-          this.odkApiConfigForm.patchValue(config?.odk_api_configs || {});
-        }
+      if (!config || !Object.keys(config.odk_api_configs || {}).length) {
+        this.showDefaultMessage();
+        const odkConfigPayload: OdkConfigModel = {
+          url: 'https://central.iact.co.tz',
+          username: 'admin@vman.net',
+          password: 'welcome2vman',
+          form_id: 'WHOVA_V1_5_3_TZV1',
+          project_id: '2', // Using string to match the interface
+          api_version: 'v1',
+        };
+        this.odkApiConfigForm.patchValue(odkConfigPayload);
+      } else {
+        this.odkApiConfigForm.patchValue(config.odk_api_configs);
       }
     });
+  }
+  showDefaultMessage() {
+    this.snackBar.open(
+      'Default settings are loaded , please edit to match the correct settings, or save to use the default settings',
+      'Close',
+      {
+        duration: 3000,
+      }
+    );
   }
 
   onSystemConfigSubmit(): void {
     if (this.systemConfigForm.valid) {
       this.settingsConfigService
         .saveConnectionData('system_configs', this.systemConfigForm.value)
-        .subscribe(
-          {
-            next: (response) => {
+        .subscribe({
+          next: (response) => {
             this.snackBar.open(
               'System configuration saved successfully',
               'Close',
@@ -200,9 +199,8 @@ export class SettingsConfigsFormComponent implements OnInit {
             this.snackBar.open('Failed to save system configuration', 'Close', {
               duration: 3000,
             });
-          }
-          }
-        );
+          },
+        });
     } else {
       this.snackBar.open('System configuration form is invalid', 'Close', {
         duration: 3000,
@@ -211,6 +209,7 @@ export class SettingsConfigsFormComponent implements OnInit {
   }
 
   onFieldMappingSubmit(): void {
+    console.log(this.fieldMappingForm.value);
     if (this.fieldMappingForm.valid) {
       this.settingsConfigService
         .saveConnectionData('field_mapping', this.fieldMappingForm.value)
