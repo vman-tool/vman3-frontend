@@ -113,6 +113,6 @@ export class AuthService {
   
   clearLocalStorage() {
     localStorage.clear();
-    this.indexedDBService?.deleteDatabase("VmanDB");
+    this.indexedDBService?.deleteDatabase("vmanDB");
   }
 }
