@@ -18,6 +18,10 @@ export class RunCcvaComponent implements OnInit {
   data?: any;
 
   ngOnInit(): void {
+    
+  }
+
+  onRunCCVA(){
     this.runCcvaService.run_ccva().subscribe({
       next: (response: any) => {
         if(response?.data){
@@ -25,7 +29,7 @@ export class RunCcvaComponent implements OnInit {
           const eventSource = new EventSource(`${this.configService.API_URL}/ccva/events/${taskId}`);
           
           eventSource.onmessage = function(event) {
-              console.log("Task Completed: ", event.data);
+              console.log("Task Completed: ", JSON.parse(event.data));
               // data = JSON.parse(event.data);
               eventSource.close();  
           };
