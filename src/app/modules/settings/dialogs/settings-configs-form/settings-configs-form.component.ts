@@ -320,9 +320,7 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       this.odkApiConfigForm.patchValue(config?.odk_api_configs || {});
     }
   }
-
-  onVaSummarySubmit(): void {}
-
+  
   onSearchableChange(selectedItems: any){
     this.selectedSummaryFields = selectedItems
   }

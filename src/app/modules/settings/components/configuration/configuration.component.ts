@@ -1,4 +1,4 @@
-import { FieldMapping, SystemConfig, VASummary } from '../../interface';
+import { FieldMapping, SystemConfig } from '../../interface';
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ConnectionFormComponent } from '../../dialogs/connection-form/connection-form.component';
@@ -20,7 +20,7 @@ export class ConfigurationComponent {
   fieldMappingData: FieldMapping | undefined;
 
   selectedTab = 'system-config'; // Default selected tab
-  vaSummaryData?: VASummary;
+  vaSummaryData?: string[];
 
   constructor(
     public dialog: MatDialog,

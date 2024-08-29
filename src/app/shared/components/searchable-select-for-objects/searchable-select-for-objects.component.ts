@@ -12,17 +12,19 @@ export class SearchableSelectForObjectsComponent implements OnInit {
   @Input() placeholder: string = 'Search...';
   @Input() value_as_tooltip: boolean = true;
   @Input() multiSelect: boolean = true;
-  @Input() selectedItems: any[] = [];
+  @Input() inputSelectedItems: any[] = [];
   
   @Output() select: EventEmitter<any> = new EventEmitter();
   @Output() open: EventEmitter<any> = new EventEmitter();
-
+  
   filteredItems: SearchFieldOption[] = [];
   searchTerm: string = '';
   isOpen: boolean = false;
   selectedItemsString?: string;
-
+  selectedItems: any[] = [];
+  
   ngOnInit(): void {
+    this.selectedItems = this.inputSelectedItems;
     this.filteredItems = [...this.items];
   }
 
@@ -34,7 +36,7 @@ export class SearchableSelectForObjectsComponent implements OnInit {
   filterItems(): void {
     const filterValue = this.searchTerm.toLowerCase();
     this.filteredItems = this.items.filter((item) =>
-      item.label?.toLowerCase().includes(filterValue) || (typeof item?.value !== 'object' && String(item.value).toLowerCase().includes(filterValue))
+      item.label && item.label?.toLowerCase().includes(filterValue) || (typeof item?.value !== 'object' && String(item.value).toLowerCase().includes(filterValue))
     );
   }
 

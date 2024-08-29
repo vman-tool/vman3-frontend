@@ -22,14 +22,14 @@
             class="flex items-center px-4 py-2 text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-blue-100">
             <input type="checkbox" name="option_check" class="mr-2" (change)="checkForItem(item, $event)"
               [checked]="selectedItems.includes(item?.value)">
-            {{ item?.label ? item?.label : item?.label }}
+            {{ item?.label ? item?.label : item?.value }}
           </div>
         </ng-container>
         <ng-container *ngIf="!multiSelect">
           <div *ngFor="let item of filteredItems" (click)="selectItem(item?.value)"
             matTooltip="{{ value_as_tooltip ? item?.value : ''}}"
             class="block px-4 py-2 text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-blue-100">
-            {{ item?.label?.length ? item?.label : item?.value }}
+            {{ item?.label?.length ? item?.label?.length : item?.value }}
           </div>
         </ng-container>
       </div>
