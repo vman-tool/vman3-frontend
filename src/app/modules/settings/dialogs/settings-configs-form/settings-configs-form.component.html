@@ -243,5 +243,30 @@
 
       </div>
     </div>
+    
+    <div *ngIf="selectedTab === 'va_summary' && fields?.length" id="va_summary" class="tab-content">
+      <!-- VA Document Summary Configurations Section -->
+      <div class="my-8">
+        <span class="text-xl font-semibold">VA Summary Configuration</span>
+        <div class="mt-2">
+          <app-searchable-select-for-objects 
+            label="Field" 
+            [items]="fields"
+            [selectedItems]="selectedSummaryFields"
+            [multiSelect]="true"
+            placeholder="Search Field Name"
+            (select)="onSearchableChange($event)" 
+            (open)="onOpenSelectField($event)"
+          ></app-searchable-select-for-objects>
+          
+          <button (click)="onVaSummarySubmit()"
+            class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Save VA Summary Configuration
+          </button>
+
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>

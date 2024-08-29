@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import {
   FormGroup,
   FormBuilder,
@@ -14,37 +14,77 @@ import {
   settingsConfigData,
   SystemConfig,
 } from '../../interface';
+import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 
 @Component({
   selector: 'app-settings-configs-form',
   templateUrl: './settings-configs-form.component.html',
   styleUrls: ['./settings-configs-form.component.scss'],
 })
-export class SettingsConfigsFormComponent implements OnInit {
-  selectedTab: 'odk_api_configs' | 'system_configs' | 'field_mapping' =
+export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
+  selectedTab: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' =
     'system_configs'; // Default selected tab
   systemConfigForm!: FormGroup;
   fieldMappingForm!: FormGroup;
   odkApiConfigForm!: FormGroup;
+  vaSummaryForm!: FormGroup;
+  selectedSummaryFields: string[] = [];
 
   // Your tables and fields arrays
   tables: string[] = ['Table1', 'Table2', 'Table3']; // Example data
-  fields: string[] = ['Field1', 'Field2', 'Field3']; // Example data
+  fields: any[] = []; // Example data
 
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<SettingsConfigsFormComponent>,
     private settingsConfigService: SettingConfigService,
     @Inject(MAT_DIALOG_DATA) public data: any,
+    private indexedDBService: IndexedDBService,
     private snackBar: MatSnackBar
   ) {
     this.selectedTab = data.type || 'system_configs'; // Initialize selected tab based on input data
+    if(this.selectedTab === 'va_summary' || this.selectedTab === 'field_mapping'){
+      this.indexedDBService.getQuestions().then((questions) => {
+        this.fields = questions?.map((question: any) => {
+          return {
+            label: question.value?.label,
+            value: question.key,
+          }
+        })
+      })
+    }
   }
 
   ngOnInit(): void {
     this.initForms();
     this.loadDropdownData(); // Load data for dropdowns
     this.loadConfigData(); // Load existing configuration (if any)
+  }
+
+  ngAfterViewInit() {
+    if(this.selectedTab === 'va_summary'){
+      this.addHeightClass('h-60')
+    }
+  }
+
+  addHeightClass(addclassName?: string, removeClassName?: string){
+    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
+      if (dialogElement) {
+        if(addclassName){
+          (dialogElement as HTMLElement).classList.add(addclassName);
+        }
+        if(removeClassName){
+          (dialogElement as HTMLElement).classList.remove(removeClassName);
+        }
+      }
+  }
+
+  onOpenSelectField(isOpen: boolean){
+    if(isOpen){
+     this.addHeightClass('h-[350px]', 'h-60') 
+    } else {
+      this.addHeightClass('h-60', 'h-[350px]') 
+    }
   }
 
   initForms(): void {
@@ -88,6 +128,13 @@ export class SettingsConfigsFormComponent implements OnInit {
       project_id: ['', Validators.required],
       api_version: ['v1'],
       is_sort_allowed: [false],
+    });
+    
+    this.vaSummaryForm = this.fb.group({
+      field: [
+        '',
+        [Validators.required, Validators.required]
+      ]
     });
   }
 
@@ -272,5 +319,23 @@ export class SettingsConfigsFormComponent implements OnInit {
     } else {
       this.odkApiConfigForm.patchValue(config?.odk_api_configs || {});
     }
+  }
+
+  onVaSummarySubmit(): void {}
+
+  onSearchableChange(selectedItems: any){
+    this.selectedSummaryFields = selectedItems
+  }
+
+  onSaveVaSummaryFields(){
+    this.settingsConfigService.saveConnectionData('va_summary', this.selectedSummaryFields).subscribe({
+      next: (response) => {
+        console.log(response)
+        this.dialogRef.close();
+      },
+      error: (error) => {
+        console.log(error);
+      }
+    })
   }
 }

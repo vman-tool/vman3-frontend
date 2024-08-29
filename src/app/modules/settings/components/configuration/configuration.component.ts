@@ -1,4 +1,4 @@
-import { FieldMapping, SystemConfig } from '../../interface';
+import { FieldMapping, SystemConfig, VASummary } from '../../interface';
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ConnectionFormComponent } from '../../dialogs/connection-form/connection-form.component';
@@ -20,6 +20,7 @@ export class ConfigurationComponent {
   fieldMappingData: FieldMapping | undefined;
 
   selectedTab = 'system-config'; // Default selected tab
+  vaSummaryData?: VASummary;
 
   constructor(
     public dialog: MatDialog,
@@ -36,10 +37,10 @@ export class ConfigurationComponent {
       (data: settingsConfigData | null) => {
         this.hasOdkApiData = !!data;
         if (this.hasOdkApiData && data) {
-          console.log('ODK API data:', data);
           this.odkApiData = data.odk_api_configs;
-          this.systemConfigData = data.system_configs;
-          this.fieldMappingData = data.field_mapping;
+          this.systemConfigData = data?.system_configs;
+          this.fieldMappingData = data?.field_mapping;
+          this.vaSummaryData = data?.va_summary;
         }
         this.isLoading = false; // Stop isLoading
       },
@@ -64,7 +65,7 @@ export class ConfigurationComponent {
     });
   }
 
-  editForm(type: 'odk_api_configs' | 'system_configs' | 'field_mapping'): void {
+  editForm(type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary'): void {
     const dialogRef = this.dialog.open(SettingsConfigsFormComponent, {
       width: '700px',
       data: {

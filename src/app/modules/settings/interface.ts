@@ -38,8 +38,13 @@ export interface FieldMapping {
   [key: string]: any; // Allow for any additional fields
 }
 
+export interface VASummary {
+  fields: string[];
+}
+
 export interface settingsConfigData {
   odk_api_configs: OdkConfigModel;
   system_configs: SystemConfig;
   field_mapping: FieldMapping;
+  va_summary: VASummary;
 }
