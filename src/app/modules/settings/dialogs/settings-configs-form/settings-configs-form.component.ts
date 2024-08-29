@@ -81,9 +81,9 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
 
   onOpenSelectField(isOpen: boolean){
     if(isOpen){
-     this.addHeightClass('h-[350px]', 'h-60') 
+     this.addHeightClass('h-[400px]', 'h-60') 
     } else {
-      this.addHeightClass('h-60', 'h-[350px]') 
+      this.addHeightClass('h-60', 'h-[400px]') 
     }
   }
 
@@ -326,14 +326,16 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
   }
 
   onSaveVaSummaryFields(){
-    this.settingsConfigService.saveConnectionData('va_summary', this.selectedSummaryFields).subscribe({
-      next: (response) => {
-        console.log(response)
-        this.dialogRef.close();
-      },
-      error: (error) => {
-        console.log(error);
-      }
-    })
+    if(this.selectedSummaryFields?.length){
+      this.settingsConfigService.saveConnectionData('va_summary', this.selectedSummaryFields).subscribe({
+        next: (response) => {
+          console.log(response)
+          this.dialogRef.close();
+        },
+        error: (error) => {
+          console.log(error);
+        }
+      })
+    }
   }
 }
