@@ -30,7 +30,12 @@ export class IndexedDBService {
     });
   }
 
+   private closeDatabase(): void {
+    this.dbPromise.then(db => db.close());
+  }
+
   async deleteDatabase(dbName: string) {
+    this.closeDatabase();
     const deleteRequest = indexedDB.deleteDatabase(dbName);
 
     deleteRequest.onsuccess = function () {

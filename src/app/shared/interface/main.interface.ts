@@ -4,3 +4,8 @@ export interface ResponseMainModel<T> {
   error?: string;
   total: number;
 }
+
+export interface SearchFieldOption {
+  label?: string;
+  value?: any
+}
