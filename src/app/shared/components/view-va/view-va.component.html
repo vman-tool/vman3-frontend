@@ -68,7 +68,7 @@
                 </div>
                 <div class="col-span-8 p-4 overflow-auto" *ngIf="params?.vaRecord?.data?.length && summaryInfo?.length ">
                     <ng-container *ngFor="let question of summaryInfo;">
-                        <p><strong>{{question?.value?.lable ? question?.value?.lable :question?.key}} : </strong> {{ params?.vaRecord?.data[0][question?.key] }}</p>
+                        <p *ngIf="params?.vaRecord?.data[0][question?.key]"><strong>{{question?.value?.label ? question?.value?.label : question?.key}} : </strong> {{ params?.vaRecord?.data[0][question?.key] }}</p>
                     </ng-container>
                 </div>
             </div>
