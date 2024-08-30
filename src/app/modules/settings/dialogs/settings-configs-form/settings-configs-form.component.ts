@@ -340,6 +340,9 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
           this.dialogRef.close(this.selectedSummaryFields);
         },
         error: (error) => {
+            this.snackBar.open('Failed to save va summary fields', 'Close', {
+              duration: 3000,
+            });
           console.log(error);
         }
       })
