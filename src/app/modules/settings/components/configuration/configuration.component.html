@@ -188,13 +188,13 @@
     <!-- Field Mapping Section -->
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
-      <div *ngIf="isLoading && !vaSummaryData" class="flex items-center justify-center p-4 ">
+      <div *ngIf="isLoading && !vaSummaryObjects" class="flex items-center justify-center p-4 ">
         <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
-      <div *ngIf="vaSummaryData; else noVaSummaryData">
+      <div *ngIf="vaSummaryObjects; else noVaSummaryData">
         <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
-          <div>
-
+          <div *ngIf="vaSummaryObjects?.length">
+            <p *ngFor="let vaQuestion of vaSummaryObjects;"><strong>{{ vaQuestion?.value?.label ? vaQuestion?.value?.label : vaQuestion?.key }}:</strong> {{ vaQuestion?.key }}</p>
           </div>
           <button *ngIf="!isLoading" (click)="editForm('va_summary')"
             class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">

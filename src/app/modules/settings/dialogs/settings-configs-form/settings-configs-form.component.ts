@@ -43,6 +43,7 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
     private snackBar: MatSnackBar
   ) {
     this.selectedTab = data.type || 'system_configs'; // Initialize selected tab based on input data
+    this.selectedSummaryFields = data?.va_summary
     if(this.selectedTab === 'va_summary' || this.selectedTab === 'field_mapping'){
       this.indexedDBService.getQuestions().then((questions) => {
         this.fields = questions?.map((question: any) => {
@@ -329,8 +330,14 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
     if(this.selectedSummaryFields?.length){
       this.settingsConfigService.saveConnectionData('va_summary', this.selectedSummaryFields).subscribe({
         next: (response) => {
-          console.log(response)
-          this.dialogRef.close();
+          this.snackBar.open(
+              'VA Summary Fields configuration saved successfully',
+              'Close',
+              {
+                duration: 3000,
+              }
+            );
+          this.dialogRef.close(this.selectedSummaryFields);
         },
         error: (error) => {
           console.log(error);

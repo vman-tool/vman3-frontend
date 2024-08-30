@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AllAssignedService } from '../../services/all-assigned/all-assigned.service';
 import { catchError, map, Observable } from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { ViewVaComponent } from '../../dialogs/view-va/view-va.component';
+import { ViewVaComponent } from '../../../../shared/components/view-va/view-va.component';
 import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
 
 @Component({
