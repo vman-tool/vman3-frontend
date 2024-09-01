@@ -4,23 +4,28 @@ import { firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfigService {
   private config: any;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   loadConfig(): Promise<any> {
-    return firstValueFrom(this.http.get('/assets/config.json').pipe(
-      map(config => {
-        this.config = config;
-        return this.config;
-      })
-    ));
+    return firstValueFrom(
+      this.http.get('/assets/config.json').pipe(
+        map((config) => {
+          this.config = config;
+          return this.config;
+        })
+      )
+    );
   }
 
   get API_URL(): string {
     return this.config?.API_URL;
+  }
+  get API_URL_WS(): string {
+    return this.config?.API_URL_WS;
   }
 }
