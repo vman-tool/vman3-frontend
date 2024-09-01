@@ -26,7 +26,8 @@
         <div>
           <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
           <p class="text-lg font-semibold">Progress: {{ progress }}%</p>
-          <p class="text-lg font-semibold">Elapsed Time: {{ elapsedTime | number:'1.0-2' }}s</p>
+          <p class="text-lg font-semibold">Status: {{ message }}</p>
+          <p class="text-lg font-semibold">Elapsed Time: {{ elapsedTime }}</p>
         </div>
         <button class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700" (click)="onCancel()">Cancel</button>
       </div>

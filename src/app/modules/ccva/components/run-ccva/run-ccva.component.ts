@@ -102,8 +102,9 @@ export class RunCcvaComponent implements OnInit {
   charts = {};
   data?: any;
   progress: number = 0;
+  message: string = '';
   totalRecords: number = 0;
-  elapsedTime: number = 0;
+  elapsedTime = '0:00:00';
   isTaskRunning: boolean = false; // Tracks whether a task is running
   taskIdKey: string = 'ccva-key'; // Do not initialize with a value
   private messageSubscription: Subscription | undefined;
@@ -137,8 +138,9 @@ export class RunCcvaComponent implements OnInit {
   onRunCCVA() {
     this.isTaskRunning = true;
     this.progress = 0;
+    this.message = '';
     this.totalRecords = 0;
-    this.elapsedTime = 0;
+    this.elapsedTime = '0:00:00';
     localStorage.removeItem(this.taskIdKey);
     this.runCcvaService.run_ccva().subscribe({
       next: (response: any) => {
@@ -179,12 +181,14 @@ export class RunCcvaComponent implements OnInit {
             //    .toFixed(0)
             //    .toString();
             //  this.elapsedTime = parsedData.elapsed_time;
+            // Keep the raw message as a string
 
             if (parsedData.status === 'completed') {
               console.log('Task Completed: ', parsedData);
               this.data = parsedData;
               // this.charts = parsedData.data;
               this.progress = 100;
+              this.elapsedTime = parsedData.elapsed_time;
               this.isTaskRunning = false; // Mark task as completed
               // eventSource.close();
               if (this.taskIdKey) {
@@ -193,6 +197,7 @@ export class RunCcvaComponent implements OnInit {
             } else if (parsedData.error === true) {
               console.log('Task Failed: ', parsedData);
               this.isTaskRunning = false; // Mark task as failed
+              this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
               // eventSource.close();
               if (this.taskIdKey) {
                 localStorage.removeItem(this.taskIdKey);
@@ -202,6 +207,8 @@ export class RunCcvaComponent implements OnInit {
               console.log('Task Progress: ', parsedData.progress);
               this.data = parsedData;
               this.progress = Number(parsedData.progress) || 0;
+              this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
+              this.message = parsedData.message ?? '';
               // this.totalRecords = eventData.totalRecords || 0;
               // this.elapsedTime = eventData.elapsedTime || 0;
             }
