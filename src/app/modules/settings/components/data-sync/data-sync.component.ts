@@ -3,6 +3,7 @@ import { DataSyncService } from './../../services/data_sync.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { catchError, retry, Subscription, throwError } from 'rxjs';
 import { WebSockettService } from '../../services/web-socket.service';
+import { ConfigService } from '../../../../app.service';
 
 @Component({
   selector: 'app-data-sync',
@@ -22,7 +23,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
   constructor(
     private dataSyncService: DataSyncService,
-    // private websocketService: WebsocketService,
+    private configService: ConfigService,
     private webSockettService: WebSockettService
   ) {
     // this.dataSyncService.webSocket$
@@ -50,7 +51,9 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   //   });
   // }
   ngOnInit(): void {
-    this.webSockettService.connect('ws://localhost:8080/ws');
+    this.webSockettService.connect(
+      `${this.configService.API_URL_WS}/odk_progress/123`
+    );
     this.messageSubscription = this.webSockettService.messages.subscribe(
       (data: string) => {
         try {

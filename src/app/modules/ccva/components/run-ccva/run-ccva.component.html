@@ -1,1 +1,47 @@
-<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" (click)="onRunCCVA()">Run CCVA</button>
+<div class="container p-4 mx-auto ">
+  <!-- Header Section with Start/End Date, Total Records, and Time Taken, and Run Button on the Same Line -->
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex space-x-8">
+      <span class="text-xl font-bold text-gray-700">CCVA Analysis</span>
+    </div>
+    <button *ngIf="!isTaskRunning" class="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+      (click)="onRunCCVA()">Run CCVA</button>
+  </div>
+
+  <!-- Additional Information Section -->
+  <div *ngIf="!isTaskRunning" class="flex items-center justify-between mb-4">
+    <div class="flex space-x-8">
+      <p class="text-lg font-semibold">Start Date: {{ startDate | date:'short' }}</p>
+      <!-- <p class="text-lg font-semibold">End Date: {{ endDate | date:'short' }}</p> -->
+      <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
+      <p class="text-lg font-semibold">Time Taken: {{ timeTaken | number:'1.0-2' }}s</p>
+    </div>
+  </div>
+
+  <!-- Scrollable Content Section -->
+  <div class="overflow-y-auto max-h-[calc(100vh-200px)]">
+    <!-- Progress and Cancel Section -->
+    <div *ngIf="isTaskRunning" class="p-4 mb-4 bg-white rounded shadow-md">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
+          <p class="text-lg font-semibold">Progress: {{ progress }}%</p>
+          <p class="text-lg font-semibold">Status: {{ message }}</p>
+          <p class="text-lg font-semibold">Elapsed Time: {{ elapsedTime }}</p>
+        </div>
+        <button class="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700" (click)="onCancel()">Cancel</button>
+      </div>
+      <div class="relative pt-1">
+        <div class="flex h-2 mb-4 overflow-hidden text-xs bg-blue-200 rounded">
+          <div [style.width.%]="progress"
+            class="flex flex-col justify-center text-center text-white bg-blue-500 shadow-none whitespace-nowrap">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Component -->
+    <app-ccva-graphs *ngIf="!isTaskRunning" [charts]="charts"></app-ccva-graphs>
+  </div>
+
+</div>

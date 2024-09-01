@@ -82,9 +82,7 @@ export class SettingConfigService {
                   },
                 va_summary:
                   response.data?.va_summary ||
-                  {
-                    /* default values */
-                  },
+                  [],
               };
               return config;
             }

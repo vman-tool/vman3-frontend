@@ -24,7 +24,7 @@ export class SearchableSelectForObjectsComponent implements OnInit {
   selectedItems: any[] = [];
   
   ngOnInit(): void {
-    this.selectedItems = this.inputSelectedItems;
+    this.selectedItems = this.inputSelectedItems ? this.inputSelectedItems : [];
     this.selectedItemsString = this.inputSelectedItems?.length ? this.selectedItems.join(',') : '';
     this.filteredItems = [...this.items];
   }
