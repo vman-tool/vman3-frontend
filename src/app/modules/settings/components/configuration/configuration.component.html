@@ -191,7 +191,7 @@
       <div *ngIf="isLoading && !vaSummaryObjects" class="flex items-center justify-center p-4 ">
         <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
-      <div *ngIf="vaSummaryObjects; else noVaSummaryData">
+      <div *ngIf="vaSummaryObjects?.length; else noVaSummaryData">
         <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
           <div *ngIf="vaSummaryObjects?.length">
             <p *ngFor="let vaQuestion of vaSummaryObjects;"><strong>{{ vaQuestion?.value?.label ? vaQuestion?.value?.label : vaQuestion?.key }}:</strong> {{ vaQuestion?.key }}</p>
