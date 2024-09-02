@@ -61,16 +61,25 @@
                 </table>
             }
         </div>
-        <div class="col-span-4 p-4">
+        <div class="col-span-4 p-4 bg-white shadow-md rounded-lg">
             <div class="sticky top-0 z-10">
                 <div class="mt-2 mb-2">
-                    <span class="px-2 text-xl text-start">VA Summary </span>
+                    <span class="px-2 text-xl font-semibold text-start">VA Summary</span>
+                </div>
+                <div class="grid grid-cols-12 p-4 bg-gray-50 rounded-md overflow-auto"
+                    *ngIf="params?.vaRecord?.data?.length && summaryInfo?.length ">
+                    <ng-container *ngFor="let question of summaryInfo;">
+                        <div *ngIf="params?.vaRecord?.data[0][question?.key]" class="summary-item col-span-4 mt-1 mb-1">
+                            <strong class="text-gray-700">{{question?.value?.label ? question?.value?.label :
+                                question?.key}}:</strong>
+                        </div>
+                        <div *ngIf="params?.vaRecord?.data[0][question?.key]" class="border border-gray-600 bg-gray-200 rounded-md p-4 mt-1 mb-1 col-span-8">
+                            {{ params?.vaRecord?.data[0][question?.key] }}
+                        </div>
+                    </ng-container>
                 </div>
             </div>
         </div>
     </div>
 
 </div>
-
-<!-- 
- -->

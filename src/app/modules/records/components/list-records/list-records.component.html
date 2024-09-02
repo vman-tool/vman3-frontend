@@ -50,12 +50,7 @@
         <td class="px-6 py-4">{{ row.interviewDay }}</td>
         <td class="px-6 py-4">{{ row.interviewer_name }}</td>
         <td class="px-6 py-4">
-          <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                d="M8 9a3 3 0 100-6 3 3 0 000 6zM2 14a6 6 0 0112 0H2zm15-5a2 2 0 100-4 2 2 0 000 4zm-7 3c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
-            </svg>
-          </a>
+          <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" (click)="onOpenVA(row?.vaId)"><i class="ph-eye"></i></a>
         </td>
       </tr>
     </tbody>

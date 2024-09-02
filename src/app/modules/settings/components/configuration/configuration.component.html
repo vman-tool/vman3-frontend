@@ -4,7 +4,7 @@
   <div class="border-b border-gray-200 dark:border-gray-700">
     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
       <li class="me-2">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group"
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'system-config'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'system-config',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'system-config'
@@ -17,7 +17,7 @@
         </a>
       </li>
       <li class="me-2">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group" (click)="selectedTab = 'odk-api'"
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer" (click)="selectedTab = 'odk-api'"
           [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'odk-api',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'odk-api'
@@ -30,7 +30,7 @@
         </a>
       </li>
       <li class="me-2">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group"
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'field-mapping'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'field-mapping',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'field-mapping'
@@ -41,6 +41,20 @@
            }"></i>
 
           <span class="text-lg font-normal">Field Mapping</span>
+        </a>
+      </li>
+      <li class="me-2">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'va-summary'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'va-summary',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'va-summary'
+         }">
+          <i class="fas fa-table me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'field-mapping',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'va-summary'
+           }"></i>
+
+          <span class="text-lg font-normal">VA-Summary</span>
         </a>
       </li>
     </ul>
@@ -166,6 +180,32 @@
         <button *ngIf="!isLoading" (click)="editForm('field_mapping')"
           class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           Add Field Mapping
+        </button>
+      </ng-template>
+    </div>
+  </div>
+  <div *ngIf="selectedTab === 'va-summary'" id="va-summary" class="mt-4 tab-content">
+    <!-- Field Mapping Section -->
+    <div class="my-8">
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <div *ngIf="isLoading && !vaSummaryObjects" class="flex items-center justify-center p-4 ">
+        <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+      </div>
+      <div *ngIf="vaSummaryObjects?.length; else noVaSummaryData">
+        <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
+          <div *ngIf="vaSummaryObjects?.length">
+            <p *ngFor="let vaQuestion of vaSummaryObjects;"><strong>{{ vaQuestion?.value?.label ? vaQuestion?.value?.label : vaQuestion?.key }}:</strong> {{ vaQuestion?.key }}</p>
+          </div>
+          <button *ngIf="!isLoading" (click)="editForm('va_summary')"
+            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Edit
+          </button>
+        </div>
+      </div>
+      <ng-template #noVaSummaryData>
+        <button *ngIf="!isLoading" (click)="editForm('va_summary')"
+          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Add VA Summary
         </button>
       </ng-template>
     </div>

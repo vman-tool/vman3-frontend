@@ -16,7 +16,7 @@ export class SettingConfigService {
 
   // General method to save data
   saveConnectionData(
-    type: 'odk_api_configs' | 'system_configs' | 'field_mapping',
+    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary',
     data: any
   ): Observable<ResponseMainModel<any>> {
     return this.http
@@ -80,6 +80,9 @@ export class SettingConfigService {
                   {
                     /* default values */
                   },
+                va_summary:
+                  response.data?.va_summary ||
+                  [],
               };
               return config;
             }
