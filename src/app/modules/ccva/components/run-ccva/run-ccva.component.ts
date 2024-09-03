@@ -76,6 +76,7 @@ export class RunCcvaComponent implements OnInit {
       return;
     }
     this.isTaskRunning = true;
+    console.log('Connecting to WebSocket:', this.configService.API_URL_WS);
     this.webSockettService.connect(
       `${this.configService.API_URL_WS}/ccva_progress/${taskId}`
     );
