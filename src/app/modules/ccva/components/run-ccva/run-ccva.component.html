@@ -9,14 +9,14 @@
   </div>
 
   <!-- Additional Information Section -->
-  <div *ngIf="!isTaskRunning" class="flex items-center justify-between mb-4">
+  <!--<div *ngIf="!isTaskRunning" class="flex items-center justify-between mb-4">
     <div class="flex space-x-8">
       <p class="text-lg font-semibold">Start Date: {{ startDate | date:'short' }}</p>
-      <!-- <p class="text-lg font-semibold">End Date: {{ endDate | date:'short' }}</p> -->
-      <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
-      <p class="text-lg font-semibold">Time Taken: {{ timeTaken | number:'1.0-2' }}s</p>
+
+    <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
+      <p class="text-lg font-semibold">Time Taken: {{ timeTaken | number:'1.0-2' }}</p>
     </div>
-  </div>
+  </div> -->
 
   <!-- Scrollable Content Section -->
   <div class="overflow-y-auto max-h-[calc(100vh-200px)]">
@@ -39,6 +39,7 @@
         </div>
       </div>
     </div>
+    <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
 
     <!-- Charts Component -->
     <app-ccva-graphs *ngIf="!isTaskRunning" [charts]="charts"></app-ccva-graphs>

@@ -17,6 +17,9 @@ export class CcvaGraphsComponent implements OnInit {
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
   public isLoading = false;
+  total_records: number = 0;
+  elapsed_time = '0:00:00';
+  created_at: string = '';
 
   public chartOptions: ChartOptions = {
     responsive: true,
@@ -73,6 +76,11 @@ export class CcvaGraphsComponent implements OnInit {
     this.ccvaService.get_ccva_Results().subscribe({
       next: (data: any) => {
         this.isLoading = false;
+        if (data.data[0]) {
+          this.total_records = data.data[0].total_records;
+          this.elapsed_time = data.data[0].elapsed_time;
+          this.created_at = data.data[0].created_at;
+        }
         this.loadChartData(data.data[0]);
       },
       error: (err) => {

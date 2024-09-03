@@ -1,38 +1,49 @@
 <div class="container p-4 mx-auto mb-96">
   <div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 md:grid-cols-3">
     <!-- Skeleton Loader for Bar Chart -->
-    @for (item of [1,2,3,4,5,6]; track $index) {
-    <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
+    <div *ngFor="let item of [1,2,3,4,5,6]"
+      class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
       <div class="w-full h-60 md:h-72">
       </div>
     </div>
-    }
-
-
   </div>
 
-
-
   <ng-template #chartsContent>
+    <div *ngIf="chartKeys.length > 0; else emptyMessage">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex space-x-8">
+          <p class="text-lg font-semibold">Start Date: {{ created_at | date:'short' }}</p>
+          <p class="text-lg font-semibold">Total Records: {{ total_records }}</p>
+          <p class="text-lg font-semibold">Time Taken: {{ elapsed_time }}</p>
+        </div>
+      </div>
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
 
-
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <!-- Bar Chart -->
-      <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" *ngFor="let key of chartKeys">
-        <span *ngIf="charts[key]">
-          <!-- Dynamic Title -->
-          <span class="block mb-4 text-xl font-semibold text-center text-gray-700">
-            {{ getDynamicTitle(key) }}
-          </span>
-          <div class="flex justify-center w-full">
-            <div class="w-full h-60 md:h-72">
-              <canvas baseChart [datasets]="charts[key].datasets" [labels]="charts[key].labels" [options]="chartOptions"
-                [type]="'bar'">
-              </canvas>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Bar Chart -->
+        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" *ngFor="let key of chartKeys">
+          <span *ngIf="charts[key]">
+            <!-- Dynamic Title -->
+            <span class="block mb-4 text-xl font-semibold text-center text-gray-700">
+              {{ getDynamicTitle(key) }}
+            </span>
+            <div class="flex justify-center w-full">
+              <div class="w-full h-60 md:h-72">
+                <canvas baseChart [datasets]="charts[key].datasets" [labels]="charts[key].labels"
+                  [options]="chartOptions" [type]="'bar'">
+                </canvas>
+              </div>
             </div>
-          </div>
-        </span>
+          </span>
+        </div>
       </div>
     </div>
+
+    <!-- Message to Run CCVA -->
+    <ng-template #emptyMessage>
+      <div class="text-lg font-semibold text-center text-red-500 mt-60">
+        No data available. Please run the CCVA to generate charts.
+      </div>
+    </ng-template>
   </ng-template>
 </div>

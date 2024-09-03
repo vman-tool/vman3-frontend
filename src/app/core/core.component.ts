@@ -11,7 +11,4 @@ import { lastValueFrom, map } from 'rxjs';
 export class CoreComponent {
   constructor(
   ){}
-
-  async ngOnInit(): Promise<void> {
-  }
 }
