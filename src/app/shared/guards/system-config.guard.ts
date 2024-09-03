@@ -8,14 +8,16 @@ import {
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ConnectionsService } from '../../modules/settings/services/connections.service';
+
+import { settingsConfigData } from '../../modules/settings/interface';
+import { SettingConfigService } from '../../modules/settings/services/settings_configs.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SettingsGuard implements CanActivate {
   constructor(
-    private connectionsService: ConnectionsService,
+    private settingsConfigsService: SettingConfigService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
@@ -24,13 +26,13 @@ export class SettingsGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    if (state.url === '/settings') {
+    if (state.url.includes('/settings')) {
       return of(true); // Allow access to /settings without checking the config
     }
 
-    return this.connectionsService.getOdkApiConfig(true).pipe(
-      map((response) => {
-        if (response.data) {
+    return this.settingsConfigsService.getSettingsConfig(true).pipe(
+      map((config: settingsConfigData | null) => {
+        if (config && Object.keys(config.odk_api_configs).length && Object.keys(config.odk_api_configs).length && Object.keys(config.field_mapping).length) {
           return true;
         } else {
           this.snackBar.open(

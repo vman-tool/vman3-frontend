@@ -1,9 +1,11 @@
 import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { VaRecordsService } from '../../services/va-records/va-records.service';
-import { map, Observable } from 'rxjs';
+import { VaRecordsService } from '../../../modules/pcva/services/va-records/va-records.service';
+import { lastValueFrom, map, Observable } from 'rxjs';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
+import { settingsConfigData } from 'app/modules/settings/interface';
+import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 
 @Component({
   selector: 'app-view-va',
@@ -14,11 +16,13 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
   vaRecord$?: Observable<any>;
   odkQuestions: any;
   questionsIds?: string[];
+  summaryInfo?: any;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService
+    private indexedDBService: IndexedDBService,
+    private settingConfigService: SettingConfigService
   ) { }
    
   ngOnInit(): void {
@@ -26,8 +30,16 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
     this.getQuestions();
   }
 
+  async getSummaryConfigurations(){
+    this.summaryInfo = await lastValueFrom(this.settingConfigService.getSettingsConfig()?.pipe(
+      map(async (response: settingsConfigData| null) => {
+        return response !== null ? await this.indexedDBService.getQuestionsByKeys(response?.va_summary) : null
+      })
+    ))
+  }
+
   getVaRecord(): any {
-    this.vaRecord$ = this.vaRecordsService.getVARecords(undefined, undefined, undefined, undefined, false, this.data?.va?.vaId).pipe(
+    this.vaRecord$ = this.vaRecordsService.getVARecords(undefined, undefined, undefined, undefined, false, this.data?.va?.instanceid).pipe(
       map((response: any) => {
           response['data'] = filter_keys_without_data(response.data)
           return response
@@ -37,6 +49,7 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
 
   async getQuestions(): Promise<any> {
     this.odkQuestions = await this.indexedDBService.getQuestions()
+    this.getSummaryConfigurations();
   }
 
   ngAfterViewInit() {

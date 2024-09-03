@@ -5,10 +5,11 @@ import {
   OnInit,
   runInInjectionContext,
 } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ListRecordsService } from '../../services/list-records/list-records.service';
 import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
 import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
+import { ViewVaComponent } from 'app/shared/components/view-va/view-va.component';
 
 @Component({
   selector: 'app-list-records',
@@ -74,6 +75,18 @@ export class ListRecordsComponent implements OnInit {
           this.isLoading = false;
         }
       );
+  }
+
+  onOpenVA(va: any){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "80vw";
+    dialogConfig.height = "70vh";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      va: va
+    }
+    this.dialog.open(ViewVaComponent, dialogConfig)
   }
 
   goToPreviousPage(): void {

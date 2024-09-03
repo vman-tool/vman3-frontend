@@ -2,17 +2,17 @@
     vaRecord: vaRecord$ | async
 } as params">
     <div class="mt-4 ml-4">
-        <span class="px-2 text-2xl text-start">VA RECORD </span>
+        <span class="px-2 text-2xl text-start">CODE VA </span>
     </div>
     <div class="grid grid-cols-12">
-        <div class="col-span-8 p-4 h-[650px] overflow-auto">
-            <div class="pt-2 pb-2">
-                <span class="px-2 text-xl text-start">VA Details </span>
+        <div class="col-span-8 p-4 h-[650px] overflow-auto relative shadow-lg rounded-lg border-0">
+            <div class="pt-2 pb-2 sticky top-[-3vh] z-10 bg-white">
+                <span class="px-2 text-xl text-start">VA Document </span>
             </div>
             <table class="w-full divide-y divide-gray-200 table-auto">
-                <thead *ngIf="params?.vaRecord?.data?.length && odkQuestions?.length">
-                    <tr class="bg-white sticky top-0 z-10">
-                        <th>
+                <thead class="bg-white sticky top-[-2vh] z-10" *ngIf="params?.vaRecord?.data?.length && odkQuestions?.length">
+                    <tr>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                            ID 
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -26,15 +26,15 @@
                 <tbody>
                     <ng-container *ngIf="params?.vaRecord?.data?.length && odkQuestions?.length">
                         
-                        <tr *ngFor="let question of odkQuestions; let i = index">
+                        <tr *ngFor="let question of odkQuestions; let i = index" [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
                             @if(params?.vaRecord?.data[0][question?.key] && question?.key !== 'deviceid'){
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm " [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
+                                <td class="px-5 py-3 border-b border-gray-200 text-sm ">
                                     <p class="text-gray-900 whitespace-no-wrap">{{ question?.key }}</p>
                                 </td>
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm " [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
+                                <td class="px-5 py-3 border-b border-gray-200 text-sm ">
                                     <p class="text-gray-900 whitespace-no-wrap">{{ question?.value?.label }}</p>
                                 </td>
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm " [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }">
+                                <td class="px-5 py-3 border-b border-gray-200 text-sm ">
                                     @if(question?.value?.options?.length === 0){
                                         <p class="text-gray-900 whitespace-no-wrap">{{ params?.vaRecord?.data[0][question?.key] }}</p>
                                     } @else {
@@ -64,7 +64,7 @@
         <div class="col-span-4 p-4">
             <div class="sticky top-0 z-10">
                 <div class="mt-2 mb-2">
-                    <span class="px-2 text-xl text-start">VA Summary </span>
+                    <span class="px-2 text-xl text-start">Coding Sheet </span>
                 </div>
             </div>
         </div>

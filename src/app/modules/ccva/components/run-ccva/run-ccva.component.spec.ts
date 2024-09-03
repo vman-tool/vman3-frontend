@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ConnectionsComponent } from './connections.component';
+import { RunCcvaComponent } from './run-ccva.component';
 
-describe('ConnectionsComponent', () => {
-  let component: ConnectionsComponent;
-  let fixture: ComponentFixture<ConnectionsComponent>;
+describe('RunCcvaComponent', () => {
+  let component: RunCcvaComponent;
+  let fixture: ComponentFixture<RunCcvaComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConnectionsComponent]
+      declarations: [RunCcvaComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ConnectionsComponent);
+    fixture = TestBed.createComponent(RunCcvaComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

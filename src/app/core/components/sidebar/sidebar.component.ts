@@ -28,6 +28,16 @@ export class SidebarComponent {
         route: '/records',
       },
       {
+        displayText: 'Data Quality',
+        icon_asset: '../../../../assets/icons/data.svg',
+        route: '/data-quality',
+      },
+      {
+        displayText: 'Data Map',
+        icon_asset: '../../../../assets/icons/data-map.svg',
+        route: '/data-map',
+      },
+      {
         displayText: 'PCVA',
         icon_asset: '../../../../assets/icons/pcva.svg',
         route: '/pcva',
@@ -59,31 +69,52 @@ export class SidebarComponent {
         ],
       },
       {
-        displayText: 'Data Quality',
-        icon_asset: '../../../../assets/icons/data.svg',
-        route: '/pcva',
-      },
-      {
-        displayText: 'Data Map',
-        icon_asset: '../../../../assets/icons/data-map.svg',
-        route: '/data-map',
-      },
-      {
         displayText: 'CCVA',
         icon_asset: '../../../../assets/icons/ccva.svg',
-        route: '/pcva',
+        route: '/ccva',
       },
       {
         displayText: 'Settings',
         icon_asset: '../../../../assets/icons/settings.svg',
         route: '/settings',
+        subMenuItems: [
+          {
+            displayText: 'Configurations',
+            icon: 'flaticon-setting', // Replace with the actual Flaticon class for a gear/settings icon
+            icon_asset: '',
+            route: '/configurations',
+          },
+          {
+            displayText: 'Data Synchronization',
+            icon: 'flaticon-target', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon_asset: '',
+            route: '/sync',
+          },
+          {
+            displayText: 'Users',
+            icon: 'flaticon-people', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon_asset: '',
+            route: '/users',
+          },
+        ],
       },
     ];
 
     for(var i = 0; i < this.menuItems.length; i++){
       if(this.router!.url.includes(this.menuItems[i]?.route)){
         this.selectedItem = i;
-        break
+        
+        if(this.menuItems[i].subMenuItems?.length){
+          for(var j = 1; j < this.menuItems[i]?.subMenuItems?.length; j++){
+            if(this.router!.url.includes(this.menuItems[i].subMenuItems[j]?.route)){
+              this.selectedSubMenu = i+(j+1);
+              break;
+            }
+            if(!this.selectedSubMenu){
+              this.selectedSubMenu = i+1;
+            }
+          }
+        }
       }
     }
   }
@@ -94,7 +125,7 @@ export class SidebarComponent {
     if (subMenuIndex) {
       this.selectedSubMenu = menuIndex + subMenuIndex;
     } else {
-      this.selectedSubMenu = 0;
+      this.selectedSubMenu = menuIndex + 1;
     }
   }
 

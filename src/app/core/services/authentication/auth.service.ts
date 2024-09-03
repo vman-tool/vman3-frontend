@@ -5,6 +5,7 @@ import { Observable, catchError, map, mergeMap, of} from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
+import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class AuthService {
     private configService: ConfigService,
     private http?: HttpClient,
     private router?: Router,
+    private indexedDBService?: IndexedDBService
   ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error
@@ -111,5 +113,6 @@ export class AuthService {
   
   clearLocalStorage() {
     localStorage.clear();
+    this.indexedDBService?.deleteDatabase("vmanDB");
   }
 }

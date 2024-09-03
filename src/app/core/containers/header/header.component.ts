@@ -1,4 +1,5 @@
 import { Component, HostListener } from '@angular/core';
+import { AuthService } from 'app/core/services/authentication/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -7,6 +8,9 @@ import { Component, HostListener } from '@angular/core';
 })
 export class HeaderComponent {
    isDropdownOpen = false;
+
+
+   constructor(private authService: AuthService){}
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
@@ -21,5 +25,9 @@ export class HeaderComponent {
     if (dropdown && userMenuButton && !dropdown.contains(target) && !userMenuButton.contains(target)) {
       this.isDropdownOpen = false;
     }
+  }
+
+  onLogout() {
+    this.authService.logout();
   }
 }

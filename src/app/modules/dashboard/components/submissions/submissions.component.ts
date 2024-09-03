@@ -50,14 +50,16 @@ export class SubmissionsComponent {
         this.filterData.locations
       )
       .subscribe(
-        (response: ResponseMainModel) => {
-          this.dataSubmissions = response.data as [];
-          this.totalRecords = response.total;
-          this.isLoading = false; // Set loading to false when data is fetched
-        },
-        (error) => {
-          this.errorMessage = error.message;
-          this.isLoading = false; // Set loading to false if there's an error
+        {
+          next: (response: ResponseMainModel<any>) => {
+            this.dataSubmissions = response.data as [];
+            this.totalRecords = response.total;
+            this.isLoading = false; // Set loading to false when data is fetched
+          },
+          error: (error) => {
+            this.errorMessage = error.message;
+            this.isLoading = false; // Set loading to false if there's an error
+          }
         }
       );
   }

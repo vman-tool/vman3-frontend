@@ -28,8 +28,10 @@ Set ```config.json``` inside assets folder located in ``` srs/assets/``` with va
 
 ```
 {
-  "API_URL": "http://backend-url"
+  "API_URL": "http://backend-url",
+  "API_URL_WS": "ws://backend-url/ws"
 }
+
 ```
 
 So that it runs in development mode.

@@ -30,6 +30,27 @@ export class IndexedDBService {
     });
   }
 
+   private closeDatabase(): void {
+    this.dbPromise.then(db => db.close());
+  }
+
+  async deleteDatabase(dbName: string) {
+    this.closeDatabase();
+    const deleteRequest = indexedDB.deleteDatabase(dbName);
+
+    deleteRequest.onsuccess = function () {
+      console.log(`Database '${dbName}' deleted successfully`);
+    };
+
+    deleteRequest.onerror = function () {
+      console.error(`Failed to delete database '${dbName}':`, deleteRequest.error);
+    };
+
+    deleteRequest.onblocked = function () {
+      console.warn(`Database deletion blocked: Make sure all connections are closed.`);
+    };
+  }
+
   async addQuestions(questions: any) {
     const db = await this.dbPromise;
     for(let key of Object.keys(questions)){
