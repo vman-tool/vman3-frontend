@@ -1,9 +1,11 @@
 // import { WebsocketService } from './../../services/web-socket.service';
 import { DataSyncService } from './../../services/data_sync.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { catchError, retry, Subscription, throwError } from 'rxjs';
+import { lastValueFrom, map, Subscription } from 'rxjs';
 import { WebSockettService } from '../../services/web-socket.service';
 import { ConfigService } from '../../../../app.service';
+import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
+import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
 
 @Component({
   selector: 'app-data-sync',
@@ -20,11 +22,16 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private progressSub: Subscription | null = null;
   message: string | undefined;
   private messageSubscription: Subscription | undefined;
+  
+  syncedQuestions?: any[] = [];
+  forceChecked: boolean = false;
 
   constructor(
     private dataSyncService: DataSyncService,
     private configService: ConfigService,
-    private webSockettService: WebSockettService
+    private webSockettService: WebSockettService,
+    private indexedDBService: IndexedDBService,
+    private vaRecordsService: VaRecordsService,
   ) {
     // this.dataSyncService.webSocket$
     //   .pipe(
@@ -50,8 +57,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   //     //  this.messages.push(message);
   //   });
   // }
-  ngOnInit(): void {
-    console.log('Connecting to WebSocket:', this.configService.API_URL_WS);
+  async ngOnInit(): Promise<void> {
     this.webSockettService.connect(
       `${this.configService.API_URL_WS}/odk_progress/123`
     );
@@ -89,6 +95,17 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     //       this.elapsedTime = data.elapsed_time;
     //     }
     //   });
+    this.syncedQuestions = await this.indexedDBService.getQuestions()
+    
+    if(!this.syncedQuestions?.length) {
+      await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
+        map(async (response: any) => {
+          await this.indexedDBService.addQuestions(response?.data);
+          await this.indexedDBService.addQuestionsAsObject(response?.data);
+          this.syncedQuestions = await this.indexedDBService.getQuestions()
+        })
+      ))
+    }
   }
   sendMessage() {
     this.webSockettService.sendMessage('Hello, server!');
@@ -106,12 +123,48 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
   manualSync() {
     this.dataSyncService.syncData().subscribe(
-      (response: any) => {
-        console.log('Manual sync initiated:', response);
-      },
-      (error: any) => {
-        console.error('Error during manual sync:', error);
+      {
+        next: (response: any) => {
+          console.log('Manual sync initiated:', response);
+        },
+        error: (error: any) => {
+          console.error('Error during manual sync:', error);
+        }
       }
     );
+  }
+
+  onForceCheck(e: Event, notAllowed?: boolean) {
+    this.forceChecked = notAllowed ? this.forceChecked : (e?.target as HTMLInputElement).checked;
+  }
+
+  async onSyncQuestions(){
+    this.syncedQuestions = undefined;
+    
+    if(!this.forceChecked){
+      this.syncedQuestions = await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
+        map(async (response: any) => {
+          if(response?.data){
+            await this.indexedDBService.addQuestions(response?.data);
+            await this.indexedDBService.addQuestionsAsObject(response?.data);
+            return await this.indexedDBService.getQuestions()
+          }
+        })
+      ));
+    }
+
+    this.syncedQuestions = !this.syncedQuestions?.length ? undefined : this.syncedQuestions;
+
+    if(!this.syncedQuestions){
+      this.syncedQuestions = await lastValueFrom(this.dataSyncService.syncQuestions().pipe(
+        map(async (response: any) => {
+          await this.indexedDBService.addQuestions(response?.data);
+          await this.indexedDBService.addQuestionsAsObject(response?.data);
+          this.forceChecked = !this.forceChecked
+          return await this.indexedDBService.getQuestions()
+        })
+      ))
+    }
+
   }
 }
