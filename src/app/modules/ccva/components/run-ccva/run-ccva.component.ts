@@ -1,92 +1,3 @@
-// import { Component, OnInit } from '@angular/core';
-// import { RunCcvaService } from '../../services/run-ccva.service';
-// import { ConfigService } from 'app/app.service';
-
-// @Component({
-//   selector: 'app-run-ccva',
-//   templateUrl: './run-ccva.component.html',
-//   styleUrl: './run-ccva.component.scss',
-// })
-// export class RunCcvaComponent implements OnInit {
-//   constructor(
-//     private configService: ConfigService,
-//     private runCcvaService: RunCcvaService
-//   ) {}
-
-//   data?: any;
-//   progress: number = 0;
-//   totalRecords: number = 0;
-//   elapsedTime: number = 0;
-//   isTaskRunning: boolean = false; // Tracks whether a task is running
-//   taskIdKey?: string; // Do not initialize with a value
-
-//   ngOnInit(): void {
-//     if (this.taskIdKey) {
-//       // Check if a taskId is stored in localStorage
-//       const storedTaskId = localStorage.getItem(this.taskIdKey);
-//       if (storedTaskId) {
-//         this.isTaskRunning = true;
-//         this.connectToEventSource(storedTaskId);
-//       }
-//     }
-//   }
-
-//   onRunCCVA() {
-//     this.runCcvaService.run_ccva().subscribe({
-//       next: (response: any) => {
-//         if (response?.data) {
-//           const taskId = response.data.task_id;
-//           localStorage.setItem(this.taskIdKey!, taskId);
-//           this.connectToEventSource(taskId);
-//         }
-//       },
-//       error: (error) => {
-//         console.error('Error starting CCVA task:', error);
-//         this.isTaskRunning = false; // Reset if there's an error
-//       },
-//     });
-//   }
-//   connectToEventSource(taskId: string) {
-//     if (!taskId) {
-//       console.error('No taskId provided');
-//       return;
-//     }
-
-//     const eventSource = new EventSource(
-//       `${this.configService.API_URL}/ccva/events/${taskId}`
-//     );
-
-//     eventSource.onmessage = (event) => {
-//       var eventData = JSON.parse(event.data);
-//       // data = JSON.parse(event.data);
-//       if (eventData.status === 'completed') {
-//         console.log('Task Completed: ', eventData);
-//         console.log('Task Completed: ', eventData);
-//         this.data = eventData;
-//         this.progress = 100;
-//         this.isTaskRunning = false; // Mark task as completed
-//         eventSource.close();
-//         if (this.taskIdKey) {
-//           localStorage.removeItem(this.taskIdKey);
-//         }
-//       } else if (eventData.error === true) {
-//         console.log('Task Failed: ', eventData);
-//         eventSource.close();
-//       } else {
-//         console.log('Task Running: ', eventData);
-//         this.data = eventData;
-//         this.progress = 100;
-//         this.isTaskRunning = true; // Mark task as completed
-//       }
-//     };
-//     eventSource.onerror = (error) => {
-//       console.log('EventSource error:', error);
-//       this.isTaskRunning = false; // Reset if there's an error
-//       eventSource.close();
-//     };
-//   }
-// }
-
 import { Component, OnInit } from '@angular/core';
 import { RunCcvaService } from '../../services/run-ccva.service';
 import { ConfigService } from 'app/app.service';
@@ -105,6 +16,8 @@ export class RunCcvaComponent implements OnInit {
   message: string = '';
   totalRecords: number = 0;
   elapsedTime = '0:00:00';
+  start_date: string = '';
+
   isTaskRunning: boolean = false; // Tracks whether a task is running
   taskIdKey: string = 'ccva-key'; // Do not initialize with a value
   private messageSubscription: Subscription | undefined;
@@ -188,7 +101,10 @@ export class RunCcvaComponent implements OnInit {
               this.data = parsedData;
               // this.charts = parsedData.data;
               this.progress = 100;
+              this.start_date = parsedData.start_date;
               this.elapsedTime = parsedData.elapsed_time;
+              this.totalRecords = parsedData.total_records || 0;
+              this.timeTaken = parsedData.time_taken;
               this.isTaskRunning = false; // Mark task as completed
               // eventSource.close();
               if (this.taskIdKey) {
@@ -209,7 +125,7 @@ export class RunCcvaComponent implements OnInit {
               this.progress = Number(parsedData.progress) || 0;
               this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
               this.message = parsedData.message ?? '';
-              // this.totalRecords = eventData.totalRecords || 0;
+              this.totalRecords = parsedData.total_records || 0;
               // this.elapsedTime = eventData.elapsedTime || 0;
             }
           }
