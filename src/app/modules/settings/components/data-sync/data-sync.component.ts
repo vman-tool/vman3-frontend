@@ -51,6 +51,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   //   });
   // }
   ngOnInit(): void {
+    console.log('Connecting to WebSocket:', this.configService.API_URL_WS);
     this.webSockettService.connect(
       `${this.configService.API_URL_WS}/odk_progress/123`
     );
