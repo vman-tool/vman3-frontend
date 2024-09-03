@@ -17,3 +17,30 @@
     </div>
   </div>
 </div>
+
+<div class="p-4 bg-white rounded shadow-md mt-4">
+  <div class="flex items-center justify-between">
+    <div *ngIf="syncedQuestions && syncedQuestions?.length">
+      {{ syncedQuestions.length }} questions synced.
+    </div>
+    <div *ngIf="!syncedQuestions?.length && !syncedQuestions">
+      Syncing questions ... <span class="text-xs text-gray-600 italic">(Do not refresh, nor leave this page)</span>
+    </div>
+    <button 
+      class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-700 hover:cursor-pointer" 
+      [ngClass]="{
+        'opacity-50':!syncedQuestions?.length && !syncedQuestions,
+        'hover:cursor-not-allowed':!syncedQuestions?.length && !syncedQuestions,
+      }"
+      [disabled]="!syncedQuestions?.length && !syncedQuestions"
+      (click)="onSyncQuestions()" 
+      >
+      {{syncedQuestions?.length ? 'Force' : '' }} Sync ODK Questions
+    </button>
+  </div>
+  <div class="relative pt-1">
+    <div class="flex h-2 mb-4 mt-2 overflow-hidden text-xs bg-blue-200 rounded">
+      <mat-progress-bar *ngIf="!syncedQuestions" mode="indeterminate"></mat-progress-bar>
+    </div>
+  </div>
+</div>

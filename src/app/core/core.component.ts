@@ -10,16 +10,5 @@ import { lastValueFrom, map } from 'rxjs';
 })
 export class CoreComponent {
   constructor(
-    private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService
   ){}
-
-  async ngOnInit(): Promise<void> {
-    await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
-      map((response: any) => {
-        this.indexedDBService.addQuestions(response?.data);
-        this.indexedDBService.addQuestionsAsObject(response?.data);
-      })
-    ))
-  }
 }

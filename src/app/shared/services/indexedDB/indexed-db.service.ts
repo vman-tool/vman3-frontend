@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+import { INDEXED_DB_DATABASE_NAME, INDEXED_DB_VERSION, OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { version } from 'leaflet';
 
 interface MyDB extends DBSchema {
-  odk_questions: {
+  [OBJECTSTORE_VA_QUESTIONS]: {
     key: string;
     value: any;
   }
@@ -20,22 +22,44 @@ export class IndexedDBService {
     this.dbPromise = this.initDB();
   }
 
-  private async initDB() {
-    return openDB<MyDB>('vmanDB', 1, {
+  async initDB() {
+    const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION) || "1")
+
+    return openDB<MyDB>(INDEXED_DB_DATABASE_NAME, version_number, {
       upgrade(db) {
-        if (!db.objectStoreNames.contains('odk_questions')) {
-          const store = db.createObjectStore('odk_questions', { keyPath: 'key' });
+        if (!db.objectStoreNames.contains(OBJECTSTORE_VA_QUESTIONS)) {
+          const store = db.createObjectStore(OBJECTSTORE_VA_QUESTIONS, { keyPath: 'key' });
+          localStorage.setItem(INDEXED_DB_VERSION, String(version_number+1))
         }
       },
     });
   }
 
-   private closeDatabase(): void {
+  private async closeDatabase(): Promise<void> {
     this.dbPromise.then(db => db.close());
   }
 
+  async deleteObjectStore() {
+  const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION))
+  
+  const dbPromise = openDB<MyDB>(INDEXED_DB_DATABASE_NAME, version_number+1, {
+    upgrade(db) {
+      if (db.objectStoreNames.contains(OBJECTSTORE_VA_QUESTIONS)) {
+        db.deleteObjectStore(OBJECTSTORE_VA_QUESTIONS);
+
+        localStorage.setItem(INDEXED_DB_VERSION, String(version_number+1))
+        console.log(`Object store ${OBJECTSTORE_VA_QUESTIONS} deleted successfully`);
+      } else {
+        console.log(`Object store ${OBJECTSTORE_VA_QUESTIONS} does not exist`);
+      }
+    }
+  });
+
+  await dbPromise;
+  console.log('Database opened and upgrade completed');
+}
   async deleteDatabase(dbName: string) {
-    this.closeDatabase();
+    await this.closeDatabase();
     const deleteRequest = indexedDB.deleteDatabase(dbName);
 
     deleteRequest.onsuccess = function () {
@@ -58,7 +82,7 @@ export class IndexedDBService {
         key: key,
         value: questions[key]
       };
-      await db.put('odk_questions', item);
+      await db.put(OBJECTSTORE_VA_QUESTIONS, item);
     }
     return Promise.resolve("Questions added successfully to the local database");
   }
@@ -70,7 +94,7 @@ export class IndexedDBService {
         key: "questions_object",
         value: questions
       };
-      await db.put('odk_questions', item);
+      await db.put(OBJECTSTORE_VA_QUESTIONS, item);
     }
     return Promise.resolve("Questions as object added successfully to the local database");
   }
@@ -82,12 +106,12 @@ export class IndexedDBService {
 
   async getQuestions(key?: string) {
     const db = await this.dbPromise;
-    return key ? db.get('odk_questions', key) : db.getAll('odk_questions');
+    return key ? db.get(OBJECTSTORE_VA_QUESTIONS, key) : db.getAll(OBJECTSTORE_VA_QUESTIONS) || [];
   }
   
   async getQuestionsAsObject() {
     const db = await this.dbPromise;
-    return db.get('odk_questions', "questions_object")
+    return db.get(OBJECTSTORE_VA_QUESTIONS, "questions_object")
   }
   
   async getQuestionsByKeys(keys: string[]) {
@@ -100,7 +124,7 @@ export class IndexedDBService {
         results.push(this.cache.get(key));
       } else {
         const db = await this.dbPromise;
-        const value = await db.get('odk_questions', key);
+        const value = await db.get(OBJECTSTORE_VA_QUESTIONS, key);
         this.cache.set(key, value);
         results.push(value);
       }
