@@ -1,14 +1,7 @@
 import { Injectable } from '@angular/core';
 import { INDEXED_DB_DATABASE_NAME, INDEXED_DB_VERSION, OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { version } from 'leaflet';
-
-interface MyDB extends DBSchema {
-  [OBJECTSTORE_VA_QUESTIONS]: {
-    key: string;
-    value: any;
-  }
-}
+import { MyDB } from 'app/shared/interface/indexedDB.interface';
+import { openDB, IDBPDatabase } from 'idb';
 
 @Injectable({
   providedIn: 'root',
@@ -22,8 +15,8 @@ export class IndexedDBService {
     this.dbPromise = this.initDB();
   }
 
-  async initDB() {
-    const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION) || "1")
+  private async initDB(is_another_version?: boolean) {
+    const version_number = is_another_version ? Number(localStorage.getItem(INDEXED_DB_VERSION) || "1") + 1 : Number(localStorage.getItem(INDEXED_DB_VERSION) || "1") 
 
     return openDB<MyDB>(INDEXED_DB_DATABASE_NAME, version_number, {
       upgrade(db) {
@@ -34,28 +27,35 @@ export class IndexedDBService {
       },
     });
   }
+  private async getDb(): Promise<IDBPDatabase<MyDB>> {
+      if (!this.dbPromise) {
+          this.dbPromise = this.initDB();
+      }
+      return this.dbPromise;
+  }
 
   private async closeDatabase(): Promise<void> {
     this.dbPromise.then(db => db.close());
   }
 
+
   async deleteObjectStore() {
-  const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION))
-  
-  const dbPromise = openDB<MyDB>(INDEXED_DB_DATABASE_NAME, version_number+1, {
-    upgrade(db) {
-      if (db.objectStoreNames.contains(OBJECTSTORE_VA_QUESTIONS)) {
-        db.deleteObjectStore(OBJECTSTORE_VA_QUESTIONS);
+    const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION))
+    
+    this.dbPromise = openDB<MyDB>(INDEXED_DB_DATABASE_NAME, version_number+1, {
+      upgrade(db) {
+        if (db.objectStoreNames.contains(OBJECTSTORE_VA_QUESTIONS)) {
+          db.deleteObjectStore(OBJECTSTORE_VA_QUESTIONS);
 
-        localStorage.setItem(INDEXED_DB_VERSION, String(version_number+1))
-        console.log(`Object store ${OBJECTSTORE_VA_QUESTIONS} deleted successfully`);
-      } else {
-        console.log(`Object store ${OBJECTSTORE_VA_QUESTIONS} does not exist`);
+          localStorage.setItem(INDEXED_DB_VERSION, String(version_number+1))
+          console.log(`Object store ${OBJECTSTORE_VA_QUESTIONS} deleted successfully`);
+        } else {
+          console.log(`Object store ${OBJECTSTORE_VA_QUESTIONS} does not exist`);
+        }
       }
-    }
-  });
+    });
 
-  await dbPromise;
+  this.dbPromise;
   console.log('Database opened and upgrade completed');
 }
   async deleteDatabase(dbName: string) {
@@ -76,7 +76,7 @@ export class IndexedDBService {
   }
 
   async addQuestions(questions: any) {
-    const db = await this.dbPromise;
+    const db = await this.getDb();
     for(let key of Object.keys(questions)){
       let item = {
         key: key,
@@ -89,7 +89,7 @@ export class IndexedDBService {
   
   async addQuestionsAsObject(questions: any) {
     if(Object.keys(questions).length){
-      const db = await this.dbPromise;
+      const db = await this.getDb();
       let item = {
         key: "questions_object",
         value: questions
@@ -105,12 +105,17 @@ export class IndexedDBService {
   // }
 
   async getQuestions(key?: string) {
-    const db = await this.dbPromise;
-    return key ? db.get(OBJECTSTORE_VA_QUESTIONS, key) : db.getAll(OBJECTSTORE_VA_QUESTIONS) || [];
+    try {
+      const db = await this.getDb();
+      const questions = key ? await db.get(OBJECTSTORE_VA_QUESTIONS, key) :await db.getAll(OBJECTSTORE_VA_QUESTIONS) || [];
+      return questions 
+    } catch (error) {
+      return Promise.resolve([])
+    }
   }
   
   async getQuestionsAsObject() {
-    const db = await this.dbPromise;
+    const db = await this.getDb();
     return db.get(OBJECTSTORE_VA_QUESTIONS, "questions_object")
   }
   
@@ -123,7 +128,7 @@ export class IndexedDBService {
       if (this.cache.has(key)) {
         results.push(this.cache.get(key));
       } else {
-        const db = await this.dbPromise;
+        const db = await this.getDb();
         const value = await db.get(OBJECTSTORE_VA_QUESTIONS, key);
         this.cache.set(key, value);
         results.push(value);

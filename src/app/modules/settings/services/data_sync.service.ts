@@ -22,4 +22,5 @@ export class DataSyncService {
   syncQuestions(){
     return this.http.post<any>(`${this.configService.API_URL}/odk/fetch_form_questions`, {})
   }
+  
 }

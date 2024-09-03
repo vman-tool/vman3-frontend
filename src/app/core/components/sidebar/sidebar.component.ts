@@ -126,12 +126,18 @@ export class SidebarComponent {
       }
     }
 
-    await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
-      map((response: any) => {
-        this.indexedDBService.addQuestions(response?.data);
-        this.indexedDBService.addQuestionsAsObject(response?.data);
-      })
-    ))
+    const questions = await this.indexedDBService.getQuestions();
+
+    if(!questions.length){
+      await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
+        map(async (response: any) => {
+          if(response?.data){
+            await this.indexedDBService.addQuestions(response?.data);
+            await this.indexedDBService.addQuestionsAsObject(response?.data);
+          }
+        })
+      ));
+    }
   }
   onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
     this.selectedItem =

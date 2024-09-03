@@ -1,7 +1,7 @@
 // import { WebsocketService } from './../../services/web-socket.service';
 import { DataSyncService } from './../../services/data_sync.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { catchError, lastValueFrom, map, retry, Subscription, throwError } from 'rxjs';
+import { lastValueFrom, map, Subscription } from 'rxjs';
 import { WebSockettService } from '../../services/web-socket.service';
 import { ConfigService } from '../../../../app.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
@@ -24,6 +24,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private messageSubscription: Subscription | undefined;
   
   syncedQuestions?: any[] = [];
+  forceChecked: boolean = false;
 
   constructor(
     private dataSyncService: DataSyncService,
@@ -99,11 +100,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     if(!this.syncedQuestions?.length) {
       await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
         map(async (response: any) => {
-          await this.indexedDBService.deleteObjectStore()
-          await this.indexedDBService.initDB()
-
-          this.indexedDBService.addQuestions(response?.data);
-          this.indexedDBService.addQuestionsAsObject(response?.data);
+          await this.indexedDBService.addQuestions(response?.data);
+          await this.indexedDBService.addQuestionsAsObject(response?.data);
           this.syncedQuestions = await this.indexedDBService.getQuestions()
         })
       ))
@@ -136,14 +134,37 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     );
   }
 
-  onSyncQuestions(){
+  onForceCheck(e: Event, notAllowed?: boolean) {
+    this.forceChecked = notAllowed ? this.forceChecked : (e?.target as HTMLInputElement).checked;
+  }
+
+  async onSyncQuestions(){
     this.syncedQuestions = undefined;
-    this.dataSyncService.syncQuestions().pipe(
-      map(async (response: any) => {
-        this.indexedDBService.addQuestions(response?.data);
-        this.indexedDBService.addQuestionsAsObject(response?.data);
-        this.syncedQuestions = await this.indexedDBService.getQuestions()
-      })
-    ).subscribe()
+    
+    if(!this.forceChecked){
+      this.syncedQuestions = await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
+        map(async (response: any) => {
+          if(response?.data){
+            await this.indexedDBService.addQuestions(response?.data);
+            await this.indexedDBService.addQuestionsAsObject(response?.data);
+            return await this.indexedDBService.getQuestions()
+          }
+        })
+      ));
+    }
+
+    this.syncedQuestions = !this.syncedQuestions?.length ? undefined : this.syncedQuestions;
+
+    if(!this.syncedQuestions){
+      this.syncedQuestions = await lastValueFrom(this.dataSyncService.syncQuestions().pipe(
+        map(async (response: any) => {
+          await this.indexedDBService.addQuestions(response?.data);
+          await this.indexedDBService.addQuestionsAsObject(response?.data);
+          this.forceChecked = !this.forceChecked
+          return await this.indexedDBService.getQuestions()
+        })
+      ))
+    }
+
   }
 }
