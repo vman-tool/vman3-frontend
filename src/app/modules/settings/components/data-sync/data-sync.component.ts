@@ -22,7 +22,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private progressSub: Subscription | null = null;
   message: string | undefined;
   private messageSubscription: Subscription | undefined;
-  
+
   syncedQuestions?: any[] = [];
   forceChecked: boolean = false;
 
@@ -31,7 +31,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private webSockettService: WebSockettService,
     private indexedDBService: IndexedDBService,
-    private vaRecordsService: VaRecordsService,
+    private vaRecordsService: VaRecordsService
   ) {
     // this.dataSyncService.webSocket$
     //   .pipe(
@@ -95,16 +95,18 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     //       this.elapsedTime = data.elapsed_time;
     //     }
     //   });
-    this.syncedQuestions = await this.indexedDBService.getQuestions()
-    
-    if(!this.syncedQuestions?.length) {
-      await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
-        map(async (response: any) => {
-          await this.indexedDBService.addQuestions(response?.data);
-          await this.indexedDBService.addQuestionsAsObject(response?.data);
-          this.syncedQuestions = await this.indexedDBService.getQuestions()
-        })
-      ))
+    this.syncedQuestions = await this.indexedDBService.getQuestions();
+
+    if (!this.syncedQuestions?.length) {
+      await lastValueFrom(
+        this.vaRecordsService.getQuestions().pipe(
+          map(async (response: any) => {
+            await this.indexedDBService.addQuestions(response?.data);
+            await this.indexedDBService.addQuestionsAsObject(response?.data);
+            this.syncedQuestions = await this.indexedDBService.getQuestions();
+          })
+        )
+      );
     }
   }
   sendMessage() {
@@ -122,49 +124,54 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   manualSync() {
-    this.dataSyncService.syncData().subscribe(
-      {
-        next: (response: any) => {
-          console.log('Manual sync initiated:', response);
-        },
-        error: (error: any) => {
-          console.error('Error during manual sync:', error);
-        }
-      }
-    );
+    this.dataSyncService.syncData().subscribe({
+      next: (response: any) => {
+        console.log('Manual sync initiated:', response);
+      },
+      error: (error: any) => {
+        console.error('Error during manual sync:', error);
+      },
+    });
   }
 
   onForceCheck(e: Event, notAllowed?: boolean) {
-    this.forceChecked = notAllowed ? this.forceChecked : (e?.target as HTMLInputElement).checked;
+    this.forceChecked = notAllowed
+      ? this.forceChecked
+      : (e?.target as HTMLInputElement).checked;
   }
 
-  async onSyncQuestions(){
+  async onSyncQuestions() {
     this.syncedQuestions = undefined;
-    
-    if(!this.forceChecked){
-      this.syncedQuestions = await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
-        map(async (response: any) => {
-          if(response?.data){
+
+    if (!this.forceChecked) {
+      this.syncedQuestions = await lastValueFrom(
+        this.vaRecordsService.getQuestions().pipe(
+          map(async (response: any) => {
+            if (response?.data) {
+              await this.indexedDBService.addQuestions(response?.data);
+              await this.indexedDBService.addQuestionsAsObject(response?.data);
+              return await this.indexedDBService.getQuestions();
+            }
+          })
+        )
+      );
+    }
+
+    this.syncedQuestions = !this.syncedQuestions?.length
+      ? undefined
+      : this.syncedQuestions;
+
+    if (!this.syncedQuestions) {
+      this.syncedQuestions = await lastValueFrom(
+        this.dataSyncService.syncQuestions().pipe(
+          map(async (response: any) => {
             await this.indexedDBService.addQuestions(response?.data);
             await this.indexedDBService.addQuestionsAsObject(response?.data);
-            return await this.indexedDBService.getQuestions()
-          }
-        })
-      ));
+            this.forceChecked = !this.forceChecked;
+            return await this.indexedDBService.getQuestions();
+          })
+        )
+      );
     }
-
-    this.syncedQuestions = !this.syncedQuestions?.length ? undefined : this.syncedQuestions;
-
-    if(!this.syncedQuestions){
-      this.syncedQuestions = await lastValueFrom(this.dataSyncService.syncQuestions().pipe(
-        map(async (response: any) => {
-          await this.indexedDBService.addQuestions(response?.data);
-          await this.indexedDBService.addQuestionsAsObject(response?.data);
-          this.forceChecked = !this.forceChecked
-          return await this.indexedDBService.getQuestions()
-        })
-      ))
-    }
-
   }
 }
