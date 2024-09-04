@@ -10,6 +10,9 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./run-ccva.component.scss'],
 })
 export class RunCcvaComponent implements OnInit {
+  filter_startDate: any;
+  filter_endDate: any;
+  dateRangeOption: string = 'all'; // 'all' or 'custom'
   charts = {};
   data?: any;
   progress: number = 0;
@@ -22,15 +25,12 @@ export class RunCcvaComponent implements OnInit {
   taskIdKey: string = 'ccva-key'; // Do not initialize with a value
   private messageSubscription: Subscription | undefined;
 
-  startDate = new Date();
-  endDate = new Date();
-  timeTaken = 0;
-
   constructor(
     private configService: ConfigService,
     private runCcvaService: RunCcvaService,
     private webSockettService: WebSockettService
   ) {}
+
   ngOnInit(): void {
     const storedTaskId = localStorage.getItem(this.taskIdKey);
     if (storedTaskId) {
@@ -38,6 +38,14 @@ export class RunCcvaComponent implements OnInit {
       this.connectToSocket(storedTaskId);
     }
   }
+
+  onDateRangeChange() {
+    if (this.dateRangeOption === 'all') {
+      this.filter_startDate = null;
+      this.filter_endDate = null;
+    }
+  }
+
   onCancel() {
     this.isTaskRunning = false;
     if (this.taskIdKey) {
@@ -48,6 +56,7 @@ export class RunCcvaComponent implements OnInit {
       this.messageSubscription.unsubscribe();
     }
   }
+
   onRunCCVA() {
     this.isTaskRunning = true;
     this.progress = 0;
@@ -55,7 +64,15 @@ export class RunCcvaComponent implements OnInit {
     this.totalRecords = 0;
     this.elapsedTime = '0:00:00';
     localStorage.removeItem(this.taskIdKey);
-    this.runCcvaService.run_ccva().subscribe({
+
+    // Prepare filter object based on the selected options
+    const filter = {
+      start_date:
+        this.dateRangeOption === 'custom' ? this.filter_startDate : null,
+      end_date: this.dateRangeOption === 'custom' ? this.filter_endDate : null,
+    };
+
+    this.runCcvaService.run_ccva(filter).subscribe({
       next: (response: any) => {
         if (response?.data) {
           const taskId = response.data.task_id;
@@ -83,55 +100,33 @@ export class RunCcvaComponent implements OnInit {
     this.messageSubscription = this.webSockettService.messages.subscribe(
       (data: string) => {
         try {
-          // Parse the incoming message string to JSON
           const parsedData = JSON.parse(data);
 
-          console.log('Received message:', parsedData);
-
-          // Update component properties with parsed data
           if (parsedData) {
-            //  this.totalRecords = parsedData.total_records;
-            //  this.progress = Math.round(parsedData.progress)
-            //    .toFixed(0)
-            //    .toString();
-            //  this.elapsedTime = parsedData.elapsed_time;
-            // Keep the raw message as a string
-
             if (parsedData.status === 'completed') {
-              console.log('Task Completed: ', parsedData);
               this.data = parsedData;
-              // this.charts = parsedData.data;
               this.progress = 100;
               this.start_date = parsedData.start_date;
               this.elapsedTime = parsedData.elapsed_time;
               this.totalRecords = parsedData.total_records || 0;
-              this.timeTaken = parsedData.time_taken;
-              this.isTaskRunning = false; // Mark task as completed
-              // eventSource.close();
+              this.isTaskRunning = false;
               if (this.taskIdKey) {
                 localStorage.removeItem(this.taskIdKey);
               }
             } else if (parsedData.error === true) {
-              console.log('Task Failed: ', parsedData);
-              this.isTaskRunning = false; // Mark task as failed
+              this.isTaskRunning = false;
               this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
-              // eventSource.close();
               if (this.taskIdKey) {
                 localStorage.removeItem(this.taskIdKey);
               }
             } else {
-              console.log('Task Progress: ', parsedData);
-              console.log('Task Progress: ', parsedData.progress);
               this.data = parsedData;
               this.progress = Number(parsedData.progress) || 0;
               this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
               this.message = parsedData.message ?? '';
               this.totalRecords = parsedData.total_records || 0;
-              // this.elapsedTime = eventData.elapsedTime || 0;
             }
           }
-
-          // this.message = data; // Keep the raw message as a string
         } catch (error) {
           console.error('Error parsing message:', error);
         }

@@ -28,29 +28,14 @@ export class CsrfInterceptorService {
 
   
   intercept(request: HttpRequest<any>, next: HttpHandler) {
-    const now = new Date().getTime() / 1000;
-    const access_token_expiry = localStorage.getItem('access_token_expiry');
-    
     localStorage.setItem("latest_route", this.router!.url)
-
-    //TODO: Old interceptor logic
-    // if (access_token_expiry && now > (Number(access_token_expiry))) {
-    //   lastValueFrom(this.authService.refresh_token()).then((response: any) => {
-    //     console.log("This refresher one is called: ",response)
-    //     if (response?.access_token && response.refresh_token) {
-    //         this.authService.saveUserData(response);
-    //     } else {
-    //         this.authService.logout()
-    //     }
-    //   })
-    // }
     
     let modifiedRequest = this.addHeaders(request);
 
     return next.handle(modifiedRequest).pipe(
-      catchError(async (requestError: HttpErrorResponse) => {
+      catchError((requestError: HttpErrorResponse) => {
         if (requestError.status === 401 || requestError.status === 403) {
-          if(this.refreshRequests < 1){
+          if(this.refreshRequests <= 1){
             return this.authService.refresh_token().pipe(
               map((response) => {
                 this.refreshRequests++
@@ -67,6 +52,7 @@ export class CsrfInterceptorService {
                 }
               }),
               catchError((error) => {
+                console.log("Error occured in refresh interceptor... ")
                 this.authService.logout();
                 return throwError(() => error);
               })

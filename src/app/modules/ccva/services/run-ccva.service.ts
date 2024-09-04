@@ -3,16 +3,14 @@ import { Injectable } from '@angular/core';
 import { ConfigService } from 'app/app.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RunCcvaService {
+  constructor(private http: HttpClient, private configService: ConfigService) {}
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) { }
-
-  run_ccva(){
-    return this.http.post(`${this.configService.API_URL}/ccva`, {})
+  run_ccva(filter: {}) {
+    return this.http.post(`${this.configService.API_URL}/ccva`, {
+      ...filter,
+    });
   }
 }

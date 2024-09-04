@@ -31,5 +31,5 @@ export async function is_authenticated(authService: AuthService): Promise<boolea
             authenticated = false;
         }
     }
-    return authenticated;
+    return Promise.resolve(authenticated);
 }
