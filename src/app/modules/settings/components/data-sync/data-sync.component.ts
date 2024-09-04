@@ -25,31 +25,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private dataSyncService: DataSyncService,
     private configService: ConfigService,
     private webSockettService: WebSockettService
-  ) {
-    // this.dataSyncService.webSocket$
-    //   .pipe(
-    //     catchError((error) => {
-    //       // this.interval = 1;
-    //       return throwError(() => new Error(error));
-    //     }),
-    //     retry({ delay: 5_000 }),
-    //     // takeUntilDestroyed()
-    //   )
-    //   .subscribe((data: any) => {
-    //     if (data) {
-    //       this.totalRecords = data.total_records;
-    //       this.progress = data.progress;
-    //       this.elapsedTime = data.elapsed_time;
-    //     }
-    //   });
-  }
-  // initializeSocketConnection() {
-  //   this.websocketService.connect('');
-  //   this.websocketService.onMessage().subscribe((message: any) => {
-  //     console.log('Received message:', message);
-  //     //  this.messages.push(message);
-  //   });
-  // }
+  ) {}
+
   ngOnInit(): void {
     console.log('Connecting to WebSocket:', this.configService.API_URL_WS);
     this.webSockettService.connect(
