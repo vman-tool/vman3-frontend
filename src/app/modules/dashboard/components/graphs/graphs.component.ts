@@ -91,6 +91,22 @@ export class GraphsComponent implements OnInit {
   public doughnutChartOptions: ChartOptions = {
     responsive: true,
     plugins: {
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce(
+              (acc: number, val: any) => acc + val,
+              0
+            );
+            const percentage =
+              ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
+
+            return `${label}: ${value} (${percentage})`;
+          },
+        },
+      },
       datalabels: {
         formatter: (value, context) => {
           const total = context.chart.data.datasets[0].data.reduce(
@@ -114,7 +130,7 @@ export class GraphsComponent implements OnInit {
             },
             0
           );
-          const percentage = ((value / total) * 100).toFixed(2) + '%';
+          const percentage = ((value / total) * 100).toFixed(2) + '';
           return percentage;
         },
         color: '#fff',
@@ -224,7 +240,7 @@ export class GraphsComponent implements OnInit {
         ticks: {
           callback: (tickValue: number | string) => {
             if (typeof tickValue === 'number') {
-              return `${tickValue}%`; // Append percentage sign if it's a number
+              return `${tickValue}`; // Append percentage sign if it's a number
             }
             return tickValue; // Return as-is if it's not a number (e.g., a string)
           },

@@ -10,14 +10,14 @@
 
   <ng-template #chartsContent>
     <div *ngIf="chartKeys.length > 0; else emptyMessage">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-1">
         <div class="flex space-x-8">
           <p class="text-lg font-semibold">Start Date: {{ created_at | date:'short' }}</p>
           <p class="text-lg font-semibold">Total Records: {{ total_records }}</p>
           <p class="text-lg font-semibold">Time Taken: {{ elapsed_time }}</p>
         </div>
       </div>
-      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <hr class="h-px my-1 bg-gray-200 border-0 dark:bg-gray-700">
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Bar Chart -->

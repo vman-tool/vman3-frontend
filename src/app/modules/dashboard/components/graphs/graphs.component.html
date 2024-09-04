@@ -19,7 +19,7 @@
 </div>
 
 <ng-template #chartsContent>
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-3">
     <!-- Bar Chart -->
     <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg ">
       <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
@@ -36,8 +36,8 @@
     <!-- Doughnut Chart -->
     <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
       <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span>
-      <div class="flex justify-center w-full">
-        <div class="w-full h-60 md:h-72">
+      <div class="flex items-center justify-center w-full">
+        <div class="flex items-center justify-center w-auto h-60 md:h-72">
           <canvas baseChart [datasets]="doughnutChartData.datasets" [labels]="doughnutChartData.labels"
             [options]="doughnutChartOptions" [legend]="doughnutChartLegend" [type]="doughnutChartType">
           </canvas>

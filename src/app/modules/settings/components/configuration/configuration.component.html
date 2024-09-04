@@ -1,5 +1,5 @@
 <div class="max-w-4xl p-8 bg-white rounded-lg shadow-sm">
-  <span class="mb-6 text-2xl font-semibold">Settings</span>
+  <span class="mb-6 text-2xl font-semibold">Configurations</span>
   <!-- Tab Navigation -->
   <div class="border-b border-gray-200 dark:border-gray-700">
     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
@@ -17,8 +17,8 @@
         </a>
       </li>
       <li class="me-2">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer" (click)="selectedTab = 'odk-api'"
-          [ngClass]="{
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'odk-api'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'odk-api',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'odk-api'
          }">
@@ -194,7 +194,8 @@
       <div *ngIf="vaSummaryObjects?.length; else noVaSummaryData">
         <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
           <div *ngIf="vaSummaryObjects?.length">
-            <p *ngFor="let vaQuestion of vaSummaryObjects;"><strong>{{ vaQuestion?.value?.label ? vaQuestion?.value?.label : vaQuestion?.key }}:</strong> {{ vaQuestion?.key }}</p>
+            <p *ngFor="let vaQuestion of vaSummaryObjects;"><strong>{{ vaQuestion?.value?.label ?
+                vaQuestion?.value?.label : vaQuestion?.key }}:</strong> {{ vaQuestion?.key }}</p>
           </div>
           <button *ngIf="!isLoading" (click)="editForm('va_summary')"
             class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
