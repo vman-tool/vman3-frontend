@@ -92,16 +92,14 @@ export class AuthService {
   saveUserData(response: any) {
     this.clearUserData()
 
-    setTimeout(() => {
-      localStorage.setItem("access_token", response?.access_token)
-      localStorage.setItem("refresh_token", response?.refresh_token)
-      
-       const now = new Date().getTime()/1000;
-  
-      localStorage.setItem("access_token_expiry", (now + Number(response.expires_in)).toString())
-      localStorage.setItem("current_user", JSON.stringify(response.user))
-      AuthEmitters.authEmitter.emit(true);
-    }, 100)
+    localStorage.setItem("access_token", response?.access_token)
+    localStorage.setItem("refresh_token", response?.refresh_token)
+    
+     const now = new Date().getTime()/1000;
+
+    localStorage.setItem("access_token_expiry", (now + Number(response.expires_in)).toString())
+    localStorage.setItem("current_user", JSON.stringify(response.user))
+    AuthEmitters.authEmitter.emit(true);
   }
   
   clearUserData() {
