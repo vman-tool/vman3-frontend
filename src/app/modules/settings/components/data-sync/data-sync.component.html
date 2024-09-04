@@ -17,3 +17,50 @@
     </div>
   </div>
 </div>
+
+<div class="p-4 bg-white rounded shadow-md mt-4">
+  <div class="flex items-center justify-between">
+    <div *ngIf="syncedQuestions">
+      {{ syncedQuestions.length ? syncedQuestions.length + ' questions synced.' : 'Click sync ODK questions to sync' }}
+    </div>
+    <div *ngIf="!syncedQuestions?.length && !syncedQuestions">
+      Syncing questions ... <span class="text-xs text-gray-600 italic">(Do not refresh, nor leave this page)</span>
+    </div>
+    <div class="py-2 px-4 flex items-center">
+      <div class="p-5 mb-3">
+        <!-- <label for="force">Force</label>
+        <input type="checkbox" name="force" id="" class="ml-5 pt-5 mt-5 mr-5"> -->
+        <label class="inline-flex items-center mt-5">
+          <input type="checkbox" class="hidden peer" (change)="onForceCheck($event, !syncedQuestions?.length && !syncedQuestions)" [checked]="forceChecked">
+          <div
+            class="w-5 h-5 rounded flex border border-gray-600  items-center justify-center hover:cursor-pointer"
+            [ngClass]="{
+              'opacity-50':!syncedQuestions,
+              'hover:cursor-not-allowed':!syncedQuestions?.length && !syncedQuestions,
+              'peer-checked:bg-blue-600 peer-checked:border-transparent peer-checked:text-white peer-focus:ring-2 peer-focus:ring-blue-500': syncedQuestions?.length || syncedQuestions,
+            }"
+            >
+            <i class="ph-check" *ngIf="forceChecked"></i>
+          </div>
+          <span class="ml-2 text-gray-700">Force</span>
+        </label>
+      </div>
+      <button 
+        class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-700 hover:cursor-pointer" 
+        [ngClass]="{
+          'opacity-50':!syncedQuestions?.length && !syncedQuestions,
+          'hover:cursor-not-allowed':!syncedQuestions?.length && !syncedQuestions,
+        }"
+        [disabled]="!syncedQuestions?.length && !syncedQuestions"
+        (click)="onSyncQuestions()" 
+        >
+        Sync ODK Questions
+      </button>
+    </div>
+  </div>
+  <div class="relative pt-1">
+    <div class="flex h-2 mb-4 mt-2 overflow-hidden text-xs bg-blue-200 rounded">
+      <mat-progress-bar *ngIf="!syncedQuestions" mode="indeterminate"></mat-progress-bar>
+    </div>
+  </div>
+</div>
