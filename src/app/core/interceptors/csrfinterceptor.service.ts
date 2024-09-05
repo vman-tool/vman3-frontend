@@ -1,13 +1,11 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { from, lastValueFrom, Observable, of, throwError } from 'rxjs';
-import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 import { AuthService } from '../services/authentication/auth.service';
 import { ErrorEmitters } from '../emitters/error.emitters';
 import { Router } from '@angular/router';
-import { AuthEmitters } from '../emitters/auth.emitters';
-import { is_authenticated } from '../../shared/helpers/auth.helpers';
 
 @Injectable({
   providedIn: 'root'
