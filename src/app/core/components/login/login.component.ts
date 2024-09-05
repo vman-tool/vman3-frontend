@@ -60,19 +60,34 @@ export class LoginComponent implements OnInit, AfterViewInit {
       })).subscribe(
         {
           next: (response: any)=> {
-            this.username = undefined;
-            failed = false 
-            setTimeout(() =>{
+            failed = false
+            if (response?.access_token){
+              this.username = undefined;
               this.navigate()
               this.snackBar.open("Successfully logged in", "close", {
                 horizontalPosition: this.horizontalPosition,
                 verticalPosition: this.verticalPosition,
                 panelClass: 'snack-success',
-                  duration: 3 * 1000,
-                })
-              }, 100)
-            },
-            error: (error: any) => {
+                duration: 3 * 1000,
+              })
+            } 
+            if (!response?.ok && response?.status) {
+              this.snackBar.open("Invalid username/password", "close",{
+                horizontalPosition: this.horizontalPosition,
+                verticalPosition: this.verticalPosition,
+                duration: 3 * 1000,
+              })
+            }
+
+            if(!response?.status && !response?.ok && !response?.access_token){
+              this.snackBar.open("Kindly check your connection, then retry.", "close", {
+                horizontalPosition: this.horizontalPosition,
+                verticalPosition: this.verticalPosition,
+                duration: 3 * 1000,
+              })
+            }
+          },
+          error: (error: any) => {
               failed = false
               this.snackBar.open("Invalid username/password", "close",{
                 horizontalPosition: this.horizontalPosition,

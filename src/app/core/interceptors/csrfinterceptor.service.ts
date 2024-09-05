@@ -22,51 +22,38 @@ export class CsrfInterceptorService {
     private router: Router
   ) {}
 
-  refresh: boolean = true;
-  refreshRequests: number = 0;
-
+  refresh: boolean = Boolean(localStorage.getItem('refresh_request'));
 
   
   intercept(request: HttpRequest<any>, next: HttpHandler) {
-    const now = new Date().getTime() / 1000;
-    const access_token_expiry = localStorage.getItem('access_token_expiry');
-    
     localStorage.setItem("latest_route", this.router!.url)
-
-    //TODO: Old interceptor logic
-    // if (access_token_expiry && now > (Number(access_token_expiry))) {
-    //   lastValueFrom(this.authService.refresh_token()).then((response: any) => {
-    //     console.log("This refresher one is called: ",response)
-    //     if (response?.access_token && response.refresh_token) {
-    //         this.authService.saveUserData(response);
-    //     } else {
-    //         this.authService.logout()
-    //     }
-    //   })
-    // }
     
     let modifiedRequest = this.addHeaders(request);
 
     return next.handle(modifiedRequest).pipe(
-      catchError(async (requestError: HttpErrorResponse) => {
+      catchError((requestError: HttpErrorResponse) => {
         if (requestError.status === 401 || requestError.status === 403) {
-          if(this.refreshRequests < 1){
+          localStorage.setItem('refresh_request', String(true))
+          if(this.refresh){
+            console.log("Refresh-Response: ", requestError.status)
             return this.authService.refresh_token().pipe(
               map((response) => {
-                this.refreshRequests++
-                console.log("Refresh-Response: ", response)
                 if (response.status === 200) {
+                  localStorage.removeItem('refresh_request')
                   console.log("refresh called in intercetor and succeeded!",)
                   this.authService.saveUserData(response);
                   modifiedRequest = this.addHeaders(request);
                   return next.handle(modifiedRequest);
                 } else {
                   console.log("refresh called in intercetor and failed!")
+                  localStorage.removeItem('refresh_request')
                   this.authService.logout();
                   return throwError(() => requestError);
                 }
               }),
               catchError((error) => {
+                console.log("Error occured in refresh interceptor... ")
+                localStorage.removeItem('refresh_request')
                 this.authService.logout();
                 return throwError(() => error);
               })
@@ -77,6 +64,9 @@ export class CsrfInterceptorService {
             this.authService.logout();
             return throwError(() => requestError);
           }
+        }
+        if(!requestError.status){
+          console.log("Connection error: ")
         }
         return throwError(() => requestError);
       }),
