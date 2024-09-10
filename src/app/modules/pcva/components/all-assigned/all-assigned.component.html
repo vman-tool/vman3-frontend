@@ -13,7 +13,7 @@
       <div class="w-full overflow-hidden">
         <div class="overflow-y-auto">
           <table class="w-full divide-y divide-gray-200 table-auto">
-            <thead *ngIf="params?.assignedVas?.data?.length">
+            <thead *ngIf="params?.assignedVas?.data?.length && headers?.length">
               <tr class="bg-white sticky top-0 z-10">
                 <th *ngFor="let header of headers;"
                   class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
