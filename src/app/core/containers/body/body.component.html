@@ -1,14 +1,16 @@
 <div class="grid items-center grid-cols-12 pb-3 h-[7vh]">
   <div class="col-span-4 ml-[30px] grid grid-cols-12 items-center">
+    
+    <div class="flex items-center col-span-2 rounded-md">
+      <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon" class="w-auto h-12 max-w-full" />
+    </div>
+
     <div class="col-span-1">
-      <span class="text-4xl text-black cursor-pointer" (click)="Openbar($event)">
-        <i class="px-2 bg-white rounded-md ph-list"></i>
+      <span class="text-2xl text-black cursor-pointer" (click)="Openbar($event)">
+        <i class="ms-10 px-4 bg-white rounded-md ph-list"></i>
       </span>
     </div>
 
-    <div class="flex items-center col-span-2 rounded-md">
-      <img src="../../../../assets/images/vman-logo.png" alt="VMan3-icon" class="w-auto h-12 max-w-full" />
-    </div>
   </div>
   <div class="relative col-span-8">
     <app-header></app-header>

@@ -26,9 +26,9 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
   };
   private customIcon = L.icon({
     iconUrl: 'assets/icons/marker.svg', // Path to your custom marker icon
-    iconSize: [38, 38], // Size of the icon
-    iconAnchor: [19, 38], // Point of the icon which will correspond to marker's location
-    popupAnchor: [0, -38], // Point from which the popup should open relative to the iconAnchor
+    iconSize: [10, 10], // Smaller size of the icon
+    iconAnchor: [5, 10], // Adjust the anchor point based on new icon size
+    popupAnchor: [0, -10], // Adjust popup anchor accordingly
   });
   title: string = 'VA Data Map';
 
@@ -106,32 +106,32 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
           console.log(`Adding marker ${index + 1}:`, latitude, longitude); // Log each marker's coordinates
 
           const popupContent = `
-  <div class="p-4 bg-transparent rounded-lg  w-96">
-    <div class="mb-2 text-lg font-bold flex items-center">
-      <img src="assets/icons/marker.svg" class="h-6 w-6 mr-2" />
-      Marker Details
-    </div>
-    <div class="grid grid-cols-2 gap-4 text-gray-600">
-      <div class="col-span-2">
-        <span class="font-semibold">Region:</span> ${location.location}
-      </div>
-      <div class="col-span-2">
-        <span class="font-semibold">District:</span> ${location.district}
-      </div>
-      <div class="col-span-2">
-        <span class="font-semibold">Date:</span> ${new Date(
-          location.date
-        ).toLocaleDateString()}
-      </div>
-      <div class="col-span-2">
-        <span class="font-semibold">Interviewer:</span> ${location.interviewer}
-      </div>
-      <div class="col-span-2">
-        <span class="font-semibold">Device ID:</span> ${location.deviceid}
-      </div>
-    </div>
-  </div>
-`;
+            <div class="p-4 bg-transparent rounded-lg  w-96">
+              <div class="mb-2 text-lg font-bold flex items-center">
+                <img src="assets/icons/marker.svg" class="h-6 w-6 mr-2" />
+                Marker Details
+              </div>
+              <div class="grid grid-cols-2 gap-4 text-gray-600">
+                <div class="col-span-2">
+                  <span class="font-semibold">Region:</span> ${location.location}
+                </div>
+                <div class="col-span-2">
+                  <span class="font-semibold">District:</span> ${location.district}
+                </div>
+                <div class="col-span-2">
+                  <span class="font-semibold">Date:</span> ${new Date(
+                    location.date
+                  ).toLocaleDateString()}
+                </div>
+                <div class="col-span-2">
+                  <span class="font-semibold">Interviewer:</span> ${location.interviewer}
+                </div>
+                <div class="col-span-2">
+                  <span class="font-semibold">Device ID:</span> ${location.deviceid}
+                </div>
+              </div>
+            </div>
+          `;
 
           const marker = L.marker([latitude, longitude], {
             icon: this.customIcon,
