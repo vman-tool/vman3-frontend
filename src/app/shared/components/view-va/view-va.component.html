@@ -79,7 +79,15 @@
                                 question?.key}}:</strong>
                         </div>
                         <div *ngIf="params?.vaRecord?.data[0][question?.key]" class="border border-gray-600 bg-gray-200 rounded-md p-4 mt-1 mb-1 col-span-8">
-                            {{ params?.vaRecord?.data[0][question?.key] }}
+                            @if(question?.value?.options?.length === 0){
+                            <p class="text-gray-900 whitespace-no-wrap">{{ params?.vaRecord?.data[0][question?.key] }}</p>
+                            } @else {
+                            <ng-container *ngFor="let option of question?.value?.options;">
+                                @if(option.value === params?.vaRecord?.data[0][question?.key]){
+                                <p class="text-gray-900 whitespace-no-wrap">{{ option?.label }}</p>
+                                }
+                            </ng-container>
+                            }
                         </div>
                     </ng-container>
                 </div>
