@@ -1,16 +1,11 @@
-<div class="grid items-center grid-cols-12 pb-3 h-[7vh]">
-  <div class="col-span-4 ml-[30px] grid grid-cols-12 items-center">
-    
-    <div class="flex items-center col-span-2 rounded-md">
-      <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon" class="w-auto h-12 max-w-full" />
-    </div>
-
-    <div class="col-span-1">
+<div class="grid items-center grid-cols-12 pb-5 h-[7vh]">
+  <div class="col-span-2 {{ sidebarHidden ? 'lg:ml-[55px]' : 'lg:ml-[200px]'}} float-right">
       <span class="text-2xl text-black cursor-pointer" (click)="Openbar($event)">
         <i class="ms-10 px-4 bg-white rounded-md ph-list"></i>
       </span>
-    </div>
-
+  </div>
+  <div class="relative col-span-2">
+      <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon" class="w-auto h-12 max-w-full {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}} float-left" />
   </div>
   <div class="relative col-span-8">
     <app-header></app-header>
@@ -18,9 +13,13 @@
 </div>
 
 <!-- Main content wrapper, ensures no overflow -->
-<div class="relative flex overflow-hidden  h-[93vh]"> <!-- Set height based on available viewport height -->
-  <app-sidebar *ngIf="sidebarHidden"></app-sidebar>
-  <div class="top-0 {{ sidebarHidden ? 'w-[80%]' : 'ml-[100px] w-[90%]'}} px-4 overflow-y-hidden">
+<div class="relative flex overflow-hidden ">
+  <app-sidebar *ngIf="!sidebarHidden"></app-sidebar>
+  <div class="top-10 {{ sidebarHidden ? 'ml-[100px] w-[90%]' : 'w-[80%]'}} px-4 overflow-y-hidden">
     <router-outlet></router-outlet>
   </div>
+</div>
+
+<div class="w-full fixed bottom-0 right-0 left-0">
+  <app-footer></app-footer>
 </div>

@@ -8,7 +8,7 @@ import { AuthService } from '../../services/authentication/auth.service';
   styleUrl: './body.component.scss'
 })
 export class BodyComponent {
-  sidebarHidden: boolean = true;
+  sidebarHidden: boolean = false;
   Openbar(e: any) {
       e.stopPropagation()
       this.sidebarHidden = !this.sidebarHidden
