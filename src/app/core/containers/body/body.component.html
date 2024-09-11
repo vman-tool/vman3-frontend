@@ -13,9 +13,9 @@
 </div>
 
 <!-- Main content wrapper, ensures no overflow -->
-<div class="relative flex overflow-hidden ">
+<div class="relative flex overflow-auto ">
   <app-sidebar *ngIf="!sidebarHidden"></app-sidebar>
-  <div class="top-10 {{ sidebarHidden ? 'ml-[100px] w-[90%]' : 'w-[80%]'}} px-4 overflow-y-hidden">
+  <div class="top-10 {{ sidebarHidden ? 'ml-[100px] w-[90%]' : 'w-[80%]'}} px-4 overflow-y-auto">
     <router-outlet></router-outlet>
   </div>
 </div>
