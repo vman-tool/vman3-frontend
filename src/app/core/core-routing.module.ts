@@ -37,6 +37,15 @@ const routes: Routes = [
         canActivate: [SettingsGuard],
       },
       {
+        // Records module
+        path: 'data-quality',
+        loadChildren: () =>
+          import('../modules/data-quality/data-quality.module').then(
+            (importation) => importation.DataQualityModule
+          ),
+        canActivate: [SettingsGuard],
+      },
+      {
         // Map module
         path: 'data-map',
         loadChildren: () =>

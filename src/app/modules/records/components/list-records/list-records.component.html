@@ -1,76 +1,78 @@
-<app-va-filters [title]="title"></app-va-filters>
-<div class="relative w-full overflow-x-auto shadow-md sm:rounded-lg">
-  <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
-    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-      <tr>
-        <th scope="col" class="p-4">
-          <div class="flex items-center">
-            <input id="checkbox-all-search" type="checkbox"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-            <label for="checkbox-all-search" class="sr-only">checkbox</label>
-          </div>
-        </th>
-        <th scope="col" class="px-6 py-3">VA ID</th>
-        <th scope="col" class="px-6 py-3">Region</th>
-        <th scope="col" class="px-6 py-3">District</th>
-        <th scope="col" class="px-6 py-3">Interview Day</th>
-        <th scope="col" class="px-6 py-3">Interviewer Name</th>
-        <th scope="col" class="px-6 py-3">View</th>
-      </tr>
-    </thead>
-    <tbody>
-      @if((data.length === 0 || !data || data === undefined) && !isLoading){
-      <tr class="bg-gray-200">
-        <td colspan="7" class="px-6 py-4 text-center">No record was found</td>
-      </tr>
-      }
-      @if(isLoading){
-      <td colspan="7" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
-        <div class="flex items-center justify-center h-full">
-          <mat-spinner diameter="30" color="accent"></mat-spinner>
-        </div>
-      </td>
-
-      }
-
-      <tr *ngFor="let row of data; let i = index" [ngClass]="{'bg-white': i % 2 === 0, 'bg-gray-200': i % 2 !== 0}"
-        class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-        <td class="w-4 p-4">
-          <div class="flex items-center">
-            <input id="checkbox-table-search-{{ row.vaId }}" type="checkbox"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-            <label for="checkbox-table-search-{{ row.vaId }}" class="sr-only">checkbox</label>
+<div class="p-8 bg-white rounded-lg">
+  <app-va-filters [title]="title"></app-va-filters>
+  <div class="relative w-full overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th scope="col" class="p-4">
+            <div class="flex items-center">
+              <input id="checkbox-all-search" type="checkbox"
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="checkbox-all-search" class="sr-only">checkbox</label>
+            </div>
+          </th>
+          <th scope="col" class="px-6 py-3">VA ID</th>
+          <th scope="col" class="px-6 py-3">Region</th>
+          <th scope="col" class="px-6 py-3">District</th>
+          <th scope="col" class="px-6 py-3">Interview Day</th>
+          <th scope="col" class="px-6 py-3">Interviewer Name</th>
+          <th scope="col" class="px-6 py-3">View</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if((data.length === 0 || !data || data === undefined) && !isLoading){
+        <tr class="bg-gray-200">
+          <td colspan="7" class="px-6 py-4 text-center">No record was found</td>
+        </tr>
+        }
+        @if(isLoading){
+        <td colspan="7" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
+          <div class="flex items-center justify-center h-full">
+            <mat-spinner diameter="30" color="accent"></mat-spinner>
           </div>
         </td>
-        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-          {{ row.vaId }}
-        </th>
-        <td class="px-6 py-4">{{ row.region }}</td>
-        <td class="px-6 py-4">{{ row.district }}</td>
-        <td class="px-6 py-4">{{ row.interviewDay }}</td>
-        <td class="px-6 py-4">{{ row.interviewer_name }}</td>
-        <td class="px-6 py-4">
-          <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline hover:cursor-pointer" (click)="onOpenVA(row?.vaId)"><i class="ph-eye"></i></a>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <nav class="flex flex-wrap items-center justify-between p-5 pt-4 flex-column md:flex-row"
-    aria-label="Table navigation">
-    <span class="block w-full mb-4 text-sm font-normal text-gray-500 dark:text-gray-400 md:mb-0 md:inline md:w-auto">
-      Showing <span class="font-semibold text-gray-900 dark:text-white">{{ (pageNumber - 1) * limit + 1 }}-{{
-        (pageNumber * limit < totalRecords) ? pageNumber * limit : totalRecords }}</span> of <span
-            class="font-semibold text-gray-900 dark:text-white">{{ totalRecords }}</span>
-      </span>
-      <ul class="inline-flex h-8 -space-x-px text-sm rtl:space-x-reverse">
-        <li>
-          <a (click)="goToPreviousPage()"
-            class="flex items-center justify-center h-8 px-3 leading-tight text-gray-500 bg-white border border-gray-300 ms-0 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</a>
-        </li>
-        <li>
-          <a (click)="goToNextPage()"
-            class="flex items-center justify-center h-8 px-3 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Next</a>
-        </li>
-      </ul>
-  </nav>
+  
+        }
+  
+        <tr *ngFor="let row of data; let i = index" [ngClass]="{'bg-white': i % 2 === 0, 'bg-gray-200': i % 2 !== 0}"
+          class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <td class="w-4 p-4">
+            <div class="flex items-center">
+              <input id="checkbox-table-search-{{ row.vaId }}" type="checkbox"
+                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="checkbox-table-search-{{ row.vaId }}" class="sr-only">checkbox</label>
+            </div>
+          </td>
+          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            {{ row.vaId }}
+          </th>
+          <td class="px-6 py-4">{{ row.region }}</td>
+          <td class="px-6 py-4">{{ row.district }}</td>
+          <td class="px-6 py-4">{{ row.interviewDay }}</td>
+          <td class="px-6 py-4">{{ row.interviewer_name }}</td>
+          <td class="px-6 py-4">
+            <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline hover:cursor-pointer" (click)="onOpenVA(row?.vaId)"><i class="ph-eye"></i></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <nav class="flex flex-wrap items-center justify-between p-5 pt-4 flex-column md:flex-row"
+      aria-label="Table navigation">
+      <span class="block w-full mb-4 text-sm font-normal text-gray-500 dark:text-gray-400 md:mb-0 md:inline md:w-auto">
+        Showing <span class="font-semibold text-gray-900 dark:text-white">{{ (pageNumber - 1) * limit + 1 }}-{{
+          (pageNumber * limit < totalRecords) ? pageNumber * limit : totalRecords }}</span> of <span
+              class="font-semibold text-gray-900 dark:text-white">{{ totalRecords }}</span>
+        </span>
+        <ul class="inline-flex h-8 -space-x-px text-sm rtl:space-x-reverse">
+          <li>
+            <a (click)="goToPreviousPage()"
+              class="flex items-center justify-center h-8 px-3 leading-tight text-gray-500 bg-white border border-gray-300 ms-0 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</a>
+          </li>
+          <li>
+            <a (click)="goToNextPage()"
+              class="flex items-center justify-center h-8 px-3 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Next</a>
+          </li>
+        </ul>
+    </nav>
+  </div>
 </div>
