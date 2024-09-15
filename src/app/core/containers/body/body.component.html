@@ -13,13 +13,13 @@
 </div>
 
 <!-- Main content wrapper, ensures no overflow -->
-<div class="relative flex overflow-auto ">
+<div class="flex overflow-auto mb-5">
   <app-sidebar *ngIf="!sidebarHidden"></app-sidebar>
   <div class="top-10 {{ sidebarHidden ? 'ml-[100px] w-[90%]' : 'w-[80%]'}} px-4 overflow-y-auto">
     <router-outlet></router-outlet>
   </div>
 </div>
 
-<div class="w-full fixed bottom-0 right-0 left-0">
-  <app-footer></app-footer>
-</div>
+<!-- <div class="w-full fixed bottom-0 right-0 left-0"> -->
+  <app-footer class="w-full fixed bottom-0 right-0 left-0"></app-footer>
+<!-- </div> --> 
