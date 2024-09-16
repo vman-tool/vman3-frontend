@@ -22,10 +22,11 @@
             <div
               class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? '' : 'hidden'}}">
               <p routerLink="{{menuItem?.route + subMenu?.route}}"
-                class="cursor-pointer p-2 hover:text-blue-600 rounded-md mt-1 {{ selectedSubMenu === i+(subIndex+1) ? 'text-blue-600' : '' }}"
+                class="cursor-pointer flex p-2 hover:text-blue-600 rounded-md mt-1 {{ selectedSubMenu === i+(subIndex+1) ? 'text-blue-600' : '' }}"
                 (click)="onSelectMenu(i, subIndex+1)"
                 *ngFor="let subMenu of menuItem?.subMenuItems; let subIndex = index;">
-                <i class="{{subMenu?.icon }}"></i>
+                <img *ngIf="subMenu?.icon_asset" src="{{ subMenu?.icon_asset }}" alt="{{subMenu?.displayText}}-icon" class="h-5 mr-1 mt-1" />
+                <i *ngIf="subMenu?.icon" class="{{subMenu?.icon }} mr-2 mt-1"></i>
                 {{ subMenu?.displayText }}
               </p> <br>
             </div>

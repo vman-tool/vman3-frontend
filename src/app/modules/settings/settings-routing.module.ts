@@ -31,6 +31,10 @@ const routes: Routes = [
         path: 'users',
         component: UsersComponent,
       },
+      {
+        path: 'icd10',
+        component: UsersComponent,
+      },
     ],
   },
 ];

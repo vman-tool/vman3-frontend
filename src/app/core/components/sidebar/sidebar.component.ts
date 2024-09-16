@@ -99,6 +99,11 @@ export class SidebarComponent {
             route: '/sync',
           },
           {
+            displayText: 'ICD 10',
+            icon_asset: '../../../../assets/icons/icd10.svg',
+            route: '/icd10',
+          },
+          {
             displayText: 'Users',
             icon: 'flaticon-people', // Replace with the actual Flaticon class for a sync/refresh icon
             icon_asset: '',
