@@ -25,7 +25,7 @@
                 class="cursor-pointer flex p-2 hover:text-blue-600 rounded-md mt-1 {{ selectedSubMenu === i+(subIndex+1) ? 'text-blue-600' : '' }}"
                 (click)="onSelectMenu(i, subIndex+1)"
                 *ngFor="let subMenu of menuItem?.subMenuItems; let subIndex = index;">
-                <img *ngIf="subMenu?.icon_asset" src="{{ subMenu?.icon_asset }}" alt="{{subMenu?.displayText}}-icon" class="h-5 mr-1 mt-1" />
+                <img *ngIf="subMenu?.icon_asset" src="{{ subMenu?.icon_asset }}" alt="{{subMenu?.displayText}}-icon" class="h-6 mr-1 ml-[-6px] mt-1 {{ selectedSubMenu === i+(subIndex+1) ? 'submenu-icon' : '' }}" />
                 <i *ngIf="subMenu?.icon" class="{{subMenu?.icon }} mr-2 mt-1"></i>
                 {{ subMenu?.displayText }}
               </p> <br>
