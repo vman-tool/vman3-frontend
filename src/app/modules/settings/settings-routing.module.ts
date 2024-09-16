@@ -5,6 +5,7 @@ import { authGuard } from '../../shared/guards/auth.guard';
 import { ConfigurationComponent } from './components/configuration/configuration.component';
 import { DataSyncComponent } from './components/data-sync/data-sync.component';
 import { UsersComponent } from './components/users/users.component';
+import { Icd10Component } from './containers/icd10/icd10.component';
 
 const routes: Routes = [
   {
@@ -33,7 +34,7 @@ const routes: Routes = [
       },
       {
         path: 'icd10',
-        component: UsersComponent,
+        component: Icd10Component,
       },
     ],
   },

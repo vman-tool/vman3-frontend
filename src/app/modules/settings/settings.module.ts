@@ -12,6 +12,9 @@ import { SettingsConfigsFormComponent } from './dialogs/settings-configs-form/se
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConnectionFormComponent } from './dialogs/connection-form/connection-form.component';
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+import { Icd10Component } from './containers/icd10/icd10.component';
+import { Icd10CodesComponent } from './components/icd10-codes/icd10-codes.component';
+import { Icd10CodesCategoriesComponent } from './components/icd10-codes-categories/icd10-codes-categories.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +24,9 @@ import { SearchableSelectComponent } from '../../shared/components/searchable-se
     SettingsConfigsFormComponent,
     UsersComponent,
     ConnectionFormComponent,
+    Icd10Component,
+    Icd10CodesComponent,
+    Icd10CodesCategoriesComponent,
   ],
   imports: [
     CommonModule,

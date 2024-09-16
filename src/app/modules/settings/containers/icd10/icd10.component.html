@@ -1,0 +1,41 @@
+<div class="max-w-4xl p-8 bg-white rounded-lg shadow-sm">
+    <span class="mb-6 text-2xl">ICD10 Configurations</span>
+    <div class="border-b border-gray-200 dark:border-gray-700 mt-3">
+        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+            <li class="me-2">
+                <a class="inline-flex items-center justify-center pr-4 pt-4 pb-4 rounded-t-lg group hover:cursor-pointer"
+                    (click)="selectedTab = 'icd10-codes'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'icd10-codes',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'icd10-codes'
+         }">
+                    <i class="fas fa-cogs me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'icd10-codes',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'icd10-codes'
+           }"></i>
+                    <span class="text-lg font-normal">ICD10 Codes</span>
+                </a>
+            </li>
+            <li class="me-2">
+                <a class="inline-flex items-center justify-center pr-4 pt-4 pb-4 rounded-t-lg group hover:cursor-pointer"
+                    (click)="selectedTab = 'icd10-codes-categories'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'icd10-codes-categories',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'icd10-codes-categories'
+         }">
+                    <i class="fas fa-network-wired me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'icd10-codes-categories',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'icd10-codes-categories'
+           }"></i>
+                    <span class="text-lg font-normal">ICD10 Codes Categories</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+
+    <div *ngIf="selectedTab === 'icd10-codes'" id="icd10-codes" class="mt-4 tab-content pt-5">
+        <app-icd10-codes></app-icd10-codes>
+    </div>
+    <div *ngIf="selectedTab === 'icd10-codes-categories'" id="icd10-codes-categories" class="mt-4 tab-content pt-5">
+        <app-icd10-codes-categories></app-icd10-codes-categories>
+    </div>
+</div>
