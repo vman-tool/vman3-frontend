@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { SharedIcd10FormComponent } from '../../dialogs/shared-icd10-form/shared-icd10-form.component';
 
 @Component({
@@ -11,8 +11,13 @@ export class Icd10CodesComponent {
   constructor(private dialog: MatDialog){}
 
   onAddCode(){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "50vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    
     this.dialog.open(SharedIcd10FormComponent, {
-      width: '100%',
+      ...dialogConfig,
       data: {
         mode: 'add',
         title: 'Add ICD-10 Code'

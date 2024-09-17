@@ -1,3 +1,4 @@
+import { DialogRef } from '@angular/cdk/dialog';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 
 @Component({
@@ -7,7 +8,11 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 })
 export class SharedIcd10FormComponent implements OnInit, AfterViewInit {
 
-  constructor() { }
+  title?: string;
+
+  constructor(
+    private dialogRef: DialogRef<SharedIcd10FormComponent>
+  ) { }
 
   ngOnInit(): void {
     
@@ -20,5 +25,9 @@ export class SharedIcd10FormComponent implements OnInit, AfterViewInit {
       (dialogElement as HTMLElement).style.minWidth = '0';
       (dialogElement as HTMLElement).style.borderRadius = '5px';
     }
+  }
+
+  onClose(){
+    this.dialogRef.close()
   }
 }
