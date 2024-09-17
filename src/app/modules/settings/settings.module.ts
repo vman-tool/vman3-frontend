@@ -15,6 +15,7 @@ import { SearchableSelectComponent } from '../../shared/components/searchable-se
 import { Icd10Component } from './containers/icd10/icd10.component';
 import { Icd10CodesComponent } from './components/icd10-codes/icd10-codes.component';
 import { Icd10CodesCategoriesComponent } from './components/icd10-codes-categories/icd10-codes-categories.component';
+import { SharedIcd10FormComponent } from './dialogs/shared-icd10-form/shared-icd10-form.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { Icd10CodesCategoriesComponent } from './components/icd10-codes-categori
     Icd10Component,
     Icd10CodesComponent,
     Icd10CodesCategoriesComponent,
+    SharedIcd10FormComponent,
   ],
   imports: [
     CommonModule,

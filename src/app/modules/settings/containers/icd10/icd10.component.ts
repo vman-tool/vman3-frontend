@@ -6,9 +6,5 @@ import { Component } from '@angular/core';
   styleUrl: './icd10.component.scss'
 })
 export class Icd10Component {
-  isLoading = true;
-  hasOdkApiData = false;
-
-  selectedTab = 'system-config'; // Default selected tab
-  vaSummaryObjects?: any
+  selectedTab = 'icd10-codes';
 }
