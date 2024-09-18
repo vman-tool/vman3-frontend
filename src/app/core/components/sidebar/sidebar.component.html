@@ -1,5 +1,5 @@
 <div class="sidebar  lg:left-0 left-[-300px] sm:left-[100px] duration-1000
-        p-2 w-[300px] text-center bg-white-600 h-screen">
+        p-2 w-[300px] text-center bg-white-600">
   <div class="text-xl text-black">
     <div>
       <ng-container *ngIf="menuItems">
@@ -35,7 +35,8 @@
       <div
         class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[100px]  hover:bg-gray-400"
         (click)="onLogout()">
-        <i class="rotate-180 ph-sign-out"></i>
+        <!-- <i class="rotate-180 ph-sign-out"></i> -->
+        <img src="../../../../assets/icons/logout.svg" alt="logout-icon" class="h-5" />
         <span class="text-[15px] ml-4 text-back">Logout</span>
       </div>
 

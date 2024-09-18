@@ -23,7 +23,7 @@ export class ConfigurationComponent {
   vaSummaryData: string[] = [];
 
   selectedTab = 'system-config'; // Default selected tab
-  vaSummaryObjects?: any[]
+  vaSummaryObjects?: any
 
   constructor(
     public dialog: MatDialog,

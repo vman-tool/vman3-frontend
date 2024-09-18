@@ -119,22 +119,43 @@ export class IndexedDBService {
     return db.get(OBJECTSTORE_VA_QUESTIONS, "questions_object")
   }
   
-  async getQuestionsByKeys(keys: string[]) {
+  async getQuestionsByKeys(keys: string[], as_object: boolean = false) {
     
-    const results: any[] = [];
+    if(as_object){
+      let object = await this.getQuestionsAsObject();
+      
+      const questionsObject = object?.value 
 
-    // Fetch from cache first
-    for (const key of keys) {
-      if (this.cache.has(key)) {
-        results.push(this.cache.get(key));
-      } else {
-        const db = await this.getDb();
-        const value = await db.get(OBJECTSTORE_VA_QUESTIONS, key);
-        this.cache.set(key, value);
-        results.push(value);
+      let requested_questionsObject = {}
+      for (const key of keys){
+        if (this.cache.has(key)) {
+          requested_questionsObject = {
+            ...requested_questionsObject,
+            [key]: this.cache.get(key)
+          }
+        } else {
+          this.cache.set(key, questionsObject[key]);
+          requested_questionsObject = {
+            ...requested_questionsObject,
+            [key]: questionsObject[key]
+          }
+
+        }
       }
+      return requested_questionsObject;
+    } else {
+      const results: any[] = [];
+      for (const key of keys) {
+        if (this.cache.has(key)) {
+          results.push(this.cache.get(key));
+        } else {
+          const db = await this.getDb();
+          const value = await db.get(OBJECTSTORE_VA_QUESTIONS, key);
+          this.cache.set(key, value);
+          results.push(value);
+        }
+      }
+      return results    
     }
-
-    return results;
   }
 }

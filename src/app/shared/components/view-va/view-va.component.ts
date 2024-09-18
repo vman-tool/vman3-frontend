@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../../modules/pcva/services/va-records/va-records.service';
 import { lastValueFrom, map, Observable } from 'rxjs';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
@@ -19,6 +19,7 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
   summaryInfo?: any;
 
   constructor(
+    private dialogRef: MatDialogRef<ViewVaComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private vaRecordsService: VaRecordsService,
     private indexedDBService: IndexedDBService,
@@ -60,5 +61,9 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
       (dialogElement as HTMLElement).style.borderRadius = '10px';
       (dialogElement as HTMLElement).classList.add('rounded-full');
     }
+  }
+
+  onClose(){
+    this.dialogRef.close()
   }
 }

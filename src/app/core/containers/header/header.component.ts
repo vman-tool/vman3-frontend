@@ -7,13 +7,15 @@ import { AuthService } from 'app/core/services/authentication/auth.service';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-   isDropdownOpen = false;
+  isDropdownOpen = false;
+  currentUser?: any;
 
 
-   constructor(private authService: AuthService){}
+  constructor(private authService: AuthService){}
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
+    this.currentUser = JSON.parse(localStorage.getItem('current_user') || "{}");
   }
 
   @HostListener('document:click', ['$event'])

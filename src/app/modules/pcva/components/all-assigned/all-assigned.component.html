@@ -1,6 +1,7 @@
-<div class="container px-4 mx-auto sm:px-8 max-w-7xl" *ngIf="{
+<div class="container" *ngIf="{
   assignedVas: assignedVas$ | async
 } as params">
+
   <div class="py-8">
     <div>
       <span class="px-2 text-2xl text-start">ALL ASSIGNED </span>
@@ -11,7 +12,7 @@
     </div>
     <div class="overflow-x-none">
       <div class="w-full overflow-hidden">
-        <div class="overflow-y-auto">
+        <div class="relative w-full overflow-x-auto shadow-md sm:rounded-lg">
           <table class="w-full divide-y divide-gray-200 table-auto">
             <thead *ngIf="params?.assignedVas?.data?.length && headers?.length">
               <tr class="bg-white sticky top-0 z-10">
