@@ -1,15 +1,21 @@
 <div class="grid items-center grid-cols-12 pb-5 h-[7vh]">
-  <div class="col-span-2 {{ sidebarHidden ? 'lg:ml-[55px]' : 'lg:ml-[200px]'}} float-right">
-      <span class="text-2xl text-black cursor-pointer" (click)="Openbar($event)">
-        <i class="ms-10 px-4 bg-white rounded-md ph-list"></i>
-      </span>
+
+  <div class="col-span-1 ">
+    <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon"
+      class="w-24 mt-0 ml-5 {{ sidebarHidden ? 'w-0' : ''}}" />
+  </div>
+  <div class="col-span-1 {{ sidebarHidden ? 'lg:ml-[55px]' : 'lg:ml-[200px]'}} float-right">
+
+    <span class="text-2xl text-black cursor-pointer" (click)="Openbar($event)">
+      <i class="px-4 bg-white rounded-md ms-10 ph-list"></i>
+    </span>
   </div>
   <div class="relative col-span-4">
-      <!-- <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon" class="w-auto h-12 max-w-full {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}} float-left" /> -->
-      <div class="ps-8 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
-        <span class="text-3xl text-black">Ministry of Health XYZ</span> <br />
-        <span class="text-1xl text-black">Verbal Autospy Management Tool</span>
-      </div> 
+
+    <div class="ps-8 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
+      <span class="text-3xl text-black">{{page_title}} </span> <br />
+      <span class="text-black text-1xl">{{app_name}}</span>
+    </div>
   </div>
   <div class="relative col-span-6">
     <app-header></app-header>
@@ -17,13 +23,13 @@
 </div>
 
 <!-- Main content wrapper, ensures no overflow -->
-<div class="flex overflow-auto mb-5">
+<div class="flex mb-5 overflow-auto">
   <app-sidebar *ngIf="!sidebarHidden"></app-sidebar>
   <div class="top-10 {{ sidebarHidden ? 'ml-[100px] w-[90%]' : 'w-[80%]'}} px-4 overflow-y-auto">
     <router-outlet></router-outlet>
   </div>
 </div>
 
-<!-- <div class="w-full fixed bottom-0 right-0 left-0"> -->
-  <app-footer class="w-full fixed bottom-0 right-0 left-0"></app-footer>
-<!-- </div> --> 
+<!-- <div class="fixed bottom-0 left-0 right-0 w-full"> -->
+<app-footer class="fixed bottom-0 left-0 right-0 w-full"></app-footer>
+<!-- </div> -->
