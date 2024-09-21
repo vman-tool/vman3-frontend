@@ -14,6 +14,7 @@ export class Icd10CodesComponent {
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
     dialogConfig.width = "50vw";
+    dialogConfig.height = "50vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     
     this.dialog.open(SharedIcd10FormComponent, {
