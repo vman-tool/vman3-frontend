@@ -2,8 +2,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { CoreComponent } from './core.component';
 import { NgModule } from '@angular/core';
 import { LoginComponent } from './components/login/login.component';
-import { authGuard } from '../shared/guards/auth.guard';
+import { authGuard, PrivilegeGuard } from '../shared/guards/auth.guard';
 import { SettingsGuard } from '../shared/guards/system-config.guard';
+import * as privileges  from 'app/shared/constants/privileges.constants';
 
 const routes: Routes = [
   {
@@ -25,7 +26,8 @@ const routes: Routes = [
           import('../modules/pcva/pcva.module').then(
             (importation) => importation.PcvaModule
           ),
-        canActivate: [SettingsGuard],
+        canActivate: [SettingsGuard, PrivilegeGuard],
+        data: { requiredPrivilege: [privileges.PCVA_MODULE_ACCESS]} 
       },
       {
         // Records module

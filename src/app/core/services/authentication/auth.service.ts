@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, mergeMap, of} from 'rxjs';
+import { Observable, catchError, map, mergeMap, of, tap} from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
@@ -13,6 +13,8 @@ import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.servi
 export class AuthService {
   error?: string;
   success?: boolean;
+  cacheKey: string = "privileges"
+  cachedPrivileges: string[] = [];
 
   constructor(
     private configService: ConfigService,
@@ -89,6 +91,44 @@ export class AuthService {
     )
   }
 
+   getUserPrivileges(): Observable<any> {
+    const cached = localStorage.getItem(this.cacheKey);
+    if (cached) {
+      this.cachedPrivileges = JSON.parse(cached);
+      return of(this.cachedPrivileges);
+    }
+    
+    return this.http!.get(`${this.configService.API_URL}/users/roles`).pipe(
+      map((response: any) => {
+        if(response?.data?.length){
+          for(const role of response?.data) {
+            console.log(role.privileges)
+            this.cachedPrivileges = [
+              ...this.cachedPrivileges,
+              ...role?.privileges
+            ]
+          }
+          localStorage.setItem(this.cacheKey, JSON.stringify(this.cachedPrivileges));
+        }
+        return this.cachedPrivileges;
+      }),
+      catchError((error) => {
+        console.error('Error fetching privileges', error);
+        return of([]);
+      })
+    );
+  }
+
+  hasPrivilege(requiredPrivilege: string[]): Observable<boolean> {
+    return this.getUserPrivileges().pipe(
+      map((privileges: string[]) => requiredPrivilege.every(requiredPrivilege => privileges.includes(requiredPrivilege)))
+    )
+  }
+  clearPrivilegeCache(): void {
+    localStorage.removeItem(this.cacheKey);
+    this.cachedPrivileges = [];
+  }
+
   saveUserData(response: any) {
     this.clearUserData()
 
@@ -114,6 +154,7 @@ export class AuthService {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("access_token_expiry");
     localStorage.removeItem("current_user");
+    this.clearPrivilegeCache();
   }
   
   clearLocalStorage() {
