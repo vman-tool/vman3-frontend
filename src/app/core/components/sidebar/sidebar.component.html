@@ -18,7 +18,7 @@
             </div>
           </div>
 
-          <ng-container *ngIf="menuItem?.subMenuItems?.length && menuItem?.canAccess">
+          <ng-container *ngIf="menuItem?.subMenuItems?.length">
             <div
               class=" leading-7 text-left text-sm font-thin mt-2 w-4/5 mx-auto {{ i == selectedItem ? '' : 'hidden'}}">
               <p routerLink="{{menuItem?.route + subMenu?.route}}"

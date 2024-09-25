@@ -12,6 +12,8 @@ import { SettingsConfigsFormComponent } from './dialogs/settings-configs-form/se
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConnectionFormComponent } from './dialogs/connection-form/connection-form.component';
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+import { UsersListComponent } from './components/users-list/users-list.component';
+import { RolesComponent } from './components/roles/roles.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +23,8 @@ import { SearchableSelectComponent } from '../../shared/components/searchable-se
     SettingsConfigsFormComponent,
     UsersComponent,
     ConnectionFormComponent,
+    UsersListComponent,
+    RolesComponent,
   ],
   imports: [
     CommonModule,
