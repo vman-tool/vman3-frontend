@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { LoginComponent } from './components/login/login.component';
 import { authGuard, PrivilegeGuard } from '../shared/guards/auth.guard';
 import { SettingsGuard } from '../shared/guards/system-config.guard';
-import * as privileges  from '../shared/constants/privileges.contants';
+import * as privileges  from 'app/shared/constants/privileges.constants';
 
 const routes: Routes = [
   {
