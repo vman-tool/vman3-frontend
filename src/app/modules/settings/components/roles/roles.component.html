@@ -2,8 +2,9 @@
     rolesData: rolesData$ | async
 } as params">
     <div class="py-8">
-        <div>
+        <div class="flex items-center justify-between mb-4">
             <span class="px-2 text-2xl text-start">Roles</span>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700">Add Role</button>
         </div>
         <div class="m-2" *ngIf="!params?.rolesData && loadingData">
             <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
@@ -43,8 +44,23 @@
                                     </p>
                                 </td>
                                 <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <a class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
+                                    <a mat-icon-button [matMenuTriggerFor]="menu"
+                                        class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
                                             class="ph-dots-three-vertical"></i></a>
+                                    <mat-menu #menu="matMenu">
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
+                                            <i class="ph-eye text-2xl mr-3"></i>
+                                            <span class="relative bottom-[7px]">View</span>
+                                        </button>
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
+                                            <i class="ph-pencil-simple text-2xl mr-3"></i>
+                                            <span class="relative bottom-[7px]">Edit</span>
+                                        </button>
+                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer">
+                                            <i class="ph-trash text-2xl mr-3"></i>
+                                            <span class="relative bottom-[7px]">Delete</span>
+                                        </button>
+                                    </mat-menu>
                                 </td>
                             </tr>
                         </ng-container>

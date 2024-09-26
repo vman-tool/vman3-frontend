@@ -55,7 +55,23 @@
                                     </p>
                                 </td>
                                 <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <a class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i class="ph-dots-three-vertical"></i></a>
+                                    <a mat-icon-button [matMenuTriggerFor]="menu"
+                                        class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
+                                            class="ph-dots-three-vertical"></i></a>
+                                    <mat-menu #menu="matMenu" class="bg-white">
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
+                                            <i class="ph-eye text-2xl mr-3"></i>
+                                            <span class="relative bottom-[7px]">View</span>
+                                        </button>
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
+                                            <i class="ph-pencil-simple text-2xl mr-3"></i>
+                                            <span class="relative bottom-[7px]">Edit</span>
+                                        </button>
+                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer">
+                                            <i class="ph-trash text-2xl mr-3"></i>
+                                            <span class="relative bottom-[7px]">Delete</span>
+                                        </button>
+                                    </mat-menu>
                                 </td>
                             </tr>
                         </ng-container>
