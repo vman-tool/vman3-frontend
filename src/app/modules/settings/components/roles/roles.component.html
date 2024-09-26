@@ -1,1 +1,69 @@
-<p>Under Construction</p>
+<div class="w-full" *ngIf="{
+    rolesData: rolesData$ | async
+} as params">
+    <div class="py-8">
+        <div>
+            <span class="px-2 text-2xl text-start">Roles</span>
+        </div>
+        <div class="m-2" *ngIf="!params?.rolesData && loadingData">
+            <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
+            </mat-progress-bar>
+        </div>
+        <div class="overflow-x-auto">
+            <div class="w-full overflow-hidden">
+                <table class="w-full divide-y divide-gray-200 table-auto" *ngIf="params?.rolesData">
+                    <thead *ngIf="params?.rolesData?.data?.length">
+                        <tr>
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                Name
+                            </th>
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                privileges
+                            </th>
+                            
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="params?.rolesData?.data?.length">
+                            <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
+                                *ngFor="let role of params?.rolesData?.data; let i = index">
+                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                    <p class="text-gray-900 whitespace-no-wrap">{{ role?.name }}</p>
+                                </td>
+                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        <span *ngFor="let privilege of role?.privileges.slice(0, 3)">{{ privilege }}</span>
+                                        <span *ngIf="role?.privileges?.length > 3">...</span>
+                                    </p>
+                                </td>
+                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                    <a class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
+                                            class="ph-dots-three-vertical"></i></a>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-container *ngIf="!params?.rolesData?.data?.length">
+                            <tr class="bg-gray-200">
+                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No coder was found</td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+                <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.rolesData?.total > 0">
+                    <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="[5, 10, 20, 50]"
+                        [length]="params?.rolesData?.total" [pageIndex]="pageNumber" [pageSize]="limit"
+                        (page)="onPageChange($event)"></mat-paginator>
+                </div>
+            </div>
+            <div *ngIf="!params?.rolesData && !loadingData">
+                <p>Could not get users.</p>
+            </div>
+        </div>
+    </div>
+</div>
