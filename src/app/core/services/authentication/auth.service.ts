@@ -102,7 +102,6 @@ export class AuthService {
       map((response: any) => {
         if(response?.data?.length){
           for(const role of response?.data) {
-            console.log(role.privileges)
             this.cachedPrivileges = [
               ...this.cachedPrivileges,
               ...role?.privileges

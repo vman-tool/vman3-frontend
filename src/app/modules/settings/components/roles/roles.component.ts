@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { catchError, map, Observable } from 'rxjs';
 import { UsersService } from '../../services/users.service';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { RoleFormComponent } from '../../dialogs/role-form/role-form.component';
 
 @Component({
   selector: 'app-roles',
@@ -14,7 +16,8 @@ export class RolesComponent implements OnInit {
   limit?: number;
 
   constructor(
-    private usersService: UsersService
+    private usersService: UsersService,
+    private dialog: MatDialog
   ){}
 
   ngOnInit() {
@@ -43,6 +46,19 @@ export class RolesComponent implements OnInit {
       })
     );
   }
+
+  onEditRole(role: any){
+    console.log("onEditRole", role);
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "60vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      role: role
+    }
+    this.dialog.open(RoleFormComponent, dialogConfig)
+  }
+
   onPageChange(event: any) {
     this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
     this.limit = Number(event?.pageSize);

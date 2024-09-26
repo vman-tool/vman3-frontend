@@ -1,0 +1,19 @@
+.selection-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.available-items,
+.selected-items {
+    width: 100%;
+}
+
+.scrollable-list {
+    height: 300px;
+    overflow-y: auto;
+}
+
+mat-selection-list {
+    width: 100%;
+}
