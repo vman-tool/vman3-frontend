@@ -4,6 +4,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { ResponseMainModel } from '../../../../shared/interface/main.interface';
 import { SubmissionsDataModel } from '../../interface';
 import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
+import { SettingConfigService } from '../../../settings/services/settings_configs.service';
+import { settingsConfigData } from '../../../settings/interface';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-submissions',
@@ -17,6 +20,8 @@ export class SubmissionsComponent {
   totalRecords: number | undefined;
   message: string = '';
   errorMessage: string | null = null;
+  region: string | undefined;
+  district: string | undefined;
 
   isLoading: boolean = true; // Loading flag
   filterData: { locations: string[]; startDate?: string; endDate?: string } = {
@@ -27,11 +32,40 @@ export class SubmissionsComponent {
   constructor(
     private listSubmissionsService: SubmissionsService,
     public dialog: MatDialog,
-    private filterService: FilterService
+    private filterService: FilterService,
+    private settingsConfigsService: SettingConfigService,
+    private snackBar: MatSnackBar
   ) {
+    this.initial();
     this.loadRecords();
     this.filterService = inject(FilterService);
     this.setupEffect();
+  }
+
+  initial() {
+    this.settingsConfigsService
+      .getSettingsConfig(true)
+      .subscribe((config: settingsConfigData | null) => {
+        if (
+          config &&
+          Object.keys(config.odk_api_configs).length &&
+          Object.keys(config.odk_api_configs).length &&
+          Object.keys(config.field_mapping).length
+        ) {
+          this.region = config.system_configs.admin_level1;
+          this.district = config.system_configs.admin_level2;
+        } else {
+          this.snackBar.open(
+            'Please configure the system settings first!',
+            'Close',
+            {
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+              duration: 3000,
+            }
+          );
+        }
+      });
   }
   setupEffect() {
     effect(() => {
@@ -49,19 +83,17 @@ export class SubmissionsComponent {
         this.filterData.endDate,
         this.filterData.locations
       )
-      .subscribe(
-        {
-          next: (response: ResponseMainModel<any>) => {
-            this.dataSubmissions = response.data as [];
-            this.totalRecords = response.total;
-            this.isLoading = false; // Set loading to false when data is fetched
-          },
-          error: (error) => {
-            this.errorMessage = error.message;
-            this.isLoading = false; // Set loading to false if there's an error
-          }
-        }
-      );
+      .subscribe({
+        next: (response: ResponseMainModel<any>) => {
+          this.dataSubmissions = response.data as [];
+          this.totalRecords = response.total;
+          this.isLoading = false; // Set loading to false when data is fetched
+        },
+        error: (error) => {
+          this.errorMessage = error.message;
+          this.isLoading = false; // Set loading to false if there's an error
+        },
+      });
   }
 
   getTotalCount(): number {
