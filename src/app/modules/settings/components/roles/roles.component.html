@@ -48,7 +48,7 @@
                                         class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
                                             class="ph-dots-three-vertical"></i></a>
                                     <mat-menu #menu="matMenu">
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onViewRole(role)">
                                             <i class="ph-eye text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">View</span>
                                         </button>
@@ -56,7 +56,7 @@
                                             <i class="ph-pencil-simple text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Edit</span>
                                         </button>
-                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer">
+                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" (click)="onDeleteRole(role)">
                                             <i class="ph-trash text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Delete</span>
                                         </button>
@@ -66,7 +66,7 @@
                         </ng-container>
                         <ng-container *ngIf="!params?.rolesData?.data?.length">
                             <tr class="bg-gray-200">
-                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No coder was found</td>
+                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No role was found</td>
                             </tr>
                         </ng-container>
                     </tbody>

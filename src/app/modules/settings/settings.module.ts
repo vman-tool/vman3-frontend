@@ -15,6 +15,7 @@ import { SearchableSelectComponent } from '../../shared/components/searchable-se
 import { UsersListComponent } from './components/users-list/users-list.component';
 import { RolesComponent } from './components/roles/roles.component';
 import { RoleFormComponent } from './dialogs/role-form/role-form.component';
+import { ViewRoleComponent } from './dialogs/view-role/view-role.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { RoleFormComponent } from './dialogs/role-form/role-form.component';
     UsersListComponent,
     RolesComponent,
     RoleFormComponent,
+    ViewRoleComponent
   ],
   imports: [
     CommonModule,

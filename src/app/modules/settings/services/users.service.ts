@@ -33,6 +33,10 @@ export class UsersService {
   saveRole(role: any) {
     return this.http.post(`${this.configService.API_URL}/users/roles`, role);
   }
+  
+  deleteRole(role: any) {
+    return this.http.delete(`${this.configService.API_URL}/users/roles`, {body: [role?.uuid]});
+  }
 
   getPrivileges(){
     return this.http.get(`${this.configService.API_URL}/users/privileges`);
