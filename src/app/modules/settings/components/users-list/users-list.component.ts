@@ -11,15 +11,28 @@ import { catchError, map, Observable } from 'rxjs';
 export class UsersListComponent implements OnInit {
   usersData$?: Observable<any>;
   loadingData: boolean = false;
+  pageNumber?: number;
+  limit?: number;
   
   constructor(
-    private codersService: UsersService,
+    private usersService: UsersService,
     public dialog: MatDialog,
   ){}
 
   ngOnInit(): void {
+    this.loadUsers()
+  }
+
+  loadUsers(){
     this.loadingData = true
-    this.usersData$ = this.codersService.getUsers(true).pipe(
+    this.usersData$ = this.usersService.getUsers(
+      {
+        paging: true,
+        page_number: this.pageNumber,
+        limit: this.limit,
+      },
+      "false"
+    ).pipe(
       map((response) => {
         this.loadingData = false
        return response;
@@ -29,5 +42,11 @@ export class UsersListComponent implements OnInit {
         return error;
       })
     );
+  }
+
+  onPageChange(event: any) {
+    this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
+    this.limit = Number(event?.pageSize);
+    this.loadUsers();
   }
 }

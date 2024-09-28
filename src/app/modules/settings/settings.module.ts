@@ -14,6 +14,8 @@ import { ConnectionFormComponent } from './dialogs/connection-form/connection-fo
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 import { UsersListComponent } from './components/users-list/users-list.component';
 import { RolesComponent } from './components/roles/roles.component';
+import { RoleFormComponent } from './dialogs/role-form/role-form.component';
+import { ViewRoleComponent } from './dialogs/view-role/view-role.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +27,8 @@ import { RolesComponent } from './components/roles/roles.component';
     ConnectionFormComponent,
     UsersListComponent,
     RolesComponent,
+    RoleFormComponent,
+    ViewRoleComponent
   ],
   imports: [
     CommonModule,
