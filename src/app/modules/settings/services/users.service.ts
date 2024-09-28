@@ -30,4 +30,12 @@ export class UsersService {
     return this.http.get(`${this.configService.API_URL}/users/roles${params}`);
   }
   
+  saveRole(role: any) {
+    return this.http.post(`${this.configService.API_URL}/users/roles`, role);
+  }
+
+  getPrivileges(){
+    return this.http.get(`${this.configService.API_URL}/users/privileges`);
+  }
+  
 }

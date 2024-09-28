@@ -47,8 +47,17 @@ export class RolesComponent implements OnInit {
     );
   }
 
+  onAddRole(){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "60vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    this.dialog.open(RoleFormComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => {
+        if(response) this.loadRoles();
+      }})
+  }
   onEditRole(role: any){
-    console.log("onEditRole", role);
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
     dialogConfig.width = "60vw";
@@ -56,7 +65,10 @@ export class RolesComponent implements OnInit {
     dialogConfig.data = {
       role: role
     }
-    this.dialog.open(RoleFormComponent, dialogConfig)
+    this.dialog.open(RoleFormComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => {
+        if(response) this.loadRoles();
+      }})
   }
 
   onPageChange(event: any) {

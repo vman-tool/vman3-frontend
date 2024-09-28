@@ -9,7 +9,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ListRecordsService } from '../../services/list-records/list-records.service';
 import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
 import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
-import { ViewVaComponent } from 'app/shared/components/view-va/view-va.component';
+import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 
 @Component({
   selector: 'app-list-records',

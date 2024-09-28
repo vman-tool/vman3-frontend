@@ -4,7 +4,7 @@
     <div class="py-8">
         <div class="flex items-center justify-between mb-4">
             <span class="px-2 text-2xl text-start">Roles</span>
-            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700">Add Role</button>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddRole()">Add Role</button>
         </div>
         <div class="m-2" *ngIf="!params?.rolesData && loadingData">
             <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
@@ -39,8 +39,8 @@
                                 </td>
                                 <td class="px-5 py-3 text-sm border-b border-gray-200">
                                     <p class="text-gray-900 whitespace-no-wrap">
-                                        <span *ngFor="let privilege of role?.privileges.slice(0, 3)">{{ privilege }}</span>
-                                        <span *ngIf="role?.privileges?.length > 3">...</span>
+                                        <span>{{ role?.privileges.slice(0, 3)?.join(", ") }}</span>
+                                        <span *ngIf="role?.privileges?.length > 3"> ...</span>
                                     </p>
                                 </td>
                                 <td class="px-5 py-3 text-sm border-b border-gray-200">
