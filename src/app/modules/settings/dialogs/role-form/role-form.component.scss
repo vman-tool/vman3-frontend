@@ -1,0 +1,38 @@
+.selection-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.available-items,
+.selected-items {
+    width: 100%;
+}
+
+.scrollable-list {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #D1D5DB;
+    background-color: #F9FAFB;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+mat-list-item {
+    padding: 0.5rem 0;
+    span {
+        display: block;
+        padding: 0.5rem 0;
+        cursor: pointer;
+
+    }
+    span:hover {
+        color: #1d4db6;
+        transition: color 0.3s;
+        cursor: pointer;
+    }
+}
+
+mat-selection-list {
+    width: 100;
+}

@@ -1,0 +1,19 @@
+<div id="confirmation" style="width: 100%">
+    <div class="p-3 py-8">
+        <p>{{ data?.modalMessage }}</p>
+        <div style="text-align: right">
+            <div class="d-flex">
+                <div class="w-50"></div>
+                <div class="w-50">
+                    <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700 mr-3" (click)="onCancel($event)">{{ data?.cancelButtonText ? data?.cancelButtonText : "Cancel" }}</button>
+
+                    <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onConfirm($event)"
+                        [ngClass]="
+                        data?.confirmationButtonColor === 'green' ? 'green' : 
+                        data?.confirmationButtonColor === 'red' ? 'red' : 'primary'"
+                    >{{ data?.confirmationButtonText ? data?.confirmationButtonText : "Confirm" }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

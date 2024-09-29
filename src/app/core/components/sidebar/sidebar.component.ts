@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { lastValueFrom, map } from 'rxjs';
 import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
+import * as privileges from 'app/shared/constants/privileges.constants'
 
 @Component({
   selector: 'app-sidebar',
@@ -14,15 +15,18 @@ export class SidebarComponent {
   menuItems: any;
   selectedItem?: number = 0;
   selectedSubMenu: number = 0;
+  canViewPCVA: boolean = true;
 
   constructor(
     private authService: AuthService, 
     private router: Router,
     private vaRecordsService: VaRecordsService,
     private indexedDBService: IndexedDBService
-  ) {}
-
+  ) {
+  }
+  
   async ngOnInit(): Promise<void> {
+    await this.runPrivilegesCheck();
     this.menuItems = [
       {
         displayText: 'Dashboard',
@@ -138,6 +142,9 @@ export class SidebarComponent {
         })
       ));
     }
+  }
+  async runPrivilegesCheck() {
+    this.canViewPCVA = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_MODULE_ACCESS]))
   }
   onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
     this.selectedItem =

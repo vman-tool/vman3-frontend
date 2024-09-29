@@ -17,6 +17,7 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ConfigService } from './app.service';
 import { lastValueFrom, Observable } from 'rxjs';
 import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
+import { SharedConfirmationComponent } from './shared/dialogs/shared-confirmation/shared-confirmation.component';
 // import { CsrfInterceptorService } from './core/interceptors/csrf-interceptor.service';
 
 // import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -32,7 +33,7 @@ export function initializeApp(configService: ConfigService) {
 }
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, SharedConfirmationComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
