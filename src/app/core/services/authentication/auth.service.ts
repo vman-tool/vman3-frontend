@@ -98,14 +98,16 @@ export class AuthService {
       return of(this.cachedPrivileges);
     }
     
-    return this.http!.get(`${this.configService.API_URL}/users/roles`).pipe(
+    return this.http!.get(`${this.configService.API_URL}/users/user-roles`).pipe(
       map((response: any) => {
-        if(response?.data?.length){
-          for(const role of response?.data) {
-            this.cachedPrivileges = [
-              ...this.cachedPrivileges,
-              ...role?.privileges
-            ]
+        if(response?.data){
+          for(const role of response?.data?.roles) {
+            if (!this.cachedPrivileges.includes(role?.privileges)) {
+              this.cachedPrivileges = [
+                ...this.cachedPrivileges,
+                ...role?.privileges
+              ]
+            }
           }
           localStorage.setItem(this.cacheKey, JSON.stringify(this.cachedPrivileges));
         }

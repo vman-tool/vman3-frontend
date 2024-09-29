@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { UsersService } from '../../services/users.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { catchError, map, Observable } from 'rxjs';
+import { AssignRolesFormComponent } from '../../dialogs/assign-roles-form/assign-roles-form.component';
 
 @Component({
   selector: 'app-users-list',
@@ -42,6 +43,20 @@ export class UsersListComponent implements OnInit {
         return error;
       })
     );
+  }
+
+  onAssignRoles(user: any){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "60vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      user: user
+    }
+    this.dialog.open(AssignRolesFormComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => {
+        // if(response) this.loadUsers();
+      }})
   }
 
   onPageChange(event: any) {

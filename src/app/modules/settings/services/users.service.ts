@@ -30,6 +30,14 @@ export class UsersService {
     return this.http.get(`${this.configService.API_URL}/users/roles${params}`);
   }
   
+  getUserRoles(user_uuid?: string){
+    let params = ''
+    if(user_uuid){
+      params = `?user_uuid=${user_uuid}`
+    }
+    return this.http.get(`${this.configService.API_URL}/users/user-roles${params}`);
+  }
+  
   saveRole(role: any) {
     return this.http.post(`${this.configService.API_URL}/users/roles`, role);
   }
@@ -40,6 +48,10 @@ export class UsersService {
 
   getPrivileges(){
     return this.http.get(`${this.configService.API_URL}/users/privileges`);
+  }
+  
+  saveAssignment(roleAssignment: any) {
+    return this.http.post(`${this.configService.API_URL}/users/assign-roles`, roleAssignment);
   }
   
 }

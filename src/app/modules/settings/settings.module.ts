@@ -16,6 +16,7 @@ import { UsersListComponent } from './components/users-list/users-list.component
 import { RolesComponent } from './components/roles/roles.component';
 import { RoleFormComponent } from './dialogs/role-form/role-form.component';
 import { ViewRoleComponent } from './dialogs/view-role/view-role.component';
+import { AssignRolesFormComponent } from './dialogs/assign-roles-form/assign-roles-form.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { ViewRoleComponent } from './dialogs/view-role/view-role.component';
     UsersListComponent,
     RolesComponent,
     RoleFormComponent,
-    ViewRoleComponent
+    ViewRoleComponent,
+    AssignRolesFormComponent
   ],
   imports: [
     CommonModule,
