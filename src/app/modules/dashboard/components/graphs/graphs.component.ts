@@ -18,6 +18,7 @@ import { MonthlySubmission } from '../../interface';
 import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
 import { MatDialog } from '@angular/material/dialog';
 import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
+import { CcvaService } from '../../../ccva/services/ccva.service';
 
 @Component({
   selector: 'app-graphs',
@@ -25,6 +26,7 @@ import { FilterService } from '../../../../shared/dialogs/filters/filter.service
   styleUrls: ['./graphs.component.scss'],
 })
 export class GraphsComponent implements OnInit {
+  graphData: any = {};
   // startDate?: string;
   // endDate?: string;
   // locations: string[] = [];
@@ -64,7 +66,7 @@ export class GraphsComponent implements OnInit {
   constructor(
     public chartsService: ChartsService,
     private cdr: ChangeDetectorRef,
-
+    private ccvaService: CcvaService,
     private filterService: FilterService
   ) {
     this.filterService = inject(FilterService);
@@ -77,11 +79,22 @@ export class GraphsComponent implements OnInit {
     });
   }
   ngOnInit() {
+    this.loadMore();
     // this.loadStatistics();
   }
 
   public barChartOptions: ChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        align: 'center',
+        fullSize: true,
+        maxHeight: 100,
+      },
+    },
   };
 
   public barChartType: ChartType = 'bar';
@@ -90,7 +103,15 @@ export class GraphsComponent implements OnInit {
   // Doughnut Chart
   public doughnutChartOptions: ChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        align: 'center',
+        fullSize: true,
+      },
+
       tooltip: {
         callbacks: {
           label: function (context) {
@@ -251,7 +272,24 @@ export class GraphsComponent implements OnInit {
       legend: {
         display: true,
         position: 'bottom',
+        align: 'center',
+        fullSize: true,
+        maxHeight: 100,
       },
     },
   };
+
+  async loadMore() {
+    this.ccvaService.get_ccva_Results().subscribe({
+      next: (data: any) => {
+        this.isLoading = false;
+
+        this.graphData = data.data;
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Failed to load CCVA results', err);
+      },
+    });
+  }
 }

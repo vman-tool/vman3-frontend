@@ -1,0 +1,60 @@
+<div class="p-4 mx-auto">
+  <div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <!-- Skeleton Loader for Bar Chart -->
+    <div *ngFor="let item of [1,2,3]" class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
+      <div class="w-full h-60 md:h-72">
+      </div>
+    </div>
+  </div>
+
+  <ng-template #chartsContent>
+    <div *ngIf="chartKeys.length > 0; else emptyMessage">
+      <div class="flex items-center justify-between mb-1">
+        <div class="flex space-x-8">
+          <p class="text-lg font-semibold">Start Date: {{ created_at | date:'short' }}</p>
+          <p class="text-lg font-semibold">Total Records: {{ total_records }}</p>
+          <p class="text-lg font-semibold">Time Taken: {{ elapsed_time }}</p>
+        </div>
+
+        <!-- Toggle Button for By Gender and By Age Group -->
+        <div class="flex items-center space-x-4">
+          <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" class="sr-only peer" (change)="toggleView($event)">
+            <div
+              class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+            </div>
+            <span class="text-sm font-medium text-gray-900 ms-3 dark:text-gray-300">
+              {{ selectedView === 'gender' ? 'By Gender' : 'By Age Group' }}
+            </span>
+          </label>
+        </div>
+      </div>
+      <hr class="h-px my-1 bg-gray-200 border-0 dark:bg-gray-700">
+
+      <!-- Chart Rendering Section -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div *ngFor="let key of chartKeys" class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
+          <span *ngIf="charts[key]">
+            <!-- Dynamic Title -->
+            <span class="block mb-4 text-xl font-semibold text-center text-gray-700">
+              {{ getDynamicTitle(key) }}
+            </span>
+            <div class="flex justify-center w-full">
+              <div class="w-full h-60 md:h-72">
+                <canvas baseChart [datasets]="charts[key].datasets" [labels]="charts[key].labels"
+                  [options]="chartOptions" [type]="'bar'"></canvas>
+              </div>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message to Run CCVA -->
+    <ng-template #emptyMessage>
+      <div class="text-lg font-semibold text-center text-red-500 mt-60">
+        No data available. Please run the CCVA to generate charts.
+      </div>
+    </ng-template>
+  </ng-template>
+</div>
