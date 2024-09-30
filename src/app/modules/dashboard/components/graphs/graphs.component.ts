@@ -194,7 +194,6 @@ export class GraphsComponent implements OnInit {
       )
       .subscribe(
         (data) => {
-          console.log(data);
           this.processBarChartData(data.data.monthly_submissions);
           this.doughnutChartData = {
             ...this.doughnutChartData, // Keep other properties intact
