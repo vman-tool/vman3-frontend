@@ -8,9 +8,15 @@ import { MaterialModule } from '../../material/material.module';
 import { SharedModule } from '../../shared/shared.module';
 import { SubmissionsComponent } from './components/submissions/submissions.component';
 import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-filters.component';
+import { CcvaDashboardGraphsComponent } from './components/ccva-dashboard-graphs/ccva-graphs.component';
 
 @NgModule({
-  declarations: [DashboardComponent, GraphsComponent, SubmissionsComponent],
+  declarations: [
+    DashboardComponent,
+    GraphsComponent,
+    SubmissionsComponent,
+    CcvaDashboardGraphsComponent,
+  ],
   imports: [
     CommonModule,
     BaseChartDirective,
