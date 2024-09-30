@@ -1,32 +1,28 @@
 import { Input, OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { ChartOptions, ChartType, ChartDataset } from 'chart.js'; // Import NgChartsModule for Chart.js integration
-import { CcvaService } from '../../services/ccva.service';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { CcvaService } from '../../../ccva/services/ccva.service';
 
 @Component({
-  selector: 'app-ccva-graphs', // Import necessary modules
+  selector: 'app-ccva-dashboard-graphs',
   templateUrl: './ccva-graphs.component.html',
   styleUrls: ['./ccva-graphs.component.scss'],
 })
-export class CcvaGraphsComponent implements OnInit {
+export class CcvaDashboardGraphsComponent implements OnInit {
   @Input() graphData: any;
   @Input() charts: { [key: string]: any } = {}; // Store chart instances
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
-
+  selectedView: 'gender' | 'age' = 'gender'; // Default to 'By Gender'
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
   public isLoading = false;
   total_records: number = 0;
   elapsed_time = '0:00:00';
   created_at: string = '';
-  constructor(private ccvaService: CcvaService, private route: ActivatedRoute) {
-    if (this.graphData) {
-      this.loadChartData(this.graphData);
-    }
-  }
+
+  public genderKeys: string[] = ['all', 'male', 'female']; // Keys for gender-based charts
+  public ageGroupKeys: string[] = ['adult', 'child', 'neonate']; // Keys for age-group-based charts
 
   public chartOptions: ChartOptions = {
     responsive: true,
@@ -75,27 +71,11 @@ export class CcvaGraphsComponent implements OnInit {
       },
     },
   };
-  public barChartData: any[] = [];
+
+  constructor(private ccvaService: CcvaService) {}
 
   ngOnInit() {
     this.isLoading = true;
-    console.log('CCVA Graphs Component: ngOnInit', this.graphData);
-    // if (this.graphData) {
-    //   this.loadChartData(this.graphData);
-    // } else {
-    this.route.params.subscribe((params) => {
-      const taskId = params['id']; // Get 'id' from
-      this.ccvaService.get_ccva_by_id(taskId).subscribe({
-        next: (progressData: any) => {
-          console.log('Progress data:', progressData);
-          this.graphData = progressData.data;
-        },
-        error: (error) => {
-          console.error('Error fetching progress:', error);
-        },
-      });
-    });
-
     this.ccvaService.get_ccva_Results().subscribe({
       next: (data: any) => {
         this.isLoading = false;
@@ -111,15 +91,11 @@ export class CcvaGraphsComponent implements OnInit {
         console.error('Failed to load CCVA results', err);
       },
     });
-    // }
   }
 
   loadChartData(data: any) {
-    console.log('data', data);
     for (let key in data) {
       if (data.hasOwnProperty(key)) {
-        console.log('key', data[key].index);
-        console.log('data', data[key]);
         const chartLabels = data[key].index; // Create unique labels for each chart
         const chartData = [
           {
@@ -154,13 +130,20 @@ export class CcvaGraphsComponent implements OnInit {
       datasets: datasets,
     };
   }
-  get chartKeys(): string[] {
-    return Object.keys(this.charts);
+
+  // Toggle the view between 'gender' and 'age' when the checkbox is checked/unchecked
+  toggleView(event: any) {
+    this.selectedView = event.target.checked ? 'age' : 'gender';
   }
 
-  public barChartOptions: ChartOptions = {
-    responsive: true,
-  };
+  get chartKeys(): string[] {
+    // Return keys based on the selected view (gender or age)
+    if (this.selectedView === 'gender') {
+      return this.genderKeys.filter((key) => key in this.charts);
+    } else {
+      return this.ageGroupKeys.filter((key) => key in this.charts);
+    }
+  }
 
   getDynamicTitle(key: string): string {
     const titles: { [key: string]: string } = {
