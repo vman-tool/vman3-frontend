@@ -89,6 +89,13 @@ export class CcvaGraphsComponent implements OnInit {
         next: (progressData: any) => {
           console.log('Progress data:', progressData);
           this.graphData = progressData.data;
+          this.isLoading = false;
+          if (progressData.data[0]) {
+            this.total_records = progressData.data[0].total_records;
+            this.elapsed_time = progressData.data[0].elapsed_time;
+            this.created_at = progressData.data[0].created_at;
+          }
+          this.loadChartData(progressData.data[0]);
         },
         error: (error) => {
           console.error('Error fetching progress:', error);
@@ -96,21 +103,21 @@ export class CcvaGraphsComponent implements OnInit {
       });
     });
 
-    this.ccvaService.get_ccva_Results().subscribe({
-      next: (data: any) => {
-        this.isLoading = false;
-        if (data.data[0]) {
-          this.total_records = data.data[0].total_records;
-          this.elapsed_time = data.data[0].elapsed_time;
-          this.created_at = data.data[0].created_at;
-        }
-        this.loadChartData(data.data[0]);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error('Failed to load CCVA results', err);
-      },
-    });
+    // this.ccvaService.get_ccva_Results().subscribe({
+    //   next: (data: any) => {
+    //     this.isLoading = false;
+    //     if (data.data[0]) {
+    //       this.total_records = data.data[0].total_records;
+    //       this.elapsed_time = data.data[0].elapsed_time;
+    //       this.created_at = data.data[0].created_at;
+    //     }
+    //     this.loadChartData(data.data[0]);
+    //   },
+    //   error: (err) => {
+    //     this.isLoading = false;
+    //     console.error('Failed to load CCVA results', err);
+    //   },
+    // });
     // }
   }
 
