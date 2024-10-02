@@ -3,6 +3,7 @@ import { UsersService } from '../../services/users.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { catchError, map, Observable } from 'rxjs';
 import { AssignRolesFormComponent } from '../../dialogs/assign-roles-form/assign-roles-form.component';
+import { UserFormComponent } from '../../dialogs/user-form/user-form.component';
 
 @Component({
   selector: 'app-users-list',
@@ -56,6 +57,31 @@ export class UsersListComponent implements OnInit {
     this.dialog.open(AssignRolesFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
         // if(response) this.loadUsers();
+      }})
+  }
+
+  onAddUser(){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "60vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => {
+        if(response) this.loadUsers();
+      }})
+  }
+  
+  onEditUser(user: any){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "60vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      user: user
+    }
+    this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => {
+        if(response) this.loadUsers();
       }})
   }
 
