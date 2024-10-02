@@ -6,27 +6,31 @@ import { signal, Signal } from '@angular/core';
 })
 export class FilterService {
   private _filterData = signal<{
-    startDate: string | undefined;
-    endDate: string | undefined;
+    start_date: string | undefined;
+    end_date: string | undefined;
     locations: string[];
+    date_type: string | undefined;
   }>({
     locations: [],
-    startDate: undefined,
-    endDate: undefined,
+    start_date: undefined,
+    end_date: undefined,
+    date_type: undefined,
   });
 
   get filterData(): Signal<{
-    startDate: string | undefined;
-    endDate: string | undefined;
+    start_date: string | undefined;
+    end_date: string | undefined;
     locations: string[];
+    date_type: string | undefined;
   }> {
     return this._filterData;
   }
 
   setFilterData(data: {
-    startDate: string | undefined;
-    endDate: string | undefined;
+    start_date: string | undefined;
+    end_date: string | undefined;
     locations: string[];
+    date_type: string | undefined;
   }) {
     this._filterData.set(data);
   }

@@ -146,6 +146,7 @@ import { ConfigService } from 'app/app.service';
 import { WebSockettService } from '../../../settings/services/web-socket.service';
 import { Subscription } from 'rxjs';
 import { LocalStorageWithTTL } from '../../../../shared/services/localstorage_with_ttl.services';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-run-ccva',
@@ -155,7 +156,11 @@ import { LocalStorageWithTTL } from '../../../../shared/services/localstorage_wi
 export class RunCcvaComponent implements OnInit, OnDestroy {
   filter_startDate: any;
   filter_endDate: any;
+
   dateRangeOption: string = 'all'; // 'all' or 'custom'
+  malariaStatus: string = 'h'; // Default value
+  ccvaAlgorithm: string = 'InterVA5'; // Default value
+  hivStatus: string = 'h'; // Default value
   charts = {};
   data?: any;
   progress: number = 0;
@@ -172,7 +177,8 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   constructor(
     private configService: ConfigService,
     private runCcvaService: RunCcvaService,
-    private webSockettService: WebSockettService
+    private webSockettService: WebSockettService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnDestroy(): void {
@@ -230,6 +236,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       start_date:
         this.dateRangeOption === 'custom' ? this.filter_startDate : null,
       end_date: this.dateRangeOption === 'custom' ? this.filter_endDate : null,
+      malaria_status: this.malariaStatus,
+      ccva_algorithm: this.ccvaAlgorithm,
+      hiv_status: this.hivStatus,
     };
 
     this.runCcvaService.run_ccva(filter).subscribe({
@@ -243,6 +252,20 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error starting CCVA task:', error);
         this.isTaskRunning = false;
+        console.log(error.error.detail);
+        this.snackBar.open(
+          `${
+            error.error.detail ??
+            error.error.message ??
+            'Failed to start CCVA task'
+          }`,
+          'Close',
+          {
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+            duration: 3000,
+          }
+        );
       },
     });
   }
