@@ -18,6 +18,7 @@ import { RoleFormComponent } from './dialogs/role-form/role-form.component';
 import { ViewRoleComponent } from './dialogs/view-role/view-role.component';
 import { AssignRolesFormComponent } from './dialogs/assign-roles-form/assign-roles-form.component';
 import { UserFormComponent } from './dialogs/user-form/user-form.component';
+import { ViewUserComponent } from './dialogs/view-user/view-user.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { UserFormComponent } from './dialogs/user-form/user-form.component';
     RoleFormComponent,
     ViewRoleComponent,
     AssignRolesFormComponent,
-    UserFormComponent
+    UserFormComponent,
+    ViewUserComponent
   ],
   imports: [
     CommonModule,
