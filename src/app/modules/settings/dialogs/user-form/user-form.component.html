@@ -1,0 +1,58 @@
+<div class="p-8 bg-white rounded-lg shadow-md">
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12">
+            <div class="mt-2 ml-4 flex justify-between items-center">
+                <div>
+                    <span class="text-2xl text-start">{{this.name ? 'UPDATE' : 'ADD '}} USER</span>
+                </div>
+                <div class="mr-4">
+                    <mat-icon class="cursor-pointer" (click)="onClose()">close</mat-icon>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-6">
+            <label class="block text-gray-700">Name</label>
+            <input type="text" [(ngModel)]="name"
+                class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+        </div>
+        <div class="col-span-6">
+            <label class="block text-gray-700">Email</label>
+            <input type="email" [(ngModel)]="email"
+                class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+        </div>
+        <div class="col-span-12">
+            <label class="inline-flex items-center mt-5">
+                <input type="checkbox" class="hidden peer"
+                    [(ngModel)]="is_active">
+                <div class="w-5 h-5 rounded flex border border-gray-600  items-center justify-center hover:cursor-pointer"
+                [ngClass]="{
+                    'peer-checked:bg-blue-600 peer-checked:border-transparent peer-checked:text-white peer-focus:ring-2 peer-focus:ring-blue-500': is_active
+                }"
+                >
+                    <i class="ph-check" *ngIf="is_active"></i>
+                </div>
+                <span class="ml-2 text-gray-700">Is Active</span>
+            </label>
+        </div>
+        
+        <div class="col-span-12">
+            <span class="text-[12px] text-gray-600 italic">Fill password only if you need to update user password.</span>
+        </div>
+        <div class="col-span-6">
+            <label class="block text-gray-700">Password</label>
+            <input type="password" [(ngModel)]="password"
+                class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="************">
+        </div>
+        <div class="col-span-6">
+            <label class="block text-gray-700">Confirm Password</label>
+            <input type="password" [(ngModel)]="confirm_password"
+                class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="************">
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-4">
+        <span class="px-2 text-2xl text-start"></span>
+        <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="saveUser()">Save
+            User</button>
+    </div>
+</div>
