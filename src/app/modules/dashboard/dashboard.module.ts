@@ -24,6 +24,7 @@ import { CcvaDashboardGraphsComponent } from './components/ccva-dashboard-graphs
     SharedModule,
     MaterialModule,
     VaFiltersComponent,
+    // EchartGraphComponent,
   ],
 })
 export class DashboardModule {}

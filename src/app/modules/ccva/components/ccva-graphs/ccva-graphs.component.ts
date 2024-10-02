@@ -180,4 +180,21 @@ export class CcvaGraphsComponent implements OnInit {
     };
     return titles[key] || '';
   }
+
+  downloadChart(key: string) {
+    const chartContainerId = `chart-${key}`; // Construct the chart container ID dynamically
+    const chartElement = document.querySelector(
+      `#${chartContainerId} canvas`
+    ) as HTMLCanvasElement; // Find the canvas inside the chart container
+
+    if (chartElement) {
+      const imageURL = chartElement.toDataURL('image/png'); // Convert the canvas to a base64 image
+      const link = document.createElement('a');
+      link.href = imageURL; // Set the href to the base64 image URL
+      link.download = `${key}-chart.png`; // Set the filename
+      link.click(); // Trigger the download
+    } else {
+      console.error('Chart canvas not found for', key);
+    }
+  }
 }
