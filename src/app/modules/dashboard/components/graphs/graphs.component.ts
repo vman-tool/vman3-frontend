@@ -27,13 +27,19 @@ import { CcvaService } from '../../../ccva/services/ccva.service';
 })
 export class GraphsComponent implements OnInit {
   graphData: any = {};
-  // startDate?: string;
-  // endDate?: string;
+  // start_date?: string;
+  // end_date?: string;
   // locations: string[] = [];
-  filterData: { locations: string[]; startDate?: string; endDate?: string } = {
+  filterData: {
+    locations: string[];
+    start_date?: string;
+    end_date?: string;
+    date_type?: string;
+  } = {
     locations: [],
-    startDate: undefined,
-    endDate: undefined,
+    start_date: undefined,
+    end_date: undefined,
+    date_type: undefined,
   };
 
   public barChartLabels: string[] = [
@@ -188,9 +194,10 @@ export class GraphsComponent implements OnInit {
     this.isLoading = true; // Set loading to true when starting to fetch data
     this.chartsService
       .getChartfetchStatistics(
-        this.filterData.startDate,
-        this.filterData.endDate,
-        this.filterData.locations
+        this.filterData.start_date,
+        this.filterData.end_date,
+        this.filterData.locations,
+        this.filterData.date_type
       )
       .subscribe(
         (data) => {

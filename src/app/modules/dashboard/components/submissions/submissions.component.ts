@@ -24,10 +24,16 @@ export class SubmissionsComponent {
   district: string | undefined;
 
   isLoading: boolean = true; // Loading flag
-  filterData: { locations: string[]; startDate?: string; endDate?: string } = {
+  filterData: {
+    locations: string[];
+    start_date?: string;
+    end_date?: string;
+    date_type?: string;
+  } = {
     locations: [],
-    startDate: undefined,
-    endDate: undefined,
+    start_date: undefined,
+    end_date: undefined,
+    date_type: undefined,
   };
   constructor(
     private listSubmissionsService: SubmissionsService,
@@ -79,9 +85,10 @@ export class SubmissionsComponent {
       .getsubmissionsData(
         this.pageNumber,
         this.limit,
-        this.filterData.startDate,
-        this.filterData.endDate,
-        this.filterData.locations
+        this.filterData.start_date,
+        this.filterData.end_date,
+        this.filterData.locations,
+        this.filterData.date_type
       )
       .subscribe({
         next: (response: ResponseMainModel<any>) => {

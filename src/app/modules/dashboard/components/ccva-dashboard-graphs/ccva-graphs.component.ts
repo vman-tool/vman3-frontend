@@ -1,7 +1,8 @@
-import { Input, OnInit } from '@angular/core';
+import { effect, inject, Input, OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { ChartOptions, ChartType, ChartDataset } from 'chart.js'; // Import NgChartsModule for Chart.js integration
 import { CcvaService } from '../../../ccva/services/ccva.service';
+import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
 
 @Component({
   selector: 'app-ccva-dashboard-graphs',
@@ -20,7 +21,17 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   total_records: number = 0;
   elapsed_time = '0:00:00';
   created_at: string = '';
-
+  filterData: {
+    locations: string[];
+    start_date?: string;
+    end_date?: string;
+    date_type?: string;
+  } = {
+    locations: [],
+    start_date: undefined,
+    end_date: undefined,
+    date_type: undefined,
+  };
   public genderKeys: string[] = ['all', 'male', 'female']; // Keys for gender-based charts
   public ageGroupKeys: string[] = ['adult', 'child', 'neonate']; // Keys for age-group-based charts
 
@@ -72,24 +83,47 @@ export class CcvaDashboardGraphsComponent implements OnInit {
     },
   };
 
-  constructor(private ccvaService: CcvaService) {}
+  constructor(
+    private ccvaService: CcvaService,
+    private filterService: FilterService
+  ) {
+    this.filterService = inject(FilterService);
+    this.setupEffect();
+  }
+  loadGraphData() {
+    this.isLoading = true;
+    this.ccvaService
+      .get_ccva_Results(
+        this.filterData.start_date,
+        this.filterData.end_date,
+        this.filterData.locations,
+        this.filterData.date_type
+      )
+      .subscribe({
+        next: (data: any) => {
+          this.isLoading = false;
+          if (data.data[0]) {
+            this.total_records = data.data[0].total_records;
+            this.elapsed_time = data.data[0].elapsed_time;
+            this.created_at = data.data[0].created_at;
+          }
+          this.loadChartData(data.data[0]);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error('Failed to load CCVA results', err);
+        },
+      });
+  }
 
   ngOnInit() {
-    this.isLoading = true;
-    this.ccvaService.get_ccva_Results().subscribe({
-      next: (data: any) => {
-        this.isLoading = false;
-        if (data.data[0]) {
-          this.total_records = data.data[0].total_records;
-          this.elapsed_time = data.data[0].elapsed_time;
-          this.created_at = data.data[0].created_at;
-        }
-        this.loadChartData(data.data[0]);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error('Failed to load CCVA results', err);
-      },
+    this.loadGraphData();
+  }
+
+  setupEffect() {
+    effect(() => {
+      this.filterData = this.filterService.filterData();
+      this.loadGraphData();
     });
   }
 
