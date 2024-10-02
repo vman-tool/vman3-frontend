@@ -21,11 +21,17 @@
 <ng-template #chartsContent>
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-3">
     <!-- Bar Chart -->
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg ">
-      <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" id="monthly_submissions">
+      <div class="flex items-center justify-between mb-4">
+        <!-- Title centered -->
+        <span class="flex-grow block text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
+        <!-- Download icon on the right -->
+        <img (click)="downloadChart('monthly_submissions')" src="assets/icons/download.svg" class="h-6 cursor-pointer"
+          alt="Download chart" />
+      </div>
+
       <div class="flex justify-center w-full">
         <div class="w-full h-60 md:h-72">
-
           <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
             [legend]="barChartLegend" [type]="barChartType">
           </canvas>
@@ -34,8 +40,15 @@
     </div>
 
     <!-- Doughnut Chart -->
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
-      <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span>
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" id="distribution_age">
+      <div class="flex items-center justify-between mb-4">
+        <!-- Title centered -->
+        <span class="flex-grow block text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span>
+        <!-- Download icon on the right -->
+        <img (click)="downloadChart('distribution_age')" src="assets/icons/download.svg" class="h-6 cursor-pointer"
+          alt="Download chart" />
+      </div>
+      <!-- <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span> -->
       <div class="flex items-center justify-center w-full">
         <div class="flex items-center justify-center w-auto h-60 md:h-72">
           <canvas baseChart [datasets]="doughnutChartData.datasets" [labels]="doughnutChartData.labels"
@@ -46,9 +59,17 @@
     </div>
 
     <!-- Polar Area Chart -->
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
-      <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Gender Distribution (Polar Area
-        Chart)</span>
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" id="gender_distribution">
+      <div class="flex items-center justify-between mb-4">
+        <!-- Title centered -->
+        <span class="flex-grow block text-xl font-semibold text-center text-gray-700">Gender Distribution (Polar Area
+          Chart)</span>
+        <!-- Download icon on the right -->
+        <img (click)="downloadChart('gender_distribution')" src="assets/icons/download.svg" class="h-6 cursor-pointer"
+          alt="Download chart" />
+      </div>
+      <!-- <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Gender Distribution (Polar Area
+        Chart)</span> -->
       <div class="flex justify-center w-full">
         <div class="w-full h-60 md:h-72">
           <canvas baseChart [data]="polarAreaChartData" [options]="polarAreaChartOptions" [type]="'polarArea'"
@@ -65,7 +86,6 @@
 <!-- Display CCVA Graphs when task is not running -->
 <app-ccva-dashboard-graphs [graphData]="graphData"></app-ccva-dashboard-graphs>
 <app-submissions></app-submissions>
-
 
 
 <div class="pb-96">

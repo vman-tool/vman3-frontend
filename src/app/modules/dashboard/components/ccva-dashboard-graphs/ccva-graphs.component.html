@@ -34,15 +34,21 @@
       <!-- Chart Rendering Section -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div *ngFor="let key of chartKeys" class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
-          <span *ngIf="charts[key]">
-            <!-- Dynamic Title -->
-            <span class="block mb-4 text-xl font-semibold text-center text-gray-700">
-              {{ getDynamicTitle(key) }}
-            </span>
+          <span *ngIf="charts[key]" id="chart-{{key}}" class="chart-{{key}}">
+            <!-- Dynamic Title with Download Button -->
+            <div class="flex justify-between mb-4">
+              <span class="block text-xl font-semibold text-center text-gray-700">
+                {{ getDynamicTitle(key) }}
+              </span>
+              <img (click)="downloadChart(key)" src="assets/icons/download.svg" class="h-6 cursor-pointer"
+                alt="Download chart" />
+
+            </div>
+
             <div class="flex justify-center w-full">
               <div class="w-full h-60 md:h-72">
                 <canvas baseChart [datasets]="charts[key].datasets" [labels]="charts[key].labels"
-                  [options]="chartOptions" [type]="'bar'"></canvas>
+                  [options]="chartOptions" [type]="'bar'" [legend]="true"></canvas>
               </div>
             </div>
           </span>
