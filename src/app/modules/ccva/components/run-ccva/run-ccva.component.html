@@ -1,13 +1,14 @@
 <div class="p-4 mx-auto ">
-  <!-- Header Section with Start/End Date, and Run Button on the Same Line -->
-  <div class="flex items-center justify-between mb-4">
+  <!-- Header Section with Labels for Date Range, Malaria Status, CCVA Algorithm, HIV Status, and Run Button -->
+  <div class="flex flex-col mb-4 space-y-4">
     <span class="text-xl font-bold text-gray-700">CCVA Analysis</span>
 
-    <!-- Date Picker and Run Button Section -->
-    <div class="flex items-center space-x-4">
+    <!-- Date Picker and Filter Section -->
+    <div class="flex items-center justify-between space-x-4">
       <!-- Date Range Dropdown -->
-      <div class="relative">
-        <select [(ngModel)]="dateRangeOption" (change)="onDateRangeChange()"
+      <div>
+        <label for="dateRangeOption" class="block text-sm font-medium text-gray-700">Date Range</label>
+        <select id="dateRangeOption" [(ngModel)]="dateRangeOption" (change)="onDateRangeChange()"
           class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
           <option value="all">All</option>
           <option value="custom">Custom Date</option>
@@ -15,18 +16,61 @@
       </div>
 
       <!-- Start Date Picker (Shown only when "Custom Date" is selected) -->
-      <input *ngIf="dateRangeOption === 'custom'" id="start_date" type="date" [(ngModel)]="filter_startDate"
-        class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-        placeholder="Start Date">
+      <div *ngIf="dateRangeOption === 'custom'">
+        <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
+        <input id="startDate" type="date" [(ngModel)]="filter_startDate"
+          class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </div>
 
       <!-- End Date Picker (Shown only when "Custom Date" is selected) -->
-      <input *ngIf="dateRangeOption === 'custom'" id="end_date" type="date" [(ngModel)]="filter_endDate"
-        class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-        placeholder="End Date">
+      <div *ngIf="dateRangeOption === 'custom'">
+        <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
+        <input id="endDate" type="date" [(ngModel)]="filter_endDate"
+          class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </div>
+
+      <!-- Malaria Status Dropdown -->
+      <div>
+        <label for="malariaStatus" class="block text-sm font-medium text-gray-700">Malaria Status</label>
+        <select id="malariaStatus" [(ngModel)]="malariaStatus"
+          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="high">High</option>
+          <option value="low">Low</option>
+          <option value="verylow">Very Low</option>
+        </select>
+      </div>
+
+      <!-- CCVA Algorithm Dropdown -->
+      <div>
+        <label for="ccvaAlgorithm" class="block text-sm font-medium text-gray-700">CCVA Algorithm</label>
+        <select id="ccvaAlgorithm" [(ngModel)]="ccvaAlgorithm"
+          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="InterVA5">InterVA5</option>
+          <option value="InsilicoVA">InsilicoVA</option>
+          <!-- Add more algorithm options as needed -->
+        </select>
+      </div>
+
+      <!-- HIV Status Dropdown -->
+      <div>
+        <label for="hivStatus" class="block text-sm font-medium text-gray-700">HIV Status</label>
+        <select id="hivStatus" [(ngModel)]="hivStatus"
+          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="h">High</option>
+          <option value="l">Low</option>
+          <option value="vl">Very Low</option>
+        </select>
+      </div>
 
       <!-- Run CCVA Button -->
-      <button *ngIf="!isTaskRunning" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
-        (click)="onRunCCVA()">Run CCVA</button>
+      <div class="flex items-center">
+        <button *ngIf="!isTaskRunning" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+          (click)="onRunCCVA()">Run CCVA</button>
+
+        <!-- Cancel Button to Stop Task -->
+        <button *ngIf="isTaskRunning" class="px-6 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
+          (click)="onCancel()">Cancel</button>
+      </div>
     </div>
   </div>
 

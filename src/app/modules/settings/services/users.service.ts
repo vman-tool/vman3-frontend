@@ -10,6 +10,15 @@ import { ConfigService } from 'app/app.service';
 export class UsersService {
   constructor(private http: HttpClient, private configService: ConfigService) {}
 
+  saveUser(user: any): Observable<any> {
+    return this.http.post(`${this.configService.API_URL}/users/`, user);
+  }
+  
+  updateUser(user: any): Observable<any> {
+    console.log("user: ", user)
+    return this.http.put(`${this.configService.API_URL}/users/`, user);
+  }
+
  getUsers(pager?: {paging?: boolean, page_number?: number, limit?: number}, include_deleted?: string) {
      let params = pager?.paging ? `?paging=${pager?.paging}`: '';
 

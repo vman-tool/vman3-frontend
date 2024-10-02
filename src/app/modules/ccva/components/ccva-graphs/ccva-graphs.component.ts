@@ -89,6 +89,13 @@ export class CcvaGraphsComponent implements OnInit {
         next: (progressData: any) => {
           console.log('Progress data:', progressData);
           this.graphData = progressData.data;
+          this.isLoading = false;
+          if (progressData.data[0]) {
+            this.total_records = progressData.data[0].total_records;
+            this.elapsed_time = progressData.data[0].elapsed_time;
+            this.created_at = progressData.data[0].created_at;
+          }
+          this.loadChartData(progressData.data[0]);
         },
         error: (error) => {
           console.error('Error fetching progress:', error);
@@ -96,21 +103,21 @@ export class CcvaGraphsComponent implements OnInit {
       });
     });
 
-    this.ccvaService.get_ccva_Results().subscribe({
-      next: (data: any) => {
-        this.isLoading = false;
-        if (data.data[0]) {
-          this.total_records = data.data[0].total_records;
-          this.elapsed_time = data.data[0].elapsed_time;
-          this.created_at = data.data[0].created_at;
-        }
-        this.loadChartData(data.data[0]);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error('Failed to load CCVA results', err);
-      },
-    });
+    // this.ccvaService.get_ccva_Results().subscribe({
+    //   next: (data: any) => {
+    //     this.isLoading = false;
+    //     if (data.data[0]) {
+    //       this.total_records = data.data[0].total_records;
+    //       this.elapsed_time = data.data[0].elapsed_time;
+    //       this.created_at = data.data[0].created_at;
+    //     }
+    //     this.loadChartData(data.data[0]);
+    //   },
+    //   error: (err) => {
+    //     this.isLoading = false;
+    //     console.error('Failed to load CCVA results', err);
+    //   },
+    // });
     // }
   }
 
@@ -172,5 +179,22 @@ export class CcvaGraphsComponent implements OnInit {
       neonate: 'Top 10 CSMF for Neonate Population ',
     };
     return titles[key] || '';
+  }
+
+  downloadChart(key: string) {
+    const chartContainerId = `chart-${key}`; // Construct the chart container ID dynamically
+    const chartElement = document.querySelector(
+      `#${chartContainerId} canvas`
+    ) as HTMLCanvasElement; // Find the canvas inside the chart container
+
+    if (chartElement) {
+      const imageURL = chartElement.toDataURL('image/png'); // Convert the canvas to a base64 image
+      const link = document.createElement('a');
+      link.href = imageURL; // Set the href to the base64 image URL
+      link.download = `${key}-chart.png`; // Set the filename
+      link.click(); // Trigger the download
+    } else {
+      console.error('Chart canvas not found for', key);
+    }
   }
 }

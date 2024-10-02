@@ -85,8 +85,8 @@ export class ViewCcvaComponent implements OnInit, OnDestroy {
     this.ccvaService.get_ccva_by_id(taskId).subscribe({
       next: (progressData: any) => {
         console.log('Progress data:', progressData);
-        this.graphData = progressData.data;
-        this.updateProgress(progressData);
+        this.graphData = progressData.data[0];
+        this.updateProgress(progressData.data[0]);
         this.isTaskRunning = false;
       },
       error: (error) => {

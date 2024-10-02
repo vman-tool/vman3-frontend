@@ -1,4 +1,4 @@
-<div class="p-4 mx-auto  mb-96">
+<div class="p-4 mx-auto mb-96">
   <div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 md:grid-cols-3">
     <!-- Skeleton Loader for Bar Chart -->
     <div *ngFor="let item of [1,2,3,4,5,6]"
@@ -22,11 +22,19 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Bar Chart -->
         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" *ngFor="let key of chartKeys">
-          <span *ngIf="charts[key]">
+          <span *ngIf="charts[key]" id="chart-{{key}}" class="chart-{{key}}">
             <!-- Dynamic Title -->
-            <span class="block mb-4 text-xl font-semibold text-center text-gray-700">
+            <!-- <span class="block mb-4 text-xl font-semibold text-center text-gray-700">
               {{ getDynamicTitle(key) }}
-            </span>
+            </span> -->
+            <div class="flex justify-between mb-4">
+              <span class="block text-xl font-semibold text-center text-gray-700">
+                {{ getDynamicTitle(key) }}
+              </span>
+              <img (click)="downloadChart(key)" src="assets/icons/download.svg" class="h-6 cursor-pointer"
+                alt="Download chart" />
+
+            </div>
             <div class="flex justify-center w-full">
               <div class="w-full h-60 md:h-72">
                 <canvas baseChart [datasets]="charts[key].datasets" [labels]="charts[key].labels"

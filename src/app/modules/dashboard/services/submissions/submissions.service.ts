@@ -16,10 +16,7 @@ export class SubmissionsService {
   error?: string;
   success?: boolean;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error;
     });
@@ -31,25 +28,31 @@ export class SubmissionsService {
   getsubmissionsData(
     page: number = 1,
     limit: number = 10,
-    startDate?: string,
-    endDate?: string,
-    locations?: string[]
+    start_date?: string,
+    end_date?: string,
+    locations?: string[],
+    date_type?: string
   ): Observable<any> {
     let params = new HttpParams()
       .set('page_number', page.toString())
       .set('limit', limit.toString());
 
-    if (startDate) {
-      params = params.set('start_date', startDate);
+    if (start_date) {
+      params = params.set('start_date', start_date);
     }
-    if (endDate) {
-      params = params.set('end_date', endDate);
+    if (end_date) {
+      params = params.set('end_date', end_date);
     }
     if (locations && locations.length > 0) {
       params = params.set('locations', locations.join(','));
     }
+    if (date_type) {
+      params = params.set('date_type', date_type);
+    }
     return this.http
-      .get<any>(`${this.configService.API_URL}/statistics/submissions`, { params })
+      .get<any>(`${this.configService.API_URL}/statistics/submissions`, {
+        params,
+      })
       .pipe(
         map((response: any) => response),
         catchError((error: any) => {
