@@ -1,6 +1,6 @@
 <div class="p-4 mx-auto ">
   <!-- Header Section with Labels for Date Range, Malaria Status, CCVA Algorithm, HIV Status, and Run Button -->
-  <div class="flex flex-col mb-4 space-y-4">
+  <div class="flex flex-col mb-4 space-y-4" *ngIf="isTaskRunning==false">
     <span class="text-xl font-bold text-gray-700">CCVA Analysis</span>
 
     <!-- Date Picker and Filter Section -->
@@ -34,9 +34,9 @@
         <label for="malariaStatus" class="block text-sm font-medium text-gray-700">Malaria Status</label>
         <select id="malariaStatus" [(ngModel)]="malariaStatus"
           class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="high">High</option>
-          <option value="low">Low</option>
-          <option value="verylow">Very Low</option>
+          <option value="h">High</option>
+          <option value="l">Low</option>
+          <option value="v">Very Low</option>
         </select>
       </div>
 
@@ -58,24 +58,29 @@
           class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
           <option value="h">High</option>
           <option value="l">Low</option>
-          <option value="vl">Very Low</option>
+          <option value="v">Very Low</option>
         </select>
       </div>
 
       <!-- Run CCVA Button -->
       <div class="flex items-center">
-        <button *ngIf="!isTaskRunning" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+        <button *ngIf="!isCCvaRunning" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
           (click)="onRunCCVA()">Run CCVA</button>
 
         <!-- Cancel Button to Stop Task -->
-        <button *ngIf="isTaskRunning" class="px-6 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
-          (click)="onCancel()">Cancel</button>
+        <button *ngIf="isCCvaRunning" class="px-6 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
+          (click)="onCancel()">Cancel
+          <span
+            class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Scrollable Content Section -->
   <div class="overflow-y-auto max-h-[calc(100vh-200px)]">
+    <span class="text-xl font-bold text-gray-700">CCVA Background Analysis</span>
+
     <!-- Progress and Cancel Section -->
     <div *ngIf="isTaskRunning" class="p-4 mb-4 bg-white rounded shadow-md">
       <div class="flex items-center justify-between">
