@@ -66,7 +66,7 @@
                                             <i class="ph-shield-check text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Manage Roles</span>
                                         </button>
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onViewUser(user)">
                                             <i class="ph-eye text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">View</span>
                                         </button>
@@ -74,9 +74,10 @@
                                             <i class="ph-pencil-simple text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Edit</span>
                                         </button>
-                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer">
-                                            <i class="ph-trash text-2xl mr-3"></i>
-                                            <span class="relative bottom-[7px]">Delete</span>
+                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" (click)="onDeactivateUser(user)">
+                                            <i class="ph-x text-2xl mr-3" *ngIf="user?.is_active"></i>
+                                            <i class="ph-check text-2xl mr-3" *ngIf="!user?.is_active"></i>
+                                            <span class="relative bottom-[7px]">{{ user?.is_active ? 'Deactivate' : 'Activate' }}</span>
                                         </button>
                                     </mat-menu>
                                 </td>
