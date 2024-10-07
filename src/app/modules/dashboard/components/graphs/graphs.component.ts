@@ -17,7 +17,7 @@ import { ChartsService } from '../../services/charts/charts.service';
 import { MonthlySubmission } from '../../interface';
 import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
 import { MatDialog } from '@angular/material/dialog';
-import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
+import { FilterService } from '../../../../shared/services/filter.service';
 import { CcvaService } from '../../../ccva/services/ccva.service';
 
 @Component({

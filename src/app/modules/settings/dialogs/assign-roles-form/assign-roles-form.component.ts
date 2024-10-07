@@ -3,6 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 
 @Component({
   selector: 'app-assign-roles-form',
@@ -17,13 +18,17 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   searchSelectedTerm: string = '';
   allRoles: any[] = [];
   userUuid: string = '';
+  locationTypes: any[] = [];
+  locations: any[] = [];
+  selectedLocationType?: any;
 
 
   constructor(
     public dialogRef: MatDialogRef<AssignRolesFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private usersService: UsersService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private indexedDBService: IndexedDBService
   ){}
 
   notificationMessage(message: string): void {
@@ -36,7 +41,18 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.getAllRoles();
+    this.getLocationFields();
   }
+
+  getLocationFields() {
+    this.locationTypes = [
+      { label: this.data?.system_config?.admin_level1, value:  this.data?.field_mapping?.location_level1},
+      { label: this.data?.system_config?.admin_level2, value:  this.data?.field_mapping?.location_level2},
+      { label: this.data?.system_config?.admin_level3, value:  this.data?.field_mapping?.location_level3},
+      { label: this.data?.system_config?.admin_level4, value:  this.data?.field_mapping?.location_level4}
+    ]
+  }
+  
 
   async getAllRoles() {
     const rolesResponse: any = await lastValueFrom(this.usersService.getRoles({paging: false}))
@@ -95,6 +111,14 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         }
       })
     this.selectedRoles = this.selectedRoles.filter(role => role?.uuid !== deselectedRole?.uuid);
+  }
+
+  async onSelectLocationType(e: any){
+    e?.stopPropagation();
+    this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
+
+    const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
+    this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options
   }
 
   saveAssignment() {

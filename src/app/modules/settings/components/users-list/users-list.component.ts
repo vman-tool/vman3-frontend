@@ -7,6 +7,8 @@ import { UserFormComponent } from '../../dialogs/user-form/user-form.component';
 import { ViewUserComponent } from '../../dialogs/view-user/view-user.component';
 import { SharedConfirmationComponent } from 'app/shared/dialogs/shared-confirmation/shared-confirmation.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SettingConfigService } from '../../services/settings_configs.service';
+import { FieldMapping, OdkConfigModel, settingsConfigData, SystemConfig } from '../../interface';
 
 @Component({
   selector: 'app-users-list',
@@ -18,16 +20,23 @@ export class UsersListComponent implements OnInit {
   loadingData: boolean = false;
   pageNumber?: number;
   limit?: number;
+
+  systemConfigData: SystemConfig | undefined;
+  fieldMappingData: FieldMapping | undefined;
+  vaSummaryData: string[] = [];
   
   constructor(
     private usersService: UsersService,
     public dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private settingConfigService: SettingConfigService
   ){}
 
   ngOnInit(): void {
     this.loadUsers()
+    this.loadSystemConfigurations()
   }
+  
 
   notificationMessage(message: string): void {
     this.snackBar.open(`${message}`, 'close', {
@@ -58,13 +67,29 @@ export class UsersListComponent implements OnInit {
     );
   }
 
+  loadSystemConfigurations(){
+    this.settingConfigService.getSettingsConfig().subscribe({
+      next: async (data: settingsConfigData | null) => {
+        if (!!data) {
+          this.systemConfigData = data?.system_configs;
+          this.fieldMappingData = data?.field_mapping;
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load Configurations:', error);
+      }
+    })  
+  }
+
   onAssignRoles(user: any){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
     dialogConfig.width = "60vw";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
-      user: user
+      user: user,
+      system_config: this.systemConfigData,
+      field_mapping: this.fieldMappingData,
     }
     this.dialog.open(AssignRolesFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {

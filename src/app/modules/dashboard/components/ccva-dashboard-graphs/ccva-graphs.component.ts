@@ -2,7 +2,7 @@ import { effect, inject, Input, OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { ChartOptions, ChartType, ChartDataset } from 'chart.js'; // Import NgChartsModule for Chart.js integration
 import { CcvaService } from '../../../ccva/services/ccva.service';
-import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
+import { FilterService } from '../../../../shared/services/filter.service';
 
 @Component({
   selector: 'app-ccva-dashboard-graphs',
