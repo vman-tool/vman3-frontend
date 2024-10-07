@@ -20,7 +20,7 @@
                 <span class="font-medium text-gray-700">Email:</span> {{ user?.email }}
             </div>
         </div>
-        <div class="col-span-12">
+        <div class="col-span-12" *ngIf="selectedRoles?.length">
             <div class="selection-container">
 
                 <div class="selected-items">
