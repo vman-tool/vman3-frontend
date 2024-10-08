@@ -4,6 +4,7 @@ import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
+import { SettingConfigService } from '../../services/settings_configs.service';
 
 @Component({
   selector: 'app-assign-roles-form',
@@ -20,6 +21,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   userUuid: string = '';
   locationTypes: any[] = [];
   locations: any[] = [];
+  loadLocations: boolean = false;
   selectedLocations: any[] = [];
   selectedLocationType?: any;
   availableLocationsSearchTerm: string = '';
@@ -31,7 +33,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private usersService: UsersService,
     private snackBar: MatSnackBar,
-    private indexedDBService: IndexedDBService
+    private indexedDBService: IndexedDBService,
+    private settingConfigService: SettingConfigService
   ){}
 
   notificationMessage(message: string): void {
@@ -118,6 +121,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
 
   async onSelectLocationType(e: any){
     e?.stopPropagation();
+    this.loadLocations = true;
     this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
 
     const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
@@ -130,8 +134,16 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     })
 
     if(!this.locations?.length){
-      //TODO: Get locations from the data in the API
+      const locations = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
+      this.locations = locations?.data?.map((location: any) => {
+        return {
+          name: location,
+          value: location,
+          unique: location
+        }
+      }) || []
     }
+    this.loadLocations = false;
   }
 
 

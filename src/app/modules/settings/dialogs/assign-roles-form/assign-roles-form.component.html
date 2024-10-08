@@ -58,7 +58,7 @@
                         </ng-container>
                     </select>
                 </div>
-                <div class="available-items" *ngIf="selectedLocationType">
+                <div class="available-items" *ngIf="selectedLocationType && !loadLocations">
                     <label class="block text-gray-700 mb-3 text-sm font-medium">Available {{ selectedLocationType?.label }}s</label>
                     <input type="text" [(ngModel)]="availableLocationsSearchTerm"
                         class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
@@ -73,7 +73,7 @@
                     </div>
                 </div>
 
-                <div class="selected-items" *ngIf="selectedLocationType">
+                <div class="selected-items" *ngIf="selectedLocationType && !loadLocations">
                     <label class="block text-gray-700 mb-3 text-sm font-medium">Selected {{ selectedLocationType?.label }}s</label>
                     <input type="text"
                         class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
