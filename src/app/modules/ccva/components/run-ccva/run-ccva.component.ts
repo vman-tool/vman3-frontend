@@ -161,7 +161,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     // Start the countdown from the first elapsed time received
     if (!this.countdownInterval) {
       const startTime = new Date().getTime();
-      // localStorage.setItem('ccva-startTime', startTime.toString());
+      localStorage.setItem('ccva-startTime', startTime.toString());
       this.startCountdown(startTime);
     }
     this.messageSubscription = this.webSockettService.messages.subscribe(
