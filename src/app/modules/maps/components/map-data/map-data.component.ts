@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import * as L from 'leaflet';
 import { MapDataService } from '../../services/map-data.service'; // Adjust the path as needed
-import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
+import { FilterService } from '../../../../shared/services/filter.service';
 
 @Component({
   selector: 'app-map-data',
