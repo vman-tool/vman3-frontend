@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { DatePipe } from '@angular/common';
-import { LocationService } from '../../location.service';
+import { LocationService } from '../../../../services/location.service';
 
 @Component({
   selector: 'app-data-filter',

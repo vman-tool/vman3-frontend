@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DataFilterComponent } from '../data-filter/data-filter/data-filter.component';
-import { FilterService } from '../filter.service';
-import { LocationService } from '../location.service';
+import { FilterService } from '../../../services/filter.service';
+import { LocationService } from '../../../services/location.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
@@ -28,14 +28,15 @@ export class VaFiltersComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.locationService.getLocations().subscribe(
-      (locations) => {
-        this.allLocations = locations;
-        this.isLoading = false;
-      },
-      (error) => {
-        console.error('Failed to fetch locations:', error);
-        this.isLoading = false;
+    this.locationService.getLocations().subscribe({
+        next: (locations) => {
+          this.allLocations = locations;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Failed to fetch locations:', error);
+          this.isLoading = false;
+        }
       }
     );
   }

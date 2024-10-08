@@ -3,7 +3,7 @@ import { SubmissionsService } from '../../services/submissions/submissions.servi
 import { MatDialog } from '@angular/material/dialog';
 import { ResponseMainModel } from '../../../../shared/interface/main.interface';
 import { SubmissionsDataModel } from '../../interface';
-import { FilterService } from '../../../../shared/dialogs/filters/filter.service';
+import { FilterService } from '../../../../shared/services/filter.service';
 import { SettingConfigService } from '../../../settings/services/settings_configs.service';
 import { settingsConfigData } from '../../../settings/interface';
 import { MatSnackBar } from '@angular/material/snack-bar';

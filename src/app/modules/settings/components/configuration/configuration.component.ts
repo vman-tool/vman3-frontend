@@ -45,7 +45,7 @@ export class ConfigurationComponent {
           this.systemConfigData = data?.system_configs;
           this.fieldMappingData = data?.field_mapping;
           this.vaSummaryData = data?.va_summary;
-          this.vaSummaryObjects = data?.va_summary && data?.va_summary !== null ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary) : [];
+          this.vaSummaryObjects =  data?.va_summary && data?.va_summary !== null ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary) : [];
         }
         this.isLoading = false; // Stop isLoading
       },
