@@ -20,7 +20,10 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   userUuid: string = '';
   locationTypes: any[] = [];
   locations: any[] = [];
+  selectedLocations: any[] = [];
   selectedLocationType?: any;
+  availableLocationsSearchTerm: string = '';
+  selectedLocationsSearchTerm: string = '';
 
 
   constructor(
@@ -118,7 +121,58 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
 
     const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
-    this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options
+    this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options?.map((location: any) => {
+      return {
+        name: location?.label,
+        value: location?.value,
+        unique: location?.value
+      }
+    })
+
+    if(!this.locations?.length){
+      //TODO: Get locations from the data in the API
+    }
+  }
+
+
+  filteredLocations() {
+    return this.locations?.filter(location =>
+      location?.name?.toLowerCase().includes(this.availableLocationsSearchTerm.toLowerCase())
+    );
+  }
+  
+  filteredSelectedLocations() {
+    return this.selectedLocations.filter(location =>
+      location?.name?.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
+    );
+  }
+
+  moveLocationToSelected(selectedLocation: any) {
+    this.selectedLocations = [
+      ...this.selectedLocations,
+      selectedLocation
+    ].sort((locationA, locationB) => {
+        if (locationA.name < locationB.name) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    this.locations = this.locations.filter(location => location?.unique !== selectedLocation?.unique);
+  }
+
+  moveLocationToAvailable(deselectedLocation: any) {
+    this.locations = [
+      ...this.locations,
+      deselectedLocation
+    ].sort((locationA, locationB) => {
+        if (locationA.name < locationB.name) {
+          return -1;
+        } else {
+          return 1;
+        }
+      })
+    this.selectedLocations = this.selectedLocations.filter(location => location?.unique !== deselectedLocation?.unique);
   }
 
   saveAssignment() {

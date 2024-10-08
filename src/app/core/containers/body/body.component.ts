@@ -20,6 +20,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class BodyComponent implements OnInit {
   sidebarHidden: boolean = false;
   page_title = 'Ministry of Health Tanzania';
+  page_subtitle?: string = 'Ministry of Health Tanzania';
   app_name = 'Verbal Autospy Management Tool';
 
   constructor(
@@ -42,6 +43,7 @@ export class BodyComponent implements OnInit {
         ) {
           this.app_name = config.system_configs.app_name;
           this.page_title = config.system_configs.page_title;
+          this.page_subtitle = config.system_configs.page_subtitle;
         } else {
           this.snackBar.open(
             'Please configure the system settings first!',

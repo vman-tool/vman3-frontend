@@ -74,7 +74,7 @@ export class ConfigurationComponent {
   editForm(type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary'): void {
     const data = type === 'va_summary' ? {'va_summary' : this.vaSummaryData} : this.odkApiData
     const dialogRef = this.dialog.open(SettingsConfigsFormComponent, {
-      width: '50%',
+      width: type === 'field_mapping' ? '40%' : '50%',
       data: {
         type: type,
         ...data,
