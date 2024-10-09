@@ -39,7 +39,16 @@
           <option value="v">Very Low</option>
         </select>
       </div>
-
+      <!-- HIV Status Dropdown -->
+      <div>
+        <label for="hivStatus" class="block text-sm font-medium text-gray-700">HIV Status</label>
+        <select id="hivStatus" [(ngModel)]="hivStatus"
+          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="h">High</option>
+          <option value="l">Low</option>
+          <option value="v">Very Low</option>
+        </select>
+      </div>
       <!-- CCVA Algorithm Dropdown -->
       <div>
         <label for="ccvaAlgorithm" class="block text-sm font-medium text-gray-700">CCVA Algorithm</label>
@@ -51,16 +60,7 @@
         </select>
       </div>
 
-      <!-- HIV Status Dropdown -->
-      <div>
-        <label for="hivStatus" class="block text-sm font-medium text-gray-700">HIV Status</label>
-        <select id="hivStatus" [(ngModel)]="hivStatus"
-          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="h">High</option>
-          <option value="l">Low</option>
-          <option value="v">Very Low</option>
-        </select>
-      </div>
+
 
       <!-- Run CCVA Button -->
       <div class="flex items-center">
