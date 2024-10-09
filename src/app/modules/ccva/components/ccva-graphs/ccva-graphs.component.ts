@@ -22,6 +22,7 @@ export class CcvaGraphsComponent implements OnInit {
   total_records: number = 0;
   elapsed_time = '0:00:00';
   created_at: string = '';
+  task_id: string = '';
   constructor(private ccvaService: CcvaService, private route: ActivatedRoute) {
     if (this.graphData) {
       this.loadChartData(this.graphData);
@@ -89,6 +90,7 @@ export class CcvaGraphsComponent implements OnInit {
         next: (progressData: any) => {
           console.log('Progress data:', progressData);
           this.graphData = progressData.data;
+          this.task_id = progressData.data[0].task_id;
           this.isLoading = false;
           if (progressData.data[0]) {
             this.total_records = progressData.data[0].total_records;
@@ -196,5 +198,8 @@ export class CcvaGraphsComponent implements OnInit {
     } else {
       console.error('Chart canvas not found for', key);
     }
+  }
+  downloadCsv() {
+    this.ccvaService.download_default_ccva(this.task_id);
   }
 }
