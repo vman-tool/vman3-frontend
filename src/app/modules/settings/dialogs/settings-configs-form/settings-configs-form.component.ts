@@ -66,6 +66,14 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
     if(this.selectedTab === 'va_summary'){
       this.addHeightClass('h-60')
     }
+
+    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
+    if (dialogElement) {
+      (dialogElement as HTMLElement).style.maxWidth = '100vw';
+      (dialogElement as HTMLElement).style.minWidth = '0';
+      (dialogElement as HTMLElement).style.borderRadius = '10px';
+      (dialogElement as HTMLElement).classList.add('rounded-full');
+    }
   }
 
   addHeightClass(addclassName?: string, removeClassName?: string){

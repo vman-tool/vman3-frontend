@@ -31,6 +31,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   taskIdKey: string = 'ccva-taskId'; // Store task ID in localStorage key
   taskProgressKey: string = 'ccva-progress'; // Store progress data in localStorage key
   private messageSubscription: Subscription | undefined;
+  private countdownInterval: any;
 
   constructor(
     private configService: ConfigService,
@@ -43,6 +44,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.webSockettService.disconnect();
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
+    }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
     }
   }
 
@@ -81,6 +85,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.webSockettService.disconnect();
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
+    }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
     }
   }
 
@@ -150,6 +157,13 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.webSockettService.connect(
       `${this.configService.API_URL_WS}/ccva_progress/${taskId}`
     );
+
+    // Start the countdown from the first elapsed time received
+    if (!this.countdownInterval) {
+      const startTime = new Date().getTime();
+      // localStorage.setItem('ccva-startTime', startTime.toString());
+      this.startCountdown(startTime);
+    }
     this.messageSubscription = this.webSockettService.messages.subscribe(
       (data: string) => {
         try {
@@ -174,6 +188,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       this.totalRecords = parsedData.total_records || 0;
       this.isTaskRunning = false;
       this.clearLocalStorage(); // Clear task-related data when task is completed
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+      }
     } else if (parsedData.error === true) {
       this.isTaskRunning = false;
       this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
@@ -189,7 +206,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
       this.data = parsedData;
       this.progress = Number(parsedData.progress) || 0;
-      this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
+      // this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
       this.message = parsedData.message ?? '';
       this.totalRecords = parsedData.total_records || 0;
 
@@ -222,5 +239,51 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   private clearLocalStorage() {
     localStorage.removeItem(this.taskIdKey);
     localStorage.removeItem(this.taskProgressKey);
+  }
+
+  // Start a countdown based on the start time
+  private startCountdown(startTime: number) {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+
+    this.countdownInterval = setInterval(() => {
+      const now = new Date().getTime();
+      const elapsed = now - startTime;
+      this.elapsedTime = this.formatElapsedTimeFromMilliseconds(elapsed);
+    }, 1000);
+  }
+
+  // Format the elapsed time string received from the socket
+  private formatElapsedTime(elapsedTime: string): string {
+    const timeParts = elapsedTime.split(':');
+
+    let hours = parseInt(timeParts[0], 10) || 0;
+    let minutes = parseInt(timeParts[1], 10) || 0;
+    let seconds = parseInt(timeParts[2], 10) || 0;
+
+    // Pad hours, minutes, and seconds to ensure two digits
+    const formattedHours = this.padZero(hours);
+    const formattedMinutes = this.padZero(minutes);
+    const formattedSeconds = this.padZero(seconds);
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  }
+
+  // Convert milliseconds to HH:mm:ss format
+  private formatElapsedTimeFromMilliseconds(ms: number): string {
+    let totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    totalSeconds %= 3600;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${this.padZero(hours)}:${this.padZero(minutes)}:${this.padZero(
+      seconds
+    )}`;
+  }
+
+  private padZero(value: number): string {
+    return value < 10 ? `0${value}` : `${value}`;
   }
 }
