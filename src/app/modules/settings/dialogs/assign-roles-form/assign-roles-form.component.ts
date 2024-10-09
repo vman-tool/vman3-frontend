@@ -145,9 +145,12 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         }
       }) || []
     }
-    if(this.access_limit && this.selectedLocationType?.value == this.access_limit?.field){
+    if(this.access_limit && this.selectedLocationType?.value === this.access_limit?.field){
       this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
       this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+    }
+    if(this.access_limit && this.selectedLocationType?.value !== this.access_limit?.field){
+      this.selectedLocations = []
     }
     this.loadLocations = false;
   }
