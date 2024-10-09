@@ -4,6 +4,7 @@ import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
+import { SettingConfigService } from '../../services/settings_configs.service';
 
 @Component({
   selector: 'app-assign-roles-form',
@@ -18,9 +19,14 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   searchSelectedTerm: string = '';
   allRoles: any[] = [];
   userUuid: string = '';
+  access_limit?: any;
   locationTypes: any[] = [];
   locations: any[] = [];
+  loadLocations: boolean = false;
+  selectedLocations: any[] = [];
   selectedLocationType?: any;
+  availableLocationsSearchTerm: string = '';
+  selectedLocationsSearchTerm: string = '';
 
 
   constructor(
@@ -28,7 +34,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private usersService: UsersService,
     private snackBar: MatSnackBar,
-    private indexedDBService: IndexedDBService
+    private indexedDBService: IndexedDBService,
+    private settingConfigService: SettingConfigService
   ){}
 
   notificationMessage(message: string): void {
@@ -60,6 +67,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     const user_roles: any = await lastValueFrom(this.usersService.getUserRoles(this.userUuid))
     this.allRoles = rolesResponse?.data
     this.selectedRoles = user_roles?.data?.roles || [];
+    this.access_limit = user_roles?.data?.access_limit
     this.availableRoles = this.allRoles.filter((role: any) => !this.selectedRoles.some(selectedRole => selectedRole?.uuid === role?.uuid));
   }
 
@@ -115,16 +123,93 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
 
   async onSelectLocationType(e: any){
     e?.stopPropagation();
+    this.loadLocations = true;
     this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
-
+    
     const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
-    this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options
+    this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options?.map((location: any) => {
+      return {
+        name: location?.label,
+        value: location?.value,
+        unique: location?.value
+      }
+    })
+
+    if(!this.locations?.length){
+      const locations = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
+      this.locations = locations?.data?.map((location: any) => {
+        return {
+          name: location,
+          value: location,
+          unique: location
+        }
+      }) || []
+    }
+    if(this.access_limit && this.selectedLocationType?.value == this.access_limit?.field){
+      this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+      this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+    }
+    this.loadLocations = false;
+  }
+
+
+  filteredLocations() {
+    return this.locations?.filter(location =>
+      location?.name?.toLowerCase().includes(this.availableLocationsSearchTerm.toLowerCase())
+    );
+  }
+  
+  filteredSelectedLocations() {
+    return this.selectedLocations.filter(location =>
+      location?.name?.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
+    );
+  }
+
+  moveLocationToSelected(selectedLocation: any) {
+    this.selectedLocations = [
+      ...this.selectedLocations,
+      selectedLocation
+    ].sort((locationA, locationB) => {
+        if (locationA.name < locationB.name) {
+          return -1;
+        } else {
+          return 1;
+        }
+      });
+    this.locations = this.locations.filter(location => location?.unique !== selectedLocation?.unique);
+  }
+
+  moveLocationToAvailable(deselectedLocation: any) {
+    this.locations = [
+      ...this.locations,
+      deselectedLocation
+    ].sort((locationA, locationB) => {
+        if (locationA.name < locationB.name) {
+          return -1;
+        } else {
+          return 1;
+        }
+      })
+    this.selectedLocations = this.selectedLocations.filter(location => location?.unique !== deselectedLocation?.unique);
   }
 
   saveAssignment() {
     let roleAssignment: any = {
       user: this.userUuid,
       roles: this.selectedRoles?.map(role => role?.uuid)
+    }
+
+    if(this.selectedLocations?.length){
+      roleAssignment.access_limit = {
+        field: this.selectedLocationType?.value,
+        limit_by: this.selectedLocations?.map((location) => {
+          return {
+            label: location?.name,
+            value: location?.value
+          }
+        }
+        )
+      }
     }
 
     this.usersService.saveAssignment(roleAssignment ).subscribe(

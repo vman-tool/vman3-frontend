@@ -54,49 +54,49 @@
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="systemConfigForm" (ngSubmit)="onSystemConfigSubmit()">
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Application Name</label>
-              <input type="text" formControlName="app_name"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter application name">
+            <div class="flex items-center mb-4 gap-4">
+              <label class="text-sm font-medium text-gray-700 w-1/4">Application Name</label>
+              <input type="text" formControlName="app_name" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter application name" />
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Page Title</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Page Title</label>
               <input type="text" formControlName="page_title"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter page title">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter page title">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Page Subtitle</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Page Subtitle</label>
               <input type="text" formControlName="page_subtitle"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter page subtitle">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter page subtitle">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Admin Level 1</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 1</label>
               <input type="text" formControlName="admin_level1"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter admin level 1">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 1">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Admin Level 2</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 2</label>
               <input type="text" formControlName="admin_level2"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter admin level 2">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 2">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Admin Level 3</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 3</label>
               <input type="text" formControlName="admin_level3"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter admin level 3">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 3">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Admin Level 4</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 4</label>
               <input type="text" formControlName="admin_level4"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter admin level 4">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 4">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Map Center (Latitude, Longitude)</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Map Center (Latitude, Longitude)</label>
               <input type="text" formControlName="map_center"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md"
+                class="flex-1 p-2 border border-gray-300 rounded-md"
                 placeholder="Enter map center coordinates">
             </div>
             <button type="submit"
-              class="px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Save Configuration
             </button>
           </form>
@@ -184,7 +184,7 @@
             </app-searchable-select>
 
             <button type="submit"
-              class="px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Save Field Mapping
             </button>
           </form>
@@ -202,39 +202,39 @@
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="odkApiConfigForm" (ngSubmit)="onOdkApiConfigSubmit()">
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">ODK Central URL</label>
-              <input type="url" formControlName="url" class="block w-full p-2 mt-1 border border-gray-300 rounded-md"
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">ODK Central URL</label>
+              <input type="url" formControlName="url" class="flex-1 p-2 border border-gray-300 rounded-md"
                 placeholder="Enter ODK Central URL">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Username</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Username</label>
               <input type="text" formControlName="username"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter username">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter username">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Password</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Password</label>
               <input type="password" formControlName="password"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter password">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter password">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Form ID</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Form ID</label>
               <input type="text" formControlName="form_id"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter Form ID">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter Form ID">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Project ID</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">Project ID</label>
               <input type="text" formControlName="project_id"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter Project ID">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter Project ID">
             </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">API Version</label>
+            <div class="flex items-center mb-4 gap-4">
+              <label class="block text-sm font-medium text-gray-700 w-1/4">API Version</label>
               <input type="text" formControlName="api_version"
-                class="block w-full p-2 mt-1 border border-gray-300 rounded-md" placeholder="Enter API Version">
+                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter API Version">
             </div>
 
             <button type="submit"
-              class="px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Save ODK API Configuration
             </button>
           </form>
