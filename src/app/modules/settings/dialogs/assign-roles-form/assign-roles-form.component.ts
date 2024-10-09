@@ -19,6 +19,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   searchSelectedTerm: string = '';
   allRoles: any[] = [];
   userUuid: string = '';
+  access_limit?: any;
   locationTypes: any[] = [];
   locations: any[] = [];
   loadLocations: boolean = false;
@@ -66,6 +67,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     const user_roles: any = await lastValueFrom(this.usersService.getUserRoles(this.userUuid))
     this.allRoles = rolesResponse?.data
     this.selectedRoles = user_roles?.data?.roles || [];
+    this.access_limit = user_roles?.data?.access_limit
     this.availableRoles = this.allRoles.filter((role: any) => !this.selectedRoles.some(selectedRole => selectedRole?.uuid === role?.uuid));
   }
 
@@ -123,7 +125,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     e?.stopPropagation();
     this.loadLocations = true;
     this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
-
+    
     const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
     this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options?.map((location: any) => {
       return {
@@ -142,6 +144,10 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
           unique: location
         }
       }) || []
+    }
+    if(this.access_limit && this.selectedLocationType?.value == this.access_limit?.field){
+      this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+      this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
     }
     this.loadLocations = false;
   }
@@ -191,6 +197,19 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     let roleAssignment: any = {
       user: this.userUuid,
       roles: this.selectedRoles?.map(role => role?.uuid)
+    }
+
+    if(this.selectedLocations?.length){
+      roleAssignment.access_limit = {
+        field: this.selectedLocationType?.value,
+        limit_by: this.selectedLocations?.map((location) => {
+          return {
+            label: location?.name,
+            value: location?.value
+          }
+        }
+        )
+      }
     }
 
     this.usersService.saveAssignment(roleAssignment ).subscribe(
