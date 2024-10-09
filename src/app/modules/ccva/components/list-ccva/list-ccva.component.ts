@@ -59,6 +59,26 @@ export class ListCcvaComponent implements OnInit {
     );
   }
 
+  downloadDefault(row: any): void {
+    console.log('Downloading default:', row);
+    this.ccvaService.download_default_ccva(row.task_id);
+    //   .subscribe(
+    //   (response) => {
+    //     const blob = new Blob([response], { type: 'application/zip' });
+    //     const url = window.URL.createObjectURL(blob);
+    //     window.open(url);
+    //   },
+    //   (error) => {
+    //     console.error('Error downloading default:', error);
+    //     this.snackBar.open('Error downloading default:', 'Close', {
+    //       horizontalPosition: 'end',
+    //       verticalPosition: 'top',
+    //       duration: 3000,
+    //     });
+    //   }
+    // );
+  }
+
   // Action: Set as default with confirmation
   setDefault(row: any): void {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {

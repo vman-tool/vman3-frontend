@@ -47,6 +47,11 @@ export class CcvaService {
       {}
     );
   }
+  download_default_ccva(task_id: string) {
+    window.open(
+      `${this.configService.API_URL}/ccva/download_ccva_results/${task_id}?file_format=csv`
+    );
+  }
 
   // Delete a CCVA result
   delete_ccva(id: string) {

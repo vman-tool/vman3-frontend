@@ -31,7 +31,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   taskIdKey: string = 'ccva-taskId'; // Store task ID in localStorage key
   taskProgressKey: string = 'ccva-progress'; // Store progress data in localStorage key
   private messageSubscription: Subscription | undefined;
-  private countdownInterval: any;
+  private countdownInterval: any = null;
 
   constructor(
     private configService: ConfigService,
@@ -46,6 +46,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       this.messageSubscription.unsubscribe();
     }
     if (this.countdownInterval) {
+      this.countdownInterval = null;
       clearInterval(this.countdownInterval);
     }
   }
@@ -87,6 +88,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       this.messageSubscription.unsubscribe();
     }
     if (this.countdownInterval) {
+      this.countdownInterval = null;
       clearInterval(this.countdownInterval);
     }
   }
@@ -160,8 +162,12 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
     // Start the countdown from the first elapsed time received
     if (!this.countdownInterval) {
-      const startTime = new Date().getTime();
-      // localStorage.setItem('ccva-startTime', startTime.toString());
+      let startTime = new Date().getTime();
+      if (localStorage.getItem('ccva-startTime')) {
+        startTime = parseInt(localStorage.getItem('ccva-startTime') ?? '0');
+      }
+
+      localStorage.setItem('ccva-startTime', startTime.toString());
       this.startCountdown(startTime);
     }
     this.messageSubscription = this.webSockettService.messages.subscribe(
