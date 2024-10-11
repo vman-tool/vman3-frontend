@@ -5,6 +5,7 @@ import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { SettingConfigService } from '../../services/settings_configs.service';
+import { FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-assign-roles-form',
@@ -27,6 +28,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   selectedLocationType?: any;
   availableLocationsSearchTerm: string = '';
   selectedLocationsSearchTerm: string = '';
+  assignLabels: any;
+  labelsForm: any;
 
 
   constructor(
@@ -35,7 +38,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     private usersService: UsersService,
     private snackBar: MatSnackBar,
     private indexedDBService: IndexedDBService,
-    private settingConfigService: SettingConfigService
+    private settingConfigService: SettingConfigService,
+    private formBuilder: FormBuilder
   ){}
 
   notificationMessage(message: string): void {
@@ -126,33 +130,59 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.loadLocations = true;
     this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
     
-    const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
-    this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options?.map((location: any) => {
-      return {
-        name: location?.label,
-        value: location?.value,
-        unique: location?.value
-      }
-    })
+    if(!this.selectedLocationType){
+      this.assignLabels = false
 
-    if(!this.locations?.length){
-      const locations = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
-      this.locations = locations?.data?.map((location: any) => {
+      let checkbox = document.querySelector(".peer") as HTMLInputElement
+      if(checkbox){
+        checkbox.dispatchEvent(new Event('change'));
+        checkbox.checked = false
+      }
+    }
+    
+    if(this.selectedLocationType){
+      const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
+      this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options?.map((location: any) => {
         return {
-          name: location,
-          value: location,
-          unique: location
+          name: location?.label,
+          value: location?.value,
+          unique: location?.value
         }
-      }) || []
-    }
-    if(this.access_limit && this.selectedLocationType?.value === this.access_limit?.field){
-      this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-      this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-    }
-    if(this.access_limit && this.selectedLocationType?.value !== this.access_limit?.field){
-      this.selectedLocations = []
+      })
+
+      if(!this.locations?.length){
+        const locations = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
+        this.locations = locations?.data?.map((location: any) => {
+          return {
+            name: location,
+            value: location,
+            unique: location
+          }
+        }) || []
+      }
+      if(this.access_limit && this.selectedLocationType?.value === this.access_limit?.field){
+        this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+        this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+      }
+      if(this.access_limit && this.selectedLocationType?.value !== this.access_limit?.field){
+        this.selectedLocations = []
+      }
+      this.createForm()
     }
     this.loadLocations = false;
+  }
+
+   onAssignLabels(event: any){
+    this.assignLabels = event.target.checked && this.selectedLocationType;
+
+  }
+
+  createForm(){
+    this.labelsForm = this.formBuilder.group({});
+    if(this.selectedLocations)
+    this.locations.forEach(location => {
+      this.labelsForm!.addControl(location.value, this.formBuilder.control(location?.name !== location.value ? location?.name : ''));
+    });
   }
 
 
