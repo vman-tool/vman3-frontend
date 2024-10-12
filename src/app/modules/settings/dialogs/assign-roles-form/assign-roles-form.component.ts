@@ -5,6 +5,8 @@ import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { SettingConfigService } from '../../services/settings_configs.service';
+import { FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
+import { FieldLabel } from '../../interface';
 
 @Component({
   selector: 'app-assign-roles-form',
@@ -27,6 +29,9 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   selectedLocationType?: any;
   availableLocationsSearchTerm: string = '';
   selectedLocationsSearchTerm: string = '';
+  assignLabels: any;
+  labelsForm: any;
+  field_labels?: FieldLabel[];
 
 
   constructor(
@@ -35,7 +40,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     private usersService: UsersService,
     private snackBar: MatSnackBar,
     private indexedDBService: IndexedDBService,
-    private settingConfigService: SettingConfigService
+    private settingConfigService: SettingConfigService,
+    private formBuilder: FormBuilder,
   ){}
 
   notificationMessage(message: string): void {
@@ -58,6 +64,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
       { label: this.data?.system_config?.admin_level3, value:  this.data?.field_mapping?.location_level3},
       { label: this.data?.system_config?.admin_level4, value:  this.data?.field_mapping?.location_level4}
     ]
+
+    this.field_labels = this.data?.field_labels
   }
   
 
@@ -121,38 +129,77 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.selectedRoles = this.selectedRoles.filter(role => role?.uuid !== deselectedRole?.uuid);
   }
 
+  get assignLabelsCheckbox(){
+    return document.querySelector(".peer") as HTMLInputElement
+  }
+
   async onSelectLocationType(e: any){
     e?.stopPropagation();
     this.loadLocations = true;
     this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
     
-    const locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
-    this.locations = locationsObject?.filter((location: any) => location)[0]?.value?.options?.map((location: any) => {
-      return {
-        name: location?.label,
-        value: location?.value,
-        unique: location?.value
+    if(!this.selectedLocationType){
+      if(this.assignLabelsCheckbox && this.assignLabels){
+        this.assignLabelsCheckbox.dispatchEvent(new Event('change'));
       }
-    })
-
-    if(!this.locations?.length){
-      const locations = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
-      this.locations = locations?.data?.map((location: any) => {
-        return {
-          name: location,
-          value: location,
-          unique: location
-        }
-      }) || []
     }
-    if(this.access_limit && this.selectedLocationType?.value === this.access_limit?.field){
-      this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-      this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-    }
-    if(this.access_limit && this.selectedLocationType?.value !== this.access_limit?.field){
-      this.selectedLocations = []
+    
+    if(this.selectedLocationType){
+      this.setLocations()
     }
     this.loadLocations = false;
+  }
+
+  async setLocations(){
+    const saved_field_label = this.field_labels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
+      const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
+      let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
+      
+      locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
+      
+      if(locationsFromQuestions?.value?.options?.length && locationsFromDb?.data?.length){
+        this.locations = locationsFromQuestions?.value?.options?.filter((locationToFilter: any) => locationsFromDb?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
+          return {
+            name: saved_field_label?.options?.hasOwnProperty(location?.value) ? saved_field_label?.options[location?.value] : location?.label,
+            value: location?.value,
+            unique: location?.value
+          }
+        })
+      } else {
+        this.locations = locationsFromDb?.data?.map((location: any) => {
+          return {
+            name: saved_field_label?.options?.hasOwnProperty(location) ? saved_field_label?.options[location] : location,
+            value: location,
+            unique: location
+          }
+        }) || []
+      }
+      if(this.access_limit && this.selectedLocationType?.value === this.access_limit?.field){
+        this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+        this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+      }
+      if(this.access_limit && this.selectedLocationType?.value !== this.access_limit?.field){
+        this.selectedLocations = []
+      }
+      this.createForm()
+  }
+
+   onAssignLabels(event: any){
+    this.assignLabels = event.target.checked && this.selectedLocationType;
+    this.assignLabelsCheckbox.checked = this.assignLabels;
+
+  }
+
+  createForm(){
+    this.labelsForm = this.formBuilder.group({});
+
+    this.selectedLocations?.forEach(location => {
+      this.labelsForm!.addControl(location.value, this.formBuilder.control(location?.name !== location.value ? location?.name : ''));
+    });
+
+    this.locations?.forEach(location => {
+      this.labelsForm!.addControl(location.value, this.formBuilder.control(location?.name !== location.value ? location?.name : ''));
+    });
   }
 
 
@@ -197,36 +244,84 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   }
 
   saveAssignment() {
-    let roleAssignment: any = {
-      user: this.userUuid,
-      roles: this.selectedRoles?.map(role => role?.uuid)
+    if(this.assignLabels){
+      const labelsForm = document.getElementById("labelsForm");
+      if(labelsForm){
+        labelsForm.dispatchEvent(new Event('submit'));
+      }
     }
+    else {
 
-    if(this.selectedLocations?.length){
-      roleAssignment.access_limit = {
-        field: this.selectedLocationType?.value,
-        limit_by: this.selectedLocations?.map((location) => {
-          return {
-            label: location?.name,
-            value: location?.value
+      let roleAssignment: any = {
+        user: this.userUuid,
+        roles: this.selectedRoles?.map(role => role?.uuid)
+      }
+      if(this.selectedLocations?.length){
+        roleAssignment.access_limit = {
+          field: this.selectedLocationType?.value,
+          limit_by: this.selectedLocations?.map((location) => {
+            return {
+              label: location?.name,
+              value: location?.value
+            }
+          }
+          )
+        }
+      }
+  
+      this.usersService.saveAssignment(roleAssignment ).subscribe(
+        {
+          next: () => {
+            this.notificationMessage('Assignment saved successfully');
+            this.dialogRef.close(true);
+          },
+          error: (error) => {
+            console.error(error);
+            this.notificationMessage('Failed to assign/unassign role');
           }
         }
-        )
-      }
+      )
     }
+  }
 
-    this.usersService.saveAssignment(roleAssignment ).subscribe(
-      {
-        next: () => {
-          this.notificationMessage('Assignment saved successfully');
-          this.dialogRef.close(true);
-        },
-        error: (error) => {
-          console.error(error);
-          this.notificationMessage('Failed to assign/unassign role');
+  async onSubmitLabels(e: Event){
+    let values: any = {};
+    Object.keys(this.labelsForm.value)?.forEach((key: string) => {
+      if(this.labelsForm.value[key]?.length){
+        values = {
+          ...values,
+          [key]:this.labelsForm.value[key]
         }
       }
-    )
+    })
+    const labels_data = [
+      {
+        field_id: this.selectedLocationType?.value, 
+        options: values
+      }
+    ]
+
+    const saved_labels = await lastValueFrom(this.settingConfigService.saveConnectionData("field_labels", labels_data))
+    if(!saved_labels?.error){
+      this.loadLocations = true;
+      const get_settings = await lastValueFrom(this.settingConfigService.getSettingsConfig())
+
+      this.field_labels = get_settings?.field_labels
+
+      this.setLocations()
+
+      this.loadLocations = false;
+
+      if(this.assignLabelsCheckbox){
+        this.assignLabelsCheckbox.checked = false;
+        this.assignLabelsCheckbox.dispatchEvent(new Event('change'));
+      }
+
+      this.notificationMessage('Labels saved successfully');
+    } else {
+      this.notificationMessage('Failed to save labels');
+    }
+    
   }
 
   onClose(){
