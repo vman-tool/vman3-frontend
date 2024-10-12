@@ -152,13 +152,13 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
 
   async setLocations(){
     const saved_field_label = this.field_labels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
-      const locationsFromQuestions = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
-      let locationsObject: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
+      const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
+      let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
       
-      locationsObject = locationsObject?.length ? locationsObject?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
+      locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
       
-      if(locationsObject?.value?.options?.length && locationsFromQuestions?.data?.length){
-        this.locations = locationsObject?.value?.options?.filter((locationToFilter: any) => locationsFromQuestions?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
+      if(locationsFromQuestions?.value?.options?.length && locationsFromDb?.data?.length){
+        this.locations = locationsFromQuestions?.value?.options?.filter((locationToFilter: any) => locationsFromDb?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
           return {
             name: saved_field_label?.options?.hasOwnProperty(location?.value) ? saved_field_label?.options[location?.value] : location?.label,
             value: location?.value,
@@ -166,7 +166,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
           }
         })
       } else {
-        this.locations = locationsFromQuestions?.data?.map((location: any) => {
+        this.locations = locationsFromDb?.data?.map((location: any) => {
           return {
             name: saved_field_label?.options?.hasOwnProperty(location) ? saved_field_label?.options[location] : location,
             value: location,
