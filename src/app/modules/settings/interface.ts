@@ -19,6 +19,12 @@ export interface SystemConfig {
   [key: string]: any; // Allow for any additional fields
 }
 
+export interface FieldLabel {
+  field_id: string;
+  label?: string;
+  options?: any;
+}
+
 export interface FieldMapping {
   table_name: string;
   table_details?: string;
@@ -44,4 +50,5 @@ export interface settingsConfigData {
   system_configs: SystemConfig;
   field_mapping: FieldMapping;
   va_summary: string[];
+  field_labels?: FieldLabel[];
 }

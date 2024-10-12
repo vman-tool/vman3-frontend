@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { UsersService } from '../../services/users.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { catchError, map, Observable } from 'rxjs';
@@ -8,7 +8,7 @@ import { ViewUserComponent } from '../../dialogs/view-user/view-user.component';
 import { SharedConfirmationComponent } from 'app/shared/dialogs/shared-confirmation/shared-confirmation.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SettingConfigService } from '../../services/settings_configs.service';
-import { FieldMapping, OdkConfigModel, settingsConfigData, SystemConfig } from '../../interface';
+import { FieldLabel, FieldMapping, OdkConfigModel, settingsConfigData, SystemConfig } from '../../interface';
 
 @Component({
   selector: 'app-users-list',
@@ -16,6 +16,7 @@ import { FieldMapping, OdkConfigModel, settingsConfigData, SystemConfig } from '
   styleUrl: './users-list.component.scss'
 })
 export class UsersListComponent implements OnInit {
+
   usersData$?: Observable<any>;
   loadingData: boolean = false;
   pageNumber?: number;
@@ -24,6 +25,7 @@ export class UsersListComponent implements OnInit {
   systemConfigData: SystemConfig | undefined;
   fieldMappingData: FieldMapping | undefined;
   vaSummaryData: string[] = [];
+  fieldLabels: FieldLabel[] | undefined;
   
   constructor(
     private usersService: UsersService,
@@ -73,6 +75,7 @@ export class UsersListComponent implements OnInit {
         if (!!data) {
           this.systemConfigData = data?.system_configs;
           this.fieldMappingData = data?.field_mapping;
+          this.fieldLabels = data?.field_labels;
         }
       },
       error: (error) => {
@@ -90,6 +93,7 @@ export class UsersListComponent implements OnInit {
       user: user,
       system_config: this.systemConfigData,
       field_mapping: this.fieldMappingData,
+      field_labels: this.fieldLabels
     }
     this.dialog.open(AssignRolesFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
