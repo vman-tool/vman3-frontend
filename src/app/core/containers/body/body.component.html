@@ -1,36 +1,28 @@
-<div class="grid items-center grid-cols-12 pb-5 h-[7vh]">
-
-  <div class="col-span-2 ">
+<div class="grid grid-cols-12 items-center pb-5 h-[10vh] ">
+  <div class="flex items-center col-span-2 ">
     <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon"
-      class="w-24 mt-0 ml-5 {{ sidebarHidden ? 'w-0' : ''}}" />
+      class="w-24 ml-5 {{ sidebarHidden ? 'w-0' : '' }}" />
   </div>
-  <!-- TODOS: TEMPORY REMOVE -->
-  <!-- <div class="col-span-1 {{ sidebarHidden ? 'lg:ml-[55px]' : 'lg:ml-[200px]'}} float-right">
 
-    <span class="text-2xl text-black cursor-pointer" (click)="Openbar($event)">
-      <i class="px-4 bg-white rounded-md ms-10 ph-list"></i>
-    </span>
-  </div> -->
   <div class="relative col-span-4">
-
-    <div class="ps-8 pl-[10%] {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
-      <span class="text-3xl text-black">{{page_title}} </span> <br />
-      <span class="text-black text-1xl">{{page_subtitle}}</span>
+    <div class="ps-8 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
+      <span class="text-3xl font-semibold text-black">{{page_title}}</span> <br />
+      <span class="text-xl text-black">{{page_subtitle}}</span>
     </div>
   </div>
-  <div class="relative col-span-6">
+
+  <div class="relative flex justify-end col-span-6 pr-5">
     <app-header></app-header>
   </div>
 </div>
 
-<!-- Main content wrapper, ensures no overflow -->
-<div class="flex mb-5 overflow-auto">
-  <app-sidebar *ngIf="!sidebarHidden"></app-sidebar>
-  <div class="top-10 {{ sidebarHidden ? 'ml-[100px] w-[90%]' : 'w-[80%]'}} px-4 overflow-y-auto">
+<!-- Main content wrapper -->
+<div class="flex mb-5 h-[calc(100vh-7vh)] overflow-hidden bg-white">
+  <app-sidebar class="{{ sidebarHidden ? 'hidden' : 'block' }} w-[250px]  duration-300"></app-sidebar>
+
+  <div class="flex-grow {{ sidebarHidden ? 'ml-0 w-full' : ' ml-10 w-[calc(100%-250px)]' }} px-4 overflow-y-auto">
     <router-outlet></router-outlet>
   </div>
 </div>
 
-<!-- <div class="fixed bottom-0 left-0 right-0 w-full"> -->
-<app-footer class="fixed bottom-0 left-0 right-0 w-full"></app-footer>
-<!-- </div> -->
+<app-footer class="fixed bottom-0 left-0 right-0 w-full text-white bg-gray-800"></app-footer>
