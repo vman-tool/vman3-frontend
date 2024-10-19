@@ -16,6 +16,7 @@ export class SidebarComponent {
   selectedItem?: number = 0;
   selectedSubMenu: number = 0;
   canViewPCVA: boolean = true;
+  canViewUsers: boolean = false;
 
   constructor(
     private authService: AuthService, 
@@ -33,50 +34,59 @@ export class SidebarComponent {
         icon: '',
         icon_asset: '../../../../assets/icons/dashboard.svg',
         route: '/dashboard',
+        hasAccess: true,
       },
       {
         displayText: 'VA Records ',
         icon_asset: '../../../../assets/icons/ind-record.svg',
         route: '/records',
+        hasAccess: true,
       },
       {
         displayText: 'Data Quality',
         icon_asset: '../../../../assets/icons/data.svg',
         route: '/data-quality',
+        hasAccess: true,
       },
       {
         displayText: 'Data Map',
         icon_asset: '../../../../assets/icons/data-map.svg',
         route: '/data-map',
+        hasAccess: true,
       },
       {
         displayText: 'PCVA',
         icon_asset: '../../../../assets/icons/pcva.svg',
         route: '/pcva',
+        hasAccess: this.canViewPCVA,
         subMenuItems: [
           {
             displayText: 'Coders',
             icon: 'flaticon-stethoscope',
             icon_asset: '',
             route: '/coders',
+            hasAccess: true,
           },
           {
             displayText: 'All Assigned',
             icon: 'flaticon-stethoscope',
             icon_asset: '',
             route: '/all-assigned',
+            hasAccess: true,
           },
           {
             displayText: 'Coded VA',
             icon: 'flaticon-stethoscope',
             icon_asset: '',
             route: '/coded-va',
+            hasAccess: true,
           },
           {
             displayText: 'Discordants',
             icon: 'flaticon-stethoscope',
             icon_asset: '',
             route: '/discordants',
+            hasAccess: true,
           },
         ],
       },
@@ -84,29 +94,34 @@ export class SidebarComponent {
         displayText: 'CCVA',
         icon_asset: '../../../../assets/icons/ccva.svg',
         route: '/ccva',
+        hasAccess: true,
       },
       {
         displayText: 'Settings',
         icon_asset: '../../../../assets/icons/settings.svg',
         route: '/settings',
+        hasAccess: true,
         subMenuItems: [
           {
             displayText: 'Configurations',
             icon: 'flaticon-setting', // Replace with the actual Flaticon class for a gear/settings icon
             icon_asset: '',
             route: '/configurations',
+            hasAccess: true,
           },
           {
             displayText: 'Data Synchronization',
             icon: 'flaticon-target', // Replace with the actual Flaticon class for a sync/refresh icon
             icon_asset: '',
             route: '/sync',
+            hasAccess: true,
           },
           {
             displayText: 'Users',
             icon: 'flaticon-people', // Replace with the actual Flaticon class for a sync/refresh icon
             icon_asset: '',
             route: '/users',
+            hasAccess: this.canViewUsers
           },
         ],
       },
@@ -145,6 +160,7 @@ export class SidebarComponent {
   }
   async runPrivilegesCheck() {
     this.canViewPCVA = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_MODULE_ACCESS]))
+    this.canViewUsers = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_MODULE_VIEW]))
   }
   onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
     this.selectedItem =

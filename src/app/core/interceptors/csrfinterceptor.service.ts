@@ -30,7 +30,7 @@ export class CsrfInterceptorService {
 
     return next.handle(modifiedRequest).pipe(
       catchError((requestError: HttpErrorResponse) => {
-        if (requestError.status === 401 || requestError.status === 403) {
+        if (requestError.status === 401) {
           localStorage.setItem('refresh_request', String(true))
           if(this.refresh){
             console.log("Refresh-Response: ", requestError.status)
