@@ -4,7 +4,7 @@
     <div class="py-8">
         <div class="flex items-center justify-between mb-4">
             <span class="px-2 text-2xl text-start">USERS</span>
-            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddUser()">Add User</button>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" *ngIf="canAddUsers" (click)="onAddUser()">Add User</button>
         </div>
         <div class="m-2" *ngIf="!params?.usersData && loadingData">
             <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
@@ -31,7 +31,7 @@
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
                                 Phone
                             </th> -->
-                            <th
+                            <th *ngIf="canAssignRole && canUpdateUsers && canDeactivateUser"
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
                                 Action
                             </th>
@@ -57,12 +57,12 @@
                                     <p class="text-gray-900 whitespace-no-wrap">{{ user?.phone ? user?.phone : "-" }}
                                     </p>
                                 </td> -->
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                <td class="px-5 py-3 text-sm border-b border-gray-200" *ngIf="canAssignRole && canUpdateUsers && canDeactivateUser">
                                     <a mat-icon-button [matMenuTriggerFor]="menu"
                                         class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
                                             class="ph-dots-three-vertical"></i></a>
                                     <mat-menu #menu="matMenu" class="bg-white">
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onAssignRoles(user)">
+                                        <button mat-menu-item *ngIf="canAssignRole" class="hover:text-blue-700 hover:cursor-pointer" (click)="onAssignRoles(user)">
                                             <i class="ph-shield-check text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Manage Roles</span>
                                         </button>
@@ -70,11 +70,11 @@
                                             <i class="ph-eye text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">View</span>
                                         </button>
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onEditUser(user)">
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" *ngIf="canUpdateUsers" (click)="onEditUser(user)">
                                             <i class="ph-pencil-simple text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Edit</span>
                                         </button>
-                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" (click)="onDeactivateUser(user)">
+                                        <button mat-menu-item *ngIf="canDeactivateUser" class="hover:text-red-700 hover:cursor-pointer" (click)="onDeactivateUser(user)">
                                             <i class="ph-x text-2xl mr-3" *ngIf="user?.is_active"></i>
                                             <i class="ph-check text-2xl mr-3" *ngIf="!user?.is_active"></i>
                                             <span class="relative bottom-[7px]">{{ user?.is_active ? 'Deactivate' : 'Activate' }}</span>
@@ -85,7 +85,7 @@
                         </ng-container>
                         <ng-container *ngIf="!params?.usersData?.data?.length">
                             <tr class="bg-gray-200">
-                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No coder was found</td>
+                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No user was found</td>
                             </tr>
                         </ng-container>
                     </tbody>

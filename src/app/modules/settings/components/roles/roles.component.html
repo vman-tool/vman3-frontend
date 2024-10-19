@@ -4,7 +4,7 @@
     <div class="py-8">
         <div class="flex items-center justify-between mb-4">
             <span class="px-2 text-2xl text-start">Roles</span>
-            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddRole()">Add Role</button>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" *ngIf="canAddRoles" (click)="onAddRole()">Add Role</button>
         </div>
         <div class="m-2" *ngIf="!params?.rolesData && loadingData">
             <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
@@ -24,7 +24,7 @@
                                 privileges
                             </th>
                             
-                            <th
+                            <th *ngIf="canUpdateRoles && canDeleteRoles"
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
                                 
                             </th>
@@ -43,7 +43,7 @@
                                         <span *ngIf="role?.privileges?.length > 3"> ...</span>
                                     </p>
                                 </td>
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                <td class="px-5 py-3 text-sm border-b border-gray-200" *ngIf="canUpdateRoles && canDeleteRoles">
                                     <a mat-icon-button [matMenuTriggerFor]="menu"
                                         class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
                                             class="ph-dots-three-vertical"></i></a>
@@ -52,11 +52,11 @@
                                             <i class="ph-eye text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">View</span>
                                         </button>
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onEditRole(role)">
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" *ngIf="canUpdateRoles" (click)="onEditRole(role)">
                                             <i class="ph-pencil-simple text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Edit</span>
                                         </button>
-                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" (click)="onDeleteRole(role)">
+                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" *ngIf="canDeleteRoles" (click)="onDeleteRole(role)">
                                             <i class="ph-trash text-2xl mr-3"></i>
                                             <span class="relative bottom-[7px]">Delete</span>
                                         </button>
@@ -78,7 +78,7 @@
                 </div>
             </div>
             <div *ngIf="!params?.rolesData && !loadingData">
-                <p>Could not get users.</p>
+                <p>Could not get roles.</p>
             </div>
         </div>
     </div>

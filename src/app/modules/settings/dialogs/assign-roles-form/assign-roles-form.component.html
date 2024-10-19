@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-span-12">
+        <div class="col-span-12" *ngIf="canLimitDataAccess">
             <span class="text-[12px] text-gray-600 italic">Select Type of user data access limitation</span>
             <div class="data-access-selection-container">
                 <div>
@@ -58,7 +58,7 @@
                         </ng-container>
                     </select>
 
-                    <div class="flex items-center space-x-4 mt-5">
+                    <div class="flex items-center space-x-4 mt-5" *ngIf="canUpdateLimitLabels">
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox" [disabled]="!selectedLocationType" class="sr-only peer" (change)="onAssignLabels($event)">
                             <div

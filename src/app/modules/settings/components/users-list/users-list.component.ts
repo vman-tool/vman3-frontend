@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { UsersService } from '../../services/users.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, lastValueFrom, map, Observable } from 'rxjs';
 import { AssignRolesFormComponent } from '../../dialogs/assign-roles-form/assign-roles-form.component';
 import { UserFormComponent } from '../../dialogs/user-form/user-form.component';
 import { ViewUserComponent } from '../../dialogs/view-user/view-user.component';
@@ -9,6 +9,8 @@ import { SharedConfirmationComponent } from 'app/shared/dialogs/shared-confirmat
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SettingConfigService } from '../../services/settings_configs.service';
 import { FieldLabel, FieldMapping, OdkConfigModel, settingsConfigData, SystemConfig } from '../../interface';
+import { AuthService } from 'app/core/services/authentication/auth.service';
+import * as privileges  from 'app/shared/constants/privileges.constants';
 
 @Component({
   selector: 'app-users-list',
@@ -26,17 +28,34 @@ export class UsersListComponent implements OnInit {
   fieldMappingData: FieldMapping | undefined;
   vaSummaryData: string[] = [];
   fieldLabels: FieldLabel[] | undefined;
+  canAddUsers: boolean = false;
+  canUpdateUsers: boolean = false;
+  canDeactivateUser: boolean = false;
+  canAssignRole: boolean = false;
+  canLimitDataAccess: boolean = false;
+  canUpdateLimitLabels: boolean = false;
   
   constructor(
     private usersService: UsersService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private settingConfigService: SettingConfigService
+    private settingConfigService: SettingConfigService,
+    private authService: AuthService
   ){}
 
   ngOnInit(): void {
+    this.runPrivilegesCheck()
     this.loadUsers()
     this.loadSystemConfigurations()
+  }
+
+  async runPrivilegesCheck() {
+    this.canAddUsers = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_CREATE_USER]))
+    this.canUpdateUsers = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_UPDATE_USER]))
+    this.canDeactivateUser = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_DEACTIVATE_USER]))
+    this.canAssignRole = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_ASSIGN_ROLES, privileges.USERS_VIEW_PRIVILEGES]))
+    this.canLimitDataAccess = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_LIMIT_DATA_ACCESS]))
+    this.canUpdateLimitLabels = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_UPDATE_ACCESS_LIMIT_LABELS]))
   }
   
 
@@ -93,7 +112,9 @@ export class UsersListComponent implements OnInit {
       user: user,
       system_config: this.systemConfigData,
       field_mapping: this.fieldMappingData,
-      field_labels: this.fieldLabels
+      field_labels: this.fieldLabels,
+      canLimitDataAccess: this.canLimitDataAccess,
+      canUpdateLimitLabels: this.canUpdateLimitLabels
     }
     this.dialog.open(AssignRolesFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {

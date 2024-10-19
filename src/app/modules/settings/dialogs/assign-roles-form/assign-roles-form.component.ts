@@ -32,6 +32,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   assignLabels: any;
   labelsForm: any;
   field_labels?: FieldLabel[];
+  canLimitDataAccess: boolean = false;
+  canUpdateLimitLabels: boolean = false;
 
 
   constructor(
@@ -53,6 +55,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.canLimitDataAccess = this.data.canLimitDataAccess;
+    this.canUpdateLimitLabels = this.data.canUpdateLimitLabels;
     this.getAllRoles();
     this.getLocationFields();
   }

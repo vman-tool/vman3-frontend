@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, lastValueFrom, map, Observable } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { RoleFormComponent } from '../../dialogs/role-form/role-form.component';
 import { ViewRoleComponent } from '../../dialogs/view-role/view-role.component';
 import { SharedConfirmationComponent } from 'app/shared/dialogs/shared-confirmation/shared-confirmation.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from 'app/core/services/authentication/auth.service';
+import * as privileges  from 'app/shared/constants/privileges.constants';
 
 @Component({
   selector: 'app-roles',
@@ -17,15 +19,26 @@ export class RolesComponent implements OnInit {
   rolesData$?: Observable<any>;
   pageNumber?: number;
   limit?: number;
+  canAddRoles: boolean = false;
+  canUpdateRoles: boolean = false;
+  canDeleteRoles: boolean = false;
 
   constructor(
     private usersService: UsersService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService
   ){}
 
   ngOnInit() {
     this.loadRoles()
+    this.runPrivilegesCheck()
+  }
+
+  async runPrivilegesCheck() {
+    this.canAddRoles = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_CREATE_ROLES, privileges.USERS_VIEW_PRIVILEGES]))
+    this.canUpdateRoles = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_UPDATE_ROLES, privileges.USERS_VIEW_PRIVILEGES]))
+    this.canDeleteRoles = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_DELETE_ROLES]))
   }
 
   notificationMessage(message: string): void {
