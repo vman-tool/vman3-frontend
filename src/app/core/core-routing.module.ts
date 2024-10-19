@@ -62,7 +62,7 @@ const routes: Routes = [
         loadChildren: () =>
           import('../modules/settings/settings.module').then(
             (importation) => importation.SettingsModule
-          ),
+          ), 
       },
       {
         // dashboard module

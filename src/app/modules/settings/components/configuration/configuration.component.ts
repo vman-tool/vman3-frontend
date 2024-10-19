@@ -4,10 +4,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConnectionFormComponent } from '../../dialogs/connection-form/connection-form.component';
 import { OdkConfigModel, settingsConfigData } from '../../interface';
 import { SettingConfigService } from '../../services/settings_configs.service';
-import { ResponseMainModel } from '../../../../shared/interface/main.interface';
 import { SettingsConfigsFormComponent } from '../../dialogs/settings-configs-form/settings-configs-form.component';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { lastValueFrom } from 'rxjs';
+import { AuthService } from 'app/core/services/authentication/auth.service';
+import * as privileges from 'app/shared/constants/privileges.constants';
 
 @Component({
   selector: 'app-configuration',
@@ -22,17 +23,39 @@ export class ConfigurationComponent {
   fieldMappingData: FieldMapping | undefined;
   vaSummaryData: string[] = [];
 
+  dataAccess?: any;
+
   selectedTab = 'system-config'; // Default selected tab
   vaSummaryObjects?: any
 
   constructor(
     public dialog: MatDialog,
     private settingConfigService: SettingConfigService,
-    private indexedDBService: IndexedDBService
+    private indexedDBService: IndexedDBService,
+    private authService: AuthService
   ) {}
 
-  ngOnInit(): void {
+   async hasAccess(privileges: string[]){
+    return await lastValueFrom(this.authService.hasPrivilege(privileges))
+  }
+
+  async ngOnInit(): Promise<void> {
     this.loadOdkApiData();
+    this.dataAccess = {
+      addSystemConfigs: await this.hasAccess([privileges.SETTINGS_CREATE_SYSTEM_CONFIGS]),
+      updateSystemConfigs: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_CONFIGS]),
+      viewSystemConfigs: await this.hasAccess([privileges.SETTINGS_VIEW_SYSTEM_CONFIGS]),
+      addODKSettings: await this.hasAccess([privileges.SETTINGS_CREATE_ODK_DETAILS]),
+      updateODKSettings: await this.hasAccess([privileges.SETTINGS_UPDATE_ODK_DETAILS]),
+      viewODKSettings: await this.hasAccess([privileges.SETTINGS_VIEW_ODK_DETAILS]),
+      addFieldMapping: await this.hasAccess([privileges.SETTINGS_CREATE_FIELD_MAPPING]),
+      updateFieldMapping: await this.hasAccess([privileges.SETTINGS_UPDATE_FIELD_MAPPING]),
+      viewFieldMapping: await this.hasAccess([privileges.SETTINGS_VIEW_FIELD_MAPPING]),
+      addSummaryFields: await this.hasAccess([privileges.SETTINGS_CREATE_VA_SUMMARY]),
+      updateSummaryFields: await this.hasAccess([privileges.SETTINGS_UPDATE_VA_SUMMARY]),
+      viewSummaryFields: await this.hasAccess([privileges.SETTINGS_VIEW_VA_SUMMARY]),
+      
+    }
   }
 
   loadOdkApiData(): void {

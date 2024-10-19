@@ -3,7 +3,7 @@
   <!-- Tab Navigation -->
   <div class="border-b border-gray-200 dark:border-gray-700">
     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
-      <li class="me-2">
+      <li class="me-2" *ngIf="dataAccess?.viewSystemConfigs">
         <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'system-config'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'system-config',
@@ -16,7 +16,7 @@
           <span class="text-lg font-normal">System Configuration</span>
         </a>
       </li>
-      <li class="me-2">
+      <li class="me-2" *ngIf="dataAccess?.viewODKSettings">
         <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'odk-api'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'odk-api',
@@ -29,7 +29,7 @@
           <span class="text-lg font-normal">ODK Api</span>
         </a>
       </li>
-      <li class="me-2">
+      <li class="me-2" *ngIf="dataAccess?.viewFieldMapping">
         <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'field-mapping'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'field-mapping',
@@ -43,7 +43,7 @@
           <span class="text-lg font-normal">Field Mapping</span>
         </a>
       </li>
-      <li class="me-2">
+      <li class="me-2" *ngIf="dataAccess?.viewSummaryFields">
         <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'va-summary'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'va-summary',
@@ -61,7 +61,7 @@
   </div>
 
   <!-- Tab Content -->
-  <div *ngIf="selectedTab === 'system-config'" id="system-config" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'system-config' && dataAccess?.viewSystemConfigs" id="system-config" class="mt-4 tab-content">
     <!-- System Configuration Section -->
     <div class="my-8">
       <!-- <div class="mb-4 text-xl font-normal">System Configuration</div> -->
@@ -83,7 +83,7 @@
           <p><strong>Admin Level_3:</strong> {{ systemConfigData.admin_level3 || '' }}</p>
           <p><strong>Admin Level_4:</strong> {{ systemConfigData.admin_level4 || '' }}</p>
         </div>
-        @if(!isLoading){
+        @if(!isLoading && dataAccess?.updateSystemConfigs){
         <button (click)="editForm('system_configs')"
           class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           Edit
@@ -92,7 +92,7 @@
       </div>
       <ng-template #NosystemConfigData>
 
-        <button *ngIf="!isLoading" (click)="editForm('system_configs')"
+        <button *ngIf="!isLoading && dataAccess?.addSystemConfigs" (click)="editForm('system_configs')"
           class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           Add System Configuration
         </button>
@@ -102,7 +102,7 @@
     </div>
   </div>
 
-  <div *ngIf="selectedTab === 'odk-api'" id="odk-api" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'odk-api' && dataAccess?.viewODKSettings" id="odk-api" class="mt-4 tab-content">
     <!-- ODK API Section -->
     <div class="my-8">
       <!-- <div class="mb-4 text-xl font-normal">ODK api</div>  -->
@@ -123,6 +123,7 @@
 
           </div>
           <button (click)="editForm('odk_api_configs')"
+            *ngIf="dataAccess?.updateODKSettings"
             class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             Edit
           </button>
@@ -131,6 +132,7 @@
       <ng-template #noOdkApiData>
 
         <button (click)="addOdkApi()"
+          *ngIf="dataAccess?.addODKSettings"
           class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           Add ODK API
         </button>
@@ -138,7 +140,7 @@
     </div>
   </div>
 
-  <div *ngIf="selectedTab === 'field-mapping'" id="field-mapping" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'field-mapping' && dataAccess?.viewFieldMapping" id="field-mapping" class="mt-4 tab-content">
     <!-- Field Mapping Section -->
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
@@ -170,21 +172,21 @@
           <p><strong>GPS Coordinates:</strong> {{ fieldMappingData.gps_coordinates }}</p>
           <p><strong>GPS Accuracy:</strong> {{ fieldMappingData.gps_accuracy }}</p> -->
           </div>
-          <button *ngIf="!isLoading" (click)="editForm('field_mapping')"
+          <button *ngIf="!isLoading && dataAccess?.updateFieldMapping" (click)="editForm('field_mapping')"
             class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             Edit
           </button>
         </div>
       </div>
       <ng-template #noFieldMappingData>
-        <button *ngIf="!isLoading" (click)="editForm('field_mapping')"
+        <button *ngIf="!isLoading && dataAccess?.addFieldMapping" (click)="editForm('field_mapping')"
           class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           Add Field Mapping
         </button>
       </ng-template>
     </div>
   </div>
-  <div *ngIf="selectedTab === 'va-summary'" id="va-summary" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'va-summary' && dataAccess?.viewSummaryFields" id="va-summary" class="mt-4 tab-content">
     <!-- Field Mapping Section -->
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
@@ -197,14 +199,14 @@
             <p *ngFor="let vaQuestion of vaSummaryObjects;"><strong>{{ vaQuestion?.value?.label ?
                 vaQuestion?.value?.label : vaQuestion?.key }}:</strong> {{ vaQuestion?.key }}</p>
           </div>
-          <button *ngIf="!isLoading" (click)="editForm('va_summary')"
+          <button *ngIf="!isLoading && dataAccess?.updateSummaryFields" (click)="editForm('va_summary')"
             class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             Edit
           </button>
         </div>
       </div>
       <ng-template #noVaSummaryData>
-        <button *ngIf="!isLoading" (click)="editForm('va_summary')"
+        <button *ngIf="!isLoading && dataAccess?.addSummaryFields" (click)="editForm('va_summary')"
           class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           Add VA Summary
         </button>
