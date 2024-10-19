@@ -7,6 +7,8 @@ import { ConfigService } from '../../../../app.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
 import { LocalStorageSettingsService } from '../../services/local_storage.service';
+import * as privileges from 'app/shared/constants/privileges.constants';
+import { AuthService } from 'app/core/services/authentication/auth.service';
 
 @Component({
   selector: 'app-data-sync',
@@ -23,6 +25,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private progressSub: Subscription | null = null;
   message: string | undefined;
   private messageSubscription: Subscription | undefined;
+  dataSyncAccess?: any;
 
   syncedQuestions?: any[] = [];
   forceChecked: boolean = false;
@@ -33,10 +36,14 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private webSockettService: WebSockettService,
     private indexedDBService: IndexedDBService,
-    private vaRecordsService: VaRecordsService
+    private vaRecordsService: VaRecordsService,
+    private authService: AuthService
   ) {}
+
+  async hasAccess(privileges: string[]){
+    return await lastValueFrom(this.authService.hasPrivilege(privileges))
+  }
   async ngOnInit(): Promise<void> {
-    console.log('DataSyncComponent initialized');
     await this.loadPreviousProgressFromLocalStorage();
     this.initializeWebSocket();
 
@@ -53,6 +60,11 @@ export class DataSyncComponent implements OnInit, OnDestroy {
           })
         )
       );
+    }
+
+    this.dataSyncAccess = {
+      canSyncODKData: await this.hasAccess([privileges.ODK_DATA_SYNC]),
+      canSyncODKQuestions: await this.hasAccess([privileges.ODK_QUESTIONS_SYNC])
     }
   }
   // async ngOnInit(): Promise<void> {

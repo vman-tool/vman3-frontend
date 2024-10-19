@@ -11,8 +11,9 @@ const routes: Routes = [
   {
     path: '',
 
-    canActivate: [authGuard],
     component: SettingsComponent,
+    canActivate: [authGuard, PrivilegeGuard],
+    data: { requiredPrivilege: [privileges.SETTINGS_MODULE_VIEW]},
     children: [
       {
         path: '',
@@ -21,12 +22,15 @@ const routes: Routes = [
       },
       {
         path: 'configurations',
-
         component: ConfigurationComponent,
+        canActivate: [PrivilegeGuard],
+        data: { requiredPrivilege: [privileges.SETTINGS_CONFIGS_VIEW]},
       },
       {
         path: 'sync',
         component: DataSyncComponent,
+        canActivate: [PrivilegeGuard],
+        data: { requiredPrivilege: [privileges.ODK_MODULE_VIEW]},
       },
       {
         path: 'users',

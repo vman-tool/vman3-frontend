@@ -5,7 +5,7 @@
       <p class="text-lg font-semibold">Progress: {{ progress }}%</p>
       <p class="text-lg font-semibold">Elapsed Time: {{ elapsedTime | number:'1.0-2' }}s</p>
     </div>
-    <button class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="manualSync()">
+    <button class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" *ngIf="dataSyncAccess?.canSyncODKData" (click)="manualSync()">
       Manual Sync
     </button>
   </div>
@@ -30,7 +30,7 @@
       <div class="p-5 mb-3">
         <!-- <label for="force">Force</label>
         <input type="checkbox" name="force" id="" class="ml-5 pt-5 mt-5 mr-5"> -->
-        <label class="inline-flex items-center mt-5">
+        <label class="inline-flex items-center mt-5" *ngIf="dataSyncAccess?.canSyncODKQuestions">
           <input type="checkbox" class="hidden peer" (change)="onForceCheck($event, !syncedQuestions?.length && !syncedQuestions)" [checked]="forceChecked">
           <div
             class="w-5 h-5 rounded flex border border-gray-600  items-center justify-center hover:cursor-pointer"
@@ -46,6 +46,7 @@
         </label>
       </div>
       <button 
+        *ngIf="dataSyncAccess?.canSyncODKQuestions"
         class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-700 hover:cursor-pointer" 
         [ngClass]="{
           'opacity-50':!syncedQuestions?.length && !syncedQuestions,

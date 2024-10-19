@@ -1,10 +1,10 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { AuthService } from '../../services/authentication/auth.service';
 import { Router } from '@angular/router';
 import { lastValueFrom, map } from 'rxjs';
 import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
-import * as privileges from 'app/shared/constants/privileges.constants'
+import * as privileges from 'app/shared/constants/privileges.constants';
 
 @Component({
   selector: 'app-sidebar',
@@ -15,19 +15,20 @@ export class SidebarComponent {
   menuItems: any;
   selectedItem?: number = 0;
   selectedSubMenu: number = 0;
-  canViewPCVA: boolean = true;
-  canViewUsers: boolean = false;
 
   constructor(
     private authService: AuthService, 
     private router: Router,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService
+    private indexedDBService: IndexedDBService,
   ) {
+  }
+
+  async hasAccess(privileges: string[]){
+    return await lastValueFrom(this.authService.hasPrivilege(privileges))
   }
   
   async ngOnInit(): Promise<void> {
-    await this.runPrivilegesCheck();
     this.menuItems = [
       {
         displayText: 'Dashboard',
@@ -58,7 +59,7 @@ export class SidebarComponent {
         displayText: 'PCVA',
         icon_asset: '../../../../assets/icons/pcva.svg',
         route: '/pcva',
-        hasAccess: this.canViewPCVA,
+        hasAccess: await this.hasAccess([privileges.PCVA_MODULE_ACCESS]),
         subMenuItems: [
           {
             displayText: 'Coders',
@@ -100,28 +101,28 @@ export class SidebarComponent {
         displayText: 'Settings',
         icon_asset: '../../../../assets/icons/settings.svg',
         route: '/settings',
-        hasAccess: true,
+        hasAccess: await this.hasAccess([privileges.SETTINGS_MODULE_VIEW]),
         subMenuItems: [
           {
             displayText: 'Configurations',
             icon: 'flaticon-setting', // Replace with the actual Flaticon class for a gear/settings icon
             icon_asset: '',
             route: '/configurations',
-            hasAccess: true,
+            hasAccess: await this.hasAccess([privileges.SETTINGS_CONFIGS_VIEW]),
           },
           {
             displayText: 'Data Synchronization',
             icon: 'flaticon-target', // Replace with the actual Flaticon class for a sync/refresh icon
             icon_asset: '',
             route: '/sync',
-            hasAccess: true,
+            hasAccess: await this.hasAccess([privileges.ODK_MODULE_VIEW]),
           },
           {
             displayText: 'Users',
             icon: 'flaticon-people', // Replace with the actual Flaticon class for a sync/refresh icon
             icon_asset: '',
             route: '/users',
-            hasAccess: this.canViewUsers
+            hasAccess: await this.hasAccess([privileges.USERS_MODULE_VIEW])
           },
         ],
       },
@@ -157,10 +158,6 @@ export class SidebarComponent {
         })
       ));
     }
-  }
-  async runPrivilegesCheck() {
-    this.canViewPCVA = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_MODULE_ACCESS]))
-    this.canViewUsers = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_MODULE_VIEW]))
   }
   onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
     this.selectedItem =
