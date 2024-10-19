@@ -34,34 +34,36 @@
                         <ng-container *ngIf="params?.rolesData?.data?.length">
                             <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
                                 *ngFor="let role of params?.rolesData?.data; let i = index">
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <p class="text-gray-900 whitespace-no-wrap">{{ role?.name }}</p>
-                                </td>
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <p class="text-gray-900 whitespace-no-wrap">
-                                        <span>{{ role?.privileges.slice(0, 3)?.join(", ") }}</span>
-                                        <span *ngIf="role?.privileges?.length > 3"> ...</span>
-                                    </p>
-                                </td>
-                                <td class="px-5 py-3 text-sm border-b border-gray-200" *ngIf="canUpdateRoles && canDeleteRoles">
-                                    <a mat-icon-button [matMenuTriggerFor]="menu"
-                                        class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
-                                            class="ph-dots-three-vertical"></i></a>
-                                    <mat-menu #menu="matMenu">
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onViewRole(role)">
-                                            <i class="ph-eye text-2xl mr-3"></i>
-                                            <span class="relative bottom-[7px]">View</span>
-                                        </button>
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" *ngIf="canUpdateRoles" (click)="onEditRole(role)">
-                                            <i class="ph-pencil-simple text-2xl mr-3"></i>
-                                            <span class="relative bottom-[7px]">Edit</span>
-                                        </button>
-                                        <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" *ngIf="canDeleteRoles" (click)="onDeleteRole(role)">
-                                            <i class="ph-trash text-2xl mr-3"></i>
-                                            <span class="relative bottom-[7px]">Delete</span>
-                                        </button>
-                                    </mat-menu>
-                                </td>
+                                @if(role?.name !== 'superuser'){
+                                    <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                        <p class="text-gray-900 whitespace-no-wrap">{{ role?.name }}</p>
+                                    </td>
+                                    <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                        <p class="text-gray-900 whitespace-no-wrap">
+                                            <span>{{ role?.privileges.slice(0, 3)?.join(", ") }}</span>
+                                            <span *ngIf="role?.privileges?.length > 3"> ...</span>
+                                        </p>
+                                    </td>
+                                    <td class="px-5 py-3 text-sm border-b border-gray-200" *ngIf="canUpdateRoles && canDeleteRoles">
+                                        <a mat-icon-button [matMenuTriggerFor]="menu"
+                                            class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
+                                                class="ph-dots-three-vertical"></i></a>
+                                        <mat-menu #menu="matMenu">
+                                            <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onViewRole(role)">
+                                                <i class="ph-eye text-2xl mr-3"></i>
+                                                <span class="relative bottom-[7px]">View</span>
+                                            </button>
+                                            <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" *ngIf="canUpdateRoles" (click)="onEditRole(role)">
+                                                <i class="ph-pencil-simple text-2xl mr-3"></i>
+                                                <span class="relative bottom-[7px]">Edit</span>
+                                            </button>
+                                            <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" *ngIf="canDeleteRoles" (click)="onDeleteRole(role)">
+                                                <i class="ph-trash text-2xl mr-3"></i>
+                                                <span class="relative bottom-[7px]">Delete</span>
+                                            </button>
+                                        </mat-menu>
+                                    </td>
+                                }
                             </tr>
                         </ng-container>
                         <ng-container *ngIf="!params?.rolesData?.data?.length">
