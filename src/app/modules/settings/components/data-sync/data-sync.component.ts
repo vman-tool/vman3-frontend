@@ -40,10 +40,11 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private authService: AuthService
   ) {}
 
-  async hasAccess(privileges: string[]){
-    return await lastValueFrom(this.authService.hasPrivilege(privileges))
+  async hasAccess(privileges: string[]) {
+    return await lastValueFrom(this.authService.hasPrivilege(privileges));
   }
   async ngOnInit(): Promise<void> {
+    this.elapsedTime = null;
     await this.loadPreviousProgressFromLocalStorage();
     this.initializeWebSocket();
 
@@ -64,8 +65,10 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     this.dataSyncAccess = {
       canSyncODKData: await this.hasAccess([privileges.ODK_DATA_SYNC]),
-      canSyncODKQuestions: await this.hasAccess([privileges.ODK_QUESTIONS_SYNC])
-    }
+      canSyncODKQuestions: await this.hasAccess([
+        privileges.ODK_QUESTIONS_SYNC,
+      ]),
+    };
   }
   // async ngOnInit(): Promise<void> {
   //   this.webSockettService.connect(
@@ -128,6 +131,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
           const parsedData = JSON.parse(data);
           this.updateProgress(parsedData);
         } catch (error) {
+          this.elapsedTime = null;
           console.error('Error parsing WebSocket message:', error);
         }
       }
@@ -175,6 +179,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     // // Disconnect the WebSocket when the component is destroyed
     // this.webSockettService.disconnect();
+    this.elapsedTime = null;
     this.cleanUp();
   }
 

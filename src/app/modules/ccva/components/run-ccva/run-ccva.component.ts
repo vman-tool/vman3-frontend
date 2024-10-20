@@ -47,12 +47,14 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     }
     if (this.countdownInterval) {
       this.countdownInterval = null;
+      this.elapsedTime = '0:00:00';
       clearInterval(this.countdownInterval);
     }
   }
 
   ngOnInit(): void {
     // Restore task ID and progress from localStorage if available
+    this.elapsedTime = '0:00:00';
     const storedTaskId = localStorage.getItem(this.taskIdKey);
     const storedProgress = LocalStorageWithTTL.getItemWithTTL(
       this.taskProgressKey
@@ -84,12 +86,12 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.isTaskRunning = false;
     this.clearLocalStorage(); // Clear all task-related localStorage data
     this.webSockettService.disconnect();
+    clearInterval(this.countdownInterval);
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
     if (this.countdownInterval) {
       this.countdownInterval = null;
-      clearInterval(this.countdownInterval);
     }
   }
 
@@ -100,6 +102,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.message = '';
     this.totalRecords = 0;
     this.elapsedTime = '0:00:00';
+
     this.clearLocalStorage(); // Clear any previous task data
 
     // Prepare filter object based on the selected options
@@ -243,6 +246,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   // Clear task-related data from localStorage
   private clearLocalStorage() {
+    localStorage.removeItem('ccva-startTime');
     localStorage.removeItem(this.taskIdKey);
     localStorage.removeItem(this.taskProgressKey);
   }
