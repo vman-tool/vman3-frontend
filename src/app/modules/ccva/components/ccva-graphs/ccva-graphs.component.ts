@@ -23,6 +23,7 @@ export class CcvaGraphsComponent implements OnInit {
   elapsed_time = '0:00:00';
   created_at: string = '';
   task_id: string = '';
+  ccva_graph_db_source: boolean = true;
   constructor(private ccvaService: CcvaService, private route: ActivatedRoute) {
     if (this.graphData) {
       this.loadChartData(this.graphData);
@@ -86,23 +87,25 @@ export class CcvaGraphsComponent implements OnInit {
     // } else {
     this.route.params.subscribe((params) => {
       const taskId = params['id']; // Get 'id' from
-      this.ccvaService.get_ccva_by_id(taskId).subscribe({
-        next: (progressData: any) => {
-          console.log('Progress data:', progressData);
-          this.graphData = progressData.data;
-          this.task_id = progressData.data[0].task_id;
-          this.isLoading = false;
-          if (progressData.data[0]) {
-            this.total_records = progressData.data[0].total_records;
-            this.elapsed_time = progressData.data[0].elapsed_time;
-            this.created_at = progressData.data[0].created_at;
-          }
-          this.loadChartData(progressData.data[0]);
-        },
-        error: (error) => {
-          console.error('Error fetching progress:', error);
-        },
-      });
+      this.ccvaService
+        .get_ccva_by_id(taskId, this.ccva_graph_db_source)
+        .subscribe({
+          next: (progressData: any) => {
+            console.log('Progress data:', progressData);
+            this.graphData = progressData.data;
+            this.task_id = progressData.data[0].task_id;
+            this.isLoading = false;
+            if (progressData.data[0]) {
+              this.total_records = progressData.data[0].total_records;
+              this.elapsed_time = progressData.data[0].elapsed_time;
+              this.created_at = progressData.data[0].created_at;
+            }
+            this.loadChartData(progressData.data[0]);
+          },
+          error: (error) => {
+            console.error('Error fetching progress:', error);
+          },
+        });
     });
 
     // this.ccvaService.get_ccva_Results().subscribe({
@@ -201,5 +204,11 @@ export class CcvaGraphsComponent implements OnInit {
   }
   downloadCsv() {
     this.ccvaService.download_default_ccva(this.task_id);
+  }
+
+  toggleCcvaSourceView(event: any) {
+    this.ccva_graph_db_source = event.target.checked;
+
+    this.ngOnInit();
   }
 }
