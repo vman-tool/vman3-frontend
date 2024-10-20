@@ -1,17 +1,20 @@
-<div class="grid grid-cols-12 items-center pb-5 h-[10vh] ">
-  <div class="flex items-center col-span-2 ">
+<div class="grid items-center pb-5 h-[10vh]" style="grid-template-columns: 300px 1fr 1fr;">
+  <!-- First section (Logo and Sidebar) with fixed width -->
+  <div class="flex items-center">
     <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon"
       class="w-24 ml-5 {{ sidebarHidden ? 'w-0' : '' }}" />
   </div>
 
-  <div class="relative col-span-4">
-    <div class="ps-8 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
+  <!-- Second section (Page Title and Subtitle) with responsive space -->
+  <div class="relative">
+    <div class="ps-2 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
       <span class="text-3xl font-semibold text-black">{{page_title}}</span> <br />
       <span class="text-xl text-black">{{page_subtitle}}</span>
     </div>
   </div>
 
-  <div class="relative flex justify-end col-span-6 pr-5">
+  <!-- Third section (Header) aligned to the right -->
+  <div class="relative flex justify-end pr-5">
     <app-header></app-header>
   </div>
 </div>
