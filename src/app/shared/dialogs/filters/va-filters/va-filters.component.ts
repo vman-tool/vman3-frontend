@@ -29,16 +29,15 @@ export class VaFiltersComponent implements OnInit {
 
   ngOnInit(): void {
     this.locationService.getLocations().subscribe({
-        next: (locations) => {
-          this.allLocations = locations;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Failed to fetch locations:', error);
-          this.isLoading = false;
-        }
-      }
-    );
+      next: (locations) => {
+        this.allLocations = locations;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to fetch locations:', error);
+        this.isLoading = false;
+      },
+    });
   }
 
   applyFilters(): void {
@@ -57,6 +56,7 @@ export class VaFiltersComponent implements OnInit {
       end_date: formattedEndDate,
       locations: locations,
       date_type: this.selectedDateType,
+      ccva_graph_db_source: true,
     };
     console.log('Filters applied:', filterData);
     // You can now apply filters based on the selected date type and other fields.
