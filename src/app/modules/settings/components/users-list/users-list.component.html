@@ -41,7 +41,8 @@
                         <ng-container *ngIf="params?.usersData?.data?.length">
                             <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
                                 *ngFor="let user of params?.usersData?.data; let i = index">
-                                @if(user?.created_by){
+                                
+                                @if(user?.created_by || current_user?.created_by === null){
                                     <td class="px-5 py-3 text-sm border-b border-gray-200">
                                         <p class="text-gray-900 whitespace-no-wrap">{{ user?.name }}</p>
                                     </td>

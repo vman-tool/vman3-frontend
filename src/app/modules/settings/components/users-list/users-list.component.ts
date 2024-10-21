@@ -34,6 +34,7 @@ export class UsersListComponent implements OnInit {
   canAssignRole: boolean = false;
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
+  current_user?: any;
   
   constructor(
     private usersService: UsersService,
@@ -44,6 +45,7 @@ export class UsersListComponent implements OnInit {
   ){}
 
   ngOnInit(): void {
+    this.current_user = JSON.parse(localStorage.getItem("current_user") || "{}");
     this.runPrivilegesCheck()
     this.loadUsers()
     this.loadSystemConfigurations()
