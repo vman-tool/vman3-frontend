@@ -7,9 +7,14 @@ import { ConfigService } from '../../../app.service';
 })
 export class CcvaService {
   constructor(private http: HttpClient, private configService: ConfigService) {}
-  get_ccva_by_id(ccvaId: string) {
+  get_ccva_by_id(ccvaId: string, ccva_graph_db_source: boolean = true) {
+    let params = new HttpParams();
+    params = params.set('ccva_graph_db_source', ccva_graph_db_source);
     return this.http.get(
-      `${this.configService.API_URL}/ccva?ccva_id=${ccvaId}`
+      `${this.configService.API_URL}/ccva?ccva_id=${ccvaId}`,
+      {
+        params,
+      }
     );
   }
   // Get all CCVA results
@@ -17,9 +22,11 @@ export class CcvaService {
     start_date?: string,
     end_date?: string,
     locations?: string[],
-    date_type?: string
+    date_type?: string,
+    ccva_graph_db_source: boolean = true
   ) {
     let params = new HttpParams();
+    params = params.set('ccva_graph_db_source', ccva_graph_db_source);
     if (start_date) {
       params = params.set('start_date', start_date);
     }

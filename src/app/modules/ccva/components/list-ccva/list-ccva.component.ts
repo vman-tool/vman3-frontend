@@ -1,3 +1,4 @@
+import { TriggersService } from './../../../../core/services/triggers/triggers.service';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../../../shared/dialogs/confirm/confirmation-dialog.component';
@@ -29,10 +30,14 @@ export class ListCcvaComponent implements OnInit {
     private ccvaService: CcvaService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private triggersService: TriggersService
   ) {}
 
   ngOnInit(): void {
+    this.triggersService.triggerCCVAListFunction$.subscribe(() => {
+      this.fetchData();
+    });
     // Fetch the data when the component is initialized
     this.fetchData();
   }

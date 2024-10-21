@@ -15,6 +15,7 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
   selectedView: 'gender' | 'age' = 'gender'; // Default to 'By Gender'
+  ccva_graph_db_source: boolean = true;
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
   public isLoading = false;
@@ -26,11 +27,13 @@ export class CcvaDashboardGraphsComponent implements OnInit {
     start_date?: string;
     end_date?: string;
     date_type?: string;
+    ccva_graph_db_source: boolean;
   } = {
     locations: [],
     start_date: undefined,
     end_date: undefined,
     date_type: undefined,
+    ccva_graph_db_source: true,
   };
   public genderKeys: string[] = ['all', 'male', 'female']; // Keys for gender-based charts
   public ageGroupKeys: string[] = ['adult', 'child', 'neonate']; // Keys for age-group-based charts
@@ -97,11 +100,13 @@ export class CcvaDashboardGraphsComponent implements OnInit {
         this.filterData.start_date,
         this.filterData.end_date,
         this.filterData.locations,
-        this.filterData.date_type
+        this.filterData.date_type,
+        this.filterData.ccva_graph_db_source
       )
       .subscribe({
         next: (data: any) => {
           this.isLoading = false;
+          console.log('CCVA results', data);
           if (data.data[0]) {
             this.total_records = data.data[0].total_records;
             this.elapsed_time = data.data[0].elapsed_time;
@@ -139,9 +144,9 @@ export class CcvaDashboardGraphsComponent implements OnInit {
             borderWidth: 1,
           },
         ];
-        if (chartLabels?.length > 0) {
-          this.renderChart(key, chartLabels, chartData);
-        }
+        // if (chartLabels?.length > 0) {
+        this.renderChart(key, chartLabels, chartData);
+        // }
       }
     }
   }
@@ -176,6 +181,12 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   // Toggle the view between 'gender' and 'age' when the checkbox is checked/unchecked
   toggleView(event: any) {
     this.selectedView = event.target.checked ? 'age' : 'gender';
+  }
+  toggleCcvaSourceView(event: any) {
+    this.ccva_graph_db_source = event.target.checked;
+    this.filterData = this.filterService.filterData();
+    this.filterData['ccva_graph_db_source'] = this.ccva_graph_db_source;
+    this.loadGraphData();
   }
 
   get chartKeys(): string[] {

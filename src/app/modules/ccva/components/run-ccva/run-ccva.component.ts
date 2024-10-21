@@ -5,6 +5,7 @@ import { WebSockettService } from '../../../settings/services/web-socket.service
 import { Subscription } from 'rxjs';
 import { LocalStorageWithTTL } from '../../../../shared/services/localstorage_with_ttl.services';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TriggersService } from '../../../../core/services/triggers/triggers.service';
 
 @Component({
   selector: 'app-run-ccva',
@@ -37,7 +38,8 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private runCcvaService: RunCcvaService,
     private webSockettService: WebSockettService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private triggersService: TriggersService
   ) {}
 
   ngOnDestroy(): void {
@@ -47,12 +49,14 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     }
     if (this.countdownInterval) {
       this.countdownInterval = null;
+      this.elapsedTime = '0:00:00';
       clearInterval(this.countdownInterval);
     }
   }
 
   ngOnInit(): void {
     // Restore task ID and progress from localStorage if available
+    this.elapsedTime = '0:00:00';
     const storedTaskId = localStorage.getItem(this.taskIdKey);
     const storedProgress = LocalStorageWithTTL.getItemWithTTL(
       this.taskProgressKey
@@ -82,14 +86,15 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   }
   onCancel() {
     this.isTaskRunning = false;
+    this.triggersService.triggerCCVAListFunction();
     this.clearLocalStorage(); // Clear all task-related localStorage data
     this.webSockettService.disconnect();
+    clearInterval(this.countdownInterval);
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
     if (this.countdownInterval) {
       this.countdownInterval = null;
-      clearInterval(this.countdownInterval);
     }
   }
 
@@ -100,6 +105,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.message = '';
     this.totalRecords = 0;
     this.elapsedTime = '0:00:00';
+
     this.clearLocalStorage(); // Clear any previous task data
 
     // Prepare filter object based on the selected options
@@ -131,6 +137,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
         console.error('Error starting CCVA task:', error);
         this.isCCvaRunning = false;
         this.isTaskRunning = false;
+        this.triggersService.triggerCCVAListFunction();
         console.log(error.error.detail);
         this.snackBar.open(
           `${
@@ -193,12 +200,14 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       this.elapsedTime = parsedData.elapsed_time;
       this.totalRecords = parsedData.total_records || 0;
       this.isTaskRunning = false;
+      this.triggersService.triggerCCVAListFunction(); // Trigger CCVA list refresh
       this.clearLocalStorage(); // Clear task-related data when task is completed
       if (this.countdownInterval) {
         clearInterval(this.countdownInterval);
       }
     } else if (parsedData.error === true) {
       this.isTaskRunning = false;
+      this.triggersService.triggerCCVAListFunction();
       this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
       this.clearLocalStorage();
     } else {
@@ -243,6 +252,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   // Clear task-related data from localStorage
   private clearLocalStorage() {
+    localStorage.removeItem('ccva-startTime');
     localStorage.removeItem(this.taskIdKey);
     localStorage.removeItem(this.taskProgressKey);
   }

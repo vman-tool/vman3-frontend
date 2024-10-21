@@ -10,11 +10,13 @@ export class FilterService {
     end_date: string | undefined;
     locations: string[];
     date_type: string | undefined;
+    ccva_graph_db_source: boolean;
   }>({
     locations: [],
     start_date: undefined,
     end_date: undefined,
     date_type: undefined,
+    ccva_graph_db_source: true,
   });
 
   get filterData(): Signal<{
@@ -22,6 +24,7 @@ export class FilterService {
     end_date: string | undefined;
     locations: string[];
     date_type: string | undefined;
+    ccva_graph_db_source: boolean;
   }> {
     return this._filterData;
   }
@@ -31,6 +34,7 @@ export class FilterService {
     end_date: string | undefined;
     locations: string[];
     date_type: string | undefined;
+    ccva_graph_db_source: boolean;
   }) {
     this._filterData.set(data);
   }
