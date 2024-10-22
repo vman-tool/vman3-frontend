@@ -22,6 +22,7 @@ export class RolesComponent implements OnInit {
   canAddRoles: boolean = false;
   canUpdateRoles: boolean = false;
   canDeleteRoles: boolean = false;
+  current_user?: any;
 
   constructor(
     private usersService: UsersService,
@@ -31,6 +32,7 @@ export class RolesComponent implements OnInit {
   ){}
 
   ngOnInit() {
+    this.current_user = JSON.parse(localStorage.getItem("current_user") || "{}");
     this.loadRoles()
     this.runPrivilegesCheck()
   }

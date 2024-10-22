@@ -34,7 +34,7 @@
                         <ng-container *ngIf="params?.rolesData?.data?.length">
                             <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
                                 *ngFor="let role of params?.rolesData?.data; let i = index">
-                                @if(role?.name !== 'superuser'){
+                                @if(role?.name !== 'superuser' || current_user?.created_by === null){
                                     <td class="px-5 py-3 text-sm border-b border-gray-200">
                                         <p class="text-gray-900 whitespace-no-wrap">{{ role?.name }}</p>
                                     </td>
@@ -53,11 +53,11 @@
                                                 <i class="ph-eye text-2xl mr-3"></i>
                                                 <span class="relative bottom-[7px]">View</span>
                                             </button>
-                                            <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" *ngIf="canUpdateRoles" (click)="onEditRole(role)">
+                                            <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" *ngIf="canUpdateRoles && role?.name !== 'superuser'" (click)="onEditRole(role)">
                                                 <i class="ph-pencil-simple text-2xl mr-3"></i>
                                                 <span class="relative bottom-[7px]">Edit</span>
                                             </button>
-                                            <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" *ngIf="canDeleteRoles" (click)="onDeleteRole(role)">
+                                            <button mat-menu-item class="hover:text-red-700 hover:cursor-pointer" *ngIf="canDeleteRoles && role?.name !== 'superuser'" (click)="onDeleteRole(role)">
                                                 <i class="ph-trash text-2xl mr-3"></i>
                                                 <span class="relative bottom-[7px]">Delete</span>
                                             </button>
