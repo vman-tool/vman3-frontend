@@ -34,8 +34,8 @@ RUN npm ci --legacy-peer-deps
 # Copy the rest of the application code
 COPY . .
 
-# Build the Angular app with production optimizations
-RUN npm run build --configuration production
+# Build the Angular app with the correct project name and production configuration
+RUN npm run build -- --configuration production --project=vman3-frontend
 
 # Stage 2: Serve the app with Nginx
 FROM nginx:alpine
