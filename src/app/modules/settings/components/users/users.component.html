@@ -1,45 +1,45 @@
-<div class="p-8 bg-white rounded-lg shadow-sm">
-    <span class="mb-6 text-2xl font-semibold">Users Management</span>
-    <div class="border-b border-gray-200 dark:border-gray-700">
-        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
-            <li class="me-2" *ngIf="canViewUsers">
-                <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
-                    (click)="selectedTab = 'users-list'" [ngClass]="{
+<div class="bg-white rounded-lg shadow-sm ">
+  <span class="mb-6 text-2xl font-semibold">Users Management</span>
+  <div class="border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+      <li class="me-2" *ngIf="canViewUsers">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'users-list'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'users-list',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'users-list'
          }">
-                    <i class="fas fa-cogs me-2" [ngClass]="{
+          <i class="fas fa-cogs me-2" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'users-list',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'users-list'
            }"></i>
-                    <span class="text-lg font-normal">Users</span>
-                </a>
-            </li>
-            <li class="me-2" *ngIf="canViewRoles">
-                <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
-                    (click)="selectedTab = 'user-roles'" [ngClass]="{
+          <span class="text-lg font-normal">Users</span>
+        </a>
+      </li>
+      <li class="me-2" *ngIf="canViewRoles">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'user-roles'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'user-roles',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'user-roles'
          }">
-                    <i class="fas fa-network-wired me-2" [ngClass]="{
+          <i class="fas fa-network-wired me-2" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'user-roles',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'user-roles'
            }"></i>
-                    <span class="text-lg font-normal">User Roles</span>
-                </a>
-            </li>            
-        </ul>
-    </div>
+          <span class="text-lg font-normal">User Roles</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 
-    <div *ngIf="selectedTab === 'users-list' && canViewUsers" id="users-list" class="mt-4 tab-content">
-        <div class="my-8">
-            <app-users-list></app-users-list>
-        </div>
+  <div *ngIf="selectedTab === 'users-list' && canViewUsers" id="users-list" class="mt-4 tab-content">
+    <div class="my-8">
+      <app-users-list></app-users-list>
     </div>
+  </div>
 
-    <div *ngIf="selectedTab === 'user-roles' && canViewRoles" id="user-roles" class="mt-4 tab-content">
-        <div class="my-8">
-            <app-roles></app-roles>
-        </div>
+  <div *ngIf="selectedTab === 'user-roles' && canViewRoles" id="user-roles" class="mt-4 tab-content">
+    <div class="my-8">
+      <app-roles></app-roles>
     </div>
+  </div>
 </div>
