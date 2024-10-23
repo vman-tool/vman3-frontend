@@ -26,7 +26,7 @@ export class ConfigurationComponent {
   dataAccess?: any;
 
   selectedTab = 'system-config'; // Default selected tab
-  vaSummaryObjects?: any
+  vaSummaryObjects?: any;
 
   constructor(
     public dialog: MatDialog,
@@ -35,27 +35,50 @@ export class ConfigurationComponent {
     private authService: AuthService
   ) {}
 
-   async hasAccess(privileges: string[]){
-    return await lastValueFrom(this.authService.hasPrivilege(privileges))
+  async hasAccess(privileges: string[]) {
+    return await lastValueFrom(this.authService.hasPrivilege(privileges));
   }
 
   async ngOnInit(): Promise<void> {
     this.loadOdkApiData();
     this.dataAccess = {
-      addSystemConfigs: await this.hasAccess([privileges.SETTINGS_CREATE_SYSTEM_CONFIGS]),
-      updateSystemConfigs: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_CONFIGS]),
-      viewSystemConfigs: await this.hasAccess([privileges.SETTINGS_VIEW_SYSTEM_CONFIGS]),
-      addODKSettings: await this.hasAccess([privileges.SETTINGS_CREATE_ODK_DETAILS]),
-      updateODKSettings: await this.hasAccess([privileges.SETTINGS_UPDATE_ODK_DETAILS]),
-      viewODKSettings: await this.hasAccess([privileges.SETTINGS_VIEW_ODK_DETAILS]),
-      addFieldMapping: await this.hasAccess([privileges.SETTINGS_CREATE_FIELD_MAPPING]),
-      updateFieldMapping: await this.hasAccess([privileges.SETTINGS_UPDATE_FIELD_MAPPING]),
-      viewFieldMapping: await this.hasAccess([privileges.SETTINGS_VIEW_FIELD_MAPPING]),
-      addSummaryFields: await this.hasAccess([privileges.SETTINGS_CREATE_VA_SUMMARY]),
-      updateSummaryFields: await this.hasAccess([privileges.SETTINGS_UPDATE_VA_SUMMARY]),
-      viewSummaryFields: await this.hasAccess([privileges.SETTINGS_VIEW_VA_SUMMARY]),
-      
-    }
+      addSystemConfigs: await this.hasAccess([
+        privileges.SETTINGS_CREATE_SYSTEM_CONFIGS,
+      ]),
+      updateSystemConfigs: await this.hasAccess([
+        privileges.SETTINGS_UPDATE_SYSTEM_CONFIGS,
+      ]),
+      viewSystemConfigs: await this.hasAccess([
+        privileges.SETTINGS_VIEW_SYSTEM_CONFIGS,
+      ]),
+      addODKSettings: await this.hasAccess([
+        privileges.SETTINGS_CREATE_ODK_DETAILS,
+      ]),
+      updateODKSettings: await this.hasAccess([
+        privileges.SETTINGS_UPDATE_ODK_DETAILS,
+      ]),
+      viewODKSettings: await this.hasAccess([
+        privileges.SETTINGS_VIEW_ODK_DETAILS,
+      ]),
+      addFieldMapping: await this.hasAccess([
+        privileges.SETTINGS_CREATE_FIELD_MAPPING,
+      ]),
+      updateFieldMapping: await this.hasAccess([
+        privileges.SETTINGS_UPDATE_FIELD_MAPPING,
+      ]),
+      viewFieldMapping: await this.hasAccess([
+        privileges.SETTINGS_VIEW_FIELD_MAPPING,
+      ]),
+      addSummaryFields: await this.hasAccess([
+        privileges.SETTINGS_CREATE_VA_SUMMARY,
+      ]),
+      updateSummaryFields: await this.hasAccess([
+        privileges.SETTINGS_UPDATE_VA_SUMMARY,
+      ]),
+      viewSummaryFields: await this.hasAccess([
+        privileges.SETTINGS_VIEW_VA_SUMMARY,
+      ]),
+    };
   }
 
   loadOdkApiData(): void {
@@ -68,16 +91,18 @@ export class ConfigurationComponent {
           this.systemConfigData = data?.system_configs;
           this.fieldMappingData = data?.field_mapping;
           this.vaSummaryData = data?.va_summary;
-          this.vaSummaryObjects =  data?.va_summary && data?.va_summary !== null ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary) : [];
+          this.vaSummaryObjects =
+            data?.va_summary && data?.va_summary !== null
+              ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary)
+              : [];
         }
         this.isLoading = false; // Stop isLoading
       },
       error: (error) => {
         console.error('Failed to load ODK API data:', error);
         this.isLoading = false; // Stop isLoading even on error
-      }
-    }
-    );
+      },
+    });
   }
 
   editOdkApi(): void {
@@ -94,8 +119,13 @@ export class ConfigurationComponent {
     });
   }
 
-  editForm(type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary'): void {
-    const data = type === 'va_summary' ? {'va_summary' : this.vaSummaryData} : this.odkApiData
+  editForm(
+    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary'
+  ): void {
+    const data =
+      type === 'va_summary'
+        ? { va_summary: this.vaSummaryData }
+        : this.odkApiData;
     const dialogRef = this.dialog.open(SettingsConfigsFormComponent, {
       width: type === 'field_mapping' ? '40%' : '50%',
       data: {
@@ -107,9 +137,10 @@ export class ConfigurationComponent {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        if(type === 'va_summary') {
+        if (type === 'va_summary') {
           this.vaSummaryData = result;
-          this.vaSummaryObjects = await this.indexedDBService.getQuestionsByKeys(result);
+          this.vaSummaryObjects =
+            await this.indexedDBService.getQuestionsByKeys(result);
         }
         this.odkApiData = result;
         this.hasOdkApiData = true;

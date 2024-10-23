@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { LoginComponent } from './components/login/login.component';
 import { authGuard, PrivilegeGuard } from '../shared/guards/auth.guard';
 import { SettingsGuard } from '../shared/guards/system-config.guard';
-import * as privileges  from 'app/shared/constants/privileges.constants';
+import * as privileges from 'app/shared/constants/privileges.constants';
 
 const routes: Routes = [
   {
@@ -27,7 +27,7 @@ const routes: Routes = [
             (importation) => importation.PcvaModule
           ),
         canActivate: [SettingsGuard, PrivilegeGuard],
-        data: { requiredPrivilege: [privileges.PCVA_MODULE_ACCESS]} 
+        data: { requiredPrivilege: [privileges.PCVA_MODULE_ACCESS] },
       },
       {
         // Records module
@@ -62,7 +62,7 @@ const routes: Routes = [
         loadChildren: () =>
           import('../modules/settings/settings.module').then(
             (importation) => importation.SettingsModule
-          ), 
+          ),
       },
       {
         // dashboard module
@@ -79,7 +79,9 @@ const routes: Routes = [
         loadChildren: () =>
           import('../modules/ccva/ccva.module').then(
             (importation) => importation.CcvaModule
-          )
+          ),
+        canActivate: [SettingsGuard, PrivilegeGuard],
+        data: { requiredPrivilege: [privileges.CCVA_MODULE_VIEW] },
       },
     ],
   },
