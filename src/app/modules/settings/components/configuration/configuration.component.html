@@ -1,4 +1,4 @@
-<div class="max-w-4xl p-8 bg-white rounded-lg shadow-sm">
+<div class="p-8 bg-white rounded-lg shadow-sm">
   <span class="mb-6 text-2xl font-semibold">Configurations</span>
   <!-- Tab Navigation -->
   <div class="border-b border-gray-200 dark:border-gray-700">
@@ -50,11 +50,25 @@
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'va-summary'
          }">
           <i class="fas fa-table me-2" [ngClass]="{
-             'text-blue-600 dark:text-blue-500': selectedTab === 'field-mapping',
+             'text-blue-600 dark:text-blue-500': selectedTab === 'va-summary',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'va-summary'
            }"></i>
 
           <span class="text-lg font-normal">VA-Summary</span>
+        </a>
+      </li>
+      <li class="me-2" *ngIf="dataAccess?.updateSystemImages">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'system-images'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'system-images',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'system-images'
+         }">
+          <i class="fas fa-table me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'system-images',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'system-images'
+           }"></i>
+
+          <span class="text-lg font-normal">System Images</span>
         </a>
       </li>
     </ul>
@@ -211,6 +225,13 @@
           Add VA Summary
         </button>
       </ng-template>
+    </div>
+  </div>
+  <div *ngIf="selectedTab === 'system-images' && dataAccess?.updateSystemImages" id="system-images" class="mt-4 tab-content">
+    <div class="my-8">
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <div>
+      <app-update-system-images></app-update-system-images>
     </div>
   </div>
 </div>

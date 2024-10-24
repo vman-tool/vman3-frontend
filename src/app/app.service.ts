@@ -25,6 +25,11 @@ export class ConfigService {
   get API_URL(): string {
     return this.config?.API_URL;
   }
+  
+  get BASE_URL(): string {
+    return this.config?.BASE_URL;
+  }
+
   get API_URL_WS(): string {
     return this.config?.API_URL_WS;
   }

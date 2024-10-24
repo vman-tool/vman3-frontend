@@ -1,4 +1,4 @@
-import { FieldMapping, SystemConfig } from '../../interface';
+import { FieldMapping, SystemConfig, SystemImages } from '../../interface';
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ConnectionFormComponent } from '../../dialogs/connection-form/connection-form.component';
@@ -9,6 +9,7 @@ import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.servi
 import { lastValueFrom } from 'rxjs';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
+
 
 @Component({
   selector: 'app-configuration',
@@ -26,13 +27,13 @@ export class ConfigurationComponent {
   dataAccess?: any;
 
   selectedTab = 'system-config'; // Default selected tab
-  vaSummaryObjects?: any
+  vaSummaryObjects?: any;
 
   constructor(
     public dialog: MatDialog,
     private settingConfigService: SettingConfigService,
     private indexedDBService: IndexedDBService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
    async hasAccess(privileges: string[]){
@@ -41,6 +42,7 @@ export class ConfigurationComponent {
 
   async ngOnInit(): Promise<void> {
     this.loadOdkApiData();
+
     this.dataAccess = {
       addSystemConfigs: await this.hasAccess([privileges.SETTINGS_CREATE_SYSTEM_CONFIGS]),
       updateSystemConfigs: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_CONFIGS]),
@@ -54,6 +56,7 @@ export class ConfigurationComponent {
       addSummaryFields: await this.hasAccess([privileges.SETTINGS_CREATE_VA_SUMMARY]),
       updateSummaryFields: await this.hasAccess([privileges.SETTINGS_UPDATE_VA_SUMMARY]),
       viewSummaryFields: await this.hasAccess([privileges.SETTINGS_VIEW_VA_SUMMARY]),
+      updateSystemImages: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_IMAGES])
       
     }
   }
