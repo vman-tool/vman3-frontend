@@ -61,23 +61,41 @@ export class UpdateSystemImagesComponent implements OnInit {
   }
 
   private updateSystemImages(){
-    if(this.systemImages?.favicon == null || !this.systemImages.favicon){
-      this.systemImages!.favicon = '../../../../../assets/icons/favicon.ico';
+    if(this.systemImages === null || this.systemImages?.favicon === null || !this.systemImages?.favicon){
+      this.systemImages = {
+        ...this.systemImages,
+        favicon: '../../../../../assets/icons/favicon.ico'
+      }
     }  else {
-      this.systemImages!.favicon = this.configService.BASE_URL+ this.systemImages!.favicon;
+      this.systemImages = {
+        ...this.systemImages,
+        favicon: this.configService.BASE_URL+ this.systemImages!.favicon
+      }
       
     }
     
-    if(this.systemImages?.logo == null || !this.systemImages.logo){
-      this.systemImages!.logo = '../../../../../assets/images/vman_logo.png';
+    if(this.systemImages === null || this.systemImages?.logo === null || !this.systemImages?.logo){
+      this.systemImages = {
+        ...this.systemImages,
+        logo: '../../../../../assets/images/vman_logo.png'
+      }
     } else {
-      this.systemImages!.logo = this.configService.BASE_URL+ this.systemImages!.logo;
+      this.systemImages = {
+        ...this.systemImages,
+        logo: this.configService.BASE_URL+ this.systemImages!.logo
+      }
     }  
     
-    if(this.systemImages?.home_image == null || !this.systemImages.home_image){
-      this.systemImages!.home_image = '../../../../../assets/images/auth-bg.png';
+    if(this.systemImages === null || this.systemImages?.home_image === null || !this.systemImages?.home_image){
+      this.systemImages = {
+        ...this.systemImages,
+        home_image: '../../../../../assets/images/auth-bg.png'
+      }
     } else {
-      this.systemImages!.home_image = this.configService.BASE_URL+ this.systemImages!.home_image;
+      this.systemImages = {
+        ...this.systemImages,
+        home_image: this.configService.BASE_URL+ this.systemImages!.home_image
+      }
     } 
     
   }
