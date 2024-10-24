@@ -96,10 +96,13 @@ export class BodyComponent implements OnInit {
   }
 
   private updateSystemImages(){
-    if(this.systemImages?.logo == null || !this.systemImages.logo){
+    if(this.systemImages && (this.systemImages?.logo == null || !this.systemImages?.logo)){
       this.systemImages!.logo = '../../../../assets/images/vman_logo.png';
     } else {
-      this.systemImages!.logo = this.configService.BASE_URL+ this.systemImages!.logo;
+      this.systemImages = {
+        ...this.systemImages,
+        logo: this.configService.BASE_URL+ this.systemImages!.logo
+      }
     }
     
   }

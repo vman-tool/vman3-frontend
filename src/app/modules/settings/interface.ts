@@ -54,7 +54,7 @@ export interface settingsConfigData {
 }
 
 export interface SystemImages {
-  favicon: string;
-  logo: string;
-  home_image: string;
+  favicon?: string;
+  logo?: string;
+  home_image?: string;
 }
