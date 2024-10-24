@@ -9,8 +9,9 @@ import {
 import { AuthService } from '../../services/authentication/auth.service';
 import { SettingConfigService } from '../../../modules/settings/services/settings_configs.service';
 import { catchError, map } from 'rxjs';
-import { settingsConfigData } from '../../../modules/settings/interface';
+import { settingsConfigData, SystemImages } from '../../../modules/settings/interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfigService } from 'app/app.service';
 
 @Component({
   selector: 'app-body',
@@ -23,11 +24,17 @@ export class BodyComponent implements OnInit {
   page_subtitle?: string = 'Ministry of Health Tanzania';
   app_name = 'Verbal Autospy Management Tool';
 
+  systemImages?: SystemImages;
+
+
   constructor(
     private settingsConfigsService: SettingConfigService,
-    private snackBar: MatSnackBar
+    private configService: ConfigService,
+    private snackBar: MatSnackBar,
+
   ) {}
   ngOnInit(): void {
+    this.loadSystemImages();
     this.initial();
   }
 
@@ -71,6 +78,32 @@ export class BodyComponent implements OnInit {
     // })
     // );
   }
+
+  loadSystemImages(){
+    this.settingsConfigsService.getSystemImages().subscribe(
+      {
+        next: async (response: any) => {
+          if(response?.data?.length > 0){
+            this.systemImages = response?.data[0]
+            this.updateSystemImages()
+          }
+        },
+        error: (error) => {
+          console.log("Failed to load system images")
+        }
+      }
+    )
+  }
+
+  private updateSystemImages(){
+    if(this.systemImages?.logo == null || !this.systemImages.logo){
+      this.systemImages!.logo = '../../../../assets/images/vman_logo.png';
+    } else {
+      this.systemImages!.logo = this.configService.BASE_URL+ this.systemImages!.logo;
+    }
+    
+  }
+
 
   Openbar(e: any) {
     e.stopPropagation();

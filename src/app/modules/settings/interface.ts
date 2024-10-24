@@ -52,3 +52,9 @@ export interface settingsConfigData {
   va_summary: string[];
   field_labels?: FieldLabel[];
 }
+
+export interface SystemImages {
+  favicon: string;
+  logo: string;
+  home_image: string;
+}

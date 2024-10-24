@@ -1,4 +1,4 @@
-import { FieldMapping, SystemConfig } from '../../interface';
+import { FieldMapping, SystemConfig, SystemImages } from '../../interface';
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ConnectionFormComponent } from '../../dialogs/connection-form/connection-form.component';
@@ -9,6 +9,7 @@ import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.servi
 import { lastValueFrom } from 'rxjs';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
+
 
 @Component({
   selector: 'app-configuration',
@@ -32,7 +33,7 @@ export class ConfigurationComponent {
     public dialog: MatDialog,
     private settingConfigService: SettingConfigService,
     private indexedDBService: IndexedDBService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   async hasAccess(privileges: string[]) {
@@ -41,44 +42,23 @@ export class ConfigurationComponent {
 
   async ngOnInit(): Promise<void> {
     this.loadOdkApiData();
+
     this.dataAccess = {
-      addSystemConfigs: await this.hasAccess([
-        privileges.SETTINGS_CREATE_SYSTEM_CONFIGS,
-      ]),
-      updateSystemConfigs: await this.hasAccess([
-        privileges.SETTINGS_UPDATE_SYSTEM_CONFIGS,
-      ]),
-      viewSystemConfigs: await this.hasAccess([
-        privileges.SETTINGS_VIEW_SYSTEM_CONFIGS,
-      ]),
-      addODKSettings: await this.hasAccess([
-        privileges.SETTINGS_CREATE_ODK_DETAILS,
-      ]),
-      updateODKSettings: await this.hasAccess([
-        privileges.SETTINGS_UPDATE_ODK_DETAILS,
-      ]),
-      viewODKSettings: await this.hasAccess([
-        privileges.SETTINGS_VIEW_ODK_DETAILS,
-      ]),
-      addFieldMapping: await this.hasAccess([
-        privileges.SETTINGS_CREATE_FIELD_MAPPING,
-      ]),
-      updateFieldMapping: await this.hasAccess([
-        privileges.SETTINGS_UPDATE_FIELD_MAPPING,
-      ]),
-      viewFieldMapping: await this.hasAccess([
-        privileges.SETTINGS_VIEW_FIELD_MAPPING,
-      ]),
-      addSummaryFields: await this.hasAccess([
-        privileges.SETTINGS_CREATE_VA_SUMMARY,
-      ]),
-      updateSummaryFields: await this.hasAccess([
-        privileges.SETTINGS_UPDATE_VA_SUMMARY,
-      ]),
-      viewSummaryFields: await this.hasAccess([
-        privileges.SETTINGS_VIEW_VA_SUMMARY,
-      ]),
-    };
+      addSystemConfigs: await this.hasAccess([privileges.SETTINGS_CREATE_SYSTEM_CONFIGS]),
+      updateSystemConfigs: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_CONFIGS]),
+      viewSystemConfigs: await this.hasAccess([privileges.SETTINGS_VIEW_SYSTEM_CONFIGS]),
+      addODKSettings: await this.hasAccess([privileges.SETTINGS_CREATE_ODK_DETAILS]),
+      updateODKSettings: await this.hasAccess([privileges.SETTINGS_UPDATE_ODK_DETAILS]),
+      viewODKSettings: await this.hasAccess([privileges.SETTINGS_VIEW_ODK_DETAILS]),
+      addFieldMapping: await this.hasAccess([privileges.SETTINGS_CREATE_FIELD_MAPPING]),
+      updateFieldMapping: await this.hasAccess([privileges.SETTINGS_UPDATE_FIELD_MAPPING]),
+      viewFieldMapping: await this.hasAccess([privileges.SETTINGS_VIEW_FIELD_MAPPING]),
+      addSummaryFields: await this.hasAccess([privileges.SETTINGS_CREATE_VA_SUMMARY]),
+      updateSummaryFields: await this.hasAccess([privileges.SETTINGS_UPDATE_VA_SUMMARY]),
+      viewSummaryFields: await this.hasAccess([privileges.SETTINGS_VIEW_VA_SUMMARY]),
+      updateSystemImages: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_IMAGES])
+      
+    }
   }
 
   loadOdkApiData(): void {

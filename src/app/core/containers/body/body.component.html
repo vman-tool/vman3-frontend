@@ -1,7 +1,7 @@
 <div class="grid items-center pb-5 h-[10vh]" style="grid-template-columns: 300px 1fr 1fr;">
   <!-- First section (Logo and Sidebar) with fixed width -->
   <div class="flex items-center">
-    <img src="../../../../assets/images/vman_logo.png" alt="VMan3-icon"
+    <img [src]="systemImages?.logo" alt="VMan3-icon"
       class="w-24 ml-5 {{ sidebarHidden ? 'w-0' : '' }}" />
   </div>
 

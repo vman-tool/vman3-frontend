@@ -1,0 +1,99 @@
+<div class="grid grid-cols-3 gap-6 items-center justify-center bg-white">
+
+    <div class="flex flex-col items-center justify-center p-4 rounded-lg">
+        <span class="text-xl text-gray-900 mb-5">Favicon</span>
+        <div class="mb-4 h-40 w-40 relative flex items-center justify-center">
+            <img [src]="previewImages.favicon || systemImages?.favicon" alt="favicon"
+                class="max-h-[100%] max-w-[100%] object-contain absolute inset-0 m-auto">
+        </div>
+        <div class="flex items-center gap-2 mb-4">
+            <div class="relative w-12 h-12">
+                <input type="file" id="fileInput1" (change)="onFileSelected($event, 'favicon')"
+                    class="relative w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
+                <label for="fileInput1"
+                    class="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-gray-200 rounded-lg">
+                    <span class="text-gray-600 text-4xl">
+                        <i class="ph-cloud-arrow-up"></i>
+                    </span>
+                </label>
+            </div>
+            <button (click)="resetPreview('favicon')" [disabled]="!previewImages.favicon"
+                class="w-12 h-12 flex items-center justify-center rounded-lg transition-colors" [ngClass]="{
+                                    'text-red-500 hover:bg-red-50 cursor-pointer': previewImages.favicon,
+                                    'text-gray-300 cursor-not-allowed': !previewImages.favicon
+                                  }">
+                <span class="text-4xl">
+                    <i class="ph-trash"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex flex-col items-center justify-center p-4 rounded-lg">
+        <span class="text-xl text-gray-900 mb-5">Logo</span>
+        <div class="mb-4 h-40 w-40 relative flex items-center justify-center">
+            <img [src]="previewImages.logo ||systemImages?.logo" alt="logo"
+                class="max-h-[100%] max-w-[100%] object-contain absolute inset-0 m-auto">
+        </div>
+        <div class="flex items-center gap-2 mb-4">
+            <div class="relative w-12 h-12">
+                <input type="file" id="fileInput2" (change)="onFileSelected($event, 'logo')"
+                    class="relative w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
+                <label for="fileInput2"
+                    class="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-gray-200 rounded-lg">
+                    <span class="text-gray-600 text-4xl">
+                        <i class="ph-cloud-arrow-up"></i>
+                    </span>
+                </label>
+            </div>
+            <button (click)="resetPreview('logo')" [disabled]="!previewImages.logo"
+                class="w-12 h-12 flex items-center justify-center rounded-lg transition-colors" [ngClass]="{
+                                              'text-red-500 hover:bg-red-50 cursor-pointer': previewImages.logo,
+                                              'text-gray-300 cursor-not-allowed': !previewImages.logo
+                                            }">
+                <span class="text-4xl">
+                    <i class="ph-trash"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex flex-col items-center justify-center p-4 rounded-lg">
+        <span class="text-xl text-gray-900 mb-5">Login Image</span>
+        <div class="mb-4 h-40 w-40 relative flex items-center justify-center">
+            <img [src]="previewImages.home_image || systemImages?.home_image" alt="login-image"
+                class="max-h-[100%] max-w-[100%] object-contain absolute inset-0 m-auto">
+        </div>
+        <div class="flex items-center gap-2 mb-4">
+            <div class="relative w-12 h-12">
+                <input type="file" id="fileInput3" (change)="onFileSelected($event, 'home_image')"
+                    class="relative w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
+                <label for="fileInput3"
+                    class="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-gray-200 rounded-lg">
+                    <span class="text-gray-600 text-4xl">
+                        <i class="ph-cloud-arrow-up"></i>
+                    </span>
+                </label>
+            </div>
+            <button (click)="resetPreview('home_image')" [disabled]="!previewImages.home_image"
+                class="w-12 h-12 flex items-center justify-center rounded-lg transition-colors" [ngClass]="{
+                                                        'text-red-500 hover:bg-red-50 cursor-pointer': previewImages.home_image,
+                                                        'text-gray-300 cursor-not-allowed': !previewImages.home_image
+                                                      }">
+                <span class="text-4xl">
+                    <i class="ph-trash"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="button">
+    <button
+        (click)="onSaveImages($event)" 
+        class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        [ngClass]="{
+            'bg-gray-500 cursor-not-allowed': !previewImages.home_image && !previewImages.logo && !previewImages.favicon
+        }">
+        Save Images
+    </button>
+</div>

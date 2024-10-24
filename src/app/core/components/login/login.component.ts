@@ -9,6 +9,9 @@ import {
 import { tap } from "rxjs";
 import { AuthEmitters } from "../../emitters/auth.emitters";
 import { AuthService } from "../../services/authentication/auth.service";
+import { SystemImages } from "app/modules/settings/interface";
+import { SettingConfigService } from "app/modules/settings/services/settings_configs.service";
+import { ConfigService } from "app/app.service";
 
 @Component({
   selector: "app-login",
@@ -21,14 +24,18 @@ export class LoginComponent implements OnInit, AfterViewInit {
   authenticated?: boolean;
   horizontalPosition: MatSnackBarHorizontalPosition = 'end';
   verticalPosition: MatSnackBarVerticalPosition = 'top';
+  systemImages?: SystemImages;
   
   constructor(
     private authService: AuthService,
+    private settingConfigService: SettingConfigService,
+    private configService: ConfigService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
+    this.loadSystemImages();
     AuthEmitters.authEmitter.subscribe((authenticated: boolean) => {
       this.authenticated = authenticated;
     })
@@ -107,6 +114,44 @@ export class LoginComponent implements OnInit, AfterViewInit {
         }
       )
     }
+  }
+
+  loadSystemImages(){
+    this.settingConfigService.getSystemImages().subscribe(
+      {
+        next: async (response: any) => {
+          if(response?.data?.length > 0){
+            this.systemImages = response?.data[0]
+            this.updateSystemImages()
+          }
+        },
+        error: (error) => {
+          console.log("Failed to load system images")
+        }
+      }
+    )
+  }
+
+  private updateSystemImages(){
+    if(this.systemImages?.favicon == null || !this.systemImages.favicon){
+      this.systemImages!.favicon = '../../../../../assets/icons/favicon.ico';
+    }  else {
+      this.systemImages!.favicon = this.configService.BASE_URL+ this.systemImages!.favicon;
+      
+    }
+    
+    if(this.systemImages?.logo == null || !this.systemImages.logo){
+      this.systemImages!.logo = '../../../../assets/images/vman_logo.png';
+    } else {
+      this.systemImages!.logo = this.configService.BASE_URL+ this.systemImages!.logo;
+    }  
+    
+    if(this.systemImages?.home_image == null || !this.systemImages.home_image){
+      this.systemImages!.home_image = '../../../../../assets/images/auth-bg.png';
+    } else {
+      this.systemImages!.home_image = this.configService.BASE_URL+ this.systemImages!.home_image;
+    } 
+    
   }
   
 }

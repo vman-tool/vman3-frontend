@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { ConfigService } from 'app/app.service';
 import { ResponseMainModel } from '../../../shared/interface/main.interface';
-import { settingsConfigData } from '../interface';
+import { settingsConfigData, SystemImages } from '../interface';
 
 @Injectable({
   providedIn: 'root',
@@ -122,6 +122,36 @@ export class SettingConfigService {
       })
     );
   }
+
+  getSystemImages(): Observable<any> {
+    return this.http.get<any>(`${this.configService.API_URL}/settings/system_images/`).pipe(
+      catchError((error: any) => {
+        console.error('Error fetching system images:', error);
+        return of([]); // Return an empty array on error
+      })
+    );
+  }
+
+  saveSystemImages(images: SystemImages){
+    const formData = new FormData();
+    if(images.favicon){
+      formData.append('favicon', images.favicon);
+    }
+    if(images.logo){
+      formData.append('logo', images.logo);
+    }
+    if(images.home_image){
+      formData.append('login_image', images.home_image);
+    }
+
+    return this.http.post<any>(`${this.configService.API_URL}/settings/system_images/`, formData).pipe(
+      catchError((error: any) => {
+        console.error('Error fetching system images:', error);
+        return of([]); // Return an empty array on error
+      })
+    )
+  }
+
   clearCache(): void {
     this.configCache = null;
   }
