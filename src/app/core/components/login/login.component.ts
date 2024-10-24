@@ -133,8 +133,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   private updateSystemImages(){
-    if(this.systemImages && (this.systemImages?.favicon === null || !this.systemImages?.favicon)){
-      this.systemImages!.favicon = '../../../../../assets/icons/favicon.ico';
+    if(this.systemImages === null || this.systemImages?.favicon === null || !this.systemImages?.favicon){
+      this.systemImages = {
+        ...this.systemImages,
+        favicon : '../../../../../assets/icons/favicon.ico'
+      }
     }  else {
       this.systemImages = {
         ...this.systemImages,
@@ -142,8 +145,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     }
     
-    if(this.systemImages && (this.systemImages?.logo === null || !this.systemImages?.logo)){
-      this.systemImages!.logo = '../../../../assets/images/vman_logo.png';
+    if(this.systemImages === null || this.systemImages?.logo === null || !this.systemImages?.logo){
+      this.systemImages = {
+        ...this.systemImages,
+        logo: '../../../../assets/images/vman_logo.png'
+      }
     } else {
       this.systemImages = {
         ...this.systemImages,
@@ -151,8 +157,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
       }
     }  
     
-    if(this.systemImages && (this.systemImages?.home_image === null || !this.systemImages?.home_image)){
-      this.systemImages!.home_image = '../../../../../assets/images/auth-bg.png';
+    if(this.systemImages === null || this.systemImages?.home_image === null || !this.systemImages?.home_image){
+      this.systemImages = {
+        ...this.systemImages,
+        home_image: '../../../../../assets/images/auth-bg.png'
+      }
     } else {
       this.systemImages = {
         ...this.systemImages,
