@@ -75,7 +75,8 @@
   </div>
 
   <!-- Tab Content -->
-  <div *ngIf="selectedTab === 'system-config' && dataAccess?.viewSystemConfigs" id="system-config" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'system-config' && dataAccess?.viewSystemConfigs" id="system-config"
+    class="mt-4 tab-content">
     <!-- System Configuration Section -->
     <div class="my-8">
       <!-- <div class="mb-4 text-xl font-normal">System Configuration</div> -->
@@ -136,8 +137,7 @@
             <p><strong>ApI Version:</strong> {{ odkApiData.api_version }}</p>
 
           </div>
-          <button (click)="editForm('odk_api_configs')"
-            *ngIf="dataAccess?.updateODKSettings"
+          <button (click)="editForm('odk_api_configs')" *ngIf="dataAccess?.updateODKSettings"
             class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             Edit
           </button>
@@ -145,8 +145,7 @@
       </div>
       <ng-template #noOdkApiData>
 
-        <button (click)="addOdkApi()"
-          *ngIf="dataAccess?.addODKSettings"
+        <button (click)="addOdkApi()" *ngIf="dataAccess?.addODKSettings"
           class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
           Add ODK API
         </button>
@@ -154,7 +153,8 @@
     </div>
   </div>
 
-  <div *ngIf="selectedTab === 'field-mapping' && dataAccess?.viewFieldMapping" id="field-mapping" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'field-mapping' && dataAccess?.viewFieldMapping" id="field-mapping"
+    class="mt-4 tab-content">
     <!-- Field Mapping Section -->
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
