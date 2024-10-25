@@ -10,6 +10,7 @@ import { MaterialModule } from '../material/material.module';
 import { LoginComponent } from './components/login/login.component';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { AccountSettingsComponent } from './dialogs/account-settings/account-settings.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
     FooterComponent,
     LoginComponent,
     SidebarComponent,
+    AccountSettingsComponent,
   ],
   imports: [
     CommonModule,

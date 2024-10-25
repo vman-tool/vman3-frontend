@@ -1,5 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ConfigService } from 'app/app.service';
+import { AccountSettingsComponent } from 'app/core/dialogs/account-settings/account-settings.component';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 
 @Component({
@@ -12,12 +14,17 @@ export class HeaderComponent implements OnInit {
   currentUser?: any;
 
 
-  constructor(private authService: AuthService, private configService: ConfigService){}
+  constructor(private authService: AuthService, private configService: ConfigService, private dialog: MatDialog){}
 
   ngOnInit(){
+    this.getCurrentUser();
+  }
+
+  getCurrentUser(){
+    const user = JSON.parse(localStorage.getItem('current_user') || "{}")
     this.currentUser = {
-      ...JSON.parse(localStorage.getItem('current_user') || "{}"),
-      image: this.currentUser?.image && this.currentUser?.image !== null ? this.configService.BASE_URL+this.currentUser.image : '../../../../assets/images/vman_profile.png'
+      ...user,
+      image: user?.image && user?.image !== null ? this.configService.BASE_URL+user?.image : '../../../../assets/images/vman_profile.png'
     }
   }
 
@@ -34,6 +41,16 @@ export class HeaderComponent implements OnInit {
     if (dropdown && userMenuButton && !dropdown.contains(target) && !userMenuButton.contains(target)) {
       this.isDropdownOpen = false;
     }
+  }
+
+  onOpenAccountSettings(){
+    this.dialog.open(AccountSettingsComponent, {
+      width: '400px'
+    }).afterClosed().subscribe((results: boolean) => {
+      if(results){
+        this.getCurrentUser();
+      }
+    });
   }
 
   onLogout() {

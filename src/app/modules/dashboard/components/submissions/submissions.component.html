@@ -34,7 +34,7 @@
       <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <tbody>
           <!-- Display this if no records are found -->
-          <tr *ngIf="(dataSubmissions.length === 0 || !dataSubmissions || dataSubmissions === undefined) && !isLoading"
+          <tr *ngIf="(dataSubmissions?.length === 0 || !dataSubmissions || dataSubmissions === undefined) && !isLoading"
             class="bg-gray-200">
             <td colspan="9" class="px-6 py-4 text-center">No record was found</td>
           </tr>

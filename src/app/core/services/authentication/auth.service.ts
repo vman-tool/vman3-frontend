@@ -56,6 +56,26 @@ export class AuthService {
       })
     )
   }
+
+  update_account(accountData: any){
+    const formData = new FormData()
+    Object.keys(accountData).forEach((key: string) => {
+      formData.append(key, accountData[key])
+    })
+    return this.http!.put(`${this.configService.API_URL}/users/`, formData).pipe(
+      map((response: any) => {
+        if(this.success){
+          localStorage.removeItem("current_user")
+          localStorage.setItem("current_user", JSON.stringify(response))
+        }
+        return response
+      }),
+      catchError((error: any) => {
+        console.log("Error: ", error)
+        return of(error);
+      })
+    )
+  }
   
   change_password(old_password: string, new_password: string): Observable<any>{
     const data = {
