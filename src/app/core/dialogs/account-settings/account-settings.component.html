@@ -1,0 +1,88 @@
+<div class="grid grid-cols-12 gap-6 md:grid-cols-2">
+    <div class="col-span-12">
+        <div class="mt-4 ml-4 flex justify-between items-center">
+            <div>
+                <span class="text-2xl text-start">Update Profile</span>
+            </div>
+            <div class="mr-4">
+                <mat-icon class="cursor-pointer" (click)="onClose()">close</mat-icon>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-span-12">
+        <form #profileForm="ngForm" (ngSubmit)="onSubmit(profileForm)">
+            <mat-dialog-content class="center-content">
+        
+                <!-- Profile Image Preview -->
+                <div class="flex flex-col items-center justify-center mb-4">
+                    <div class="mb-4 h-40 w-40 relative flex items-center justify-center">
+                        <img class="max-w-[100%] max-h-[100%] rounded-full" [src]="previewImage || user.image" alt="user photo" />
+                    </div>
+        
+                    <!-- Upload and Reset Buttons -->
+                    <div class="flex items-center gap-4 mb-6">
+                        <!-- Upload Button -->
+                        <div class="relative w-12 h-12">
+                            <input type="file" id="fileInput1" (change)="onFileSelected($event)"
+                                class="absolute w-full h-full opacity-0 cursor-pointer" accept="image/*" />
+                            <label for="fileInput1"
+                                class="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-gray-200 rounded-lg">
+                                <span class="text-gray-600 text-2xl">
+                                    <i class="ph-cloud-arrow-up"></i>
+                                </span>
+                            </label>
+                        </div>
+        
+                        <!-- Reset Button -->
+                        <button (click)="resetPreview()" [disabled]="!previewImage"
+                            class="w-12 h-12 flex items-center justify-center rounded-lg transition-colors" [ngClass]="{
+                    'text-red-500 hover:bg-red-50 cursor-pointer': previewImage,
+                    'text-gray-300 cursor-not-allowed': !previewImage
+                  }">
+                            <span class="text-2xl">
+                                <i class="ph-trash"></i>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+        
+                <!-- Form Fields -->
+                <!-- Name Field -->
+                <div class="relative w-full mb-3">
+                    <label class="block uppercase text-gray-700 text-xs font-bold mb-2">Full Name</label>
+                    <input type="text"
+                        class="border-0 px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"
+                        placeholder="E.g John Doe" [(ngModel)]="user.name" name="name" />
+                </div>
+        
+                <!-- Email Field -->
+                <div class="relative w-full mb-3">
+                    <label class="block uppercase text-gray-700 text-xs font-bold mb-2">Email</label>
+                    <input type="email"
+                        class="border-0 px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"
+                        placeholder="johndoe@domain.com" [(ngModel)]="user.email" name="email" />
+                </div>
+        
+                <!-- Password Fields -->
+                <div class="relative w-full mb-3">
+                    <label class="block uppercase text-gray-700 text-xs font-bold mb-2">Password</label>
+                    <input type="password"
+                        class="border-0 px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"
+                        placeholder="********" [(ngModel)]="user.password" name="password" />
+                </div>
+                <div class="relative w-full mb-3">
+                    <label class="block uppercase text-gray-700 text-xs font-bold mb-2">Confirm Password</label>
+                    <input type="password"
+                        class="border-0 px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"
+                        placeholder="********" [(ngModel)]="user.confirm_password" name="confirm_password" />
+                </div>
+            </mat-dialog-content>
+        
+            <mat-dialog-actions align="end">
+                <button type="button" class="px-6 py-2 text-white bg-gray-500 rounded hover:bg-gray-700" mat-dialog-close>Cancel</button>
+                <button type="submit" class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-400 ml-3" color="primary">Update</button>
+            </mat-dialog-actions>
+        </form>
+    </div>
+</div>
