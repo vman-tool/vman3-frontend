@@ -59,7 +59,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   onLogin(e: any){
-    e.stopPropagation()
+    e?.preventDefault()
+    e?.stopPropagation()
     let failed = true;
     if(this.username && this.password){
       this.authService.login(this.username, this.password).pipe(tap((response) =>{
