@@ -223,12 +223,16 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       console.error('Error in CCVA task:', parsedData);
       this.triggersService.triggerCCVAListFunction();
       this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
-      this.clearLocalStorage();
+      this.clearLocalStorage(); // Clear task-related data when task is completed
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+      }
       this.snackBar.open(`${parsedData.message}`, 'Close', {
         horizontalPosition: 'end',
         verticalPosition: 'top',
         duration: 8000,
       });
+      return;
     } else {
       if (
         parsedData.progress == undefined ||
