@@ -1,6 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { DataFilterComponent } from '../data-filter/data-filter/data-filter.component';
 import { FilterService } from '../../../services/filter.service';
 import { LocationService } from '../../../services/location.service';
 import { FormsModule } from '@angular/forms';
@@ -14,11 +12,11 @@ import { DatePipe } from '@angular/common';
   styleUrl: './va-filters.component.scss',
 })
 export class VaFiltersComponent implements OnInit {
-  selectedDateType?: string; // Default to death date
+  selectedDateType?: string;
   startDate?: Date;
   endDate?: Date;
   selectedLocation: string = '';
-  allLocations: string[] = []; // Will be populated from the API
+  allLocations: string[] = [];
   isLoading: boolean = true;
 
   constructor(
