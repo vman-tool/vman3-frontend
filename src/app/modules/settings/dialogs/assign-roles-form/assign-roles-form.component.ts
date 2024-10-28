@@ -82,7 +82,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.access_limit = user_roles?.data?.access_limit
     this.availableRoles = this.allRoles.filter((role: any) => !this.selectedRoles.some(selectedRole => selectedRole?.uuid === role?.uuid));
     this.selectedLocationType = this.locationTypes.filter((locationType: any) => locationType?.value === this.access_limit?.field)[0];
-    if(this.selectedLocationType){
+    if(this.selectedLocationType && this.access_limit){
       this.setLocations()
     }
   }
@@ -264,7 +264,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         user: this.userUuid,
         roles: this.selectedRoles?.map(role => role?.uuid)
       }
-      if(this.selectedLocations?.length){
+      if(this.selectedLocations?.length && this.selectedLocationType){
         roleAssignment.access_limit = {
           field: this.selectedLocationType?.value,
           limit_by: this.selectedLocations?.map((location) => {
@@ -275,6 +275,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
           }
           )
         }
+      } else {
+        roleAssignment.access_limit = {}
       }
   
       this.usersService.saveAssignment(roleAssignment ).subscribe(
