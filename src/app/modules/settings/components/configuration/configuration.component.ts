@@ -95,6 +95,7 @@ export class ConfigurationComponent {
       if (result) {
         this.odkApiData = result;
         this.hasOdkApiData = true;
+        this.loadOdkApiData();
       }
     });
   }
@@ -119,11 +120,12 @@ export class ConfigurationComponent {
       if (result) {
         if (type === 'va_summary') {
           this.vaSummaryData = result;
-          this.vaSummaryObjects =
-            await this.indexedDBService.getQuestionsByKeys(result);
+          this.vaSummaryObjects = await this.indexedDBService.getQuestionsByKeys(result);
         }
+
         this.odkApiData = result;
         this.hasOdkApiData = true;
+        this.loadOdkApiData()
       }
     });
   }

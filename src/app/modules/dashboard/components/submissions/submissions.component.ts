@@ -104,33 +104,33 @@ export class SubmissionsComponent {
   }
 
   getTotalCount(): number {
-    return this.dataSubmissions.reduce((acc, record) => acc + record.count, 0);
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.count, 0);
   }
 
   getTotalAdults(): number {
-    return this.dataSubmissions.reduce((acc, record) => acc + record.adults, 0);
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.adults, 0);
   }
 
   getTotalChildren(): number {
-    return this.dataSubmissions.reduce(
+    return this.dataSubmissions?.reduce(
       (acc, record) => acc + record.children,
       0
     );
   }
 
   getTotalNeonates(): number {
-    return this.dataSubmissions.reduce(
+    return this.dataSubmissions?.reduce(
       (acc, record) => acc + record.neonates,
       0
     );
   }
 
   getTotalMale(): number {
-    return this.dataSubmissions.reduce((acc, record) => acc + record.male, 0);
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.male, 0);
   }
 
   getTotalFemale(): number {
-    return this.dataSubmissions.reduce((acc, record) => acc + record.female, 0);
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.female, 0);
   }
 
   downloadRecords() {

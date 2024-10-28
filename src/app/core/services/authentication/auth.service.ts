@@ -6,6 +6,7 @@ import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
   providedIn: 'root'
@@ -17,10 +18,11 @@ export class AuthService {
   cachedPrivileges: string[] = [];
 
   constructor(
+    private dialog: MatDialog,
     private configService: ConfigService,
     private http?: HttpClient,
     private router?: Router,
-    private indexedDBService?: IndexedDBService
+    private indexedDBService?: IndexedDBService,
   ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error
@@ -32,7 +34,8 @@ export class AuthService {
 
   logout() {
     this.clearLocalStorage();
-    localStorage.setItem("latest_route", this.router!.url)
+    this.dialog.closeAll();
+    localStorage.setItem("latest_route", this.router!.url);
     this.router!.navigate(['/login']);
   }
 
