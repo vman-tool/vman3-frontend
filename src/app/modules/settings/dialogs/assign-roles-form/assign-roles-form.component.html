@@ -10,123 +10,127 @@
                 </div>
             </div>
         </div>
-        
         <div class="col-span-12">
-            <span class="text-[12px] text-gray-600 italic">Click on the role to select or deselect it</span>
-            <div class="selection-container">
-                <div class="available-items">
-                    <label class="block text-gray-700 mb-3 text-sm font-medium">Available Roles ({{ availableRoles.length }})</label>
-                    <input type="text"
-                        class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        placeholder="Search..." [(ngModel)]="searchTermAvailable">
-
-                    <div class="scrollable-list">
-                        <mat-list>
-                            <mat-list-item *ngFor="let role of filteredRoles()">
-                                <span (click)="moveToSelected(role)">{{ role?.name }}</span>
-                            </mat-list-item>
-                        </mat-list>
-                    </div>
-                </div>
-
-                <div class="selected-items">
-                    <label class="block text-gray-700 mb-3 text-sm font-medium">Selected Roles ({{ selectedRoles.length }})</label>
-                    <input type="text"
-                        class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        placeholder="Search..." [(ngModel)]="searchSelectedTerm">
-
-                    <div class="scrollable-list">
-                        <mat-list>
-                            <mat-list-item *ngFor="let role of filteredSelectedRoles()">
-                                <span (click)="moveToAvailable(role)">{{ role?.name }}</span>
-                            </mat-list-item>
-                        </mat-list>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-span-12" *ngIf="canLimitDataAccess">
-            <span class="text-[12px] text-gray-600 italic">Select Type of user data access limitation</span>
-            <div class="data-access-selection-container">
+            <mat-dialog-content class="center-content">
                 <div>
-                    <label for="location" class="block mb-3 text-sm font-medium text-gray-700">Limit Access By: </label>
-                    <select id="location" (change)="onSelectLocationType($event)"
-                        class="mb-3 block w-full px-3 py-2 mt-1 block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        <option value="">No Limit</option>
-                        <ng-container *ngFor="let locationType of locationTypes;">
-                            <option *ngIf="locationType?.value" [value]="locationType?.value">{{ locationType?.label }}</option>
-                        </ng-container>
-                    </select>
-
-                    <div class="flex items-center space-x-4 mt-5" *ngIf="canUpdateLimitLabels">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" [disabled]="!selectedLocationType" class="sr-only peer" (change)="onAssignLabels($event)">
-                            <div
-                                class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
-                                [ngClass]="{
-                                    'hover:cursor-not-allowed': !selectedLocationType
-                                }">
+                    <span class="text-[12px] text-gray-600 italic">Click on the role to select or deselect it</span>
+                    <div class="selection-container">
+                        <div class="available-items">
+                            <label class="block text-gray-700 mb-3 text-sm font-medium">Available Roles ({{ availableRoles.length }})</label>
+                            <input type="text"
+                                class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                placeholder="Search..." [(ngModel)]="searchTermAvailable">
+        
+                            <div class="scrollable-list">
+                                <mat-list>
+                                    <mat-list-item *ngFor="let role of filteredRoles()">
+                                        <span (click)="moveToSelected(role)">{{ role?.name }}</span>
+                                    </mat-list-item>
+                                </mat-list>
                             </div>
-                            <span class="text-sm font-medium text-gray-900 ms-3 dark:text-gray-300">
-                               Assign Labels
-                            </span>
-                        </label>
+                        </div>
+        
+                        <div class="selected-items">
+                            <label class="block text-gray-700 mb-3 text-sm font-medium">Selected Roles ({{ selectedRoles.length }})</label>
+                            <input type="text"
+                                class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                placeholder="Search..." [(ngModel)]="searchSelectedRolesTerm">
+        
+                            <div class="scrollable-list">
+                                <mat-list>
+                                    <mat-list-item *ngFor="let role of filteredSelectedRoles()">
+                                        <span (click)="moveToAvailable(role)">{{ role?.name }}</span>
+                                    </mat-list-item>
+                                </mat-list>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <ng-container *ngIf="!assignLabels">
-                    <div class="available-items" *ngIf="selectedLocationType && !loadLocations">
-                        <label class="block text-gray-700 mb-3 text-sm font-medium">Available {{ selectedLocationType?.label }}s</label>
-                        <input type="text" [(ngModel)]="availableLocationsSearchTerm"
-                            class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            placeholder="Search...">
-                    
-                        <div class="scrollable-list">
-                            <mat-list>
-                                <mat-list-item *ngFor="let location of filteredLocations()">
-                                    <span class="text-sm font-medium" (click)="moveLocationToSelected(location)">{{ location?.name }}</span>
-                                </mat-list-item>
-                            </mat-list>
-                        </div>
-                    </div>
-                    
-                    <div class="selected-items" *ngIf="selectedLocationType && !loadLocations">
-                        <label class="block text-gray-700 mb-3 text-sm font-medium">Selected {{ selectedLocationType?.label }}s</label>
-                        <input type="text"
-                            class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            placeholder="Search..." [(ngModel)]="selectedLocationsSearchTerm">
-                    
-                        <div class="scrollable-list">
-                            <mat-list>
-                                <mat-list-item *ngFor="let location of filteredSelectedLocations()">
-                                    <span (click)="moveLocationToAvailable(location)">{{ location?.name }}</span>
-                                </mat-list-item>
-                            </mat-list>
-                        </div>
-                    </div>
-                </ng-container>
-                <ng-container *ngIf="assignLabels">
-                    <div class="form-labels-container w-full ml-3 bg-gray-50 p-3">
-                        <form [formGroup]="labelsForm" id="labelsForm" (ngSubmit)="onSubmitLabels($event)">
-                            <div class="flex items-center mb-4 gap-4" *ngFor="let location of locations">
-                                <label class="block text-sm font-medium text-gray-700 w-1/4">{{ location?.value }}</label>
-                                <input type="text" [formControlName]="location?.value" class="flex-1 p-2 border border-gray-300 rounded-md"
-                                    placeholder="Enter label for {{location?.value}}">
+                <div *ngIf="canLimitDataAccess">
+                    <span class="text-[12px] text-gray-600 italic">Select Type of user data access limitation</span>
+                    <div class="data-access-selection-container">
+                        <div>
+                            <label for="location" class="block mb-3 text-sm font-medium text-gray-700">Limit Access By: </label>
+                            <select id="location" (change)="onSelectLocationType($event)"
+                                class="mb-3 block w-full px-3 py-2 mt-1 block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="">No Limit</option>
+                                <ng-container *ngFor="let locationType of locationTypes;">
+                                    <option *ngIf="locationType?.value" [value]="locationType?.value" [selected]="selectedLocationType?.value === locationType?.value">{{ locationType?.label }}</option>
+                                </ng-container>
+                            </select>
+        
+                            <div class="flex items-center space-x-4 mt-5" *ngIf="canUpdateLimitLabels">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" [disabled]="!selectedLocationType" class="sr-only peer" (change)="onAssignLabels($event)">
+                                    <div
+                                        class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
+                                        [ngClass]="{
+                                            'hover:cursor-not-allowed': !selectedLocationType
+                                        }">
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900 ms-3 dark:text-gray-300">
+                                       Assign Labels
+                                    </span>
+                                </label>
                             </div>
-                            <div class="flex items-center mb-4 gap-4" *ngFor="let location of selectedLocations">
-                                <label class="block text-sm font-medium text-gray-700 w-1/4">{{ location?.value }}</label>
-                                <input type="text" [formControlName]="location?.value" class="flex-1 p-2 border border-gray-300 rounded-md"
-                                    placeholder="Enter label for {{location?.value}}">
+                        </div>
+                        <ng-container *ngIf="!assignLabels">
+                            <div class="available-items" *ngIf="selectedLocationType && !loadLocations">
+                                <label class="block text-gray-700 mb-3 text-sm font-medium">Available {{ selectedLocationType?.label }}s</label>
+                                <input type="text" [(ngModel)]="availableLocationsSearchTerm"
+                                    class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                    placeholder="Search...">
+                            
+                                <div class="scrollable-list">
+                                    <mat-list>
+                                        <mat-list-item *ngFor="let location of filteredLocations()">
+                                            <span class="text-sm font-medium" (click)="moveLocationToSelected(location)">{{ location?.name }}</span>
+                                        </mat-list-item>
+                                    </mat-list>
+                                </div>
                             </div>
-                        </form>
-
+                            
+                            <div class="selected-items" *ngIf="selectedLocationType && !loadLocations">
+                                <label class="block text-gray-700 mb-3 text-sm font-medium">Selected {{ selectedLocationType?.label }}s</label>
+                                <input type="text"
+                                    class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                    placeholder="Search..." [(ngModel)]="selectedLocationsSearchTerm">
+                            
+                                <div class="scrollable-list">
+                                    <mat-list>
+                                        <mat-list-item *ngFor="let location of filteredSelectedLocations()">
+                                            <span (click)="moveLocationToAvailable(location)">{{ location?.name }}</span>
+                                        </mat-list-item>
+                                    </mat-list>
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="assignLabels">
+                            <div class="form-labels-container w-full ml-3 bg-gray-50 p-3">
+                                <form [formGroup]="labelsForm" id="labelsForm" (ngSubmit)="onSubmitLabels($event)">
+                                    <div class="flex items-center mb-4 gap-4" *ngFor="let location of locations">
+                                        <label class="block text-sm font-medium text-gray-700 w-1/4">{{ location?.value }}</label>
+                                        <input type="text" [formControlName]="location?.value" class="flex-1 p-2 border border-gray-300 rounded-md"
+                                            placeholder="Enter label for {{location?.value}}">
+                                    </div>
+                                    <div class="flex items-center mb-4 gap-4" *ngFor="let location of selectedLocations">
+                                        <label class="block text-sm font-medium text-gray-700 w-1/4">{{ location?.value }}</label>
+                                        <input type="text" [formControlName]="location?.value" class="flex-1 p-2 border border-gray-300 rounded-md"
+                                            placeholder="Enter label for {{location?.value}}">
+                                    </div>
+                                </form>
+        
+                            </div>
+                        </ng-container>
                     </div>
-                </ng-container>
-            </div>
+                </div>
+            </mat-dialog-content>
         </div>
     </div>
-    
-    <div class="flex items-center justify-between mt-4">
-        <span class="px-2 text-2xl text-start"></span>
-        <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="saveAssignment()">Save {{ assignLabels ? 'Assigned Labels' : 'Role Assignment' }}</button>
-    </div>
+    <mat-dialog-actions align="end">
+        <div class="flex items-center justify-between mt-4">
+            <span class="px-2 text-2xl text-start"></span>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="saveAssignment()">Save {{ assignLabels ? 'Assigned Labels' : 'Role Assignment' }}</button>
+        </div>
+    </mat-dialog-actions>
 </div>
