@@ -200,12 +200,12 @@ export class CcvaDashboardGraphsComponent implements OnInit {
 
   getDynamicTitle(key: string): string {
     const titles: { [key: string]: string } = {
-      all: 'Top 10 CSMF for All Populations ',
-      male: 'Top 10 CSMF for Male Population ',
-      female: 'Top 10 CSMF for Female Population ',
-      adult: 'Top 10 CSMF for Adult Population ',
-      child: 'Top 10 CSMF for Child Population ',
-      neonate: 'Top 10 CSMF for Neonate Population ',
+      all: 'Distribution of Causes of Deaths for All Populations ',
+      male: 'Distribution of Causes of Deaths for Male Population ',
+      female: 'Distribution of Causes of Deaths for Female Population ',
+      adult: 'Distribution of Causes of Deaths for Adult Population ',
+      child: 'Distribution of Causes of Deaths for Child Population ',
+      neonate: 'Distribution of Causes of Deaths for Neonate Population ',
     };
     return titles[key] || '';
   }

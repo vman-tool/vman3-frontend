@@ -184,7 +184,20 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
           if (parsedData) {
             this.updateProgress(parsedData);
           }
-        } catch (error) {
+        } catch (error: any) {
+          this.snackBar.open(
+            `${
+              error.error.detail ??
+              error.error.message ??
+              'Failed to start CCVA task'
+            }`,
+            'Close',
+            {
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+              duration: 3000,
+            }
+          );
           console.error('Error parsing message:', error);
         }
       }
@@ -207,9 +220,19 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       }
     } else if (parsedData.error === true) {
       this.isTaskRunning = false;
+      console.error('Error in CCVA task:', parsedData);
       this.triggersService.triggerCCVAListFunction();
       this.elapsedTime = parsedData.elapsed_time ?? '0:00:00';
-      this.clearLocalStorage();
+      this.clearLocalStorage(); // Clear task-related data when task is completed
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+      }
+      this.snackBar.open(`${parsedData.message}`, 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 8000,
+      });
+      return;
     } else {
       if (
         parsedData.progress == undefined ||

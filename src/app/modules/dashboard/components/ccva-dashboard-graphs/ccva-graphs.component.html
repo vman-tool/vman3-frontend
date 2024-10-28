@@ -11,16 +11,16 @@
     <div *ngIf="chartKeys.length > 0; else emptyMessage">
       <div class="flex items-center justify-between mb-1">
         <!-- Left section (Start Date, Total Records, Time Taken) -->
-        <div class="flex space-x-8">
+        <!-- <div class="flex space-x-8">
           <p class="text-lg font-semibold">Start Date: {{ created_at | date:'short' }}</p>
           <p class="text-lg font-semibold">Total Records: {{ total_records }}</p>
           <p class="text-lg font-semibold">Time Taken: {{ elapsed_time }}</p>
-        </div>
+        </div> -->
 
         <!-- Right section (Both Toggles) -->
         <div class="flex items-center space-x-6">
           <!-- First Toggle: ccva_graph_db_source -->
-          <label class="inline-flex items-center cursor-pointer">
+          <!-- <label class="inline-flex items-center cursor-pointer">
             <input type="checkbox" class="sr-only peer" (change)="toggleCcvaSourceView($event)"
               [checked]="this.filterData['ccva_graph_db_source']">
             <div
@@ -29,7 +29,7 @@
             <span class="text-sm font-medium text-gray-900 ms-3 dark:text-gray-300">
               {{ ccva_graph_db_source === true ? 'Vman Source' : 'Algorithm Source' }}
             </span>
-          </label>
+          </label> -->
 
           <!-- Second Toggle: selectedView -->
           <label class="inline-flex items-center cursor-pointer">
