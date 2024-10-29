@@ -1,14 +1,9 @@
-import { DOCUMENT } from '@angular/common';
 import {
   Component,
-  ElementRef,
-  Inject,
+  OnDestroy,
   OnInit,
-  ViewChild,
 } from '@angular/core';
-import { AuthService } from '../../services/authentication/auth.service';
 import { SettingConfigService } from '../../../modules/settings/services/settings_configs.service';
-import { catchError, map } from 'rxjs';
 import { settingsConfigData, SystemImages } from '../../../modules/settings/interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'app/app.service';
@@ -18,7 +13,7 @@ import { ConfigService } from 'app/app.service';
   templateUrl: './body.component.html',
   styleUrl: './body.component.scss',
 })
-export class BodyComponent implements OnInit {
+export class BodyComponent implements OnInit, OnDestroy {
   sidebarHidden: boolean = false;
   page_title = 'Ministry of Health Tanzania';
   page_subtitle?: string = 'Ministry of Health Tanzania';
@@ -30,7 +25,7 @@ export class BodyComponent implements OnInit {
   constructor(
     private settingsConfigsService: SettingConfigService,
     private configService: ConfigService,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
 
   ) {}
   ngOnInit(): void {
@@ -85,8 +80,8 @@ export class BodyComponent implements OnInit {
         next: async (response: any) => {
           if(response?.data?.length > 0){
             this.systemImages = response?.data[0]
-            this.updateSystemImages()
           }
+          this.updateSystemImages()
         },
         error: (error) => {
           console.log("Failed to load system images")
@@ -114,5 +109,8 @@ export class BodyComponent implements OnInit {
   Openbar(e: any) {
     e.stopPropagation();
     this.sidebarHidden = !this.sidebarHidden;
+  }
+
+  ngOnDestroy(): void {
   }
 }

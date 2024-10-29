@@ -71,6 +71,20 @@
           <span class="text-lg font-normal">System Images</span>
         </a>
       </li>
+      <li class="me-2" *ngIf="dataAccess?.updateAccessLocationsLabels">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'label-access-fields'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'label-access-fields',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'label-access-fields'
+         }">
+          <i class="fas fa-table me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'label-access-fields',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'label-access-fields'
+           }"></i>
+
+          <span class="text-lg font-normal">Label Access Fields</span>
+        </a>
+      </li>
     </ul>
   </div>
 
@@ -231,7 +245,20 @@
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
       <div>
-      <app-update-system-images></app-update-system-images>
+        <app-update-system-images></app-update-system-images>
+      </div>
     </div>
   </div>
-</div>
+  <div *ngIf="selectedTab === 'label-access-fields' && dataAccess?.updateAccessLocationsLabels" id="access-fields" class="mt-4 tab-content">
+    <div class="my-8">
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <div>
+        <p>Under Construction</p>
+      <!-- <app-label-access-fields
+        [system_config]="systemConfigData"
+        [field_mapping]="fieldMappingData"
+        [field_labels]="fieldLabels"
+        (load_settings)="onLoadLabelAccess()"
+      ></app-label-access-fields> -->
+    </div>
+  </div>
