@@ -23,6 +23,7 @@ export class UpdateSystemImagesComponent implements OnInit {
   logo?: any;
   home_image?: any;
   previewImages: PreviewImages = {};
+  canReset: boolean = false;
 
   constructor(
     private snackBar: MatSnackBar,
@@ -50,8 +51,9 @@ export class UpdateSystemImagesComponent implements OnInit {
         next: async (response: any) => {
           if(response?.data?.length > 0){
             this.systemImages = response?.data[0]
-            this.updateSystemImages()
+            this.canReset = true;
           }
+          this.updateSystemImages()
         },
         error: (error) => {
           this.notificationMessage("Failed to load system images")
@@ -132,6 +134,34 @@ export class UpdateSystemImagesComponent implements OnInit {
         URL.revokeObjectURL(this.previewImages[type]!);
       }
       delete this.previewImages[type];
+    }
+  }
+
+  onResetImages(e: any){
+    e?.stopPropagation();
+    if(this.canReset){
+      const imagesObject = {
+          logo: undefined,
+          home_image: undefined,
+          favicon: undefined,
+        }
+      this.settingConfigService.resetImages().subscribe({
+        next: (response: any) => {
+          if(response?.data){
+            this.systemImages = response?.data[0]
+            this.updateSystemImages()
+            this.notificationMessage("System images reset successfully")
+            this.resetAllPreview();
+          } else {
+            this.notificationMessage("Failed to reset system images")
+          }
+        },
+        error: (error) => {
+          this.notificationMessage("Failed to reset system images")
+        }
+      })
+    } else {
+      this.resetAllPreview();
     }
   }
 

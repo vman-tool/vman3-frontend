@@ -159,15 +159,21 @@ export class AuthService {
     localStorage.setItem("refresh_token", response?.refresh_token)
     
     const now = new Date().getTime()/1000;
-    let expiry_timestamp_array = (now + Number(response.expires_in)).toString()?.split(".")
+    let expiry_timestamp_array = (now + Number(response?.expires_in)).toString()?.split(".")
     expiry_timestamp_array[1] = expiry_timestamp_array[1]?.length === 2 ? expiry_timestamp_array[1]+"0" : expiry_timestamp_array[1]?.length === 1 ? expiry_timestamp_array[1]+"00" : expiry_timestamp_array[1]
 
     const expiry_timestamp_string = expiry_timestamp_array.join(".")
+    
+    let refresh_timestamp_array = (now + Number(response?.refresh_token_expires_in)).toString()?.split(".")
+    refresh_timestamp_array[1] = refresh_timestamp_array[1]?.length === 2 ? refresh_timestamp_array[1]+"0" : refresh_timestamp_array[1]?.length === 1 ? refresh_timestamp_array[1]+"00" : refresh_timestamp_array[1]
+
+    const refresh_timestamp_string = refresh_timestamp_array.join(".")
 
     
 
 
     localStorage.setItem("access_token_expiry", expiry_timestamp_string)
+    localStorage.setItem("refresh_token_expiry", refresh_timestamp_string)
     localStorage.setItem("current_user", JSON.stringify(response.user))
     AuthEmitters.authEmitter.emit(true);
   }
