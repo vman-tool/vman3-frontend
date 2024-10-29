@@ -248,7 +248,11 @@ export class GraphsComponent implements OnInit {
     datasets: [
       {
         data: [0, 0, 0], // Initial empty data
-        backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'], // Segment colors
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.5)', // #36A2EB with 50% opacity
+          'rgba(255, 99, 132, 0.5)', // #FF6384 with 50% opacity
+          'rgba(255, 206, 86, 0.5)', // #FFCE56 with 50% opacity
+        ],
         borderColor: ['#36A2EB', '#FF6384', '#FFCE56'], // Border colors
         borderWidth: 1, // Border width for segments
       },
@@ -260,7 +264,8 @@ export class GraphsComponent implements OnInit {
     responsive: true,
     maintainAspectRatio: false,
     layout: {
-      padding: 10,
+      // padding: 20,
+      autoPadding: true,
     },
     scales: {
       r: {
