@@ -33,8 +33,8 @@ export class AuthService {
   }
 
   logout() {
-    this.clearLocalStorage();
     this.dialog.closeAll();
+    this.clearLocalStorage();
     localStorage.setItem("latest_route", this.router!.url);
     this.router!.navigate(['/login']);
   }
@@ -166,16 +166,21 @@ export class AuthService {
     
     let refresh_timestamp_array = (now + Number(response?.refresh_token_expires_in)).toString()?.split(".")
     refresh_timestamp_array[1] = refresh_timestamp_array[1]?.length === 2 ? refresh_timestamp_array[1]+"0" : refresh_timestamp_array[1]?.length === 1 ? refresh_timestamp_array[1]+"00" : refresh_timestamp_array[1]
+    
+    this.autoLogout(Number(response?.refresh_token_expires_in));
 
     const refresh_timestamp_string = refresh_timestamp_array.join(".")
-
-    
-
 
     localStorage.setItem("access_token_expiry", expiry_timestamp_string)
     localStorage.setItem("refresh_token_expiry", refresh_timestamp_string)
     localStorage.setItem("current_user", JSON.stringify(response.user))
     AuthEmitters.authEmitter.emit(true);
+  }
+
+  private autoLogout(seconds: number) {
+    setTimeout(() => {
+      this.logout()
+    }, seconds * 1000)
   }
   
   clearUserData() {
