@@ -130,7 +130,7 @@ export class GraphsComponent implements OnInit {
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
 
-            return `${label}: ${value} (${percentage})`;
+            return `${label}: ${value.toLocaleString()} (${percentage})`;
           },
         },
       },
@@ -243,7 +243,6 @@ export class GraphsComponent implements OnInit {
   public polarAreaChartType: ChartType = 'polarArea';
 
   // Data for the Polar Area Chart
-  // Data for the Polar Area Chart
   public polarAreaChartData: ChartData<'polarArea'> = {
     labels: ['Male', 'Female', 'Other'], // Labels for the chart segments
     datasets: [
@@ -260,13 +259,16 @@ export class GraphsComponent implements OnInit {
   public polarAreaChartOptions: ChartOptions<'polarArea'> = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: 10,
+    },
     scales: {
       r: {
         beginAtZero: true,
         ticks: {
           callback: (tickValue: number | string) => {
             if (typeof tickValue === 'number') {
-              return `${tickValue}`; // Append percentage sign if it's a number
+              return `${tickValue}`; // Return the tick value as a string
             }
             return tickValue; // Return as-is if it's not a number (e.g., a string)
           },
@@ -276,10 +278,58 @@ export class GraphsComponent implements OnInit {
     plugins: {
       legend: {
         display: true,
-        position: 'bottom',
+        position: 'bottom', // Move legend to the side
         align: 'center',
         fullSize: true,
         maxHeight: 100,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce(
+              (acc: number, val: any) => acc + val,
+              0
+            );
+            const percentage =
+              ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
+
+            return `${label}: ${value.toLocaleString()} (${percentage})`; // Format value with commas
+          },
+        },
+      },
+      datalabels: {
+        formatter: (value, context) => {
+          const total = context.chart.data.datasets[0].data.reduce(
+            (
+              acc: number,
+              currentValue:
+                | number
+                | [number, number]
+                | Point
+                | BubbleDataPoint
+                | null
+            ) => {
+              if (typeof currentValue === 'number') {
+                return acc + currentValue;
+              } else if (Array.isArray(currentValue)) {
+                return acc + currentValue[0]; // Assuming the first element is the value
+              } else if (currentValue && typeof currentValue === 'object') {
+                return acc + (currentValue as Point).x; // Assuming the object has an x property with the value
+              }
+              return acc;
+            },
+            0
+          );
+          const percentage = ((value / total) * 100).toFixed(2) + '%';
+          return `${value.toLocaleString()} (${percentage})`; // Format value with commas
+        },
+        color: '#fff',
+        offset: 10,
+        font: {
+          weight: 'bold',
+        },
       },
     },
   };
