@@ -1,4 +1,4 @@
-import { FieldMapping, SystemConfig, SystemImages } from '../../interface';
+import { FieldLabel, FieldMapping, SystemConfig, SystemImages } from '../../interface';
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ConnectionFormComponent } from '../../dialogs/connection-form/connection-form.component';
@@ -28,7 +28,7 @@ export class ConfigurationComponent {
 
   selectedTab = 'system-config'; // Default selected tab
   vaSummaryObjects?: any;
-  fieldLabels: import("/home/jonas/vman/vman3/frontend/src/app/modules/settings/interface").FieldLabel[] | undefined;
+  fieldLabels: FieldLabel[] | undefined;
 
   constructor(
     public dialog: MatDialog,
