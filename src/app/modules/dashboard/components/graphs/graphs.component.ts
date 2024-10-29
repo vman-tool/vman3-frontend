@@ -278,7 +278,7 @@ export class GraphsComponent implements OnInit {
     plugins: {
       legend: {
         display: true,
-        position: 'right', // Move legend to the side
+        position: 'bottom', // Move legend to the side
         align: 'center',
         fullSize: true,
         maxHeight: 100,
