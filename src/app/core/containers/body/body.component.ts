@@ -1,19 +1,12 @@
-import { DOCUMENT } from '@angular/common';
 import {
   Component,
-  ElementRef,
-  Inject,
   OnDestroy,
   OnInit,
-  ViewChild,
 } from '@angular/core';
-import { AuthService } from '../../services/authentication/auth.service';
 import { SettingConfigService } from '../../../modules/settings/services/settings_configs.service';
-import { catchError, map } from 'rxjs';
 import { settingsConfigData, SystemImages } from '../../../modules/settings/interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'app/app.service';
-import { SessionService } from 'app/core/services/authentication/session.service';
 
 @Component({
   selector: 'app-body',
@@ -32,8 +25,7 @@ export class BodyComponent implements OnInit, OnDestroy {
   constructor(
     private settingsConfigsService: SettingConfigService,
     private configService: ConfigService,
-    private snackBar: MatSnackBar,
-    private sessionService: SessionService 
+    private snackBar: MatSnackBar
 
   ) {}
   ngOnInit(): void {
@@ -120,6 +112,5 @@ export class BodyComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.sessionService.ngOnDestroy()
   }
 }
