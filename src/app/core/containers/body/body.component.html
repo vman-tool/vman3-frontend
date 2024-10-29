@@ -1,11 +1,9 @@
 <div class="grid items-center pb-5 h-[10vh]" style="grid-template-columns: 300px 1fr 1fr;">
-  <!-- First section (Logo and Sidebar) with fixed width -->
   <div class="flex items-center">
     <img [src]="systemImages.logo" alt="VMan3-icon"
       class="w-24 ml-5 {{ sidebarHidden ? 'w-0' : '' }}" />
   </div>
 
-  <!-- Second section (Page Title and Subtitle) with responsive space -->
   <div class="relative">
     <div class="ps-2 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
       <span class="text-3xl font-semibold text-black">{{page_title}}</span> <br />
@@ -13,13 +11,11 @@
     </div>
   </div>
 
-  <!-- Third section (Header) aligned to the right -->
   <div class="relative flex justify-end pr-5">
     <app-header></app-header>
   </div>
 </div>
 
-<!-- Main content wrapper -->
 <div class="flex mb-5 h-[calc(100vh-7vh)] overflow-hidden bg-white">
   <app-sidebar class="{{ sidebarHidden ? 'hidden' : 'block' }} w-[250px]  duration-300"></app-sidebar>
 

@@ -20,6 +20,7 @@ import { AssignRolesFormComponent } from './dialogs/assign-roles-form/assign-rol
 import { UserFormComponent } from './dialogs/user-form/user-form.component';
 import { ViewUserComponent } from './dialogs/view-user/view-user.component';
 import { UpdateSystemImagesComponent } from './components/update-system-images/update-system-images.component';
+import { LabelAccessFieldsComponent } from './components/label-access-fields/label-access-fields.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { UpdateSystemImagesComponent } from './components/update-system-images/u
     AssignRolesFormComponent,
     UserFormComponent,
     ViewUserComponent,
-    UpdateSystemImagesComponent
+    UpdateSystemImagesComponent,
+    LabelAccessFieldsComponent
   ],
   imports: [
     CommonModule,

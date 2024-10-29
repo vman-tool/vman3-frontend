@@ -1,0 +1,26 @@
+<div>
+    <label for="location" class="block mb-3 text-sm font-medium text-gray-700">Select Location Field: </label>
+    <select id="location" (change)="onSelectLocationType($event)"
+        class="mb-3 block w-full px-3 py-2 mt-1 block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <option value="">No Limit</option>
+        <ng-container *ngFor="let locationType of locationTypes;">
+            <option *ngIf="locationType?.value" [value]="locationType?.value"
+                [selected]="selectedLocationType?.value === locationType?.value">{{ locationType?.label }}</option>
+        </ng-container>
+    </select>
+</div>
+<div class="form-labels-container w-full ml-3 h-[50h] mb-[10vh] bg-gray-50 p-3 h-50" *ngIf="selectedLocationType && !initiatingForm">
+    <div class="flex items-center gap-4">
+        <input type="text" [(ngModel)]="searchText" (change)="onSearch()"
+            class="mb-3 block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            placeholder="Search {{ selectedLocationType?.label }} ...">
+    </div>
+    <form [formGroup]="labelsForm" id="labelsForm" (ngSubmit)="onSubmitLabels($event)">
+        <div class="flex items-center mb-4 gap-4" *ngFor="let location of getFilteredLocations()">
+            <label class="block text-sm font-medium text-gray-700 w-1/4">{{ location?.value }}</label>
+            <input type="text" [formControlName]="location?.value || null" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter label for {{location?.value}}">
+        </div>
+        <button type="submit" class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700 float-right">Save Assigned Labels</button>
+    </form>
+</div>
