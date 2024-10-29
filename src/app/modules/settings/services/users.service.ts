@@ -15,8 +15,11 @@ export class UsersService {
   }
   
   updateUser(user: any): Observable<any> {
-    console.log("user: ", user)
-    return this.http.put(`${this.configService.API_URL}/users/`, user);
+    const formData = new FormData()
+    Object.keys(user).forEach((key: string) => {
+      formData.append(key, user[key])
+    })
+    return this.http.put(`${this.configService.API_URL}/users/`, formData);
   }
 
  getUsers(pager?: {paging?: boolean, page_number?: number, limit?: number}, include_deleted?: string) {

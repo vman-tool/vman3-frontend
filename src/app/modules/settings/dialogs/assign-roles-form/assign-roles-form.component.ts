@@ -18,7 +18,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   availableRoles: any[] = [];
   selectedRoles: any[] = [];
   searchTermAvailable: string = '';
-  searchSelectedTerm: string = '';
+  searchSelectedRolesTerm: string = '';
   allRoles: any[] = [];
   userUuid: string = '';
   access_limit?: any;
@@ -57,8 +57,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.canLimitDataAccess = this.data.canLimitDataAccess;
     this.canUpdateLimitLabels = this.data.canUpdateLimitLabels;
-    this.getAllRoles();
     this.getLocationFields();
+    this.getAllRoles();
   }
 
   getLocationFields() {
@@ -81,6 +81,10 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.selectedRoles = user_roles?.data?.roles || [];
     this.access_limit = user_roles?.data?.access_limit
     this.availableRoles = this.allRoles.filter((role: any) => !this.selectedRoles.some(selectedRole => selectedRole?.uuid === role?.uuid));
+    this.selectedLocationType = this.locationTypes.filter((locationType: any) => locationType?.value === this.access_limit?.field)[0];
+    if(this.selectedLocationType && this.access_limit){
+      this.setLocations()
+    }
   }
 
   ngAfterViewInit() {
@@ -101,7 +105,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   
   filteredSelectedRoles() {
     return this.selectedRoles.filter(role =>
-      role?.name?.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
+      role?.name?.toLowerCase().includes(this.searchSelectedRolesTerm.toLowerCase())
     );
   }
 
@@ -155,7 +159,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   }
 
   async setLocations(){
-    const saved_field_label = this.field_labels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
+    const savedFieldLabel = this.field_labels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
       const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
       let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
       
@@ -164,7 +168,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
       if(locationsFromQuestions?.value?.options?.length && locationsFromDb?.data?.length){
         this.locations = locationsFromQuestions?.value?.options?.filter((locationToFilter: any) => locationsFromDb?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
           return {
-            name: saved_field_label?.options?.hasOwnProperty(location?.value) ? saved_field_label?.options[location?.value] : location?.label,
+            name: savedFieldLabel?.options?.hasOwnProperty(location?.value) ? savedFieldLabel?.options[location?.value] : location?.label,
             value: location?.value,
             unique: location?.value
           }
@@ -172,7 +176,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
       } else {
         this.locations = locationsFromDb?.data?.map((location: any) => {
           return {
-            name: saved_field_label?.options?.hasOwnProperty(location) ? saved_field_label?.options[location] : location,
+            name: savedFieldLabel?.options?.hasOwnProperty(location) ? savedFieldLabel?.options[location] : location,
             value: location,
             unique: location
           }
@@ -215,7 +219,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   
   filteredSelectedLocations() {
     return this.selectedLocations.filter(location =>
-      location?.name?.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
+      location?.name?.toLowerCase().includes(this.selectedLocationsSearchTerm.toLowerCase())
     );
   }
 
@@ -260,7 +264,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         user: this.userUuid,
         roles: this.selectedRoles?.map(role => role?.uuid)
       }
-      if(this.selectedLocations?.length){
+      if(this.selectedLocations?.length && this.selectedLocationType){
         roleAssignment.access_limit = {
           field: this.selectedLocationType?.value,
           limit_by: this.selectedLocations?.map((location) => {
@@ -271,6 +275,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
           }
           )
         }
+      } else {
+        roleAssignment.access_limit = {}
       }
   
       this.usersService.saveAssignment(roleAssignment ).subscribe(

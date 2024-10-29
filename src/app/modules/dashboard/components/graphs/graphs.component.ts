@@ -123,20 +123,20 @@ export class GraphsComponent implements OnInit {
           label: function (context) {
             const label = context.label || '';
             const value = context.raw || 0;
-            const total = context.dataset.data.reduce(
+            const total = context.dataset.data?.reduce(
               (acc: number, val: any) => acc + val,
               0
             );
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
-            //
+
             return `${label}: ${value.toLocaleString()} (${percentage})`;
           },
         },
       },
       datalabels: {
         formatter: (value, context) => {
-          const total = context.chart.data.datasets[0].data.reduce(
+          const total = context.chart.data.datasets[0].data?.reduce(
             (
               acc: number,
               currentValue:
