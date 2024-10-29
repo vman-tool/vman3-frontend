@@ -129,7 +129,7 @@ export class GraphsComponent implements OnInit {
             );
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
-
+            //
             return `${label}: ${value.toLocaleString()} (${percentage})`;
           },
         },
