@@ -31,6 +31,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   isTaskRunning: boolean = false; // Tracks whether a task is running
   taskIdKey: string = 'ccva-taskId'; // Store task ID in localStorage key
   taskProgressKey: string = 'ccva-progress'; // Store progress data in localStorage key
+  ccva_startTime: string = 'ccva-startTime';
   private messageSubscription: Subscription | undefined;
   private countdownInterval: any = null;
 
@@ -105,9 +106,11 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.message = '';
     this.totalRecords = 0;
     this.elapsedTime = '0:00:00';
+    this.countdownInterval = null;
 
+    clearInterval(this.countdownInterval);
     this.clearLocalStorage(); // Clear any previous task data
-
+    this.ngOnInit();
     // Prepare filter object based on the selected options
     const filter = {
       start_date:
@@ -166,15 +169,14 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.webSockettService.connect(
       `${this.configService.API_URL_WS}/ccva_progress/${taskId}`
     );
-
     // Start the countdown from the first elapsed time received
     if (!this.countdownInterval) {
       let startTime = new Date().getTime();
-      if (localStorage.getItem('ccva-startTime')) {
-        startTime = parseInt(localStorage.getItem('ccva-startTime') ?? '0');
+      if (localStorage.getItem(this.ccva_startTime)) {
+        startTime = parseInt(localStorage.getItem(this.ccva_startTime) ?? '0');
       }
 
-      localStorage.setItem('ccva-startTime', startTime.toString());
+      localStorage.setItem(this.ccva_startTime, startTime.toString());
       this.startCountdown(startTime);
     }
     this.messageSubscription = this.webSockettService.messages.subscribe(
@@ -275,7 +277,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   // Clear task-related data from localStorage
   private clearLocalStorage() {
-    localStorage.removeItem('ccva-startTime');
+    localStorage.removeItem(this.ccva_startTime);
     localStorage.removeItem(this.taskIdKey);
     localStorage.removeItem(this.taskProgressKey);
   }
