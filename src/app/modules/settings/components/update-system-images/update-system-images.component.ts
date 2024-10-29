@@ -51,7 +51,7 @@ export class UpdateSystemImagesComponent implements OnInit {
         next: async (response: any) => {
           if(response?.data?.length > 0){
             this.systemImages = response?.data[0]
-            this.canReset = true;
+            this.canReset = ((this.systemImages?.favicon !== null && this.systemImages?.favicon) || (this.systemImages?.logo !== null && this.systemImages?.logo) || (this.systemImages?.home_image !== null && this.systemImages?.home_image)) as boolean;
           }
           this.updateSystemImages()
         },

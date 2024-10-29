@@ -28,6 +28,7 @@ export class ConfigurationComponent {
 
   selectedTab = 'system-config'; // Default selected tab
   vaSummaryObjects?: any;
+  fieldLabels: import("/home/jonas/vman/vman3/frontend/src/app/modules/settings/interface").FieldLabel[] | undefined;
 
   constructor(
     public dialog: MatDialog,
@@ -56,7 +57,8 @@ export class ConfigurationComponent {
       addSummaryFields: await this.hasAccess([privileges.SETTINGS_CREATE_VA_SUMMARY]),
       updateSummaryFields: await this.hasAccess([privileges.SETTINGS_UPDATE_VA_SUMMARY]),
       viewSummaryFields: await this.hasAccess([privileges.SETTINGS_VIEW_VA_SUMMARY]),
-      updateSystemImages: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_IMAGES])
+      updateSystemImages: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_IMAGES]),
+      updateAccessLocationsLabels: await this.hasAccess([privileges.USERS_UPDATE_ACCESS_LIMIT_LABELS])
       
     }
   }
@@ -71,6 +73,7 @@ export class ConfigurationComponent {
           this.systemConfigData = data?.system_configs;
           this.fieldMappingData = data?.field_mapping;
           this.vaSummaryData = data?.va_summary;
+          this.fieldLabels = data?.field_labels;
           this.vaSummaryObjects =
             data?.va_summary && data?.va_summary !== null
               ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary)
@@ -132,5 +135,14 @@ export class ConfigurationComponent {
 
   addOdkApi(): void {
     this.editOdkApi();
+  }
+
+  onLoadLabelAccess(){
+    this.selectedTab = "";
+
+    this.loadOdkApiData();
+
+    this.selectedTab = "label-access-fields";
+
   }
 }
