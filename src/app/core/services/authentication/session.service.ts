@@ -7,8 +7,8 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class SessionService implements OnDestroy {
-  private readonly TOKEN_CHECK_INTERVAL = 1000; // 1 second in milliseconds
-  private readonly ACTIVITY_DEBOUNCE = 1000; // 1 second debounce for activity events
+  private readonly TOKEN_CHECK_INTERVAL = 1000;
+  private readonly ACTIVITY_DEBOUNCE = 1000;
   
   private destroy$ = new BehaviorSubject<boolean>(false);
   private isTracking = false;
@@ -16,7 +16,6 @@ export class SessionService implements OnDestroy {
   private activitySubscription?: Subscription;
   private tokenCheckSubscription?: Subscription;
   
-  // Keep these as private subjects for internal state management
   private readonly sessionState = new BehaviorSubject<{
     lastActivity: number;
     isActive: boolean;
@@ -28,7 +27,6 @@ export class SessionService implements OnDestroy {
   });
 
   constructor(private authService: AuthService) {
-    // Automatically start tracking when service is instantiated
     this.startBackgroundTracking();
   }
 
@@ -53,7 +51,7 @@ export class SessionService implements OnDestroy {
       fromEvent(document, 'scroll')
     ).pipe(
       debounceTime(this.ACTIVITY_DEBOUNCE),
-      takeUntil(this.destroy$)
+      takeUntil(this.destroy$),
     );
 
     this.activitySubscription = activity$.subscribe(() => {
@@ -84,20 +82,19 @@ export class SessionService implements OnDestroy {
       }
     } catch (error) {
       console.error('Token check failed:', error);
-      // Optionally implement retry logic here
     }
   }
 
   private async handleSessionExpiration(): Promise<void> {
     this.stopBackgroundTracking();
     await this.authService.logout();
-    // Optionally notify other services about logout
   }
 
   private async handleTokenRefresh(): Promise<void> {
     try {
       const refresh = await lastValueFrom(this.authService.refresh_token());
       if(refresh){
+        this.stopBackgroundTracking();
         this.startBackgroundTracking();
       }
     } catch (error) {

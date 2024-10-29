@@ -88,8 +88,8 @@ export class BodyComponent implements OnInit, OnDestroy {
         next: async (response: any) => {
           if(response?.data?.length > 0){
             this.systemImages = response?.data[0]
-            this.updateSystemImages()
           }
+          this.updateSystemImages()
         },
         error: (error) => {
           console.log("Failed to load system images")

@@ -147,7 +147,16 @@ export class SettingConfigService {
     return this.http.post<any>(`${this.configService.API_URL}/settings/system_images/`, formData).pipe(
       catchError((error: any) => {
         console.error('Error fetching system images:', error);
-        return of([]); // Return an empty array on error
+        return of([]);
+      })
+    )
+  }
+
+  resetImages(){
+    return this.http.delete<any>(`${this.configService.API_URL}/settings/system_images/`).pipe(
+      catchError((error: any) => {
+        console.error('Error resetting system images:', error);
+        return of([]);
       })
     )
   }
