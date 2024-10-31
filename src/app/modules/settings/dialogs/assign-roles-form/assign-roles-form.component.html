@@ -1,9 +1,9 @@
 <div class="p-8 bg-white rounded-lg shadow-md">
     <div class="grid grid-cols-12 gap-6 md:grid-cols-2">
-        <div class="col-span-12">
+        <div class="col-span-12" *ngIf="!embedded_component">
             <div class="mt-4 ml-4 flex justify-between items-center">
                 <div>
-                    <span class="text-2xl text-start">ASSIGN/UNASSIGN ROLE TO {{data?.user?.name?.toUpperCase()}}</span>
+                    <span class="text-2xl text-start">ACCESS MANAGEMENT FOR {{data?.user?.name?.toUpperCase()}}</span>
                 </div>
                 <div class="mr-4">
                     <mat-icon class="cursor-pointer" (click)="onClose()">close</mat-icon>
@@ -12,7 +12,7 @@
         </div>
         <div class="col-span-12">
             <mat-dialog-content class="center-content">
-                <div>
+                <div *ngIf="canAssignRoles">
                     <span class="text-[12px] text-gray-600 italic">Click on the role to select or deselect it</span>
                     <div class="selection-container">
                         <div class="available-items">
@@ -59,7 +59,7 @@
                                 </ng-container>
                             </select>
         
-                            <div class="flex items-center space-x-4 mt-5" *ngIf="canUpdateLimitLabels">
+                            <!-- <div class="flex items-center space-x-4 mt-5" *ngIf="canUpdateLimitLabels">
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="checkbox" [disabled]="!selectedLocationType" class="sr-only peer" (change)="onAssignLabels($event)">
                                     <div
@@ -72,7 +72,7 @@
                                        Assign Labels
                                     </span>
                                 </label>
-                            </div>
+                            </div> -->
                         </div>
                         <ng-container *ngIf="!assignLabels">
                             <div class="available-items" *ngIf="selectedLocationType && !loadLocations">
@@ -127,7 +127,7 @@
             </mat-dialog-content>
         </div>
     </div>
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions align="end" *ngIf="!embedded_component">
         <div class="flex items-center justify-between mt-4">
             <span class="px-2 text-2xl text-start"></span>
             <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="saveAssignment()">Save {{ assignLabels ? 'Assigned Labels' : 'Role Assignment' }}</button>

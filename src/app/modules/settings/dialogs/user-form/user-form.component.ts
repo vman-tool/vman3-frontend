@@ -17,6 +17,8 @@ export class UserFormComponent implements OnInit, AfterViewInit {
   email?: string;
   currentUser?: any;
   is_active: any;
+  accessLimit?: any;
+  selectedRoles?: any;
 
 
   constructor(
@@ -53,6 +55,18 @@ export class UserFormComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onSelected(data: any, key: string): void {
+    if(key === 'roles'){
+      this.selectedRoles = data
+    }
+    if(key === 'access_limit'){
+      this.accessLimit = data
+    }
+
+    console.log("Roles: ", this.selectedRoles, 
+            "\n Limit: ", this.accessLimit)
+  }
+
 
   saveUser() {
     if(!this.name){
@@ -73,6 +87,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
       this.usersService.updateUser(user).subscribe(
         {
           next: () => {
+            this.saveAccessData(this.data.user.uuid)
             this.notificationMessage('User saved successfully');
             this.dialogRef.close(true);
           },
@@ -86,7 +101,8 @@ export class UserFormComponent implements OnInit, AfterViewInit {
 
       this.usersService.saveUser(user).subscribe(
         {
-          next: () => {
+          next: (response: any) => {
+            this.saveAccessData(response.uuid)
             this.notificationMessage('User saved successfully');
             this.dialogRef.close(true);
           },
@@ -98,6 +114,28 @@ export class UserFormComponent implements OnInit, AfterViewInit {
       )
     }
 
+  }
+  
+  
+  saveAccessData(userUuid: string) {
+    let roleAssignment: any = {
+        user: userUuid,
+        roles: this.selectedRoles?.map((role: any) => role?.uuid)
+      }
+
+      roleAssignment.access_limit = this.accessLimit
+  
+      this.usersService.saveAssignment(roleAssignment ).subscribe(
+        {
+          next: () => {
+            this.notificationMessage('Assignment saved successfully');
+          },
+          error: (error) => {
+            console.error(error);
+            this.notificationMessage('Failed to assign/unassign role');
+          }
+        }
+      )
   }
 
   onClose(){

@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { FieldLabel } from '../../interface';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
@@ -123,10 +122,8 @@ export class LabelAccessFieldsComponent implements OnInit {
     this.labelsForm = this.formBuilder.group({});
     
     filteredLocations.forEach((location) => {
-      if (!this.labelsForm.contains(location.value)) {
-        const initialValue = this.existingFormValues[location.value] || (location?.name !== location.value ? location?.name : '');
-        this.labelsForm.addControl(location.value, this.formBuilder.control(initialValue));
-      }
+      const initialValue = this.existingFormValues[location.value] || (location?.name !== location.value ? location?.name : '');
+      this.labelsForm.addControl(location.value, this.formBuilder.control(initialValue));
     });
 
     this.initiatingForm = false;
@@ -134,7 +131,7 @@ export class LabelAccessFieldsComponent implements OnInit {
 
   getFilteredLocations() {
     return this.locations.filter((location) =>
-      location.name?.toLowerCase().includes(this.searchText?.toLowerCase())
+      location.name?.toLowerCase().includes(this.searchText?.toLowerCase()) || location.value?.toLowerCase().includes(this.searchText?.toLowerCase())
     );
   }
 

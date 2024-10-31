@@ -31,7 +31,7 @@
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
                                 Phone
                             </th> -->
-                            <th *ngIf="canAssignRole && canUpdateUsers && canDeactivateUser"
+                            <th *ngIf="canAssignRoles && canUpdateUsers && canDeactivateUser"
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
                                 Action
                             </th>
@@ -59,15 +59,15 @@
                                         <p class="text-gray-900 whitespace-no-wrap">{{ user?.phone ? user?.phone : "-" }}
                                         </p>
                                     </td> -->
-                                    <td class="px-5 py-3 text-sm border-b border-gray-200" *ngIf="canAssignRole && canUpdateUsers && canDeactivateUser">
+                                    <td class="px-5 py-3 text-sm border-b border-gray-200" *ngIf="canAssignRoles && canUpdateUsers && canDeactivateUser">
                                         <a mat-icon-button [matMenuTriggerFor]="menu"
                                             class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
                                                 class="ph-dots-three-vertical"></i></a>
                                         <mat-menu #menu="matMenu" class="bg-white">
-                                            <button mat-menu-item *ngIf="canAssignRole" class="hover:text-blue-700 hover:cursor-pointer" (click)="onAssignRoles(user)">
+                                            <!-- <button mat-menu-item *ngIf="canAssignRole" class="hover:text-blue-700 hover:cursor-pointer" (click)="onAssignRoles(user)">
                                                 <i class="ph-shield-check text-2xl mr-3"></i>
-                                                <span class="relative bottom-[7px]">Manage Roles</span>
-                                            </button>
+                                                <span class="relative bottom-[7px]">Access Management</span>
+                                            </button> -->
                                             <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer" (click)="onViewUser(user)">
                                                 <i class="ph-eye text-2xl mr-3"></i>
                                                 <span class="relative bottom-[7px]">View</span>

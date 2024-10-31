@@ -34,7 +34,7 @@ export class AuthService {
 
   logout() {
     this.dialog.closeAll();
-    this.clearLocalStorage();
+    this.clearUserData();
     localStorage.setItem("latest_route", this.router!.url);
     this.router!.navigate(['/login']);
   }
@@ -187,8 +187,11 @@ export class AuthService {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("access_token_expiry");
+    localStorage.removeItem("refresh_token_expiry")
     localStorage.removeItem("current_user");
+    
     this.clearPrivilegeCache();
+    this.indexedDBService?.deleteDatabase("vmanDB");
   }
   
   clearLocalStorage() {

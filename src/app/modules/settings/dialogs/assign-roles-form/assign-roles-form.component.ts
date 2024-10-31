@@ -1,11 +1,11 @@
-import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { SettingConfigService } from '../../services/settings_configs.service';
-import { FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
+import { FormBuilder } from '@angular/forms';
 import { FieldLabel } from '../../interface';
 
 @Component({
@@ -14,6 +14,11 @@ import { FieldLabel } from '../../interface';
   styleUrl: './assign-roles-form.component.scss'
 })
 export class AssignRolesFormComponent implements OnInit, AfterViewInit {
+
+  @Input() embedded_component: boolean = false;
+
+  @Output() selectRoles: EventEmitter<any> = new EventEmitter()
+  @Output() selectAccessLimit: EventEmitter<any> = new EventEmitter()
   
   availableRoles: any[] = [];
   selectedRoles: any[] = [];
@@ -31,9 +36,14 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   selectedLocationsSearchTerm: string = '';
   assignLabels: any;
   labelsForm: any;
-  field_labels?: FieldLabel[];
+
+  system_config: any;
+  field_mapping: any; 
+  field_labels?: FieldLabel[];canAssignRoles: any;
+; 
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
+  user: any;
 
 
   constructor(
@@ -55,8 +65,10 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.canLimitDataAccess = this.data.canLimitDataAccess;
-    this.canUpdateLimitLabels = this.data.canUpdateLimitLabels;
+    this.canAssignRoles = this.data?.canAssignRoles;
+    this.canLimitDataAccess = this.data?.canLimitDataAccess;
+    this.canUpdateLimitLabels = this.data?.canUpdateLimitLabels;
+    this.user = this.data?.user;
     this.getLocationFields();
     this.getAllRoles();
   }
@@ -75,15 +87,32 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
 
   async getAllRoles() {
     const rolesResponse: any = await lastValueFrom(this.usersService.getRoles({paging: false}))
-    this.userUuid = this.data?.user?.uuid || '';
-    const user_roles: any = await lastValueFrom(this.usersService.getUserRoles(this.userUuid))
+    this.userUuid = this.user?.uuid || undefined;
     this.allRoles = rolesResponse?.data
-    this.selectedRoles = user_roles?.data?.roles || [];
-    this.access_limit = user_roles?.data?.access_limit
+    
+    if(this.userUuid){
+      const user_roles: any = await lastValueFrom(this.usersService.getUserRoles(this.userUuid))
+      this.selectedRoles = user_roles?.data?.roles || [];
+      this.access_limit = user_roles?.data?.access_limit
+    }
     this.availableRoles = this.allRoles.filter((role: any) => !this.selectedRoles.some(selectedRole => selectedRole?.uuid === role?.uuid));
     this.selectedLocationType = this.locationTypes.filter((locationType: any) => locationType?.value === this.access_limit?.field)[0];
     if(this.selectedLocationType && this.access_limit){
       this.setLocations()
+    }
+    if(!this.embedded_component){
+      this.selectRoles.emit(this.selectedRoles);
+      this.selectAccessLimit.emit({
+        field: this.selectedLocationType?.value,
+        limit_by: this.selectedLocations?.map(
+          (location) => {
+            return {
+              label: location?.name,
+              value: location?.value
+            }
+          }
+        )
+      })
     }
   }
 
@@ -121,6 +150,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         }
       });
     this.availableRoles = this.availableRoles.filter(role => role?.uuid !== selectedRole?.uuid);
+    this.selectRoles.emit(this.selectedRoles);
+
   }
 
   moveToAvailable(deselectedRole: any) {
@@ -135,6 +166,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         }
       })
     this.selectedRoles = this.selectedRoles.filter(role => role?.uuid !== deselectedRole?.uuid);
+    this.selectRoles.emit(this.selectedRoles);
   }
 
   get assignLabelsCheckbox(){
@@ -235,6 +267,17 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         }
       });
     this.locations = this.locations.filter(location => location?.unique !== selectedLocation?.unique);
+    this.selectAccessLimit.emit({
+      field: this.selectedLocationType?.value,
+      limit_by: this.selectedLocations?.map(
+        (location) => {
+          return {
+            label: location?.name,
+            value: location?.value
+          }
+        }
+      )
+    })
   }
 
   moveLocationToAvailable(deselectedLocation: any) {
@@ -249,6 +292,17 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         }
       })
     this.selectedLocations = this.selectedLocations.filter(location => location?.unique !== deselectedLocation?.unique);
+    this.selectAccessLimit.emit({
+      field: this.selectedLocationType?.value,
+      limit_by: this.selectedLocations?.map(
+        (location) => {
+          return {
+            label: location?.name,
+            value: location?.value
+          }
+        }
+      )
+    })
   }
 
   saveAssignment() {
@@ -264,15 +318,16 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
         user: this.userUuid,
         roles: this.selectedRoles?.map(role => role?.uuid)
       }
+
       if(this.selectedLocations?.length && this.selectedLocationType){
         roleAssignment.access_limit = {
           field: this.selectedLocationType?.value,
           limit_by: this.selectedLocations?.map((location) => {
-            return {
-              label: location?.name,
-              value: location?.value
+              return {
+                label: location?.name,
+                value: location?.value
+              }
             }
-          }
           )
         }
       } else {
