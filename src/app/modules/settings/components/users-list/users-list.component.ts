@@ -146,7 +146,8 @@ export class UsersListComponent implements OnInit {
       field_mapping: this.fieldMappingData,
       field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
-      canUpdateLimitLabels: this.canUpdateLimitLabels
+      canUpdateLimitLabels: this.canUpdateLimitLabels,
+      canAssignRoles: this.canAssignRoles
     }
     this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
@@ -165,7 +166,8 @@ export class UsersListComponent implements OnInit {
       field_mapping: this.fieldMappingData,
       field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
-      canUpdateLimitLabels: this.canUpdateLimitLabels
+      canUpdateLimitLabels: this.canUpdateLimitLabels,
+      canAssignRoles: this.canAssignRoles
     }
     this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
