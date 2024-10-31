@@ -32,7 +32,7 @@ export class CsrfInterceptorService {
       catchError((requestError: HttpErrorResponse) => {
         if (requestError.status === 401) {
           localStorage.setItem('refresh_request', String(true))
-          if(this.refresh){
+          if(!this.refresh){
             console.log("Refresh-Response: ", requestError.status)
             return this.authService.refresh_token().pipe(
               map((response) => {

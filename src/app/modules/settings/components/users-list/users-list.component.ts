@@ -31,7 +31,7 @@ export class UsersListComponent implements OnInit {
   canAddUsers: boolean = false;
   canUpdateUsers: boolean = false;
   canDeactivateUser: boolean = false;
-  canAssignRole: boolean = false;
+  canAssignRoles: boolean = false;
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
   current_user?: any;
@@ -55,7 +55,7 @@ export class UsersListComponent implements OnInit {
     this.canAddUsers = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_CREATE_USER]))
     this.canUpdateUsers = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_UPDATE_USER]))
     this.canDeactivateUser = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_DEACTIVATE_USER]))
-    this.canAssignRole = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_ASSIGN_ROLES, privileges.USERS_VIEW_PRIVILEGES]))
+    this.canAssignRoles = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_ASSIGN_ROLES, privileges.USERS_VIEW_ROLES]))
     this.canLimitDataAccess = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_LIMIT_DATA_ACCESS]))
     this.canUpdateLimitLabels = await lastValueFrom(this.authService.hasPrivilege([privileges.USERS_UPDATE_ACCESS_LIMIT_LABELS]))
   }
@@ -116,7 +116,8 @@ export class UsersListComponent implements OnInit {
       field_mapping: this.fieldMappingData,
       field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
-      canUpdateLimitLabels: this.canUpdateLimitLabels
+      canUpdateLimitLabels: this.canUpdateLimitLabels,
+      canAssignRoles: this.canAssignRoles
     }
     this.dialog.open(AssignRolesFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
@@ -140,6 +141,13 @@ export class UsersListComponent implements OnInit {
     dialogConfig.autoFocus = true;
     dialogConfig.width = "60vw";
     dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      system_config: this.systemConfigData,
+      field_mapping: this.fieldMappingData,
+      field_labels: this.fieldLabels,
+      canLimitDataAccess: this.canLimitDataAccess,
+      canUpdateLimitLabels: this.canUpdateLimitLabels
+    }
     this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
         if(response) this.loadUsers();
@@ -152,7 +160,12 @@ export class UsersListComponent implements OnInit {
     dialogConfig.width = "60vw";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
-      user: user
+      user: user,
+      system_config: this.systemConfigData,
+      field_mapping: this.fieldMappingData,
+      field_labels: this.fieldLabels,
+      canLimitDataAccess: this.canLimitDataAccess,
+      canUpdateLimitLabels: this.canUpdateLimitLabels
     }
     this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {

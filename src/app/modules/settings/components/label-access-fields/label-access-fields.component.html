@@ -17,9 +17,11 @@
     </div>
     <form [formGroup]="labelsForm" id="labelsForm" (ngSubmit)="onSubmitLabels($event)">
         <div class="flex items-center mb-4 gap-4" *ngFor="let location of getFilteredLocations()">
-            <label class="block text-sm font-medium text-gray-700 w-1/4">{{ location?.value }}</label>
-            <input type="text" [formControlName]="location?.value || null" class="flex-1 p-2 border border-gray-300 rounded-md"
-                placeholder="Enter label for {{location?.value}}">
+            @if(labelsForm.contains(location.value)){
+                <label class="block text-sm font-medium text-gray-700 w-1/4">{{ location?.value }}</label>
+                <input type="text" [formControlName]="location.value" class="flex-1 p-2 border border-gray-300 rounded-md"
+                    placeholder="Enter label for {{location?.value}}">
+            }
         </div>
         <button type="submit" class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700 float-right">Save Assigned Labels</button>
     </form>
