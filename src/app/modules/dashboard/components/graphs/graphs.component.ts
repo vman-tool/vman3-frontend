@@ -82,10 +82,11 @@ export class GraphsComponent implements OnInit {
     effect(() => {
       this.filterData = this.filterService.filterData();
       this.loadStatistics();
+      this.loadMore();
     });
   }
   ngOnInit() {
-    this.loadMore();
+    // this.loadMore();
     // this.loadStatistics();
   }
 

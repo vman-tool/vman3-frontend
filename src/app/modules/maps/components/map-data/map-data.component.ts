@@ -19,10 +19,18 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
   private map: any;
   isLoading = true;
   locations: any[] = [];
-  filterData: { locations: string[]; startDate?: string; endDate?: string } = {
+  filterData: {
+    locations: string[];
+    start_date?: string;
+    end_date?: string;
+    date_type?: string;
+    ccva_graph_db_source: boolean;
+  } = {
     locations: [],
-    startDate: undefined,
-    endDate: undefined,
+    start_date: undefined,
+    end_date: undefined,
+    date_type: undefined,
+    ccva_graph_db_source: true,
   };
   private customIcon = L.icon({
     iconUrl: 'assets/icons/marker.svg', // Path to your custom marker icon
@@ -53,20 +61,27 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isLoading = true;
     this.mapDataService
       .getMapRecordsData(
-        this.filterData.startDate,
-        this.filterData.endDate,
-        this.filterData.locations
+        this.filterData.start_date,
+        this.filterData.end_date,
+        this.filterData.locations,
+        this.filterData.date_type
       )
-      .subscribe(async (data) => {
-        this.locations = data.data;
-        console.log('Fetched locations:', this.locations); // Log locations data
-        await this.addMarkers();
-        // await for 1 second to ensure the map is loaded before setting isLoading to false
-        setTimeout(() => {
+      .subscribe(
+        async (data) => {
+          this.locations = data.data;
+          // console.log('Fetched locations:', this.locations); // Log locations data
+          await this.addMarkers();
+          // await for 1 second to ensure the map is loaded before setting isLoading to false
+          setTimeout(() => {
+            // this.isLoading = false;
+          }, 1000);
           // this.isLoading = false;
-        }, 1000);
-        // this.isLoading = false;
-      });
+        },
+        (error) => {
+          // console.error('Error fetching locations:', error);
+          // this.isLoading =
+        }
+      );
   }
 
   ngAfterViewInit(): void {
@@ -88,62 +103,71 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async addMarkers(): Promise<void> {
     const bounds = L.latLngBounds([]);
-    console.log('Adding markers for locations:', this.locations); // Log before adding markers
+    const uniqueMarkers = new Set<string>();
 
     if (this.locations.length > 0) {
-      const uniqueMarkers = new Set();
-
-      for (const [index, location] of this.locations.entries()) {
+      this.locations.forEach((location, index) => {
         const [longitude, latitude] = location.coordinates;
         const markerKey = `${latitude},${longitude}`;
 
-        if (uniqueMarkers.has(markerKey)) {
-          console.warn(
-            `Duplicate marker for ${markerKey} found at index ${index + 1}`
-          );
-        } else {
+        if (!uniqueMarkers.has(markerKey)) {
           uniqueMarkers.add(markerKey);
-          console.log(`Adding marker ${index + 1}:`, latitude, longitude); // Log each marker's coordinates
 
+          // Prepare popup content
           const popupContent = `
-            <div class="p-4 bg-transparent rounded-lg  w-96">
-              <div class="mb-2 text-lg font-bold flex items-center">
-                <img src="assets/icons/marker.svg" class="h-6 w-6 mr-2" />
-                Marker Details
+          <div class="p-4 bg-transparent rounded-lg  w-96">
+            <div class="mb-2 text-lg font-bold flex items-center">
+              <img src="assets/icons/marker.svg" class="h-6 w-6 mr-2" />
+              Marker Details
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-gray-600">
+              <div class="col-span-2">
+                <span class="font-semibold">Region:</span> ${location.location}
               </div>
-              <div class="grid grid-cols-2 gap-4 text-gray-600">
-                <div class="col-span-2">
-                  <span class="font-semibold">Region:</span> ${location.location}
-                </div>
-                <div class="col-span-2">
-                  <span class="font-semibold">District:</span> ${location.district}
-                </div>
-                <div class="col-span-2">
-                  <span class="font-semibold">Date:</span> ${new Date(
-                    location.date
-                  ).toLocaleDateString()}
-                </div>
-                <div class="col-span-2">
-                  <span class="font-semibold">Interviewer:</span> ${location.interviewer}
-                </div>
-                <div class="col-span-2">
-                  <span class="font-semibold">Device ID:</span> ${location.deviceid}
-                </div>
+              <div class="col-span-2">
+                <span class="font-semibold">District:</span> ${
+                  location.district
+                }
+              </div>
+              <div class="col-span-2">
+                <span class="font-semibold">Date:</span> ${new Date(
+                  location.date
+                ).toLocaleDateString()}
+              </div>
+              <div class="col-span-2">
+                <span class="font-semibold">Interviewer:</span> ${
+                  location.interviewer
+                }
+              </div>
+              <div class="col-span-2">
+                <span class="font-semibold">Device ID:</span> ${
+                  location.deviceid
+                }
               </div>
             </div>
-          `;
+          </div>
+        `;
 
+          // Create and add marker
           const marker = L.marker([latitude, longitude], {
             icon: this.customIcon,
           })
             .bindPopup(popupContent)
             .addTo(this.map);
-          bounds.extend(marker.getLatLng());
-        }
-      }
 
-      console.log('Bounds after adding markers:', bounds); // Log bounds
-      this.map.fitBounds(bounds); // Fit the map to the bounds of all markers
+          // Extend bounds to include the marker's location
+          bounds.extend(marker.getLatLng());
+        } else {
+          console.warn(
+            `Duplicate marker for ${markerKey} found at index ${index + 1}`
+          );
+        }
+      });
+
+      this.map.fitBounds(bounds, {
+        padding: [20, 20], // Adds padding around the bounds to prevent tight fit
+      });
+      this.isLoading = false;
     }
   }
 }

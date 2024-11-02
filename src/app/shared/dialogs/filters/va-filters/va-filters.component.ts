@@ -1,13 +1,15 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit } from '@angular/core';
 import { FilterService } from '../../../services/filter.service';
 import { LocationService } from '../../../services/location.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
+import { SearchableSelectComponent } from '../../../components/searchable-select/searchable-select.component';
+import { SharedModule } from '../../../shared.module';
 @Component({
   selector: 'app-va-filters',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, SharedModule],
   templateUrl: './va-filters.component.html',
   styleUrl: './va-filters.component.scss',
 })
@@ -15,10 +17,12 @@ export class VaFiltersComponent implements OnInit {
   selectedDateType?: string;
   startDate?: Date;
   endDate?: Date;
-  selectedLocation: string = '';
-  allLocations: string[] = [];
-  isLoading: boolean = true;
+  selectedLocation: string[] = [];
+  allLocations: any[] = [];
 
+  isLoading: boolean = true;
+  resetSelection = new EventEmitter<void>();
+  closeDropdown = new EventEmitter<void>();
   constructor(
     private locationService: LocationService,
     private filterService: FilterService,
@@ -28,7 +32,10 @@ export class VaFiltersComponent implements OnInit {
   ngOnInit(): void {
     this.locationService.getLocations().subscribe({
       next: (locations) => {
-        this.allLocations = locations;
+        this.allLocations = locations.map((location: string) => ({
+          key: location,
+          value: location,
+        }));
         this.isLoading = false;
       },
       error: (error) => {
@@ -39,15 +46,19 @@ export class VaFiltersComponent implements OnInit {
   }
 
   applyFilters(): void {
+    this.closeDropdown.emit();
     const formattedStartDate = this.startDate
       ? this.datePipe.transform(this.startDate, 'yyyy-MM-dd')?.toString()
       : undefined;
     const formattedEndDate = this.endDate
       ? this.datePipe.transform(this.endDate, 'yyyy-MM-dd')?.toString()
       : undefined;
-    var locations = [];
-    if (this.selectedLocation !== '' && this.selectedLocation !== undefined) {
-      locations.push(this.selectedLocation);
+    var locations: string[] = [];
+    if (
+      this.selectedLocation.length > 0 &&
+      this.selectedLocation !== undefined
+    ) {
+      locations = this.selectedLocation;
     }
     const filterData = {
       start_date: formattedStartDate,
@@ -62,9 +73,43 @@ export class VaFiltersComponent implements OnInit {
   }
 
   resetFilters(): void {
-    this.selectedDateType = 'submission_date';
+    this.selectedDateType = undefined;
     this.startDate = undefined;
     this.endDate = undefined;
-    this.selectedLocation = '';
+    this.selectedLocation = [];
+    const filterData = {
+      start_date: undefined,
+      end_date: undefined,
+      locations: [],
+      date_type: undefined,
+      ccva_graph_db_source: true,
+    };
+    this.resetSelection.emit();
+    this.filterService.setFilterData(filterData);
+  }
+
+  onSearchableChange(selectedItems: any) {
+    this.selectedLocation = selectedItems;
+  }
+  onOpenSelectField(isOpen: boolean) {
+    if (isOpen) {
+      this.addHeightClass('h-[400px]', 'h-60');
+    } else {
+      this.addHeightClass('h-60', 'h-[400px]');
+    }
+  }
+
+  addHeightClass(addclassName?: string, removeClassName?: string) {
+    const dialogElement = document.querySelector(
+      '.cdk-overlay-pane.mat-mdc-dialog-panel'
+    );
+    if (dialogElement) {
+      if (addclassName) {
+        (dialogElement as HTMLElement).classList.add(addclassName);
+      }
+      if (removeClassName) {
+        (dialogElement as HTMLElement).classList.remove(removeClassName);
+      }
+    }
   }
 }
