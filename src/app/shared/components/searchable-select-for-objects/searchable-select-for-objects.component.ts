@@ -44,7 +44,7 @@ export class SearchableSelectForObjectsComponent implements OnInit {
       this.clearSelection();
     });
     this.closeDropdown.subscribe(() => {
-      this.toggleDropdown();
+      this.isOpen = false;
     });
   }
 
