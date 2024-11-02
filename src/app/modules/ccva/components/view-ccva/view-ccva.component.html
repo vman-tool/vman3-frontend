@@ -1,30 +1,9 @@
-<div class="flex items-center justify-between my-10">
+<div class="flex items-center justify-between my-4">
   <!-- Back Navigation Button -->
-  <button (click)="onBack()" class="px-4 py-2 font-bold text-gray-800 bg-gray-300 rounded hover:bg-gray-400">
+  <button (click)="onBack()" class="px-4 py-2 font-bold text-gray-800 bg-gray-200 rounded hover:bg-gray-400">
     ← Back
   </button>
-
-  <div class="flex space-x-4">
-    <!-- Delete Button -->
-    <!-- <button (click)="onDelete()" class="px-4 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700">
-      Delete
-    </button> -->
-
-    <!-- Set Default Button -->
-    <!-- <button (click)="onSetDefault()" class="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
-      [disabled]="isTaskRunning">
-      Set as Default
-    </button> -->
-  </div>
 </div>
 
 <!-- Display CCVA Graphs when task is not running -->
-<app-ccva-graphs *ngIf="!isTaskRunning" [graphData]="graphData"></app-ccva-graphs>
-
-<!-- Display progress information when task is running
-<div *ngIf="isTaskRunning" class="mt-4">
-  <p>Progress: {{ progress }}%</p>
-  <p>Message: {{ message }}</p>
-  <p>Elapsed Time: {{ elapsedTime }}</p>
-  <p>Total Records: {{ totalRecords }}</p>
-</div> -->
+<app-ccva-graphs *ngIf="!isTaskRunning"></app-ccva-graphs>

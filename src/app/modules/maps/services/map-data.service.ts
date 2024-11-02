@@ -12,10 +12,7 @@ export class MapDataService {
   error?: string;
   success?: boolean;
 
-  constructor(
-    private http: HttpClient,
-    private configService: ConfigService
-  ) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error;
     });
@@ -27,11 +24,10 @@ export class MapDataService {
   getMapRecordsData(
     startDate?: string,
     endDate?: string,
-    locations?: string[]
+    locations?: string[],
+    date_type?: string
   ): Observable<any> {
     let params = new HttpParams();
-    // .set('page_number', page.toString())
-    // .set('limit', limit.toString());
 
     if (startDate) {
       params = params.set('start_date', startDate);
@@ -42,18 +38,22 @@ export class MapDataService {
     if (locations && locations.length > 0) {
       params = params.set('locations', locations.join(','));
     }
-
-    return this.http.get<any>(`${this.configService.API_URL}/records/maps`, { params }).pipe(
-      map((response: any) => response),
-      catchError((error: any) => {
-        console.log('Error: ', error);
-        return of({
-          data: [],
-          message: 'Failed to fetch records',
-          error: error.message,
-          total: 0,
-        });
-      })
-    );
+    if (date_type) {
+      params = params.set('date_type', date_type);
+    }
+    return this.http
+      .get<any>(`${this.configService.API_URL}/records/maps`, { params })
+      .pipe(
+        map((response: any) => response),
+        catchError((error: any) => {
+          console.log('Error: ', error);
+          return of({
+            data: [],
+            message: 'Failed to fetch records',
+            error: error.message,
+            total: 0,
+          });
+        })
+      );
   }
 }

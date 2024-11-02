@@ -18,7 +18,7 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   ccva_graph_db_source: boolean = true;
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
-  public isLoading = false;
+  public isLoading = true;
   total_records: number = 0;
   elapsed_time = '0:00:00';
   created_at: string = '';
@@ -97,6 +97,7 @@ export class CcvaDashboardGraphsComponent implements OnInit {
     this.isLoading = true;
     this.ccvaService
       .get_ccva_Results(
+        '',
         this.filterData.start_date,
         this.filterData.end_date,
         this.filterData.locations,
@@ -122,7 +123,7 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadGraphData();
+    // this.loadGraphData();
   }
 
   setupEffect() {
