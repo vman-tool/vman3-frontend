@@ -66,16 +66,22 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
         this.filterData.locations,
         this.filterData.date_type
       )
-      .subscribe(async (data) => {
-        this.locations = data.data;
-        // console.log('Fetched locations:', this.locations); // Log locations data
-        await this.addMarkers();
-        // await for 1 second to ensure the map is loaded before setting isLoading to false
-        setTimeout(() => {
+      .subscribe(
+        async (data) => {
+          this.locations = data.data;
+          // console.log('Fetched locations:', this.locations); // Log locations data
+          await this.addMarkers();
+          // await for 1 second to ensure the map is loaded before setting isLoading to false
+          setTimeout(() => {
+            // this.isLoading = false;
+          }, 1000);
           // this.isLoading = false;
-        }, 1000);
-        // this.isLoading = false;
-      });
+        },
+        (error) => {
+          // console.error('Error fetching locations:', error);
+          // this.isLoading =
+        }
+      );
   }
 
   ngAfterViewInit(): void {
@@ -161,6 +167,7 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
       this.map.fitBounds(bounds, {
         padding: [20, 20], // Adds padding around the bounds to prevent tight fit
       });
+      this.isLoading = false;
     }
   }
 }
