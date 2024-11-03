@@ -22,8 +22,11 @@ import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.servi
   styleUrls: ['./settings-configs-form.component.scss'],
 })
 export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
-  selectedTab: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' =
-    'system_configs'; // Default selected tab
+  selectedTab:
+    | 'odk_api_configs'
+    | 'system_configs'
+    | 'field_mapping'
+    | 'va_summary' = 'system_configs'; // Default selected tab
   systemConfigForm!: FormGroup;
   fieldMappingForm!: FormGroup;
   odkApiConfigForm!: FormGroup;
@@ -43,16 +46,19 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
     private snackBar: MatSnackBar
   ) {
     this.selectedTab = data.type || 'system_configs'; // Initialize selected tab based on input data
-    this.selectedSummaryFields = data?.va_summary
-    if(this.selectedTab === 'va_summary' || this.selectedTab === 'field_mapping'){
+    this.selectedSummaryFields = data?.va_summary;
+    if (
+      this.selectedTab === 'va_summary' ||
+      this.selectedTab === 'field_mapping'
+    ) {
       this.indexedDBService.getQuestions().then((questions) => {
         this.fields = questions?.map((question: any) => {
           return {
             label: question.value?.label,
             value: question.key,
-          }
-        })
-      })
+          };
+        });
+      });
     }
   }
 
@@ -63,11 +69,13 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if(this.selectedTab === 'va_summary'){
-      this.addHeightClass('h-60')
+    if (this.selectedTab === 'va_summary') {
+      this.addHeightClass('h-60');
     }
 
-    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
+    const dialogElement = document.querySelector(
+      '.cdk-overlay-pane.mat-mdc-dialog-panel'
+    );
     if (dialogElement) {
       (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
@@ -76,23 +84,25 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
     }
   }
 
-  addHeightClass(addclassName?: string, removeClassName?: string){
-    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
-      if (dialogElement) {
-        if(addclassName){
-          (dialogElement as HTMLElement).classList.add(addclassName);
-        }
-        if(removeClassName){
-          (dialogElement as HTMLElement).classList.remove(removeClassName);
-        }
+  addHeightClass(addclassName?: string, removeClassName?: string) {
+    const dialogElement = document.querySelector(
+      '.cdk-overlay-pane.mat-mdc-dialog-panel'
+    );
+    if (dialogElement) {
+      if (addclassName) {
+        (dialogElement as HTMLElement).classList.add(addclassName);
       }
+      if (removeClassName) {
+        (dialogElement as HTMLElement).classList.remove(removeClassName);
+      }
+    }
   }
 
-  onOpenSelectField(isOpen: boolean){
-    if(isOpen){
-     this.addHeightClass('h-[400px]', 'h-60') 
+  onOpenSelectField(isOpen: boolean) {
+    if (isOpen) {
+      this.addHeightClass('h-[400px]', 'h-60');
     } else {
-      this.addHeightClass('h-60', 'h-[400px]') 
+      this.addHeightClass('h-60', 'h-[400px]');
     }
   }
 
@@ -121,6 +131,9 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       is_adult: [''],
       is_child: [''],
       is_neonate: [''],
+      death_date: [''],
+      interview_date: [''],
+      submitted_date: [''],
       interviewer_name: ['', Validators.required],
       interviewer_phone: [''],
       interviewer_sex: [''],
@@ -138,12 +151,9 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       api_version: ['v1'],
       is_sort_allowed: [false],
     });
-    
+
     this.vaSummaryForm = this.fb.group({
-      field: [
-        '',
-        [Validators.required, Validators.required]
-      ]
+      field: ['', [Validators.required, Validators.required]],
     });
   }
 
@@ -284,6 +294,9 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
         is_adult: 'isadult',
         is_child: 'ischild',
         is_neonate: 'isneonate',
+        death_date: 'id10023',
+        interview_date: 'id10012',
+        submitted_date: 'submissiondate',
         interviewer_name: 'id10010',
         interviewer_phone: 'id10010phone',
         interviewer_sex: 'id10010b',
@@ -319,7 +332,7 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       const odkConfigPayload: OdkConfigModel = {
         url: 'https://central.iact.co.tz',
         username: 'admin@vman.net',
-        password: 'welcome2vman',
+        password: 'password', // TODO: Change to actual password
         form_id: 'WHOVA_V1_5_3_TZV1',
         project_id: '2', // Using string to match the interface
         api_version: 'v1',
@@ -329,31 +342,33 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       this.odkApiConfigForm.patchValue(config?.odk_api_configs || {});
     }
   }
-  
-  onSearchableChange(selectedItems: any){
-    this.selectedSummaryFields = selectedItems
+
+  onSearchableChange(selectedItems: any) {
+    this.selectedSummaryFields = selectedItems;
   }
 
-  onSaveVaSummaryFields(){
-    if(this.selectedSummaryFields?.length){
-      this.settingsConfigService.saveConnectionData('va_summary', this.selectedSummaryFields).subscribe({
-        next: (response) => {
-          this.snackBar.open(
+  onSaveVaSummaryFields() {
+    if (this.selectedSummaryFields?.length) {
+      this.settingsConfigService
+        .saveConnectionData('va_summary', this.selectedSummaryFields)
+        .subscribe({
+          next: (response) => {
+            this.snackBar.open(
               'VA Summary Fields configuration saved successfully',
               'Close',
               {
                 duration: 3000,
               }
             );
-          this.dialogRef.close(this.selectedSummaryFields);
-        },
-        error: (error) => {
+            this.dialogRef.close(this.selectedSummaryFields);
+          },
+          error: (error) => {
             this.snackBar.open('Failed to save va summary fields', 'Close', {
               duration: 3000,
             });
-          console.log(error);
-        }
-      })
+            console.log(error);
+          },
+        });
     }
   }
 }

@@ -54,49 +54,48 @@
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="systemConfigForm" (ngSubmit)="onSystemConfigSubmit()">
-            <div class="flex items-center mb-4 gap-4">
-              <label class="text-sm font-medium text-gray-700 w-1/4">Application Name</label>
+            <div class="flex items-center gap-4 mb-4">
+              <label class="w-1/4 text-sm font-medium text-gray-700">Application Name</label>
               <input type="text" formControlName="app_name" class="flex-1 p-2 border border-gray-300 rounded-md"
                 placeholder="Enter application name" />
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Page Title</label>
-              <input type="text" formControlName="page_title"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter page title">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Page Title</label>
+              <input type="text" formControlName="page_title" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter page title">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Page Subtitle</label>
-              <input type="text" formControlName="page_subtitle"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter page subtitle">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Page Subtitle</label>
+              <input type="text" formControlName="page_subtitle" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter page subtitle">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 1</label>
-              <input type="text" formControlName="admin_level1"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 1">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 1</label>
+              <input type="text" formControlName="admin_level1" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter admin level 1">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 2</label>
-              <input type="text" formControlName="admin_level2"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 2">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 2</label>
+              <input type="text" formControlName="admin_level2" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter admin level 2">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 3</label>
-              <input type="text" formControlName="admin_level3"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 3">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 3</label>
+              <input type="text" formControlName="admin_level3" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter admin level 3">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Admin Level 4</label>
-              <input type="text" formControlName="admin_level4"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter admin level 4">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 4</label>
+              <input type="text" formControlName="admin_level4" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter admin level 4">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Map Center (Latitude, Longitude)</label>
-              <input type="text" formControlName="map_center"
-                class="flex-1 p-2 border border-gray-300 rounded-md"
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Map Center (Latitude, Longitude)</label>
+              <input type="text" formControlName="map_center" class="flex-1 p-2 border border-gray-300 rounded-md"
                 placeholder="Enter map center coordinates">
             </div>
             <button type="submit"
-              class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              class="float-right px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Save Configuration
             </button>
           </form>
@@ -112,10 +111,7 @@
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="fieldMappingForm" (ngSubmit)="onFieldMappingSubmit()">
 
-            <!-- Table Name -->
-            <app-searchable-select label="Table Name" [control]="fieldMappingForm.get('table_name')!" [items]="tables"
-              placeholder="Search Table Name">
-            </app-searchable-select>
+
 
             <!-- Instance ID -->
             <app-searchable-select label="Instance ID" [control]="fieldMappingForm.get('instance_id')!" [items]="fields"
@@ -167,6 +163,21 @@
               [items]="fields" placeholder="Search Is Neonate">
             </app-searchable-select>
 
+            <!-- death_date -->
+            <app-searchable-select label="death date" [control]="fieldMappingForm.get('death_date')!" [items]="fields"
+              placeholder="Search death date">
+            </app-searchable-select>
+
+            <!-- submitted_date -->
+            <app-searchable-select label="submitted date" [control]="fieldMappingForm.get('submitted_date')!"
+              [items]="fields" placeholder="Search submitted date">
+            </app-searchable-select>
+
+            <!-- interview_date -->
+            <app-searchable-select label="interview date" [control]="fieldMappingForm.get('interview_date')!"
+              [items]="fields" placeholder="Search interview date">
+            </app-searchable-select>
+
             <!-- Interviewer Name -->
             <app-searchable-select label="Interviewer Name" [control]="fieldMappingForm.get('interviewer_name')!"
               [items]="fields" placeholder="Search Interviewer Name">
@@ -184,7 +195,7 @@
             </app-searchable-select>
 
             <button type="submit"
-              class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              class="float-right px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Save Field Mapping
             </button>
           </form>
@@ -202,39 +213,39 @@
         <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="odkApiConfigForm" (ngSubmit)="onOdkApiConfigSubmit()">
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">ODK Central URL</label>
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">ODK Central URL</label>
               <input type="url" formControlName="url" class="flex-1 p-2 border border-gray-300 rounded-md"
                 placeholder="Enter ODK Central URL">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Username</label>
-              <input type="text" formControlName="username"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter username">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Username</label>
+              <input type="text" formControlName="username" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter username">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Password</label>
-              <input type="password" formControlName="password"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter password">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Password</label>
+              <input type="password" formControlName="password" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter password">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Form ID</label>
-              <input type="text" formControlName="form_id"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter Form ID">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Form ID</label>
+              <input type="text" formControlName="form_id" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter Form ID">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">Project ID</label>
-              <input type="text" formControlName="project_id"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter Project ID">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">Project ID</label>
+              <input type="text" formControlName="project_id" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter Project ID">
             </div>
-            <div class="flex items-center mb-4 gap-4">
-              <label class="block text-sm font-medium text-gray-700 w-1/4">API Version</label>
-              <input type="text" formControlName="api_version"
-                class="flex-1 p-2 border border-gray-300 rounded-md" placeholder="Enter API Version">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="block w-1/4 text-sm font-medium text-gray-700">API Version</label>
+              <input type="text" formControlName="api_version" class="flex-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter API Version">
             </div>
 
             <button type="submit"
-              class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              class="float-right px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Save ODK API Configuration
             </button>
           </form>
@@ -243,24 +254,18 @@
 
       </div>
     </div>
-    
+
     <div *ngIf="selectedTab === 'va_summary' && fields?.length" id="va_summary" class="tab-content">
       <!-- VA Document Summary Configurations Section -->
       <div class="my-8">
         <span class="text-xl font-semibold">VA Summary Configuration</span>
         <div class="mt-2">
-          <app-searchable-select-for-objects 
-            label="Field" 
-            [items]="fields"
-            [inputSelectedItems]="selectedSummaryFields"
-            [multiSelect]="true"
-            placeholder="Search Field Name"
-            (select)="onSearchableChange($event)" 
-            (open)="onOpenSelectField($event)"
-          ></app-searchable-select-for-objects>
-          
+          <app-searchable-select-for-objects label="Field" [items]="fields" [inputSelectedItems]="selectedSummaryFields"
+            [multiSelect]="true" placeholder="Search Field Name" (select)="onSearchableChange($event)"
+            (open)="onOpenSelectField($event)"></app-searchable-select-for-objects>
+
           <button (click)="onSaveVaSummaryFields()"
-            class="px-4 py-2 mt-4 text-white float-right bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            class="float-right px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             Save VA Summary Configuration
           </button>
 

@@ -38,12 +38,14 @@ export interface FieldMapping {
   is_adult: string;
   is_child: string;
   is_neonate: string;
+  death_date: string;
+  interview_date: string;
+  submitted_date: string;
   interviewer_name: string;
   interviewer_phone?: string;
   interviewer_sex?: string;
   [key: string]: any; // Allow for any additional fields
 }
-
 
 export interface settingsConfigData {
   odk_api_configs: OdkConfigModel;

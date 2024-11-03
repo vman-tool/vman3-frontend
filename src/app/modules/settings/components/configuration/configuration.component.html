@@ -190,6 +190,10 @@
             <p><strong>Is Adult:</strong> {{ fieldMappingData.is_adult }}</p>
             <p><strong>Is Child:</strong> {{ fieldMappingData.is_child }}</p>
             <p><strong>Is Neonate:</strong> {{ fieldMappingData.is_neonate }}</p>
+            <p><strong>Death date:</strong> {{ fieldMappingData.death_date }}</p>
+            <p><strong>Submitted date:</strong> {{ fieldMappingData.submitted_date }}</p>
+            <p><strong>Interview date:</strong> {{ fieldMappingData.interview_date }}</p>
+
             <p><strong>Interviewer Name:</strong> {{ fieldMappingData.interviewer_name }}</p>
             <p><strong>Interviewer Phone:</strong> {{ fieldMappingData.interviewer_phone }}</p>
             <p><strong>Interviewer Sex:</strong> {{ fieldMappingData.interviewer_sex }}</p>
@@ -241,7 +245,8 @@
       </ng-template>
     </div>
   </div>
-  <div *ngIf="selectedTab === 'system-images' && dataAccess?.updateSystemImages" id="system-images" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'system-images' && dataAccess?.updateSystemImages" id="system-images"
+    class="mt-4 tab-content">
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
       <div>
@@ -249,16 +254,13 @@
       </div>
     </div>
   </div>
-  <div *ngIf="selectedTab === 'label-access-fields' && dataAccess?.updateAccessLocationsLabels" id="access-fields" class="mt-4 tab-content">
+  <div *ngIf="selectedTab === 'label-access-fields' && dataAccess?.updateAccessLocationsLabels" id="access-fields"
+    class="mt-4 tab-content">
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
       <div>
         <!-- <p>Under Construction</p> -->
-      <app-label-access-fields
-        [system_config]="systemConfigData"
-        [field_mapping]="fieldMappingData"
-        [field_labels]="fieldLabels"
-        (load_settings)="onLoadLabelAccess()"
-      ></app-label-access-fields>
+        <app-label-access-fields [system_config]="systemConfigData" [field_mapping]="fieldMappingData"
+          [field_labels]="fieldLabels" (load_settings)="onLoadLabelAccess()"></app-label-access-fields>
+      </div>
     </div>
-  </div>
