@@ -82,10 +82,11 @@ export class GraphsComponent implements OnInit {
     effect(() => {
       this.filterData = this.filterService.filterData();
       this.loadStatistics();
+      this.loadMore();
     });
   }
   ngOnInit() {
-    this.loadMore();
+    // this.loadMore();
     // this.loadStatistics();
   }
 
@@ -130,7 +131,7 @@ export class GraphsComponent implements OnInit {
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
 
-            return `${label}: ${value.toLocaleString()} (${percentage})`;
+            return `(${percentage}) ${label}: ${value.toLocaleString()} `;
           },
         },
       },
@@ -264,7 +265,6 @@ export class GraphsComponent implements OnInit {
     responsive: true,
     maintainAspectRatio: false,
     layout: {
-      // padding: 20,
       autoPadding: true,
     },
     scales: {
@@ -273,7 +273,7 @@ export class GraphsComponent implements OnInit {
         ticks: {
           callback: (tickValue: number | string) => {
             if (typeof tickValue === 'number') {
-              return `${tickValue}`; // Return the tick value as a string
+              return tickValue.toLocaleString(); // Format tick value with commas
             }
             return tickValue; // Return as-is if it's not a number (e.g., a string)
           },
@@ -283,7 +283,7 @@ export class GraphsComponent implements OnInit {
     plugins: {
       legend: {
         display: true,
-        position: 'bottom', // Move legend to the side
+        position: 'bottom',
         align: 'center',
         fullSize: true,
         maxHeight: 100,
@@ -319,9 +319,9 @@ export class GraphsComponent implements OnInit {
               if (typeof currentValue === 'number') {
                 return acc + currentValue;
               } else if (Array.isArray(currentValue)) {
-                return acc + currentValue[0]; // Assuming the first element is the value
+                return acc + currentValue[0];
               } else if (currentValue && typeof currentValue === 'object') {
-                return acc + (currentValue as Point).x; // Assuming the object has an x property with the value
+                return acc + (currentValue as Point).x;
               }
               return acc;
             },
@@ -330,6 +330,7 @@ export class GraphsComponent implements OnInit {
           const percentage = ((value / total) * 100).toFixed(2) + '%';
           return `${value.toLocaleString()} (${percentage})`; // Format value with commas
         },
+        labels: {},
         color: '#fff',
         offset: 10,
         font: {

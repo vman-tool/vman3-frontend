@@ -1,7 +1,7 @@
 <app-va-filters [title]="title"></app-va-filters>
-<div class="relative w-full h-screen overflow-x-auto shadow-md sm:rounded-lg">
-  <div id="map" class="absolute inset-0"></div>
-  <div *ngIf="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+<div class="relative w-full h-screen sm:rounded-lg">
+  <div id="map" class="absolute inset-0 z-0"></div>
+  <div *ngIf="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75">
     <div class="w-32 h-32 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
   </div>
 </div>

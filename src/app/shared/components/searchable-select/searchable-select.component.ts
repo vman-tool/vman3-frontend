@@ -6,6 +6,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { SearchFieldOption } from '../../interface/main.interface';
 
 @Component({
   selector: 'app-searchable-select',
@@ -17,10 +18,10 @@ import {
 export class SearchableSelectComponent implements OnInit {
   @Input() label: string = '';
   @Input() control!: AbstractControl;
-  @Input() items: string[] = [];
+  @Input() items: SearchFieldOption[] = [];
   @Input() placeholder: string = 'Search...';
 
-  filteredItems: string[] = [];
+  filteredItems: SearchFieldOption[] = [];
   searchTerm: string = '';
   isOpen: boolean = false;
 
@@ -38,15 +39,24 @@ export class SearchableSelectComponent implements OnInit {
     this.isOpen = !this.isOpen;
   }
 
+  // filterItems(): void {
+  //   const filterValue = this.searchTerm.toLowerCase();
+  //   this.filteredItems = this.items.filter((item) =>
+  //     item.toLowerCase().includes(filterValue)
+  //   );
+  // }
   filterItems(): void {
     const filterValue = this.searchTerm.toLowerCase();
-    this.filteredItems = this.items.filter((item) =>
-      item.toLowerCase().includes(filterValue)
+    this.filteredItems = this.items.filter(
+      (item) =>
+        (item.label && item.label?.toLowerCase().includes(filterValue)) ||
+        (typeof item?.value !== 'object' &&
+          String(item.value).toLowerCase().includes(filterValue))
     );
   }
 
-  selectItem(item: string): void {
-    this.formControl.setValue(item);
+  selectItem(item: SearchFieldOption, e?: Event): void {
+    this.formControl.setValue([item?.value]);
     this.toggleDropdown();
   }
 }
