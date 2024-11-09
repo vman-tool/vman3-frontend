@@ -167,7 +167,7 @@ export class AuthService {
     let refresh_timestamp_array = (now + Number(response?.refresh_token_expires_in)).toString()?.split(".")
     refresh_timestamp_array[1] = refresh_timestamp_array[1]?.length === 2 ? refresh_timestamp_array[1]+"0" : refresh_timestamp_array[1]?.length === 1 ? refresh_timestamp_array[1]+"00" : refresh_timestamp_array[1]
     
-    this.autoLogout(Number(response?.refresh_token_expires_in));
+    this.autoRefresh(Number(response?.refresh_token_expires_in));
 
     const refresh_timestamp_string = refresh_timestamp_array.join(".")
 
@@ -180,6 +180,12 @@ export class AuthService {
   private autoLogout(seconds: number) {
     setTimeout(() => {
       this.logout()
+    }, seconds * 1000)
+  }
+  
+  private autoRefresh(seconds: number) {
+    setTimeout(() => {
+      this.refresh_token().subscribe()
     }, seconds * 1000)
   }
   
