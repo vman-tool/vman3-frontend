@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, mergeMap, of, tap} from 'rxjs';
+import { Observable, catchError, lastValueFrom, map, mergeMap, of, tap} from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
@@ -184,9 +184,10 @@ export class AuthService {
   }
   
   private autoRefresh(seconds: number) {
-    setTimeout(() => {
-      this.refresh_token().subscribe()
-    }, (seconds-10) * 1000)
+    setTimeout(async () => {
+      const response = await lastValueFrom(this.refresh_token())
+      this.saveUserData(response)
+    }, (seconds-30) * 1000)
   }
   
   clearUserData() {
