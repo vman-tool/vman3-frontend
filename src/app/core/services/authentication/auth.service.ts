@@ -186,7 +186,7 @@ export class AuthService {
   private autoRefresh(seconds: number) {
     setTimeout(() => {
       this.refresh_token().subscribe()
-    }, seconds * 1000)
+    }, (seconds-10) * 1000)
   }
   
   clearUserData() {
