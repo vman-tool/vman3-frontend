@@ -114,84 +114,89 @@
 
 
             <!-- Instance ID -->
-            <app-searchable-select label="Instance ID" [control]="fieldMappingForm.get('instance_id')!" [items]="fields"
-              placeholder="Search Instance ID">
+            <app-searchable-select id="Instance ID" label="Instance ID" [control]="fieldMappingForm.get('instance_id')!"
+              [items]="fields" placeholder="Search Instance ID">
             </app-searchable-select>
 
             <!-- VA ID -->
-            <app-searchable-select label="Verbal Autopsy ID (VA ID)" [control]="fieldMappingForm.get('va_id')!"
-              [items]="fields" placeholder="Search VA ID">
+            <app-searchable-select id="Verbal Autopsy ID (VA ID)" label="Verbal Autopsy ID (VA ID)"
+              [control]="fieldMappingForm.get('va_id')!" [items]="fields" placeholder="Search VA ID">
             </app-searchable-select>
 
             <!-- Consent ID -->
-            <app-searchable-select label="Consent ID" [control]="fieldMappingForm.get('consent_id')!" [items]="fields"
-              placeholder="Search Consent ID">
+            <app-searchable-select id="Consent ID" label="Consent ID" [control]="fieldMappingForm.get('consent_id')!"
+              [items]="fields" placeholder="Search Consent ID">
             </app-searchable-select>
 
             <!-- Interview Date -->
-            <app-searchable-select label="Interview Date" [control]="fieldMappingForm.get('date')!" [items]="fields"
-              placeholder="Search Interview Date">
+            <app-searchable-select id="Interview Date" label="Interview Date" [control]="fieldMappingForm.get('date')!"
+              [items]="fields" placeholder="Search Interview Date">
             </app-searchable-select>
 
             <!-- Location Level 1 -->
-            <app-searchable-select label="Location Level 1" [control]="fieldMappingForm.get('location_level1')!"
-              [items]="fields" placeholder="Search Location Level 1">
+            <app-searchable-select id="Location Level 1" label="Location Level 1"
+              [control]="fieldMappingForm.get('location_level1')!" [items]="fields"
+              placeholder="Search Location Level 1">
             </app-searchable-select>
 
             <!-- Location Level 2 -->
-            <app-searchable-select label="Location Level 2" [control]="fieldMappingForm.get('location_level2')!"
-              [items]="fields" placeholder="Search Location Level 2">
+            <app-searchable-select id="Location Level 2" label="Location Level 2"
+              [control]="fieldMappingForm.get('location_level2')!" [items]="fields"
+              placeholder="Search Location Level 2">
             </app-searchable-select>
 
             <!-- Deceased Gender -->
-            <app-searchable-select label="Deceased Gender" [control]="fieldMappingForm.get('deceased_gender')!"
-              [items]="fields" placeholder="Search Deceased Gender">
+            <app-searchable-select id="Deceased Gender" label="Deceased Gender"
+              [control]="fieldMappingForm.get('deceased_gender')!" [items]="fields"
+              placeholder="Search Deceased Gender">
             </app-searchable-select>
 
             <!-- Is Adult -->
-            <app-searchable-select label="Is the Deceased an Adult?" [control]="fieldMappingForm.get('is_adult')!"
-              [items]="fields" placeholder="Search Is Adult">
+            <app-searchable-select id="Is the Deceased an Adult?" label="Is the Deceased an Adult?"
+              [control]="fieldMappingForm.get('is_adult')!" [items]="fields" placeholder="Search Is Adult">
             </app-searchable-select>
 
             <!-- Is Child -->
-            <app-searchable-select label="Is the Deceased a Child?" [control]="fieldMappingForm.get('is_child')!"
-              [items]="fields" placeholder="Search Is Child">
+            <app-searchable-select id="Is the Deceased a Child?" label="Is the Deceased a Child?"
+              [control]="fieldMappingForm.get('is_child')!" [items]="fields" placeholder="Search Is Child">
             </app-searchable-select>
 
             <!-- Is Neonate -->
-            <app-searchable-select label="Is the Deceased a Neonate?" [control]="fieldMappingForm.get('is_neonate')!"
-              [items]="fields" placeholder="Search Is Neonate">
+            <app-searchable-select id="Is the Deceased a Neonate?" label="Is the Deceased a Neonate?"
+              [control]="fieldMappingForm.get('is_neonate')!" [items]="fields" placeholder="Search Is Neonate">
             </app-searchable-select>
 
             <!-- death_date -->
-            <app-searchable-select label="death date" [control]="fieldMappingForm.get('death_date')!" [items]="fields"
-              placeholder="Search death date">
+            <app-searchable-select id="death date" label="death date" [control]="fieldMappingForm.get('death_date')!"
+              [items]="fields" placeholder="Search death date">
             </app-searchable-select>
 
             <!-- submitted_date -->
-            <app-searchable-select label="submitted date" [control]="fieldMappingForm.get('submitted_date')!"
-              [items]="fields" placeholder="Search submitted date">
+            <app-searchable-select id="submitted date" label="submitted date"
+              [control]="fieldMappingForm.get('submitted_date')!" [items]="fields" placeholder="Search submitted date">
             </app-searchable-select>
 
             <!-- interview_date -->
-            <app-searchable-select label="interview date" [control]="fieldMappingForm.get('interview_date')!"
-              [items]="fields" placeholder="Search interview date">
+            <app-searchable-select id="interview date" label="interview date"
+              [control]="fieldMappingForm.get('interview_date')!" [items]="fields" placeholder="Search interview date">
             </app-searchable-select>
 
             <!-- Interviewer Name -->
-            <app-searchable-select label="Interviewer Name" [control]="fieldMappingForm.get('interviewer_name')!"
-              [items]="fields" placeholder="Search Interviewer Name">
+            <app-searchable-select id="Interviewer Name" label="Interviewer Name"
+              [control]="fieldMappingForm.get('interviewer_name')!" [items]="fields"
+              placeholder="Search Interviewer Name">
             </app-searchable-select>
 
             <!-- Interviewer Phone Number -->
-            <app-searchable-select label="Interviewer Phone Number"
+            <app-searchable-select id="Interviewer Phone Number" label="Interviewer Phone Number"
               [control]="fieldMappingForm.get('interviewer_phone')!" [items]="fields"
               placeholder="Search Interviewer Phone Number">
             </app-searchable-select>
 
             <!-- Interviewer Sex -->
-            <app-searchable-select label="Interviewer Sex" [control]="fieldMappingForm.get('interviewer_sex')!"
-              [items]="fields" placeholder="Search Interviewer Sex">
+            <app-searchable-select id="Interviewer Sex" label="Interviewer Sex"
+              [control]="fieldMappingForm.get('interviewer_sex')!" [items]="fields"
+              placeholder="Search Interviewer Sex">
             </app-searchable-select>
 
             <button type="submit"
