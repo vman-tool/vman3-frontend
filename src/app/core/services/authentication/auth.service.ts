@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, mergeMap, of, tap} from 'rxjs';
+import { Observable, catchError, lastValueFrom, map, mergeMap, of, tap} from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
@@ -167,7 +167,7 @@ export class AuthService {
     let refresh_timestamp_array = (now + Number(response?.refresh_token_expires_in)).toString()?.split(".")
     refresh_timestamp_array[1] = refresh_timestamp_array[1]?.length === 2 ? refresh_timestamp_array[1]+"0" : refresh_timestamp_array[1]?.length === 1 ? refresh_timestamp_array[1]+"00" : refresh_timestamp_array[1]
     
-    this.autoLogout(Number(response?.refresh_token_expires_in));
+    this.autoRefresh(Number(response?.refresh_token_expires_in));
 
     const refresh_timestamp_string = refresh_timestamp_array.join(".")
 
@@ -181,6 +181,13 @@ export class AuthService {
     setTimeout(() => {
       this.logout()
     }, seconds * 1000)
+  }
+  
+  private autoRefresh(seconds: number) {
+    setTimeout(async () => {
+      const response = await lastValueFrom(this.refresh_token())
+      this.saveUserData(response)
+    }, (seconds-30) * 1000)
   }
   
   clearUserData() {
