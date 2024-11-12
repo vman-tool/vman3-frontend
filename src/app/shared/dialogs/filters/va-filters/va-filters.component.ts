@@ -14,7 +14,7 @@ import { SharedModule } from '../../../shared.module';
   styleUrl: './va-filters.component.scss',
 })
 export class VaFiltersComponent implements OnInit {
-  selectedDateType?: string;
+  selectedDateType?: string = 'death_date';
   startDate?: Date;
   endDate?: Date;
   selectedLocation: string[] = [];
