@@ -62,9 +62,6 @@ export class UserFormComponent implements OnInit, AfterViewInit {
     if(key === 'access_limit'){
       this.accessLimit = data
     }
-
-    console.log("Roles: ", this.selectedRoles, 
-            "\n Limit: ", this.accessLimit)
   }
 
 
