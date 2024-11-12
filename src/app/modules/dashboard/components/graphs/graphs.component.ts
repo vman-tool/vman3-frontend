@@ -197,7 +197,8 @@ export class GraphsComponent implements OnInit {
       .getChartfetchStatistics(
         this.filterData.start_date,
         this.filterData.end_date,
-        this.filterData.locations
+        this.filterData.locations,
+        this.filterData.date_type
       )
       .subscribe(
         (data) => {
