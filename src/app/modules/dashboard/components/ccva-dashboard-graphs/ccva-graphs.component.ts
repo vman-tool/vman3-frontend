@@ -134,21 +134,24 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   }
 
   loadChartData(data: any) {
-    for (let key in data) {
-      if (data.hasOwnProperty(key)) {
-        const chartLabels = data[key].index; // Create unique labels for each chart
-        const chartData = [
-          {
-            label: 'csmf',
-            data: data[key].values,
-            backgroundColor: this.getChartColor(key),
-            borderWidth: 1,
-          },
-        ];
-        // if (chartLabels?.length > 0) {
-        this.renderChart(key, chartLabels, chartData);
-        // }
-      }
+    let graphs = data.graphs ?? [];
+    for (let key in graphs) {
+      console.log('keyss', key, graphs[key]);
+      ['all', 'adults', 'childs'].includes(key);
+      // if (graphs.hasOwnProperty(key)) {
+      const chartLabels = graphs[key].index; // Create unique labels for each chart
+      const chartData = [
+        {
+          label: 'csmf',
+          data: graphs[key].values,
+          backgroundColor: this.getChartColor(key),
+          borderWidth: 1,
+        },
+      ];
+      // if (chartLabels?.length > 0) {
+      this.renderChart(key, chartLabels, chartData);
+      // }
+      // }
     }
   }
 
