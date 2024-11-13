@@ -18,11 +18,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class DataSyncComponent implements OnInit, OnDestroy {
   totalRecords: number | null = null;
   progress: string | null = null;
+  formSubmissionStatus:
+    | {
+        earliest_date: string;
+        latest_date: string;
+        available_data_count: number;
+      }
+    | undefined;
   elapsedTime: number | null = null;
   isTaskRunning = false;
-  isCCvaRunning = false;
+  isDataSyncing = false;
+  isLoadingFormSubmissionStatus = false;
   // Separate sync flags
-  isDataSyncing: boolean = false; // For manual data sync
+
   isQuestionsSyncing: boolean = false; // For syncing questions
 
   syncedQuestions?: any[] = [];
@@ -47,6 +55,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.elapsedTime = null;
     await this.loadPreviousProgressFromLocalStorage();
+    this.formsubmission_status();
     this.initializeWebSocket();
 
     this.syncedQuestions = await this.indexedDBService.getQuestions();
@@ -98,7 +107,41 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   async hasAccess(privileges: string[]) {
     return await lastValueFrom(this.authService.hasPrivilege(privileges));
   }
+  formsubmission_status() {
+    this.isLoadingFormSubmissionStatus = true; // Track only manual sync
 
+    this.dataSyncService.formsubmission_status().subscribe({
+      next: (response: any) => {
+        this.isLoadingFormSubmissionStatus = false;
+        this.formSubmissionStatus = {
+          earliest_date: response.earliest_date,
+          latest_date: response.latest_date,
+          available_data_count: response.available_data_count,
+        };
+      },
+      error: (error) => {
+        console.error('Error during data sync:', error);
+        this.isDataSyncing = false; // Stop sync even if there's an error
+        this.isDataSyncing = false;
+        this.isTaskRunning = false;
+        this.isLoadingFormSubmissionStatus = false;
+        this.isTaskRunning = false;
+        // this.triggersService.triggerCCVAListFunction();
+        console.log(error);
+        this.snackBar.open(
+          `${
+            error?.error?.detail ?? error.error.message ?? 'Failed to data sync'
+          }`,
+          'Close',
+          {
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+            duration: 3000,
+          }
+        );
+      },
+    });
+  }
   // Function to start manual sync
   manualSync() {
     this.isDataSyncing = true; // Track only manual sync
@@ -106,15 +149,28 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.dataSyncService.syncData().subscribe({
       next: (response: any) => {
         console.log('Manual sync initiated:', response);
-        this.isTaskRunning = true;
+        if (response.download_status === true) {
+          this.isTaskRunning = true;
+        } else {
+          // this.isTaskRunning = false;
+        }
+
         this.isDataSyncing = false; // Stop sync when done
-        this.isDataSyncing = false; // Stop sync even if there's an error
-        this.isCCvaRunning = false;
+
+        this.snackBar.open(
+          `${response.status ?? response.status ?? 'Data sync initiated'}`,
+          'Close',
+          {
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+            duration: 3000,
+          }
+        );
       },
       error: (error) => {
         console.error('Error during data sync:', error);
         this.isDataSyncing = false; // Stop sync even if there's an error
-        this.isCCvaRunning = false;
+        this.isDataSyncing = false;
         this.isTaskRunning = false;
         // this.triggersService.triggerCCVAListFunction();
         console.log(error.error.detail);
@@ -201,6 +257,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
   private updateProgress(parsedData: any): void {
     if (parsedData) {
+      // this.isTaskRunning = true;
       this.totalRecords = parsedData.total_records;
       this.progress = Math.round(parsedData.progress).toFixed(0).toString();
       this.elapsedTime = parsedData.elapsed_time;
@@ -213,6 +270,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         elapsedTime: this.elapsedTime,
         message: this.message,
       };
+      this.isTaskRunning = true;
       this.localStorageSettingsService.setItemWithTTL(
         'odk_progress',
         odkProgressData,
