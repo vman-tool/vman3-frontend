@@ -5,6 +5,17 @@
 
     <!-- Date Picker and Filter Section -->
     <div class="flex items-center justify-between space-x-4">
+      <!-- Date Type Dropdown -->
+      <div>
+        <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
+        <select id="dateType" [(ngModel)]="selectedDateType"
+          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="submission_date">Submission Date</option>
+          <option value="death_date">Date of Death</option>
+          <option value="interview_date">Interview Date</option>
+
+        </select>
+      </div>
       <!-- Date Range Dropdown -->
       <div>
         <label for="dateRangeOption" class="block text-sm font-medium text-gray-700">Date Range</label>

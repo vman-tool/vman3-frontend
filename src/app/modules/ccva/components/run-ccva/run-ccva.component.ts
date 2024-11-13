@@ -17,6 +17,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   filter_endDate: any;
 
   dateRangeOption: string = 'all'; // 'all' or 'custom'
+  selectedDateType = 'death_date';
   malariaStatus: string = 'h'; // Default value
   ccvaAlgorithm: string = 'InterVA5'; // Default value
   hivStatus: string = 'h'; // Default value
@@ -119,6 +120,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       malaria_status: this.malariaStatus,
       ccva_algorithm: this.ccvaAlgorithm,
       hiv_status: this.hivStatus,
+      date_type: this.selectedDateType,
     };
 
     this.runCcvaService.run_ccva(filter).subscribe({
