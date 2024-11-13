@@ -34,6 +34,7 @@ export class CsrfInterceptorService {
           localStorage.setItem('refresh_request', String(true))
           if(!this.refresh){
             console.log("Refresh-Response: ", requestError.status)
+            this.refresh = Boolean(localStorage.getItem('refresh_request'));
             return this.authService.refresh_token().pipe(
               map((response) => {
                 if (response.status === 200) {
