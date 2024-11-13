@@ -8,6 +8,7 @@ import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-record
 import { LocalStorageSettingsService } from '../../services/local_storage.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
 import { AuthService } from 'app/core/services/authentication/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-data-sync',
@@ -18,7 +19,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   totalRecords: number | null = null;
   progress: string | null = null;
   elapsedTime: number | null = null;
-
+  isTaskRunning = false;
+  isCCvaRunning = false;
   // Separate sync flags
   isDataSyncing: boolean = false; // For manual data sync
   isQuestionsSyncing: boolean = false; // For syncing questions
@@ -38,7 +40,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private webSockettService: WebSockettService,
     private indexedDBService: IndexedDBService,
     private vaRecordsService: VaRecordsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -99,16 +102,49 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   // Function to start manual sync
   manualSync() {
     this.isDataSyncing = true; // Track only manual sync
+
     this.dataSyncService.syncData().subscribe({
       next: (response: any) => {
         console.log('Manual sync initiated:', response);
+        this.isTaskRunning = true;
         this.isDataSyncing = false; // Stop sync when done
-      },
-      error: (error: any) => {
-        console.error('Error during manual sync:', error);
         this.isDataSyncing = false; // Stop sync even if there's an error
+        this.isCCvaRunning = false;
+      },
+      error: (error) => {
+        console.error('Error during data sync:', error);
+        this.isDataSyncing = false; // Stop sync even if there's an error
+        this.isCCvaRunning = false;
+        this.isTaskRunning = false;
+        // this.triggersService.triggerCCVAListFunction();
+        console.log(error.error.detail);
+        this.snackBar.open(
+          `${
+            error.error.detail ?? error.error.message ?? 'Failed to data sync'
+          }`,
+          'Close',
+          {
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+            duration: 3000,
+          }
+        );
       },
     });
+  }
+
+  onCancel() {
+    this.isTaskRunning = false;
+    // this.triggersService.triggerCCVAListFunction();
+    // this.clearLocalStorage(); // Clear all task-related localStorage data
+    this.webSockettService.disconnect();
+    // clearInterval(this.countdownInterval);
+    if (this.messageSubscription) {
+      this.messageSubscription.unsubscribe();
+    }
+    // if (this.countdownInterval) {
+    //   this.countdownInterval = null;
+    // }
   }
 
   // Sync Questions function
