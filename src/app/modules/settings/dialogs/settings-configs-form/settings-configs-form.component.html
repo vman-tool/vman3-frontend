@@ -129,9 +129,9 @@
             </app-searchable-select>
 
             <!-- Interview Date -->
-            <app-searchable-select id="Interview Date" label="Interview Date" [control]="fieldMappingForm.get('date')!"
+            <!-- <app-searchable-select id="Interview Date" label="Interview Date" [control]="fieldMappingForm.get('date')!"
               [items]="fields" placeholder="Search Interview Date">
-            </app-searchable-select>
+            </app-searchable-select> -->
 
             <!-- Location Level 1 -->
             <app-searchable-select id="Location Level 1" label="Location Level 1"
@@ -170,7 +170,10 @@
             <app-searchable-select id="death date" label="death date" [control]="fieldMappingForm.get('death_date')!"
               [items]="fields" placeholder="Search death date">
             </app-searchable-select>
-
+            <!-- date -->
+            <app-searchable-select id="date" label="today's date" [control]="fieldMappingForm.get('date')!"
+              [items]="fields" placeholder="Search date">
+            </app-searchable-select>
             <!-- submitted_date -->
             <app-searchable-select id="submitted date" label="submitted date"
               [control]="fieldMappingForm.get('submitted_date')!" [items]="fields" placeholder="Search submitted date">

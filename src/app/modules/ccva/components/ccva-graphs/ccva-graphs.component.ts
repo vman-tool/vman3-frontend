@@ -141,8 +141,9 @@ export class CcvaGraphsComponent implements OnInit {
   loadChartData(data: any) {
     let graphs = data.graphs ?? [];
     for (let key in graphs) {
-      console.log('key', graphs[key].index);
+      console.log('index', graphs[key].index);
       console.log('data', graphs[key]);
+      console.log('values', graphs[key].values);
       const chartLabels = graphs[key].index; // Create unique labels for each chart
       const chartData = [
         {
