@@ -1,4 +1,12 @@
-import { effect, inject, Input, OnInit } from '@angular/core';
+import {
+  effect,
+  HostListener,
+  inject,
+  Input,
+  OnInit,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { Component } from '@angular/core';
 import { ChartOptions, ChartType, ChartDataset } from 'chart.js'; // Import NgChartsModule for Chart.js integration
 import { CcvaService } from '../../services/ccva.service';
@@ -14,6 +22,9 @@ import { FilterService } from '../../../../shared/services/filter.service';
 export class CcvaGraphsComponent implements OnInit {
   @Input() graphData: any;
   @Input() charts: { [key: string]: any } = {}; // Store chart instances
+  isDropdownOpen: boolean = false;
+
+  @ViewChild('dropdownMenu') dropdownMenu!: ElementRef;
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
 
@@ -45,6 +56,21 @@ export class CcvaGraphsComponent implements OnInit {
   ) {
     this.filterService = inject(FilterService);
     this.setupEffect();
+  }
+  @HostListener('document:click', ['$event'])
+  clickout(event: Event) {
+    if (!this.dropdownMenu.nativeElement.contains(event.target)) {
+      this.isDropdownOpen = false;
+    }
+  }
+  toggleDropdown(): void {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  checkData(): void {
+    // Implement check data functionality
+    console.log('Checking data...');
+    this.isDropdownOpen = false;
   }
 
   public chartOptions: ChartOptions = {
@@ -81,14 +107,16 @@ export class CcvaGraphsComponent implements OnInit {
         enabled: true,
         callbacks: {
           label: function (context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              label += context.parsed.y;
-            }
-            return label;
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce(
+              (acc: number, val: any) => acc + val,
+              0
+            );
+            const percentage =
+              ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
+
+            return `${label}: ${value.toLocaleString()} (${percentage})`; // Format value with commas, add percent
           },
         },
       },
