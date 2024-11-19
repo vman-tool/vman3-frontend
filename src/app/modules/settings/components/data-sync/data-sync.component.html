@@ -1,14 +1,57 @@
-<div class="p-4 bg-white rounded shadow-md">
+<div class="mx-auto ">
+  <span class="text-xl font-bold text-gray-700">Data Synchronization</span>
+  <hr class="my-5">
+  <!-- Header Section with Labels for Date Range, Malaria Status, CCVA Algorithm, HIV Status, and Run Button -->
+  <div *ngIf="!isLoadingFormSubmissionStatus">
+    <div *ngIf="isTaskRunning==false" class="flex flex-col mb-4 space-y-4">
+
+
+
+      <div class="flex items-center justify-between space-x-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold">Total Synced Data: {{ formSubmissionStatus?.available_data_count }}</p>
+            <p class="text-sm font-semibold">Last Sync Date: {{ formSubmissionStatus?.latest_date }}</p>
+          </div>
+        </div>
+        <div class="flex items-center pt-3">
+
+          <button *ngIf="!isDataSyncing" class="px-5 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+            (click)="manualSync()">Manual Sync</button>
+
+          <!-- Cancel Button to Stop Task -->
+          <button *ngIf="isDataSyncing" class="px-6 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
+            (click)="onCancel()">Cancel
+            <span
+              class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="isLoadingFormSubmissionStatus">
+    <div class="flex items-center justify-center p-4 bg-gray-200 border rounded-lg shadow-sm animate-pulse">
+      <span
+        class="inline-block w-4 h-4 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
+
+    </div>
+  </div>
+</div>
+
+<hr class="my-15">
+<div *ngIf="isTaskRunning" class="p-4 bg-white rounded shadow-md">
   <div class="flex items-center justify-between">
     <div>
       <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
       <p class="text-lg font-semibold">Progress: {{ progress }}%</p>
       <p class="text-lg font-semibold">Elapsed Time: {{ elapsedTime | number:'1.0-2' }}s</p>
     </div>
-    <button class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-700"
-      *ngIf="dataSyncAccess?.canSyncODKData && !isDataSyncing" (click)="manualSync()">
-      Manual Sync
-    </button>
+
+    <div class="flex items-center justify-center p-4 bg-gray-200 border rounded-full shadow-sm animate-pulse">
+      <span
+        class="inline-block w-4 h-4 border-4 border-blue-600 rounded-full spinner-border animate-spin border-t-transparent"></span>
+    </div>
+
   </div>
 
   <!-- Progress Bar Section for Data Sync: Show only when data syncing -->

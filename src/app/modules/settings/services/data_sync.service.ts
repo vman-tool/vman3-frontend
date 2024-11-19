@@ -19,8 +19,19 @@ export class DataSyncService {
       .pipe(map((response: any) => response));
   }
 
-  syncQuestions(){
-    return this.http.post<any>(`${this.configService.API_URL}/odk/fetch_form_questions`, {})
+  formsubmission_status(cached: boolean = false): Observable<any> {
+    return this.http
+      .post<any>(
+        `${this.configService.API_URL}/odk/fetch_formsubmission_status`,
+        {}
+      )
+      .pipe(map((response: any) => response));
   }
-  
+
+  syncQuestions() {
+    return this.http.post<any>(
+      `${this.configService.API_URL}/odk/fetch_form_questions`,
+      {}
+    );
+  }
 }
