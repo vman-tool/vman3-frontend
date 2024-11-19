@@ -68,8 +68,6 @@ export class CcvaGraphsComponent implements OnInit {
   }
 
   checkData(): void {
-    // Implement check data functionality
-    console.log('Checking data...');
     this.isDropdownOpen = false;
   }
 

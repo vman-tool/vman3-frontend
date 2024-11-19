@@ -131,7 +131,7 @@ export class GraphsComponent implements OnInit {
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
 
-            return `(${percentage}) ${label}: ${value.toLocaleString()} `;
+            return ` ${label} ${percentage} (N = ${value.toLocaleString()})  `;
           },
         },
       },
@@ -301,7 +301,7 @@ export class GraphsComponent implements OnInit {
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
 
-            return `${label}: ${value.toLocaleString()} (${percentage})`; // Format value with commas
+            return `${label} ${percentage} (N=${value.toLocaleString()})`; // Format value with commas
           },
         },
       },
