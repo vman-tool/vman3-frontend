@@ -72,16 +72,28 @@ export class CcvaDashboardGraphsComponent implements OnInit {
         enabled: true,
         callbacks: {
           label: function (context) {
-            const label = context.label || '';
+            let label = context.label || '';
             const value = context.raw || 0;
             const total = context.dataset.data.reduce(
               (acc: number, val: any) => acc + val,
               0
             );
+
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
 
-            return `${label}: ${value.toLocaleString()} (${percentage})`; // Format value with commas, add percent
+            return `No: ${context.parsed.y + 1}, ${
+              context.dataset.label
+            }: ${value.toLocaleString()} (${percentage})`;
+            // TODOS: clear previous code
+            // let label = context.dataset.label || '';
+            // if (label) {
+            //   label += ': ';
+            // }
+            // if (context.parsed.y !== null) {
+            //   label += context.parsed.y;
+            // }
+            // return label;
           },
         },
       },

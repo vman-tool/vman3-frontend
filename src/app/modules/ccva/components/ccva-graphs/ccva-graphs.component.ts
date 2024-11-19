@@ -68,8 +68,6 @@ export class CcvaGraphsComponent implements OnInit {
   }
 
   checkData(): void {
-    // Implement check data functionality
-    console.log('Checking data...');
     this.isDropdownOpen = false;
   }
 
@@ -107,16 +105,28 @@ export class CcvaGraphsComponent implements OnInit {
         enabled: true,
         callbacks: {
           label: function (context) {
-            const label = context.label || '';
+            let label = context.label || '';
             const value = context.raw || 0;
             const total = context.dataset.data.reduce(
               (acc: number, val: any) => acc + val,
               0
             );
+
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
 
-            return `${label}: ${value.toLocaleString()} (${percentage})`; // Format value with commas, add percent
+            return `${context.dataset.label}:, (${
+              context.parsed.y
+            }) ${value.toLocaleString()} (${percentage})`; // Format value with commas, add percent
+            // TODOS: cleare previous code
+            // let label = context.dataset.label || '';
+            // if (label) {
+            //   label += ': ';
+            // }
+            // if (context.parsed.y !== null) {
+            //   label += context.parsed.y;
+            // }
+            // return label;
           },
         },
       },
