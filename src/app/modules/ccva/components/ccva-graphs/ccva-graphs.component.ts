@@ -115,9 +115,9 @@ export class CcvaGraphsComponent implements OnInit {
             const percentage =
               ((Number(value) / (Number(total) ?? 0)) * 100).toFixed(2) + '%';
 
-            return `${context.dataset.label}:, (${
-              context.parsed.y
-            }) ${value.toLocaleString()} (${percentage})`; // Format value with commas, add percent
+            return `${(
+              context.dataset.label ?? 'Unknown'
+            ).toUpperCase()}: ${value.toLocaleString()} (${percentage})`;
             // TODOS: cleare previous code
             // let label = context.dataset.label || '';
             // if (label) {
