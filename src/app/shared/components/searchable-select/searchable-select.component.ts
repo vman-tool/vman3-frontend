@@ -20,6 +20,7 @@ export class SearchableSelectComponent implements OnInit {
   @Input() control!: AbstractControl;
   @Input() items: SearchFieldOption[] = [];
   @Input() placeholder: string = 'Search...';
+  @Input() multiSelect: boolean = false;
 
   filteredItems: SearchFieldOption[] = [];
   searchTerm: string = '';
@@ -56,7 +57,9 @@ export class SearchableSelectComponent implements OnInit {
   }
 
   selectItem(item: SearchFieldOption, e?: Event): void {
-    this.formControl.setValue([item?.value]);
+    this.formControl.setValue(
+      this.multiSelect == false ? item?.value : [item?.value]
+    );
     this.toggleDropdown();
   }
 }
