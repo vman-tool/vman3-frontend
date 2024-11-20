@@ -67,7 +67,8 @@
               "sourceMap": false,
               "namedChunks": false,
               "aot": true,
-              "extractLicenses": true
+              "extractLicenses": true,
+              "optimization": true
             },
             "development": {
               "optimization": false,
@@ -79,6 +80,12 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "headers": {
+              "Content-Type": "application/javascript",
+              "Content-Security-Policy": "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'strict-dynamic'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+            }
+          },
           "configurations": {
             "production": {
               "buildTarget": "vman3-frontend:build:production"
