@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { SubmissionsService } from '../../services/submissions/submissions.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ResponseMainModel } from '../../../../shared/interface/main.interface';
@@ -13,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './submissions.component.html',
   styleUrls: ['./submissions.component.scss'],
 })
-export class SubmissionsComponent {
+export class SubmissionsComponent implements OnInit {
   dataSubmissions: SubmissionsDataModel[] = [];
   pageNumber: number = 1;
   limit: number = 10;
@@ -46,6 +46,17 @@ export class SubmissionsComponent {
     this.loadRecords();
     this.filterService = inject(FilterService);
     this.setupEffect();
+  }
+
+  ngOnInit() {
+    this.filterData = {
+      locations: [],
+      start_date: undefined,
+      end_date: undefined,
+      date_type: undefined,
+    };
+    // this.loadMore();
+    // this.loadStatistics();
   }
 
   initial() {
@@ -108,7 +119,10 @@ export class SubmissionsComponent {
   }
 
   getTotalAdults(): number {
-    return this.dataSubmissions?.reduce((acc, record) => acc + record.adults, 0);
+    return this.dataSubmissions?.reduce(
+      (acc, record) => acc + record.adults,
+      0
+    );
   }
 
   getTotalChildren(): number {
@@ -130,7 +144,10 @@ export class SubmissionsComponent {
   }
 
   getTotalFemale(): number {
-    return this.dataSubmissions?.reduce((acc, record) => acc + record.female, 0);
+    return this.dataSubmissions?.reduce(
+      (acc, record) => acc + record.female,
+      0
+    );
   }
 
   downloadRecords() {

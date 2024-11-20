@@ -137,7 +137,13 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   }
 
   ngOnInit() {
-    // this.loadGraphData();
+    this.filterData = {
+      locations: [],
+      start_date: undefined,
+      end_date: undefined,
+      date_type: undefined,
+      ccva_graph_db_source: true,
+    };
   }
 
   setupEffect() {
