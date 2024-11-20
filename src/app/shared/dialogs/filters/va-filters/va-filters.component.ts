@@ -30,6 +30,7 @@ export class VaFiltersComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.resetFilterData();
     this.locationService.getLocations().subscribe({
       next: (locations) => {
         this.allLocations = locations.map((location: string) => ({
@@ -43,6 +44,16 @@ export class VaFiltersComponent implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+  resetFilterData() {
+    // Notify filterService of the reset
+    this.filterService.setFilterData({
+      locations: [],
+      start_date: undefined,
+      end_date: undefined,
+      date_type: undefined,
+      ccva_graph_db_source: true,
+    } as any);
   }
 
   applyFilters(): void {

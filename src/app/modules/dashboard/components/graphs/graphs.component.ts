@@ -85,10 +85,7 @@ export class GraphsComponent implements OnInit {
       this.loadMore();
     });
   }
-  ngOnInit() {
-    // this.loadMore();
-    // this.loadStatistics();
-  }
+  ngOnInit() {}
 
   public barChartOptions: ChartOptions = {
     responsive: true,
