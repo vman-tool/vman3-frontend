@@ -241,7 +241,6 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.messageSubscription = this.webSockettService.messages.subscribe(
       (data: string) => {
         try {
-          console.log(data)
           const parsedData = JSON.parse(data);
           this.updateProgress(parsedData);
         } catch (error) {
