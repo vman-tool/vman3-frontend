@@ -243,7 +243,7 @@ export class GraphsComponent implements OnInit {
 
   // Data for the Polar Area Chart
   public polarAreaChartData: ChartData<'polarArea'> = {
-    labels: ['Male', 'Female', 'Other'], // Labels for the chart segments
+    labels: ['Male', 'Female', 'Unspecified'], // Labels for the chart segments
     datasets: [
       {
         data: [0, 0, 0], // Initial empty data
