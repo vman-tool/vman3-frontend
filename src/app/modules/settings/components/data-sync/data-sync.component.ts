@@ -72,19 +72,16 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   async syncQuestionsIfNeeded() {
-    this.isQuestionsSyncing = true; // Track only question syncing
+    this.isQuestionsSyncing = true;
 
-    // Check if there are questions already synced in IndexedDB
     this.syncedQuestions = await this.indexedDBService.getQuestions();
 
-    // If no synced questions are found, start the syncing process
     if (!this.syncedQuestions?.length) {
       console.log('No synced questions found, starting sync...');
       this.syncedQuestions = await lastValueFrom(
         this.vaRecordsService.getQuestions().pipe(
           map(async (response: any) => {
             if (response?.data) {
-              // Add questions to IndexedDB for offline access
               await this.indexedDBService.addQuestions(response?.data);
               await this.indexedDBService.addQuestionsAsObject(response?.data);
               return await this.indexedDBService.getQuestions();
@@ -94,21 +91,20 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       );
     }
 
-    // If syncing fails, syncedQuestions will remain undefined
     if (!this.syncedQuestions) {
       console.error('Failed to sync questions.');
     } else {
       console.log(`${this.syncedQuestions.length} questions synced.`);
     }
 
-    this.isQuestionsSyncing = false; // End question sync process
+    this.isQuestionsSyncing = false;
   }
 
   async hasAccess(privileges: string[]) {
     return await lastValueFrom(this.authService.hasPrivilege(privileges));
   }
   formsubmission_status() {
-    this.isLoadingFormSubmissionStatus = true; // Track only manual sync
+    this.isLoadingFormSubmissionStatus = true;
 
     this.dataSyncService.formsubmission_status().subscribe({
       next: (response: any) => {
@@ -121,7 +117,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error during data sync:', error);
-        this.isDataSyncing = false; // Stop sync even if there's an error
+        this.isDataSyncing = false;
         this.isDataSyncing = false;
         this.isTaskRunning = false;
         this.isLoadingFormSubmissionStatus = false;
@@ -142,7 +138,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       },
     });
   }
-  // Function to start manual sync
+
   manualSync() {
     this.isDataSyncing = true; // Track only manual sync
 
@@ -155,7 +151,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
           // this.isTaskRunning = false;
         }
 
-        this.isDataSyncing = false; // Stop sync when done
+        this.isDataSyncing = false;
 
         this.snackBar.open(
           `${response.status ?? response.status ?? 'Data sync initiated'}`,
@@ -169,7 +165,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error during data sync:', error);
-        this.isDataSyncing = false; // Stop sync even if there's an error
+        this.isDataSyncing = false;
         this.isDataSyncing = false;
         this.isTaskRunning = false;
         // this.triggersService.triggerCCVAListFunction();
@@ -205,7 +201,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
   // Sync Questions function
   async onSyncQuestions() {
-    this.isQuestionsSyncing = true; // Start question sync process
+    this.isQuestionsSyncing = true;
     this.syncedQuestions = undefined;
 
     if (!this.forceChecked) {
@@ -233,7 +229,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       );
     }
 
-    this.isQuestionsSyncing = false; // Stop sync after completing
+    this.isQuestionsSyncing = false;
   }
 
   // WebSocket connection setup and message handling
@@ -245,6 +241,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.messageSubscription = this.webSockettService.messages.subscribe(
       (data: string) => {
         try {
+          console.log(data)
           const parsedData = JSON.parse(data);
           this.updateProgress(parsedData);
         } catch (error) {
