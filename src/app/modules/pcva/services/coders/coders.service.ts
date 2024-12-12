@@ -9,14 +9,13 @@ export class CodersService {
 
   constructor(private http: HttpClient, private configService: ConfigService) { }
 
-  getCoders(paging?: boolean, page?: number, pageSize?: number) {
-    // TODO: PASS permissions for coders to get filtered coders
-    let params = paging ? `?paging=${paging}`: '';
+  getCoders(pager?: { paging?: boolean, page_number?: number, limit?: number }, include_deleted?: boolean) {
+    let params = pager?.paging ? `?paging=${pager?.paging}` : '';
 
-    params = params?.length && page ? params+`&page=${page}` : page ? params+`?page=${page}` : params;
-    params = params?.length && pageSize ? params+`&limit=${pageSize}` : pageSize ? params+`?limit=${pageSize}` : params;
+    params = params?.length && pager?.page_number ? params + `&page=${pager?.page_number}` : pager?.page_number ? params + `?page=${pager?.page_number}` : params;
+    params = params?.length && pager?.limit ? params + `&limit=${pager?.limit}` : pager?.limit ? params + `?limit=${pager?.limit}` : params;
+    params = params?.length && include_deleted ? params + `&include_deleted=${include_deleted}` : include_deleted ? params + `?include_deleted=${include_deleted}` : params;
 
-    
     return this.http.get(`${this.configService.API_URL}/pcva/coders${params}`);
   }
 }

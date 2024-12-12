@@ -83,8 +83,9 @@
             </ng-container>
           </tbody>
         </table>
-        <div class="flex flex-col px-5 py-2 bg-white border-t xs:flex-row" *ngIf="params?.codersData?.data?.length">
-          <mat-paginator [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
+        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.codersData?.total > 0">
+          <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="params?.codersData?.total"
+            [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
         </div>
       </div>
       <div *ngIf="!params?.codersData && !loadingData">
