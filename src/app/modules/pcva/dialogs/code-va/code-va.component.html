@@ -9,8 +9,8 @@
             <mat-icon class="cursor-pointer" mat-dialog-close>close</mat-icon>
         </div>
     </div>
-    <div class="grid grid-cols-12">
-        <div class="col-span-8 p-4 h-[650px] overflow-auto relative shadow-lg rounded-lg border-0">
+    <div class="grid grid-cols-12 p-2">
+        <div class="col-span-7 p-4 h-[650px] overflow-auto relative shadow-lg rounded-lg border-1">
             <div class="pt-2 pb-2 sticky top-[-3vh] z-10 bg-white">
                 <span class="px-2 text-xl text-start">VA Document </span>
             </div>
@@ -66,10 +66,30 @@
                 </table>
             }
         </div>
-        <div class="col-span-4 p-4">
+        <div class="col-span-5 p-4 border m-1">
             <div class="sticky top-0 z-10">
-                <div class="mt-2 mb-2">
+                <div class="mt-2">
                     <span class="px-2 text-xl text-start">Coding Sheet </span>
+                </div>
+                <div class="mt-2">
+                    <div class="flex items-center mb-4 gap-4">
+                        <label class="block text-sm font-medium text-gray-500 w-1/4">Coder's Name:</label>
+                        <input type="text" disabled class="flex-1 p-2 border border-gray-300 rounded-md"
+                            placeholder="{{ data?.current_user?.name }}">
+                    </div>
+                </div>
+                <div class=" mt-2 flex items-center mb-4 gap-4">
+                    <label class="block text-sm font-medium text-gray-500 w-1/4">Notes:</label>
+                    <textarea type="text" class="flex-1 font-sm p-2 border border-gray-300 rounded-md min-h-[80px] max-h-[100px]"
+                        placeholder="Doctor's notes."></textarea>
+                </div>
+
+                <span class="px-2 text-sm text-start">Part I: Disease or condition directly leading to death</span>
+
+                <div class=" mt-2 flex items-center mb-4 gap-4">
+                    <label class="block text-sm font-medium text-gray-500 w-1/4">Notes:</label>
+                    <input type="text" class="flex-1 p-2 border border-gray-300 rounded-md min-h-[80px] max-h-[100px]"
+                        placeholder="Doctor's notes.">
                 </div>
             </div>
         </div>

@@ -14,6 +14,7 @@ export class AllAssignedComponent implements OnInit {
   assignedVas$?: Observable<any>
   loadingData: boolean = false;
   headers: any;
+  current_user?: any;
   
   pageNumber?: number = 0;
   pageSizeOptions = [10, 20, 50, 100]
@@ -23,12 +24,12 @@ export class AllAssignedComponent implements OnInit {
   constructor(private allAssignedService: AllAssignedService, public dialog: MatDialog){}
 
   ngOnInit(): void {
+    this.current_user = JSON.parse(localStorage.getItem('current_user') || '{}');
     this.loadAssignedVas();
   }
 
   loadAssignedVas() {
     this.loadingData = true
-    const current_user = JSON.parse(localStorage.getItem('current_user') || '{}');
     this.assignedVas$ = this.allAssignedService.getAssignedVARecords(
       {
         paging: true,
@@ -37,7 +38,7 @@ export class AllAssignedComponent implements OnInit {
       },
       "false",
       undefined,
-      current_user?.uuid
+      this.current_user?.uuid
     ).pipe(
       map((response: any) => {
         if(!this.headers){
@@ -69,7 +70,7 @@ export class AllAssignedComponent implements OnInit {
     dialogConfig.height = "70vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
-      va: va
+      va: va,
     }
     this.dialog.open(ViewVaComponent, dialogConfig)
   }
@@ -81,7 +82,8 @@ export class AllAssignedComponent implements OnInit {
     dialogConfig.height = "70vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
-      va: va
+      va: va,
+      current_user: this.current_user
     }
     this.dialog.open(CodeVaComponent, dialogConfig)
   }
