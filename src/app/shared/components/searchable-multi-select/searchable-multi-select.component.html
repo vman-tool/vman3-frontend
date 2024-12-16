@@ -1,0 +1,24 @@
+<div class="searchable-multi-select" (clickOutside)="closeDropdown()">
+    <div class="select-input" (click)="toggleDropdown()">
+        {{ displayValue || placeholder }}
+        <span class="dropdown-icon">▼</span>
+    </div>
+
+    <div *ngIf="isDropdownOpen" class="dropdown">
+        <input type="text" placeholder="Search options..." [(ngModel)]="searchTerm" class="internal-search"
+            (input)="onSearchInput()" />
+
+        <div class="options-list overflow-auto max-h-[120px]">
+            <div *ngFor="let option of filteredOptions" (click)="selectOption(option)" class="option"
+                [class.selected]="isSelected(option)">
+                <input type="checkbox" [checked]="isSelected(option)" *ngIf="!singleSelect" />
+                <input type="radio" [checked]="isSelected(option)" *ngIf="singleSelect" name="singleSelectGroup" />
+                {{ option.label }}
+            </div>
+
+            <div *ngIf="filteredOptions.length === 0" class="no-results">
+                No options found
+            </div>
+        </div>
+    </div>
+</div>

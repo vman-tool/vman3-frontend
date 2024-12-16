@@ -8,7 +8,7 @@ import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 @Component({
   selector: 'app-code-va',
   templateUrl: './code-va.component.html',
-  styleUrl: './code-va.component.scss'
+  styleUrls: ['./code-va.component.scss']
 })
 export class CodeVaComponent implements OnInit, AfterViewInit{
   vaRecord$?: Observable<any>;
