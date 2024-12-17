@@ -1,6 +1,6 @@
     .searchable-multi-select {
         position: relative;
-        width: 300px;
+        min-width: 100%;
         border-radius: 5px;
     }
 
@@ -70,4 +70,10 @@
     input[type="checkbox"],
     input[type="radio"] {
         margin-right: 8px;
+    }
+    
+    .truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }

@@ -13,7 +13,7 @@ export interface SelectOption {
 export class SearchableMultiSelectComponent {
   @Input() options: SelectOption[] = [];
   @Input() placeholder: string = 'Select options';
-  @Input() singleSelect: boolean = false;
+  @Input() multiSelect: boolean = false;
   @Input() selectedOptions: SelectOption[] = [];
 
   @Output() change = new EventEmitter<any>();
@@ -39,10 +39,7 @@ export class SearchableMultiSelectComponent {
   }
 
   selectOption(option: SelectOption) {
-    if (this.singleSelect) {
-      this.selectedOptions = [option];
-      this.isDropdownOpen = false;
-    } else {
+    if (this.multiSelect) {
       const index = this.selectedOptions.findIndex(
         selected => selected?.value === option?.value
       );
@@ -52,12 +49,15 @@ export class SearchableMultiSelectComponent {
       } else {
         this.selectedOptions.push(option);
       }
+    } else {
+      this.selectedOptions = [option];
+      this.isDropdownOpen = false;
     }
 
     this.change.emit(
-      this.singleSelect ?
-        this.selectedOptions[0]?.value :
-        this.selectedOptions.map(opt => opt.value)
+      this.multiSelect ?
+        this.selectedOptions.map(opt => opt.value) :
+        this.selectedOptions[0]?.value
     );
   }
 
@@ -65,10 +65,6 @@ export class SearchableMultiSelectComponent {
     return this.selectedOptions.some(
       selected => selected?.value === option?.value
     );
-  }
-
-  onSearchInput() {
-    // Optional additional search logic if needed
   }
 
   closeDropdown() {

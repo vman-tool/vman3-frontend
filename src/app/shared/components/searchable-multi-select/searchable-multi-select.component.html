@@ -1,19 +1,18 @@
-<div class="searchable-multi-select" (clickOutside)="closeDropdown()">
+<div class="searchable-multi-select w-full" (clickOutside)="closeDropdown()">
     <div class="select-input" (click)="toggleDropdown()">
-        {{ displayValue || placeholder }}
+        <input type="text" value="{{ displayValue || placeholder }}" />
         <span class="dropdown-icon">▼</span>
     </div>
 
     <div *ngIf="isDropdownOpen" class="dropdown">
-        <input type="text" placeholder="Search options..." [(ngModel)]="searchTerm" class="internal-search"
-            (input)="onSearchInput()" />
+        <input type="text" placeholder="Search options..." [(ngModel)]="searchTerm" class="internal-search" />
 
         <div class="options-list overflow-auto max-h-[120px]">
             <div *ngFor="let option of filteredOptions" (click)="selectOption(option)" class="option"
                 [class.selected]="isSelected(option)">
-                <input type="checkbox" [checked]="isSelected(option)" *ngIf="!singleSelect" />
-                <input type="radio" [checked]="isSelected(option)" *ngIf="singleSelect" name="singleSelectGroup" />
-                {{ option.label }}
+                <input type="checkbox" [checked]="isSelected(option)" *ngIf="multiSelect" />
+                <input type="radio" [checked]="isSelected(option)" *ngIf="!multiSelect" name="singleSelectGroup" />
+                {{ option?.label }}
             </div>
 
             <div *ngIf="filteredOptions.length === 0" class="no-results">
