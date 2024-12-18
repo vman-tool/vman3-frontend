@@ -59,9 +59,11 @@ export class CcvaGraphsComponent implements OnInit {
   }
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
-    if (!this.dropdownMenu.nativeElement.contains(event.target)) {
-      this.isDropdownOpen = false;
-    }
+    try {
+      if (!this.dropdownMenu.nativeElement.contains(event.target)) {
+        this.isDropdownOpen = false;
+      }
+    } catch (e) {}
   }
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;
