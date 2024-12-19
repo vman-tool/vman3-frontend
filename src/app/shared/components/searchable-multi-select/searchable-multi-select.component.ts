@@ -15,8 +15,10 @@ export class SearchableMultiSelectComponent {
   @Input() placeholder: string = 'Select options';
   @Input() multiSelect: boolean = false;
   @Input() selectedOptions: SelectOption[] = [];
+  @Input() allowedAddOption: boolean = false;
 
   @Output() change = new EventEmitter<any>();
+  @Output() addOption = new EventEmitter<any>();
 
   searchTerm: string = '';
   isDropdownOpen: boolean = false;
@@ -40,6 +42,10 @@ export class SearchableMultiSelectComponent {
     if(this.isDropdownOpen) {
       this.updateDropdownPosition();
     }
+  }
+
+  onAddOption(){
+    this.addOption.emit(this.searchTerm);
   }
 
   selectOption(option: SelectOption) {

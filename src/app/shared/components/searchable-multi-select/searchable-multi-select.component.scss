@@ -35,8 +35,8 @@ input {
 }
 
 .dropdown {
-    position: relative;
-    top: calc(100% + 5px);
+    position: absolute;
+    top: 100%;
     left: 0;
     width: 100%;
     background: white;
@@ -50,6 +50,13 @@ input {
     width: 100%;
     padding: 8px;
     border-bottom: 1px solid #eee;
+
+    a {
+        color: #333;
+        text-decoration: none;
+        display: block;
+        padding: 4px 16px;
+    }
 }
 
 .options-list {
