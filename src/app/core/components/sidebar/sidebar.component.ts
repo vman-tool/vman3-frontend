@@ -124,6 +124,13 @@ export class SidebarComponent {
             route: '/users',
             hasAccess: await this.hasAccess([privileges.USERS_MODULE_VIEW])
           },
+          {
+            displayText: 'PCVA Configuration',
+            icon: 'ph ph-first-aid-kit', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon_asset: '',
+            route: '/pcva-configuration',
+            hasAccess: await this.hasAccess([])
+          },
         ],
       },
     ];
