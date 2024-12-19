@@ -36,6 +36,10 @@ export class SearchableMultiSelectComponent {
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
     this.searchTerm = '';
+
+    if(this.isDropdownOpen) {
+      this.updateDropdownPosition();
+    }
   }
 
   selectOption(option: SelectOption) {
@@ -69,6 +73,26 @@ export class SearchableMultiSelectComponent {
 
   closeDropdown() {
     this.isDropdownOpen = false;
+  }
+
+  updateDropdownPosition() {
+    const inputElement = this.elementRef.nativeElement.querySelector('.select-input');
+    const dropdownElement = this.elementRef.nativeElement.querySelector('.dropdown');
+    const rect = inputElement.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const spaceAbove = rect.top;
+    const spaceBelow = viewportHeight - rect.bottom;
+
+    // If space below is less than space above, show dropdown above
+    if (spaceBelow < spaceAbove) {
+      dropdownElement.style.bottom = '100%';
+      dropdownElement.style.top = 'auto';
+      dropdownElement.style.maxHeight = `${spaceAbove - 10}px`; // Leave 10px margin
+    } else {
+      dropdownElement.style.top = '100%';
+      dropdownElement.style.bottom = 'auto';
+      dropdownElement.style.maxHeight = `${spaceBelow - 10}px`; // Leave 10px margin
+    }
   }
 
   @HostListener('document:click', ['$event.target'])

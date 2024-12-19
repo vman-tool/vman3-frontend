@@ -1,0 +1,42 @@
+<div class="p-4 bg-white shadow-md">
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12">
+            <div class="mt-2 ml-4 flex justify-between items-center">
+                <div>
+                    <span class="text-2xl text-start">ADD ICD 10 CODE</span>
+                </div>
+                <div class="mr-4">
+                    <mat-icon class="cursor-pointer" (click)="onClose()">close</mat-icon>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-12">
+            <mat-dialog-content class="center-content">
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12">
+                        <label class="block text-gray-700">Code:</label>
+                        <input type="text" [(ngModel)]="code"
+                            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="col-span-12">
+                        <label class="block text-gray-700">Name:</label>
+                        <input type="text" [(ngModel)]="name"
+                            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="col-span-12">
+                        <label class="block text-gray-700">Category:</label>
+                        <app-searchable-multi-select
+                            [options]="[{'label': 'Jonas','value': 'Jonas'}, {'label': 'Mwambimbi jksasnja jksnlkan nalkslkdjdpq lsa;kd border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200','value': 'Mwambimbi'}, {'label': 'Mwambimbi jksasnja jksnlkan nalkslkdjdpq lsa;kd border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200','value': 'Mwambimbi'}, {'label': 'Mwambimbi jksasnja jksnlkan nalkslkdjdpq lsa;kd border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200','value': 'Mwambimbi'}]"
+                            [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
+                    </div>
+                </div>
+            </mat-dialog-content>
+        </div>
+    </div>
+    <mat-dialog-actions align="end">
+        <div class="flex items-center justify-between mt-4">
+            <span class="px-2 text-2xl text-start"></span>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onSave($event)">Save</button>
+        </div>
+    </mat-dialog-actions>
+</div>

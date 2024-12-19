@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, map, Observable } from 'rxjs';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
+import { AddIcd10CodesComponent } from '../../dialogs/add-icd10-codes/add-icd10-codes.component';
 
 @Component({
   selector: 'app-icd-10-codes',
@@ -50,6 +51,19 @@ export class Icd10CodesComponent {
         })
       );
     }
+
+  onAddICD10(){
+    const dialogRef = this.dialog.open(AddIcd10CodesComponent, {
+      width: '800px',
+      data: {},
+    });
+
+    dialogRef.afterClosed().subscribe((result: any) => {
+      if(result){
+        this.loadICD10Codes();
+      }
+    });
+  }
 
   onPageChange(event: any) {
     this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
