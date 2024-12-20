@@ -19,8 +19,8 @@ export class PcvaSettingsService {
     return this.http.get(`${this.configService.API_URL}/pcva/get-icd10${params}`)
   }
 
-  createICD10Code(code: any){
-    return this.http.post(`${this.configService.API_URL}/pcva/create-icd10`, [code]);
+  createICD10Code(code: any[]){
+    return this.http.post(`${this.configService.API_URL}/pcva/create-icd10`, code);
   }
   
   bulkUploadICD10Codes(file: any){
@@ -31,11 +31,11 @@ export class PcvaSettingsService {
     return this.http.post(`${this.configService.API_URL}/pcva/upload-icd10-data`, formData);
   }
 
-  createICD10Category(category: string){
+  createICD10Category(category: any){
     return this.http.post(`${this.configService.API_URL}/pcva/create-icd10-categories`, [category]);
   }
 
-  getICD10Categories(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string){
+  getICD10Categories(pager?: { paging?: string, page_number?: number, limit?: number }, search_term?: string){
     let params = pager?.paging ? `?paging=${pager?.paging}` : '';
 
     params = params?.length && pager?.page_number ? params + `&page=${pager?.page_number}` : pager?.page_number ? params + `?page=${pager?.page_number}` : params;

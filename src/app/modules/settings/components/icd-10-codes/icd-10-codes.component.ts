@@ -14,8 +14,8 @@ export class Icd10CodesComponent implements OnInit {
   
   icd10Data$?: Observable<any>;
   loadingData: boolean = false;
-  pageNumber?: number = 1;
-  limit?: number = 10;
+  pageNumber?: number;
+  limit?: number;
   
   constructor(
     private snackBar: MatSnackBar,

@@ -18,6 +18,8 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
   categories?: any;
 
   addedCategory?: string;
+  loading: boolean = false;
+  selectedCategories?: any;
 
 
   constructor(
@@ -37,13 +39,22 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
 
 
   ngOnInit(): void {
-    
+    this.getCategories();
   }
 
   getCategories(){
-    this.pcvaSettingsService.getICD10Categories().subscribe({
+    this.loading = true;
+    this.pcvaSettingsService.getICD10Categories({
+      paging: "false",
+    }).subscribe({
       next: (res: any) => {
-        this.categories = res?.data;
+        this.categories = res?.data?.map((category: any) => {
+          return {
+            value: category?.uuid,
+            label: category?.name 
+          }
+        });
+        this.loading = false;
       },
       error: (err) => {
         this.notificationMessage('Error fetching categories');
@@ -53,6 +64,21 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
 
   createCategory(category: string){
     this.addedCategory = category;
+    this.pcvaSettingsService.createICD10Category({name: this.addedCategory}).subscribe({
+      next: (res: any) => {
+        this.notificationMessage('Category created successfully');
+        this.selectedCategories = res?.data?.filter((category: any) => category?.name === this.addedCategory)?.map((category: any) => {
+          return {
+            value: category?.uuid,
+            label: category?.name
+          }
+        } );
+        this.getCategories();
+      },
+      error: (err) => {
+        this.notificationMessage('Error creating category');
+      }
+    })
   }
   ngAfterViewInit() {
     const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
@@ -99,8 +125,25 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
           this.notificationMessage('Error uploading ICD10 codes');
         }
       })
-      
+
+      return;
     }
+
+    const code = {
+      code: this.code,
+      name: this.name,
+      category: this.category
+    }
+
+    this.pcvaSettingsService.createICD10Code([code]).subscribe({
+      next: (res: any) => {
+        this.notificationMessage('ICD10 code created successfully');
+        this.dialogRef.close();
+      },
+      error: (err) => {
+        this.notificationMessage('Error creating ICD10 code');
+      }
+    })
     
   }
 
