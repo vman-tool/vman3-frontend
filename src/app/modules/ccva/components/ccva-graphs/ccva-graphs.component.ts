@@ -27,7 +27,7 @@ export class CcvaGraphsComponent implements OnInit {
   @ViewChild('dropdownMenu') dropdownMenu!: ElementRef;
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
-  selectedSuccessType: string = '';
+  selectedSuccessType: string = 'success';
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
   public isLoading = true;
