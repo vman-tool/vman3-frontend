@@ -27,6 +27,8 @@
                         <label class="block text-gray-700">Category:</label>
                         <app-searchable-multi-select
                             [allowedAddOption]="true"
+                            (change)="onSelectCategory($event)"
+                            (addOption)="createCategory($event)"
                             [options]="[{'label': 'Jonas','value': 'Jonas'}, {'label': 'Mwambimbi jksasnja jksnlkan nalkslkdjdpq lsa;kd border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200','value': 'Mwambimbi'}, {'label': 'Mwambimbi jksasnja jksnlkan nalkslkdjdpq lsa;kd border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200','value': 'Mwambimbi'}, {'label': 'Mwambimbi jksasnja jksnlkan nalkslkdjdpq lsa;kd border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200','value': 'Mwambimbi'}]"
                             [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                     </div>
@@ -34,11 +36,15 @@
                         <span class="mr-5">OR upload CSV / Excel file <span class="text-blue-600 hover:text-blue-800 hover:cursor-pointer">download sample file</span> </span>
                         <div class="relative w-12 h-12">
                             <input type="file" id="fileInput1"
-                                class="relative w-full h-full opacity-0 cursor-pointer z-10" accept=".csv,.xlxs,.xls">
+                                (change)="onFileSelected($event)"
+                                class="relative w-full h-full opacity-0 cursor-pointer z-10" accept=".csv,.xlsx,.xls">
                             <label for="fileInput1"
                                 class="absolute inset-0 flex items-center justify-center cursor-pointer rounded-lg">
                                 <span class="text-gray-600 text-4xl">
                                     <i class="ph-cloud-arrow-up"></i>
+                                </span>
+                                <span class="text-4xl">
+                                    <i class="ph-cancel"></i>
                                 </span>
                             </label>
                         </div>

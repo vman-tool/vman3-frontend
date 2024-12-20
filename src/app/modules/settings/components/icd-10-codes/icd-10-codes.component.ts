@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, map, Observable } from 'rxjs';
@@ -10,12 +10,12 @@ import { AddIcd10CodesComponent } from '../../dialogs/add-icd10-codes/add-icd10-
   templateUrl: './icd-10-codes.component.html',
   styleUrl: './icd-10-codes.component.scss'
 })
-export class Icd10CodesComponent {
+export class Icd10CodesComponent implements OnInit {
   
   icd10Data$?: Observable<any>;
   loadingData: boolean = false;
-  pageNumber?: number;
-  limit?: number;
+  pageNumber?: number = 1;
+  limit?: number = 10;
   
   constructor(
     private snackBar: MatSnackBar,
@@ -29,6 +29,10 @@ export class Icd10CodesComponent {
       verticalPosition: 'top',
       duration: 3 * 1000,
     });
+  }
+
+  ngOnInit(): void {
+    this.loadICD10Codes();
   }
 
   loadICD10Codes(){
