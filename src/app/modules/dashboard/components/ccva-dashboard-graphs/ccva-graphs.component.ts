@@ -112,6 +112,7 @@ export class CcvaDashboardGraphsComponent implements OnInit {
     this.ccvaService
       .get_ccva_Results(
         '',
+        null,
         this.filterData.start_date,
         this.filterData.end_date,
         this.filterData.locations,

@@ -9,6 +9,7 @@ export class CcvaService {
   constructor(private http: HttpClient, private configService: ConfigService) {}
   get_ccva_by_id(
     ccvaId: string,
+    selected_success_type: string | null = null,
     start_date?: string,
     end_date?: string,
     locations?: string[],
@@ -16,6 +17,9 @@ export class CcvaService {
     ccva_graph_db_source: boolean = true
   ) {
     let params = new HttpParams();
+    if (selected_success_type) {
+      params = params.set('selected_success_type', selected_success_type);
+    }
     params = params.set('ccva_graph_db_source', ccva_graph_db_source);
     if (start_date) {
       params = params.set('start_date', start_date);
@@ -39,6 +43,7 @@ export class CcvaService {
   // Get all CCVA results
   get_ccva_Results(
     ccvaId?: string,
+    selected_success_type: string | null = null,
     start_date?: string,
     end_date?: string,
     locations?: string[],
@@ -47,6 +52,9 @@ export class CcvaService {
   ) {
     let pathUrl = `${this.configService.API_URL}/ccva`;
     let params = new HttpParams();
+    if (selected_success_type) {
+      params = params.set('selected_success_type', selected_success_type);
+    }
     params = params.set('ccva_graph_db_source', ccva_graph_db_source);
     if (start_date) {
       params = params.set('start_date', start_date);

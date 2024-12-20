@@ -27,7 +27,7 @@ export class CcvaGraphsComponent implements OnInit {
   @ViewChild('dropdownMenu') dropdownMenu!: ElementRef;
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
-
+  selectedSuccessType: string = '';
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
   public isLoading = true;
@@ -150,6 +150,7 @@ export class CcvaGraphsComponent implements OnInit {
       this.ccvaService
         .get_ccva_Results(
           taskId,
+          this.selectedSuccessType,
           this.filterData.start_date,
           this.filterData.end_date,
           this.filterData.locations,
@@ -263,6 +264,13 @@ export class CcvaGraphsComponent implements OnInit {
     this.filterData = this.filterService.filterData();
     this.filterData['ccva_graph_db_source'] = this.ccva_graph_db_source;
 
+    this.ngOnInit();
+  }
+
+  onFilterChange() {
+    this.graphData = [];
+    // this.filterService.setFilterData(this.filterData);
+    this.filterData = this.filterService.filterData();
     this.ngOnInit();
   }
 }
