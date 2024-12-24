@@ -75,6 +75,7 @@ export class DataCleanerComponent implements OnInit {
   }
 
   saveChanges(): void {
+    console.log(this.changedFormData, this.formData);
     if (
       this.error &&
       this.error.uuid &&
@@ -123,10 +124,14 @@ export class DataCleanerComponent implements OnInit {
   }
 
   onFieldChange(key: string, value: any): void {
-    if (this.formData[key] !== value) {
-      this.changedFormData[key] = value;
-    } else {
-      delete this.changedFormData[key];
-    }
+    console.log('Field change:', key, value);
+    this.formData[key] = value;
+    this.changedFormData[key] = value;
+    // if (this.formData[key] !== value) {
+    //   this.changedFormData[key] = value;
+    // } else {
+    //   // delete this.changedFormData[key];
+    // }
+    console.log('Field change:', this.changedFormData);
   }
 }
