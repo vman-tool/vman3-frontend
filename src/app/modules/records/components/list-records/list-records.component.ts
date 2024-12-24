@@ -80,8 +80,8 @@ export class ListRecordsComponent implements OnInit {
   onOpenVA(va: any){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "80vw";
-    dialogConfig.height = "70vh";
+    dialogConfig.width = "95vw";
+    dialogConfig.height = "90vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       va: va

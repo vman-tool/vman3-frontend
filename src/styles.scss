@@ -13,3 +13,13 @@ body {
 .mat-mdc-dialog-container .mdc-dialog__surface {
   border-radius: 10px !important;
 }
+
+input {
+  outline: none !important;
+
+  &:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: 1px solid #000 !important;
+  }
+}
