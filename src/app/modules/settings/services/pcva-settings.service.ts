@@ -10,7 +10,7 @@ export class PcvaSettingsService {
   constructor(private http: HttpClient, private configService: ConfigService) { }
 
   getICD10Codes(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string){
-    let params = pager?.paging ? `?paging=${pager?.paging}` : '';
+    let params = `?paging=${pager?.paging}`;
 
     params = params?.length && pager?.page_number ? params + `&page=${pager?.page_number}` : pager?.page_number ? params + `?page=${pager?.page_number}` : params;
     params = params?.length && pager?.limit ? params + `&limit=${pager?.limit}` : pager?.limit ? params + `?limit=${pager?.limit}` : params;
@@ -35,8 +35,8 @@ export class PcvaSettingsService {
     return this.http.post(`${this.configService.API_URL}/pcva/create-icd10-categories`, [category]);
   }
 
-  getICD10Categories(pager?: { paging?: string, page_number?: number, limit?: number }, search_term?: string){
-    let params = pager?.paging ? `?paging=${pager?.paging}` : '';
+  getICD10Categories(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string){
+    let params = `?paging=${pager?.paging}`;
 
     params = params?.length && pager?.page_number ? params + `&page=${pager?.page_number}` : pager?.page_number ? params + `?page=${pager?.page_number}` : params;
     params = params?.length && pager?.limit ? params + `&limit=${pager?.limit}` : pager?.limit ? params + `?limit=${pager?.limit}` : params;

@@ -295,7 +295,7 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
         is_adult: 'isadult',
         is_child: 'ischild',
         is_neonate: 'isneonate',
-        birth_date: 'id10020',
+        birth_date: 'id10021',
         death_date: 'id10023',
         interview_date: 'id10012',
         submitted_date: 'today',

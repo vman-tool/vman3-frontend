@@ -45,7 +45,7 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
   getCategories(){
     this.loading = true;
     this.pcvaSettingsService.getICD10Categories({
-      paging: "false",
+      paging: false,
     }).subscribe({
       next: (res: any) => {
         this.categories = res?.data?.map((category: any) => {

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, Directive, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, Directive, HostListener, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 
 export interface SelectOption {
   value: any;
@@ -8,7 +8,8 @@ export interface SelectOption {
 @Component({
   selector: 'app-searchable-multi-select',
   templateUrl: './searchable-multi-select.component.html',
-  styleUrls: ['./searchable-multi-select.component.scss']
+  styleUrls: ['./searchable-multi-select.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchableMultiSelectComponent {
   @Input() options: SelectOption[] = [];
@@ -16,6 +17,10 @@ export class SearchableMultiSelectComponent {
   @Input() multiSelect: boolean = false;
   @Input() selectedOptions: SelectOption[] = [];
   @Input() allowedAddOption: boolean = false;
+
+  // TODO: Add logic to arrange options for better view and usability
+  @Input() sortOptionsBy: boolean = false;
+  @Input() sortOptionsDirection: 'asc' | 'desc' = 'asc';
 
   @Output() change = new EventEmitter<any>();
   @Output() addOption = new EventEmitter<any>();
@@ -33,6 +38,10 @@ export class SearchableMultiSelectComponent {
     return this.options?.filter(option =>
       option?.label?.toLowerCase()?.includes(this.searchTerm?.toLowerCase())
     );
+  }
+
+  trackByOption(index: number, option: SelectOption): any {
+    return option.value;
   }
 
   toggleDropdown() {

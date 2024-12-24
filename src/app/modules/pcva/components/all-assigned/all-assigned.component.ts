@@ -4,6 +4,9 @@ import { catchError, map, Observable, throwError } from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ViewVaComponent } from '../../../../shared/dialogs/view-va/view-va.component';
 import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
+import { PcvaSettingsService } from 'app/modules/settings/services/pcva-settings.service';
+import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
+import { FieldMapping, settingsConfigData } from 'app/modules/settings/interface';
 
 @Component({
   selector: 'app-all-assigned',
@@ -20,12 +23,39 @@ export class AllAssignedComponent implements OnInit {
   pageSizeOptions = [10, 20, 50, 100]
   limit?: number;
   paging?: boolean;
+  icdCodes?: any;
+  fieldsMapping?: FieldMapping;
 
-  constructor(private allAssignedService: AllAssignedService, public dialog: MatDialog){}
+  constructor(
+    private allAssignedService: AllAssignedService, 
+    public dialog: MatDialog,
+    private pcvaSettingsService: PcvaSettingsService,
+    private settingConfigService: SettingConfigService
+  ){}
 
   ngOnInit(): void {
     this.current_user = JSON.parse(localStorage.getItem('current_user') || '{}');
     this.loadAssignedVas();
+    this.getVASettings();
+  }
+
+  getVASettings() {
+    // TODO: Use ICD10/ICD11 Depending on user settings.
+    
+    this.icdCodes ? this.icdCodes : this.pcvaSettingsService.getICD10Codes({paging: false}).subscribe({
+      next: (response: any) => {
+        this.icdCodes = response?.data;
+      },
+      error: (error: any) => console.error('Error fetching ICD10 codes:', error)
+    });
+    this.fieldsMapping ? this.fieldsMapping : this.settingConfigService.getSettingsConfig().subscribe({
+      next: (response: settingsConfigData | null) => {
+        if (response != null) {
+          this.fieldsMapping = response.field_mapping
+        }
+      },
+      error: (error: any) => console.error('Error fetching settings config:', error)
+    });
   }
 
   loadAssignedVas() {
@@ -83,7 +113,14 @@ export class AllAssignedComponent implements OnInit {
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       va: va,
-      current_user: this.current_user
+      current_user: this.current_user,
+      icdCodes: this.icdCodes?.map((code: any) => {
+        return {
+          label: code?.name,
+          value: code,
+        }
+      }),
+      fieldsMapping: this.fieldsMapping
     }
     this.dialog.open(CodeVaComponent, dialogConfig)
   }

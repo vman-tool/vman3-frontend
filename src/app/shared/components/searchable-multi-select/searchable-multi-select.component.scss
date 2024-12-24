@@ -50,6 +50,7 @@ input {
     width: 100%;
     padding: 8px;
     border-bottom: 1px solid #eee;
+    pointer-events: none;
 
     a {
         color: #333;

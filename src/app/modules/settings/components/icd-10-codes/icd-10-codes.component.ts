@@ -36,6 +36,16 @@ export class Icd10CodesComponent implements OnInit {
   }
 
   loadICD10Codes(){
+    /* TODO: Display Categories into two groups
+      1. broad Grou
+      2. Major Group
+
+      For Broad Group there are 4 groups
+      1. Communicable Diseases
+      2. Non-Communicable Diseases
+      3. Injuries
+      4. Un-used
+    */
       this.loadingData = true
     this.icd10Data$ = this.pcvaSettings.getICD10Codes(
         {

@@ -1,6 +1,6 @@
 <div class="searchable-multi-select w-full" (clickOutside)="closeDropdown()">
     <div class="select-input" (click)="toggleDropdown()">
-        <input type="text" value="{{ displayValue }}" placeholder="{{placeholder}}"/>
+        <input type="text" readonly value="{{ displayValue }}" placeholder="{{placeholder}}"/>
         <span class="dropdown-icon">▼</span>
     </div>
 
@@ -15,7 +15,7 @@
         </div>
 
         <div class="options-list overflow-auto max-h-[120px]">
-            <div *ngFor="let option of filteredOptions" (click)="selectOption(option)" class="option"
+            <div *ngFor="let option of filteredOptions; trackBy: trackByOption" (click)="selectOption(option)" class="option"
                 [class.selected]="isSelected(option)">
                 <input type="checkbox" [checked]="isSelected(option)" *ngIf="multiSelect" />
                 <input type="radio" [checked]="isSelected(option)" *ngIf="!multiSelect" name="singleSelectGroup" />
