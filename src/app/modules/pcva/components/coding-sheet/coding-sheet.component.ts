@@ -14,12 +14,48 @@ export class CodingSheetComponent implements OnInit {
   birthDate: string = "";
   deathDate: string = "";
 
-  a?: any;
-  b?: any;
-  c?: any;
-  d?: any;
+  frameA: {
+    a?: any,
+    b?: any,
+    c?: any,
+    d?: any,
+    constributories?: any[]
+  } = {}
 
-  constributories?: any[];
+  frameB: {
+    surgeryPerformed?: string,
+    surgeryDate?: string,
+    surgeonreason?: string,
+    autopsyRequested?: string,
+    wereFindingsUsedInCertification?: string
+  } = {}
+
+  mannerOfDeath: {
+    manner?: string,
+    dateofInjury?: string,
+    howexternalOrPoisoningAgent?: string
+  } = {}
+
+  placeOfOccurence: {
+    place?: string,
+    specific?: string
+  } = {}
+
+  fetalOrInfant: {
+    multiplePregnancy?: string,
+    stillBorn?: boolean,
+    hoursSurvived?: number,
+    birthWeight?: number,
+    completedWeeksOfPregnancy?: number,
+    ageOfMother?: number,
+    mothersConditionToNewborn?: string
+  } = {}
+
+  pregnantDeceased: {
+    pregnancyStatus?: string,
+    pregnantTime?: string,
+    didPregnancyContributed?: string,
+  } = {}
 
   constructor(){}
 
