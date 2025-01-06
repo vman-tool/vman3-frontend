@@ -1,16 +1,26 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FieldMapping } from 'app/modules/settings/interface';
 
 @Component({
   selector: 'app-coding-sheet',
   templateUrl: './coding-sheet.component.html',
-  styleUrl: './coding-sheet.component.scss'
+  styleUrl: './coding-sheet.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingSheetComponent implements OnInit {
   @Input() icdCodes?: any[]; 
   @Input() settings: FieldMapping = {} as FieldMapping; 
-  @Input() vaRecord?: any; 
+  @Input() vaRecord?: any;
+
+  readonly panelAOpenState = signal(true);
+  readonly panelBOpenState = signal(false);
+  readonly panelCOpenState = signal(false);
+  readonly subPanelAOpenState = signal(false);
+  readonly subPanelBOpenState = signal(false);
+  readonly subPanelCOpenState = signal(false);
+  readonly subPanelDOpenState = signal(false);
+  
   gender: string = "";
   birthDate: string = "";
   deathDate: string = "";
@@ -30,7 +40,7 @@ export class CodingSheetComponent implements OnInit {
   frameB: {
     surgeryPerformed?: string,
     surgeryDate?: string,
-    surgeonreason?: string,
+    surgeryReasons?: string,
     autopsyRequested?: string,
     wereFindingsUsedInCertification?: string
   } = {}
@@ -107,6 +117,10 @@ export class CodingSheetComponent implements OnInit {
   }
 
   validateframeB(){
+    if (this.frameB?.surgeryPerformed && !this.frameB.surgeryPerformed){
+      this.notificationMessage('Please fill surgery reasons for surgery!');
+      return false;
+    }
     return true;
   }
 }
