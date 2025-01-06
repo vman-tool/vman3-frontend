@@ -1,5 +1,5 @@
 <!-- TODO: Add accordions in form sections for better user experience -->
-<form>
+<form (ngSubmit)="onSubmitform()">
     <table class="w-[100%]">
         <tbody>
             <tr class="bg-gray-400">
@@ -38,7 +38,11 @@
                 <td class="col-span-4"></td>
                 <td class="col-span-4">Cause of death</td>
                 <td class="col-span-4">Time interval from onset to death</td>
-                <td class="col-span-4 row-span-4">1. Report disease or condition leading to death:</td>
+                <td class="col-span-4 row-span-4">1. Report disease or condition leading to death: <br>
+                    Report event chain is due to order (if applicable) <br>
+                    State the underlying cause on the lowest field
+
+                </td>
                 <td class="col-span-4 flex">
                     <label class="mr-4">
                         a: &nbsp;
@@ -50,7 +54,9 @@
 
                 </td>
                 <td class="col-span-4">
-                    <input type="text" name=""
+                    <input 
+                        type="text" name="timeinterval_a"
+                        [(ngModel)]="frameA.timeinterval_a"
                         class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                         id="">
                 </td>
@@ -64,7 +70,8 @@
                         [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                 </td>
                 <td class="col-span-4">
-                    <input type="text" name=""
+                    <input type="text" name="timeinterval_b"
+                        [(ngModel)]="frameA.timeinterval_b"
                         class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                         id="">
                 </td>
@@ -78,7 +85,8 @@
                         [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                 </td>
                 <td class="col-span-4">
-                    <input type="text" name=""
+                    <input type="text" name="timeinterval_c"
+                        [(ngModel)]="frameA.timeinterval_c"
                         class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full h-[40px] rounded-[3px]"
                         id="">
                 </td>
@@ -92,7 +100,8 @@
                         [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                 </td>
                 <td class="col-span-4">
-                    <input type="text" name=""
+                    <input type="text" name="timeinterval_d"
+                        [(ngModel)]="frameA.timeinterval_d"
                         class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                         id="">
                 </td>
@@ -119,51 +128,51 @@
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">Was surgery performed within the last weeks?</td>
                 <td class="col-span-2">
-                    <label class="mr-4"><input type="radio" [(ngModel)]="frameB.surgeryPerformed" name="surgery-performed" value="yes" class="mr-1">
+                    <label class="mr-4"><input type="radio" [(ngModel)]="frameB.surgeryPerformed" name="surgery_performed" value="yes" class="mr-1">
                         Yes</label>
                 </td>
                 <td class="col-span-2">
-                    <label class="ml-4"><input type="radio" [(ngModel)]="frameB.surgeryPerformed" name="surgery-performed" value="no" class="mr-1"> No</label>
+                    <label class="ml-4"><input type="radio" [(ngModel)]="frameB.surgeryPerformed" name="surgery_performed" value="no" class="mr-1"> No</label>
                 </td>
                 <td class="col-span-2">
-                    <label><input type="radio" [(ngModel)]="frameB.surgeryPerformed" name="surgery-performed" value="unknown" class="mr-1"> Unknown</label>
+                    <label><input type="radio" [(ngModel)]="frameB.surgeryPerformed" name="surgery_performed" value="unknown" class="mr-1"> Unknown</label>
                 </td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">If yes please specify the date of the surgery</td>
                 <td class="col-span-6">
-                    <input type="date" class="w-full border px-2 py-1 rounded" [(ngModel)]="frameB.surgeryDate">
+                    <input type="date" class="w-full border px-2 py-1 rounded" name="surgery_date" [(ngModel)]="frameB.surgeryDate">
                 </td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">If yes please specify the reasons of the surgery (disease or condition)</td>
                 <td class="col-span-6">
-                    <textarea class="w-full border px-2 py-1 rounded" [(ngModel)]="frameB.surgeonreason"></textarea>
+                    <textarea class="w-full border px-2 py-1 rounded" name="surgery_reason" [(ngModel)]="frameB.surgeonreason"></textarea>
                 </td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">Was an autopsy requested?</td>
                 <td class="col-span-2">
-                    <label class="mr-4"><input type="radio" [(ngModel)]="frameB.autopsyRequested" name="autopsy-requested" value="yes" class="mr-1">
+                    <label class="mr-4"><input type="radio" [(ngModel)]="frameB.autopsyRequested" name="autopsy_requested" value="yes" class="mr-1">
                         Yes</label>
                 </td>
                 <td class="col-span-2">
-                    <label class="ml-4"><input type="radio" [(ngModel)]="frameB.autopsyRequested" name="autopsy-requested" value="no" class="mr-1"> No</label>
+                    <label class="ml-4"><input type="radio" [(ngModel)]="frameB.autopsyRequested" name="autopsy_requested" value="no" class="mr-1"> No</label>
                 </td>
                 <td class="col-span-2">
-                    <label><input type="radio" [(ngModel)]="frameB.autopsyRequested" name="autopsy-requested" value="unknown" class="mr-1"> Unknown</label>
+                    <label><input type="radio" [(ngModel)]="frameB.autopsyRequested" name="autopsy_requested" value="unknown" class="mr-1"> Unknown</label>
                 </td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">If yes were the findings used in the certification?</td>
                 <td class="col-span-2">
-                    <label class="mr-4"><input type="radio" [(ngModel)]="frameB.wereFindingsUsedInCertification" name="findings-used" value="yes" class="mr-1"> Yes</label>
+                    <label class="mr-4"><input type="radio" [(ngModel)]="frameB.wereFindingsUsedInCertification" name="findings_used" value="yes" class="mr-1"> Yes</label>
                 </td>
                 <td class="col-span-2">
-                    <label class="ml-4"><input type="radio" [(ngModel)]="frameB.wereFindingsUsedInCertification" name="findings-used" value="no" class="mr-1"> No</label>
+                    <label class="ml-4"><input type="radio" [(ngModel)]="frameB.wereFindingsUsedInCertification" name="findings_used" value="no" class="mr-1"> No</label>
                 </td>
                 <td class="col-span-2">
-                    <label><input type="radio" [(ngModel)]="frameB.wereFindingsUsedInCertification" name="findings-used" value="unknown" class="mr-1"> Unknown</label>
+                    <label><input type="radio" [(ngModel)]="frameB.wereFindingsUsedInCertification" name="findings_used" value="unknown" class="mr-1"> Unknown</label>
                 </td>
             </tr>
             <tr class="mt-3">
@@ -175,34 +184,34 @@
             </tr>
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="Disease" class="mr-1"> Disease</label>
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Disease" class="mr-1"> Disease</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> Assault</label>
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Assault" class="mr-1"> Assault</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> Could not be
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Could not be determined" class="mr-1"> Could not be
                         determined</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> Accident</label>
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Accident" class="mr-1"> Accident</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> Legal intervention</label>
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Legal intervention" lass="mr-1"> Legal intervention</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> Pending
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Pending" class="mr-1"> Pending
                         Investigation</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> Intentional self
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Intentional self harm" class="mr-1"> Intentional self
                         harm</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> War</label>
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="War" class="mr-1"> War</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner-of-death" value="" class="mr-1"> Unknown</label>
+                    <label><input type="radio" [(ngModel)]="mannerOfDeath.manner" name="manner_of_death" value="Unknown" class="mr-1"> Unknown</label>
                 </td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
@@ -210,13 +219,13 @@
                 <td class="col-span-3">
                 </td>
                 <td class="col-span-3 ml-3">Date of injury: </td>
-                <td class="col-span-3"><input type="date" [(ngModel)]="mannerOfDeath.dateofInjury" class="w-full border px-2 py-1 rounded"></td>
+                <td class="col-span-3"><input type="date" name="date_of_injury" [(ngModel)]="mannerOfDeath.dateofInjury" class="w-full border px-2 py-1 rounded"></td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">Please, describe how external cause occured (If poisoning please specify
                     poisoning agent) </td>
                 <td class="col-span-6">
-                    <textarea class="w-full border px-2 py-1 rounded" [(ngModel)]="mannerOfDeath.howexternalOrPoisoningAgent"></textarea>
+                    <textarea class="w-full border px-2 py-1 rounded" name="how_external_or_posioning_agent" [(ngModel)]="mannerOfDeath.howexternalOrPoisoningAgent"></textarea>
                 </td>
             </tr>
             <tr class="mt-3">
@@ -228,46 +237,46 @@
             </tr>
             <tr class="grid grid-cols-12">
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="Disease" class="mr-1"> At home</label>
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="Disease" class="mr-1"> At home</label>
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Residential
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Residential
                         Institution</label>
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> School, other institution,
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> School, other institution,
                         public administrative area</label>
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Sports and athletics
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Sports and athletics
                         area</label>
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Street and highway</label>
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Street and highway</label>
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Trade and service
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Trade and service
                         area</label>
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Industrial and construction
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Industrial and construction
                         area</label>
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Farm</label>
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Farm</label>
                 </td>
                 <td class="col-span-4">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Other place (please
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Other place (please
                         specify)</label>
                 </td>
                 <td class="col-span-4 mr-3">
-                <input type="text" name=""
+                <input type="text" name="specific_place"
                     [(ngModel)]="placeOfOccurence.specific"
                     class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                     id="">
                 </td>
                 <td class="col-span-3">
-                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="manner-of-death" value="" class="mr-1"> Unknown</label>
+                    <label><input type="radio" [(ngModel)]="placeOfOccurence.place" name="place_of_occurence" value="" class="mr-1"> Unknown</label>
                 </td>
             </tr>
             <tr class="mt-3">
@@ -280,15 +289,15 @@
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">Multiple pregrancy?</td>
                 <td class="col-span-2">
-                    <label class="mr-4"><input type="radio" [(ngModel)]="fetalOrInfant.multiplePregnancy" name="multiple-pregnancy" value="yes" class="mr-1">
+                    <label class="mr-4"><input type="radio" [(ngModel)]="fetalOrInfant.multiplePregnancy" name="multiple_pregnancy" value="yes" class="mr-1">
                         Yes</label>
                 </td>
                 <td class="col-span-2">
-                    <label class="ml-4"><input type="radio" [(ngModel)]="fetalOrInfant.multiplePregnancy" name="multiple-pregnancy" value="no" class="mr-1">
+                    <label class="ml-4"><input type="radio" [(ngModel)]="fetalOrInfant.multiplePregnancy" name="multiple_pregnancy" value="no" class="mr-1">
                         No</label>
                 </td>
                 <td class="col-span-2">
-                    <label><input type="radio" [(ngModel)]="fetalOrInfant.multiplePregnancy" name="multiple-pregnancy" value="unknown" class="mr-1"> Unknown</label>
+                    <label><input type="radio" [(ngModel)]="fetalOrInfant.multiplePregnancy" name="multiple_pregnancy" value="unknown" class="mr-1"> Unknown</label>
                 </td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
@@ -335,7 +344,7 @@
                 </td>
 
                 <td class="col-span-6">
-                    <textarea class="w-full border px-2 py-1 rounded" [(ngModel)]="fetalOrInfant.mothersConditionToNewborn"></textarea>
+                    <textarea class="w-full border px-2 py-1 rounded" name="mothers_condition_to_newborn" [(ngModel)]="fetalOrInfant.mothersConditionToNewborn"></textarea>
                 </td>
             </tr>
             <tr class="grid grid-cols-12 mt-2 mt-3">
@@ -345,35 +354,39 @@
                     </span>
                 </td>
                 <td class="col-span-2">
-                    <label class="mr-4"><input [(ngModel)]="pregnantDeceased.pregnancyStatus" type="radio" name="deceased-pregnant" value="yes" class="mr-1"> Yes</label>
+                    <label class="mr-4"><input [(ngModel)]="pregnantDeceased.pregnancyStatus" type="radio" name="deceased_pregnant" value="yes" class="mr-1"> Yes</label>
                 </td>
                 <td class="col-span-2">
-                    <label class="ml-4"><input [(ngModel)]="pregnantDeceased.pregnancyStatus" type="radio" name="deceased-pregnant" value="no" class="mr-1"> No</label>
+                    <label class="ml-4"><input [(ngModel)]="pregnantDeceased.pregnancyStatus" type="radio" name="deceased_pregnant" value="no" class="mr-1"> No</label>
                 </td>
                 <td class="col-span-2">
-                    <label><input type="radio" [(ngModel)]="pregnantDeceased.pregnancyStatus" name="deceased-pregnant" value="unknown" class="mr-1"> Unknown</label>
+                    <label><input type="radio" [(ngModel)]="pregnantDeceased.pregnancyStatus" name="deceased_pregnant" value="unknown" class="mr-1"> Unknown</label>
                 </td>
-                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="death-time-occured" value="unknown" class="mr-1"> At time
+                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="pregnant_time" value="At time of death" class="mr-1"> At time
                         of death</label></td>
-                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="death-time-occured" value="unknown" class="mr-1"> Within
+                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="pregnant_time" value="42 Weeks before death" class="mr-1"> Within
                         42 days before the death</label></td>
-                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="death-time-occured" value="unknown" class="mr-1"> Between
+                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="pregnant_time" value="43 to 1 year before death" class="mr-1"> Between
                         43 up to 1 year before death</label></td>
-                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="death-time-occured" value="unknown" class="mr-1">
+                <td class="col-span-6"><label><input type="radio" [(ngModel)]="pregnantDeceased.pregnantTime" name="pregnant_time" value="unknown" class="mr-1">
                         Unknown</label></td>
             </tr>
             <tr class="grid grid-cols-12 mt-2">
                 <td class="col-span-6">Did the pregnancy contribute to the death?</td>
                 <td class="col-span-2">
-                    <label class="mr-4"><input type="radio" name="pregrancy-contribute-to-death" [(ngModel)]="pregnantDeceased.didPregnancyContributed" value="yes" class="mr-1"> Yes</label>
+                    <label class="mr-4"><input type="radio" name="pregrancy_contribute_to_death" [(ngModel)]="pregnantDeceased.didPregnancyContributed" value="yes" class="mr-1"> Yes</label>
                 </td>
                 <td class="col-span-2">
-                    <label class="ml-4"><input type="radio" name="pregrancy-contribute-to-death" [(ngModel)]="pregnantDeceased.didPregnancyContributed" value="no" class="mr-1"> No</label>
+                    <label class="ml-4"><input type="radio" name="pregrancy_contribute_to_death" [(ngModel)]="pregnantDeceased.didPregnancyContributed" value="no" class="mr-1"> No</label>
                 </td>
                 <td class="col-span-2">
-                    <label><input type="radio" name="pregrancy-contribute-to-death" [(ngModel)]="pregnantDeceased.didPregnancyContributed" value="unknown" class="mr-1"> Unknown</label>
+                    <label><input type="radio" name="pregrancy_contribute_to_death" [(ngModel)]="pregnantDeceased.didPregnancyContributed" value="unknown" class="mr-1"> Unknown</label>
                 </td>
             </tr>
         </tbody>
     </table>
+    <div class="flex items-center justify-between mt-5">
+        <span class="px-2 text-2xl text-start"></span>
+        <button type="submit" class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700">Save VA</button>
+    </div>
 </form>

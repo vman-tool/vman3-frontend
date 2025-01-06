@@ -17,6 +17,8 @@ export class SearchableMultiSelectComponent {
   @Input() multiSelect: boolean = false;
   @Input() selectedOptions: SelectOption[] = [];
   @Input() allowedAddOption: boolean = false;
+  @Input() searchLabel: string = "Search options...";
+  @Input() allowSearchOptions: boolean = true;
 
   // TODO: Add logic to arrange options for better view and usability
   @Input() sortOptionsBy: boolean = false;

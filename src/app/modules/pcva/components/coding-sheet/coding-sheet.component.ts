@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FieldMapping } from 'app/modules/settings/interface';
 
 @Component({
@@ -16,9 +17,13 @@ export class CodingSheetComponent implements OnInit {
 
   frameA: {
     a?: any,
+    timeinterval_a?: string,
     b?: any,
+    timeinterval_b?: string,
     c?: any,
+    timeinterval_c?: string,
     d?: any,
+    timeinterval_d?: string,
     constributories?: any[]
   } = {}
 
@@ -57,7 +62,17 @@ export class CodingSheetComponent implements OnInit {
     didPregnancyContributed?: string,
   } = {}
 
-  constructor(){}
+  constructor(
+    private snackBar: MatSnackBar,
+  ){}
+
+  notificationMessage(message: string): void {
+    this.snackBar.open(`${message}`, 'close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 3 * 1000,
+    });
+  }
 
   ngOnInit(): void {
     const sex = this.vaRecord[this.settings.deceased_gender]?.toLowerCase()
@@ -66,5 +81,32 @@ export class CodingSheetComponent implements OnInit {
     this.deathDate = this.vaRecord[this.settings.death_date];
   }
 
+  onSubmitform(){
+    console.log('Form submitted', this.frameA, this.frameB, this.mannerOfDeath, this.placeOfOccurence, this.fetalOrInfant, this.pregnantDeceased);
+    if(this.validateframeA() && this.validateframeB()){
+      this.notificationMessage('Form submitted successfully!');
+    }
+  }
 
+  validateframeA(){
+    if (
+      this.frameA.timeinterval_a && !this.frameA.a || 
+      this.frameA.timeinterval_b && !this.frameA.b || 
+      this.frameA.timeinterval_c && !this.frameA.c || 
+      this.frameA.timeinterval_d && !this.frameA.d){
+        this.notificationMessage('Please fill inteval when cause of death is filled!');
+        return false;
+    }
+
+    if (!this.frameA.a && !this.frameA.b && !this.frameA.c && !this.frameA.d){
+      this.notificationMessage('Please fill at least one cause of death!');
+      return false;
+    }
+
+    return true
+  }
+
+  validateframeB(){
+    return true;
+  }
 }

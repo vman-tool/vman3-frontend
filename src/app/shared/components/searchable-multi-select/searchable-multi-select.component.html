@@ -5,8 +5,8 @@
     </div>
 
     <div *ngIf="isDropdownOpen" class="dropdown">
-        <div class="grid grid-cols-12">
-            <input type="text" placeholder="Search options..." [(ngModel)]="searchTerm" class="internal-search col-span-10" />
+        <div class="grid grid-cols-12" *ngIf="allowSearchOptions">
+            <input type="text" placeholder="{{ searchLabel }}" [(ngModel)]="searchTerm" class="internal-search col-span-10" />
             <a 
                 *ngIf="filteredOptions.length === 0 && allowedAddOption" 
                 class="col-span-2 mr-2 mt-2 text-gray-500 hover:text-blue-500 hover:cursor-pointer"
