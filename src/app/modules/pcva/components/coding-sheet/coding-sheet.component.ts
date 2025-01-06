@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FieldMapping } from 'app/modules/settings/interface';
 
@@ -12,6 +12,8 @@ export class CodingSheetComponent implements OnInit {
   @Input() icdCodes?: any[]; 
   @Input() settings: FieldMapping = {} as FieldMapping; 
   @Input() vaRecord?: any;
+
+  @Output() save: EventEmitter<any> = new EventEmitter<any>();
 
   readonly panelAOpenState = signal(true);
   readonly panelBOpenState = signal(false);
@@ -94,6 +96,14 @@ export class CodingSheetComponent implements OnInit {
   onSubmitform(){
     console.log('Form submitted', this.frameA, this.frameB, this.mannerOfDeath, this.placeOfOccurence, this.fetalOrInfant, this.pregnantDeceased);
     if(this.validateframeA() && this.validateframeB()){
+      this.save.emit({
+        frameA: this.frameA, 
+        frameB: this.frameB, 
+        mannerOfDeath: this.mannerOfDeath, 
+        paceOfOccurence: this.placeOfOccurence, 
+        fetalOrInfant: this.fetalOrInfant, 
+        pregnantDeceased: this.pregnantDeceased
+      })
       this.notificationMessage('Form submitted successfully!');
     }
   }
