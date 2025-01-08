@@ -117,7 +117,7 @@ export class AllAssignedComponent implements OnInit {
       icdCodes: this.icdCodes?.map((code: any) => {
         return {
           label: code?.name,
-          value: code,
+          value: code?.uuid,
         }
       }),
       fieldsMapping: this.fieldsMapping

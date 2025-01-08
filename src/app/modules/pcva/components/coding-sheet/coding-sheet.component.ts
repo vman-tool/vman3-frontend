@@ -97,6 +97,7 @@ export class CodingSheetComponent implements OnInit {
     console.log('Form submitted', this.frameA, this.frameB, this.mannerOfDeath, this.placeOfOccurence, this.fetalOrInfant, this.pregnantDeceased);
     if(this.validateframeA() && this.validateframeB()){
       this.save.emit({
+        assigned_va: this.vaRecord?.instanceid,
         frameA: this.frameA, 
         frameB: this.frameB, 
         mannerOfDeath: this.mannerOfDeath, 
@@ -104,7 +105,6 @@ export class CodingSheetComponent implements OnInit {
         fetalOrInfant: this.fetalOrInfant, 
         pregnantDeceased: this.pregnantDeceased
       })
-      this.notificationMessage('Form submitted successfully!');
     }
   }
 

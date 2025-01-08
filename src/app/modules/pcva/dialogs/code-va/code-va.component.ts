@@ -1,9 +1,10 @@
 import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
 import { map, Observable } from 'rxjs';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-code-va',
@@ -17,10 +18,19 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
+    private matDialogRef: MatDialogRef<CodeVaComponent>,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService
+    private indexedDBService: IndexedDBService,
+    private snackBar: MatSnackBar
   ) { }
    
+  notificationMessage(message: string): void {
+    this.snackBar.open(`${message}`, 'close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 3 * 1000,
+    });
+  }
 
   ngOnInit(): void {
     this.getVaRecord();
@@ -46,5 +56,19 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
       (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
     }
+  }
+
+  onSave(coded_va: any): void {
+  //  console.log(coded_va);
+    this.vaRecordsService.codeAssignedVA(coded_va).subscribe({
+      next: (response: any) => {
+        this.notificationMessage('VA coded successfully!');
+        this.matDialogRef.close();
+      },
+      error: (error: any) => {
+        this.notificationMessage('Failed to submit VA code!');
+        console.error(error);
+      }
+    })
   }
 }
