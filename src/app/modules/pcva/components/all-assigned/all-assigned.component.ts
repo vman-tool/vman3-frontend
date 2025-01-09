@@ -72,7 +72,7 @@ export class AllAssignedComponent implements OnInit {
     ).pipe(
       map((response: any) => {
         if(!this.headers){
-          this.headers = response?.data[0]?.vaId ? Object.keys(response?.data[0]?.vaId) : []
+          this.headers = response?.data[0]?.vaId ? Object.keys(response?.data[0])?.filter((column: string) => column.toLowerCase() !== 'id') : []
         }
 
         // TODO: Add total records for pagination to work 
