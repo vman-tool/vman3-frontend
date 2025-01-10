@@ -33,7 +33,7 @@
                 </mat-expansion-panel>
                 <mat-expansion-panel (opened)="panelBOpenState.set(true)" (closed)="panelBOpenState.set(false)" hideToggle>
                     <mat-expansion-panel-header class="mat-expansion-panel-header-colored">
-                        <mat-panel-title> FRAME A <br> {{panelBOpenState() ? '▼' : '▶'}} Medical data: Part 1 and 2
+                        <mat-panel-title> {{panelBOpenState() ? '▼' : '▶'}} (FRAME A) Medical data: Part 1 and 2
                         </mat-panel-title>
                     </mat-expansion-panel-header>
                     <tr class="grid grid-cols-12 grid-rows-5 frameA">
@@ -107,7 +107,7 @@
 
                 <mat-expansion-panel (opened)="panelCOpenState.set(true)" (closed)="panelCOpenState.set(false)" hideToggle>
                     <mat-expansion-panel-header class="mat-expansion-panel-header-colored">
-                        <mat-panel-title> FRAME B <br> {{panelCOpenState() ? '▼' : '▶'}} Other medical data
+                        <mat-panel-title> {{panelCOpenState() ? '▼' : '▶'}} (FRAME B) Other medical data
                         </mat-panel-title>
                     </mat-expansion-panel-header>
                     <tr class="grid grid-cols-12 mt-2">
@@ -422,7 +422,20 @@
                                 </tr>
                             </mat-expansion-panel>
                         </mat-accordion>
-                </mat-expansion-panel>
+                    </mat-expansion-panel>
+                    <mat-expansion-panel [expanded]="panelClinicalOpenState()" (opened)="panelClinicalOpenState.set(true)"
+                    (closed)="panelClinicalOpenState.set(false)" hideToggle>
+                        <mat-expansion-panel-header class="mat-expansion-panel-header-colored">
+                            <mat-panel-title> {{panelClinicalOpenState() ? '▼' : '▶'}} Clinical Notes
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <tr class="grid grid-cols-12 mt-2">
+                            <td class="col-span-12">
+                                <textarea name="clinical_notes" id="" class="w-[100%] min-h-[200px] max-h-[300px] clinical-notes"></textarea>
+                            </td>
+                        </tr>
+                    </mat-expansion-panel>
+                    
             </mat-accordion>
         </tbody>
     </table>

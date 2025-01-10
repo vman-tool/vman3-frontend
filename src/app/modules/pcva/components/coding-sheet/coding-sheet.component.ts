@@ -22,6 +22,7 @@ export class CodingSheetComponent implements OnInit {
   readonly subPanelBOpenState = signal(false);
   readonly subPanelCOpenState = signal(false);
   readonly subPanelDOpenState = signal(false);
+  readonly panelClinicalOpenState = signal(false);
   
   gender: string = "";
   birthDate: string = "";

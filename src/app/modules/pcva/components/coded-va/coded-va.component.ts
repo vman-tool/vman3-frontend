@@ -3,6 +3,7 @@ import { CodedVaService } from '../../services/coded-va/coded-va.service';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
 
 @Component({
   selector: 'app-coded-va',
@@ -18,6 +19,8 @@ export class CodedVaComponent implements OnInit {
   pageNumber?: number = 0;
   pageSizeOptions = [10, 20, 50, 100]
   limit?: number;
+  fieldsMapping: any;
+  icdCodes: any;
 
   constructor(
     private codedVaService: CodedVaService,
@@ -58,6 +61,18 @@ export class CodedVaComponent implements OnInit {
     }
 
     onOpenVA(va: any){
+      let dialogConfig = new MatDialogConfig();
+      dialogConfig.autoFocus = true;
+      dialogConfig.width = "95vw";
+      dialogConfig.height = "90vh";
+      dialogConfig.panelClass = "cdk-overlay-pane"
+      dialogConfig.data = {
+        va: va,
+      }
+      this.dialog.open(ViewVaComponent, dialogConfig)
+    }
+
+    onUpdateCodedVA(va: any){
         let dialogConfig = new MatDialogConfig();
         dialogConfig.autoFocus = true;
         dialogConfig.width = "95vw";
@@ -65,8 +80,16 @@ export class CodedVaComponent implements OnInit {
         dialogConfig.panelClass = "cdk-overlay-pane"
         dialogConfig.data = {
           va: va,
+          current_user: this.current_user,
+          icdCodes: this.icdCodes?.map((code: any) => {
+            return {
+              label: code?.name,
+              value: code?.uuid,
+            }
+          }),
+          fieldsMapping: this.fieldsMapping
         }
-        this.dialog.open(ViewVaComponent, dialogConfig)
+        this.dialog.open(CodeVaComponent, dialogConfig)
       }
   
     onPageChange(event: any) {
