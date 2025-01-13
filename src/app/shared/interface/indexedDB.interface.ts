@@ -9,16 +9,11 @@ export interface MyDB extends DBSchema {
   }
 }
 
-interface StoreRecord {
-  key: string;
-  value: any;
-}
 
-
-export interface VmanIndexedDB extends DBSchema {
-  [key: string]: {
+export interface IndexedDBObjectStore extends DBSchema {
+  [storeName: string]: {
     key: string;
-    value: StoreRecord;
+    value: any;
   };
 }
 

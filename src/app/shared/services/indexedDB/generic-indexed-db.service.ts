@@ -1,26 +1,20 @@
 import { Injectable } from '@angular/core';
-import { INDEXED_DB_DATABASE_NAME, INDEXED_DB_VERSION } from 'app/shared/constants/indexedDB.constants';
-import { VmanIndexedDB, ObjectStoreConfig } from 'app/shared/interface/indexedDB.interface';
-import { openDB, IDBPDatabase, StoreNames } from 'idb';
+import { INDEX_DB_OBJECTSTORES, INDEXED_DB_DATABASE_NAME2, INDEXED_DB_VERSION, OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
+import { IndexedDBObjectStore } from 'app/shared/interface/indexedDB.interface';
+import { openDB, IDBPDatabase } from 'idb';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GenericIndexedDbService {
-  private dbPromise: Promise<IDBPDatabase<VmanIndexedDB>>;
-  private cache = new Map<string, Map<string, any>>();
+  private dbPromise: Promise<IDBPDatabase>;
+  private cache = new Map<string, any>();
   private maxRetries = 3;
   private currentRetry = 0;
-  private objectStores: ObjectStoreConfig[] = [];
 
   constructor() {
     this.dbPromise = this.initDB();
     this.setupErrorHandling();
-  }
-
-  registerObjectStore(config: ObjectStoreConfig) {
-    this.objectStores.push(config);
-    this.cache.set(config.name, new Map());
   }
 
   private setupErrorHandling() {
@@ -47,8 +41,10 @@ export class GenericIndexedDbService {
 
       try {
         await this.closeDatabase();
-        this.clearAllCaches();
-        this.dbPromise = this.initDB(true);
+
+        this.cache.clear();
+
+        this.dbPromise = this.initDB();
         await this.dbPromise;
 
         console.log('Database successfully recovered');
@@ -68,51 +64,39 @@ export class GenericIndexedDbService {
     }
   }
 
-  private clearAllCaches() {
-    this.cache.forEach(storeCache => storeCache.clear());
-  }
-
   private reloadPage() {
     localStorage.setItem('indexeddb_recovery', 'true');
     window.location.reload();
   }
 
-  private async initDB(is_another_version?: boolean) {
-    const version_number = is_another_version
-      ? Number(localStorage.getItem(INDEXED_DB_VERSION) || "1") + 1
-      : Number(localStorage.getItem(INDEXED_DB_VERSION) || "1");
+  private async initDB() {
+    const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION) || "1")
 
-    const objectStores = this.objectStores;
+    const handleBlocking = () => {
+      console.warn('Database blocking. Reloading page...');
+      this.reloadPage();
+    };
+
+    const handleTerminated = () => {
+      console.error('Database terminated unexpectedly');
+      this.handleDatabaseError();
+    };
 
     try {
-      return await openDB<VmanIndexedDB>(INDEXED_DB_DATABASE_NAME, version_number, {
+      return this.dbPromise ? this.dbPromise : await openDB(INDEXED_DB_DATABASE_NAME2, version_number, {
         upgrade(db) {
-          objectStores.forEach(store => {
-            const storeName = store.name as StoreNames<VmanIndexedDB>
+          INDEX_DB_OBJECTSTORES.forEach((storeName: string) => {
             if (!db.objectStoreNames.contains(storeName)) {
-              const objectStore = db.createObjectStore(storeName, { keyPath: store.keyPath });
-
-              // store.indexes?.forEach(index => {
-              //   const indexName = index.name as never;
-              //   if (!objectStore.indexNames.contains(indexName)) {
-              //     objectStore.createIndex(indexName, index.keyPath as string, index.options);
-              //   }
-              // });
+              db.createObjectStore(storeName , { keyPath: 'key' });
             }
-          });
+          })
           localStorage.setItem(INDEXED_DB_VERSION, String(version_number + 1));
         },
         blocked() {
           console.warn('Database blocked. Closing other tabs...');
         },
-        blocking: () => {
-          console.warn('Database blocking. Reloading page...');
-          this.reloadPage();
-        },
-        terminated: () => {
-          console.error('Database terminated unexpectedly');
-          this.handleDatabaseError();
-        }
+        blocking: handleBlocking,
+        terminated: handleTerminated
       });
     } catch (error) {
       console.error('Failed to initialize database:', error);
@@ -120,7 +104,7 @@ export class GenericIndexedDbService {
     }
   }
 
-  private async getDb(): Promise<IDBPDatabase<VmanIndexedDB>> {
+  private async getDb(): Promise<IDBPDatabase> {
     try {
       if (!this.dbPromise) {
         this.dbPromise = this.initDB();
@@ -132,84 +116,59 @@ export class GenericIndexedDbService {
     }
   }
 
-  async add(storeName: string, items: any) {
-    // try {
-    //   const db = await this.getDb();
-    //   const storeCache = this.cache.get(storeName);
-
-    //   if (Array.isArray(items)) {
-    //     for (const item of items) {
-    //       await db.put(storeName, item);
-    //       if (storeCache) {
-    //         storeCache.set(item[this.getKeyPath(storeName)], item);
-    //       }
-    //     }
-    //   } else {
-    //     await db.put(storeName, items);
-    //     if (storeCache) {
-    //       storeCache.set(items[this.getKeyPath(storeName)], items);
-    //     }
-    //   }
-
-    //   return `Items added successfully to ${storeName}`;
-    // } catch (error) {
-    //   IndexedDBService
-    //   await this.handleDatabaseError();
-    //   throw error;
-    // }
-  }
-
-  private getKeyPath(storeName: string): string {
-    const store = this.objectStores.find(s => s.name === storeName);
-    return store?.keyPath || 'key';
-  }
-
-  async get(storeName: string, key?: string) {
-    // try {
-    //   const db = await this.getDb();
-    //   const storeCache = this.cache.get(storeName);
-
-    //   if (key) {
-    //     if (storeCache?.has(key)) {
-    //       return storeCache.get(key);
-    //     }
-    //     const item = await db.get(storeName, key);
-    //     if (item && storeCache) {
-    //       storeCache.set(key, item);
-    //     }
-    //     return item;
-    //   } else {
-    //     const items = await db.getAll(storeName);
-    //     if (storeCache) {
-    //       items.forEach(item => {
-    //         storeCache.set(item[this.getKeyPath(storeName)], item);
-    //       });
-    //     }
-    //     return items;
-    //   }
-    // } catch (error) {
-    //   await this.handleDatabaseError();
-    //   return key ? null : [];
-    // }
-  }
-
-  async getByKeys(storeName: string, keys: string[]) {
+  async addDataAsObjectValues(storeName: string, data: any) {
     try {
-      const results: any[] = [];
-      const storeCache = this.cache.get(storeName);
-
-      for (const key of keys) {
-        if (storeCache?.has(key)) {
-          results.push(storeCache.get(key));
-        } else {
-          const item = await this.get(storeName, key);
-          if (item) {
-            results.push(item);
-          }
-        }
+      const db = await this.getDb();
+      for (let key of Object.keys(data)) {
+        let item = {
+          key: key,
+          value: data[key]
+        };
+        await db.put(storeName, item);
       }
+      return "Data added successfully to the local database";
+    } catch (error) {
+      await this.handleDatabaseError();
+      throw error;
+    }
+  }
 
-      return results;
+  async addDataAsIs(storeName: string, keyName: string, data: any) {
+    try {
+      const db = await this.getDb();
+      if(db){
+        let item = {
+          key: keyName,
+          value: data
+        };
+        await db.put(storeName , item);
+      } else {
+        this.initDB();
+      }
+      return "Questions as object added successfully to the local database";
+    } catch (error) {
+      await this.handleDatabaseError();
+      throw error;
+    }
+  }
+
+  async getData(storeName: string, keyName?: string) {
+    try {
+      const db = await this.getDb();
+      const data = keyName
+        ? await db.get(storeName , keyName)
+        : await db.getAll(storeName ) || [];
+      return data;
+    } catch (error) {
+      await this.handleDatabaseError();
+      return [];
+    }
+  }
+
+  async getDataFromObjectStore(storeName: string, key: string) {
+    try {
+      const db = await this.getDb();
+      return db.get(storeName, key);
     } catch (error) {
       await this.handleDatabaseError();
       throw error;
@@ -220,22 +179,19 @@ export class GenericIndexedDbService {
     try {
       const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION));
 
-      this.dbPromise = openDB<VmanIndexedDB>(INDEXED_DB_DATABASE_NAME, version_number + 1, {
+      this.dbPromise = openDB(INDEXED_DB_DATABASE_NAME2, version_number + 1, {
         upgrade(db) {
-          // if (db.objectStoreNames.contains(storeName)) {
-          //   db.deleteObjectStore(storeName);
-          //   localStorage.setItem(INDEXED_DB_VERSION, String(version_number + 1));
-          //   console.log(`Object store ${storeName} deleted successfully`);
-          // } else {
-          //   console.log(`Object store ${storeName} does not exist`);
-          // }
+          if (db.objectStoreNames.contains(storeName)) {
+            db.deleteObjectStore(storeName );
+            localStorage.setItem(INDEXED_DB_VERSION, String(version_number + 1));
+            console.log(`Object store ${storeName} deleted successfully`);
+          } else {
+            console.log(`Object store ${storeName} does not exist`);
+          }
         }
       });
 
       await this.dbPromise;
-      this.cache.delete(storeName);
-      this.objectStores = this.objectStores.filter(store => store.name !== storeName);
-
       console.log('Database opened and upgrade completed');
     } catch (error) {
       await this.handleDatabaseError();
@@ -243,21 +199,19 @@ export class GenericIndexedDbService {
     }
   }
 
-  async deleteDatabase(dbName: string) {
+  async deleteDatabase() {
     try {
       await this.closeDatabase();
-      const deleteRequest = indexedDB.deleteDatabase(dbName);
+      const deleteRequest = indexedDB.deleteDatabase(INDEXED_DB_DATABASE_NAME2);
 
       return new Promise((resolve, reject) => {
         deleteRequest.onsuccess = () => {
-          console.log(`Database '${dbName}' deleted successfully`);
-          this.clearAllCaches();
-          this.objectStores = [];
+          console.log(`Database '${INDEXED_DB_DATABASE_NAME2}' deleted successfully`);
           resolve(true);
         };
 
         deleteRequest.onerror = () => {
-          console.error(`Failed to delete database '${dbName}':`, deleteRequest.error);
+          console.error(`Failed to delete database '${INDEXED_DB_DATABASE_NAME2}':`, deleteRequest.error);
           reject(deleteRequest.error);
         };
 
