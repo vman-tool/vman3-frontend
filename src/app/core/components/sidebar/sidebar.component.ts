@@ -157,18 +157,18 @@ export class SidebarComponent {
       }
     }
 
-    const questions = await this.indexedDBService.getQuestions();
-    // const questions = await this.genericIndexedDBService.getData(OBJECTSTORE_VA_QUESTIONS);
+    // const questions = await this.indexedDBService.getQuestions();
+    const questions = await this.genericIndexedDBService.getData(OBJECTSTORE_VA_QUESTIONS);
 
     if(!questions.length){
       await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
         map(async (response: any) => {
           if(response?.data){
-            await this.indexedDBService.addQuestions(response?.data);
-            await this.indexedDBService.addQuestionsAsObject(response?.data);
+            // await this.indexedDBService.addQuestions(response?.data);
+            // await this.indexedDBService.addQuestionsAsObject(response?.data);
 
-            // await this.genericIndexedDBService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
-            // await this.genericIndexedDBService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS,response?.data);
+            await this.genericIndexedDBService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
+            await this.genericIndexedDBService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS,response?.data);
           }
         })
       ));

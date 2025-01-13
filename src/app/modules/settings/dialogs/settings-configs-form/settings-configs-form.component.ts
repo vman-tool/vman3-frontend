@@ -15,6 +15,8 @@ import {
   SystemConfig,
 } from '../../interface';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
   selector: 'app-settings-configs-form',
@@ -43,6 +45,7 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
     private settingsConfigService: SettingConfigService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
     private snackBar: MatSnackBar
   ) {
     this.selectedTab = data.type || 'system_configs'; // Initialize selected tab based on input data
@@ -51,7 +54,8 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       this.selectedTab === 'va_summary' ||
       this.selectedTab === 'field_mapping'
     ) {
-      this.indexedDBService.getQuestions().then((questions) => {
+      // this.indexedDBService.getQuestions().then((questions) => {
+      this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS).then((questions) => {
         this.fields = questions?.map((question: any) => {
           return {
             label: question.value?.label,

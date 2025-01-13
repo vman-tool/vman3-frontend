@@ -5,6 +5,8 @@ import { map, Observable } from 'rxjs';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
   selector: 'app-code-va',
@@ -21,6 +23,7 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
     private matDialogRef: MatDialogRef<CodeVaComponent>,
     private vaRecordsService: VaRecordsService,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
     private snackBar: MatSnackBar
   ) { }
    
@@ -47,7 +50,8 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
   }
 
   async getQuestions(): Promise<any> {
-    this.odkQuestions = await this.indexedDBService.getQuestions()
+    // this.odkQuestions = await this.indexedDBService.getQuestions()
+    this.odkQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS)
   }
 
   ngAfterViewInit() {
