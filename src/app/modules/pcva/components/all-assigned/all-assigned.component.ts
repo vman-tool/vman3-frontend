@@ -119,7 +119,7 @@ export class AllAssignedComponent implements OnInit {
       current_user: this.current_user,
       icdCodes: this.icdCodes?.map((code: any) => {
         return {
-          label: code?.name,
+          label: `(${code?.code}) ${code?.name}`,
           value: code?.uuid,
         }
       }),

@@ -41,7 +41,7 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
   }
 
   getVaRecord(): any {
-    this.vaRecord$ = this.vaRecordsService.getVARecords(undefined, undefined, undefined, undefined, false, this.data?.va?.vaId).pipe(
+    this.vaRecord$ = this.vaRecordsService.getVARecords(undefined, undefined, undefined, undefined, false, this.data?.va).pipe(
       map((response: any) => {
           response['data'] = filter_keys_without_data(response.data)
           return response

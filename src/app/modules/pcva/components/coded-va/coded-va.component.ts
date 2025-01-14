@@ -1,9 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CodedVaService } from '../../services/coded-va/coded-va.service';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { catchError, lastValueFrom, map, Observable, throwError } from 'rxjs';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_ICD10 } from 'app/shared/constants/indexedDB.constants';
+import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
+import { settingsConfigData } from 'app/modules/settings/interface';
+import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 
 @Component({
   selector: 'app-coded-va',
@@ -24,12 +29,31 @@ export class CodedVaComponent implements OnInit {
 
   constructor(
     private codedVaService: CodedVaService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private genericIndexedDbService: GenericIndexedDbService,
+    private settingConfigService: SettingConfigService
   ) {}
   
   ngOnInit() {
     this.current_user = JSON.parse(localStorage.getItem('current_user') || "")
     this.loadCodedVAs()
+    this.loadSettings()
+  }
+
+  async loadSettings(){
+    if(!this.icdCodes){
+      const codes = await this.genericIndexedDbService.getDataObjectStore(OBJECTSTORE_ICD10, OBJECTKEY_ICD10_INDEXDB);
+      this.icdCodes = codes?.value;
+    }
+
+    this.fieldsMapping ? this.fieldsMapping : this.settingConfigService.getSettingsConfig().subscribe({
+      next: (response: settingsConfigData | null) => {
+        if (response != null) {
+          this.fieldsMapping = response.field_mapping
+        }
+      },
+      error: (error: any) => console.error('Error fetching settings config:', error)
+    });
   }
 
   loadCodedVAs() {
@@ -45,7 +69,7 @@ export class CodedVaComponent implements OnInit {
       ).pipe(
         map((response: any) => {
           if(!this.headers){
-            this.headers = response?.data[0]?.vaId ? Object.keys(response?.data[0])?.filter((column: string) => column.toLowerCase() !== 'id') : []
+            this.headers = response?.data[0]?.vaId ? Object.keys(response?.data[0])?.filter((column: string) => column.toLowerCase() !== 'id' && column.toLowerCase() !== 'assignments') : []
           }
   
           // TODO: Add total records for pagination to work 
@@ -72,7 +96,8 @@ export class CodedVaComponent implements OnInit {
       this.dialog.open(ViewVaComponent, dialogConfig)
     }
 
-    onUpdateCodedVA(va: any){
+    async onUpdateCodedVA(va: any){
+      const codedData: any = await lastValueFrom(this.codedVaService.getCodedVADetails(undefined, false, va, this.current_user?.uuid, true))
         let dialogConfig = new MatDialogConfig();
         dialogConfig.autoFocus = true;
         dialogConfig.width = "95vw";
@@ -83,11 +108,12 @@ export class CodedVaComponent implements OnInit {
           current_user: this.current_user,
           icdCodes: this.icdCodes?.map((code: any) => {
             return {
-              label: code?.name,
+              label: `(${code?.code}) ${code?.name}`,
               value: code?.uuid,
             }
           }),
-          fieldsMapping: this.fieldsMapping
+          fieldsMapping: this.fieldsMapping,
+          codedData: codedData?.data
         }
         this.dialog.open(CodeVaComponent, dialogConfig)
       }

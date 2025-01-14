@@ -12,6 +12,7 @@ export class CodingSheetComponent implements OnInit {
   @Input() icdCodes?: any[]; 
   @Input() settings: FieldMapping = {} as FieldMapping; 
   @Input() vaRecord?: any;
+  @Input() codedVA?: any;
 
   @Output() save: EventEmitter<any> = new EventEmitter<any>();
 
@@ -92,6 +93,24 @@ export class CodingSheetComponent implements OnInit {
     this.gender = sex !== 'male' && sex !== 'female' ? 'unknown' : sex;
     this.birthDate = this.vaRecord[this.settings.birth_date];
     this.deathDate = this.vaRecord[this.settings.death_date];
+
+    this.assignValuesForUpdate();
+  }
+
+  assignValuesForUpdate(){
+    const latestVA = this.codedVA?.length ? this.codedVA[0] : undefined
+    if(latestVA){
+      const selectedA = [{
+        label: `${latestVA?.frameA?.a?.code} ${latestVA?.frameA?.a?.name}`,
+        values: latestVA?.frameA?.a?.uuid
+      }]
+
+      this.frameB
+      this.mannerOfDeath
+      this.placeOfOccurence
+      this.fetalOrInfant
+      this.pregnantDeceased
+    }
   }
 
   onSubmitform(){

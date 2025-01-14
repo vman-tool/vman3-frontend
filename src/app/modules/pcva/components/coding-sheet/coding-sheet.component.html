@@ -49,7 +49,7 @@
                             <label class="mr-4">
                                 a: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.a = $event" [options]="icdCodes!"
+                            <app-searchable-multi-select (change)="frameA.a = $event" [selectedOptions]="[]" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                 
                         </td>
