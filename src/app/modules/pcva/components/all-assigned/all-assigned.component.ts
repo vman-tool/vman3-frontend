@@ -7,6 +7,9 @@ import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
 import { PcvaSettingsService } from 'app/modules/settings/services/pcva-settings.service';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { FieldMapping, settingsConfigData } from 'app/modules/settings/interface';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_ICD10 } from 'app/shared/constants/indexedDB.constants';
+import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
 
 @Component({
   selector: 'app-all-assigned',
@@ -30,7 +33,8 @@ export class AllAssignedComponent implements OnInit {
     private allAssignedService: AllAssignedService, 
     public dialog: MatDialog,
     private pcvaSettingsService: PcvaSettingsService,
-    private settingConfigService: SettingConfigService
+    private settingConfigService: SettingConfigService,
+    private genericIndexedDbService: GenericIndexedDbService
   ){}
 
   ngOnInit(): void {
@@ -39,15 +43,14 @@ export class AllAssignedComponent implements OnInit {
     this.getVASettings();
   }
 
-  getVASettings() {
+  async getVASettings() {
     // TODO: Use ICD10/ICD11 Depending on user settings.
-    
-    this.icdCodes ? this.icdCodes : this.pcvaSettingsService.getICD10Codes({paging: false}).subscribe({
-      next: (response: any) => {
-        this.icdCodes = response?.data;
-      },
-      error: (error: any) => console.error('Error fetching ICD10 codes:', error)
-    });
+
+    if(!this.icdCodes){
+      const codes = await this.genericIndexedDbService.getDataObjectStore(OBJECTSTORE_ICD10, OBJECTKEY_ICD10_INDEXDB);
+      this.icdCodes = codes?.value;
+    }
+
     this.fieldsMapping ? this.fieldsMapping : this.settingConfigService.getSettingsConfig().subscribe({
       next: (response: settingsConfigData | null) => {
         if (response != null) {
