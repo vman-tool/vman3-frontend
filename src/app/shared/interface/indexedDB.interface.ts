@@ -8,3 +8,19 @@ export interface MyDB extends DBSchema {
     value: any;
   }
 }
+
+
+export interface IndexedDBObjectStore extends DBSchema {
+  [storeName: string]: {
+    key: string;
+    value: any;
+  };
+}
+
+export interface ObjectStoreConfig {
+  name: string;
+  keyPath: string;
+  indexes?: {
+    [key: string]: { key: IDBValidKey; value: string };
+  };
+}

@@ -21,6 +21,9 @@ import { UserFormComponent } from './dialogs/user-form/user-form.component';
 import { ViewUserComponent } from './dialogs/view-user/view-user.component';
 import { UpdateSystemImagesComponent } from './components/update-system-images/update-system-images.component';
 import { LabelAccessFieldsComponent } from './components/label-access-fields/label-access-fields.component';
+import { PcvaSettingsComponent } from './components/pcva-settings/pcva-settings.component';
+import { Icd10CodesComponent } from './components/icd-10-codes/icd-10-codes.component';
+import { AddIcd10CodesComponent } from './dialogs/add-icd10-codes/add-icd10-codes.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +41,10 @@ import { LabelAccessFieldsComponent } from './components/label-access-fields/lab
     UserFormComponent,
     ViewUserComponent,
     UpdateSystemImagesComponent,
-    LabelAccessFieldsComponent
+    LabelAccessFieldsComponent,
+    PcvaSettingsComponent,
+    Icd10CodesComponent,
+    AddIcd10CodesComponent
   ],
   imports: [
     CommonModule,

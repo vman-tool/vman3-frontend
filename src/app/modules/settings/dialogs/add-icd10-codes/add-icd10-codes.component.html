@@ -1,0 +1,72 @@
+<div class="p-4 bg-white shadow-md">
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12">
+            <div class="mt-2 ml-4 flex justify-between items-center">
+                <div>
+                    <span class="text-2xl text-start">ADD ICD 10 CODE</span>
+                </div>
+                <div class="mr-4">
+                    <mat-icon class="cursor-pointer" (click)="onClose()">close</mat-icon>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-12" *ngIf="!categories && loading">
+            <mat-progress-bar class="mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
+            </mat-progress-bar>
+        </div>
+        <div class="col-span-12">
+            <mat-dialog-content class="center-content">
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12">
+                        <label class="block text-gray-700">Code:</label>
+                        <input type="text" [(ngModel)]="code"
+                            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="col-span-12">
+                        <label class="block text-gray-700">Name:</label>
+                        <input type="text" [(ngModel)]="name"
+                            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    </div>
+                    <div class="col-span-12" *ngIf="categories || !loading">
+                        <label class="block text-gray-700">Category:</label>
+                        <app-searchable-multi-select
+                            [allowedAddOption]="true"
+                            [selectedOptions]="selectedCategories"
+                            (change)="onSelectCategory($event)"
+                            (addOption)="createCategory($event)"
+                            [options]="categories"
+                            [placeholder]="'Select Disease'" [multiSelect]="false"
+                        ></app-searchable-multi-select>
+                    </div>
+                    <div class="col-span-12 flex">
+                        <span class="mr-5">OR upload CSV / Excel file 
+                            <a class="text-blue-600 hover:text-blue-800 hover:cursor-pointer" href="/assets/sample-icd10-file.xlsx" download="sample-icd10-file.xlsx">
+                                download sample file
+                            </a>
+                        </span>
+                        <div class="relative w-12 h-12">
+                            <input type="file" id="fileInput1"
+                                (change)="onFileSelected($event)"
+                                class="relative w-full h-full opacity-0 cursor-pointer z-10" accept=".csv,.xlsx,.xls,.json">
+                            <label for="fileInput1"
+                                class="absolute inset-0 flex items-center justify-center cursor-pointer rounded-lg">
+                                <span class="text-gray-600 text-4xl">
+                                    <i class="ph-cloud-arrow-up"></i>
+                                </span>
+                                <span class="text-4xl">
+                                    <i class="ph-cancel"></i>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </mat-dialog-content>
+        </div>
+    </div>
+    <mat-dialog-actions align="end">
+        <div class="flex items-center justify-between mt-4">
+            <span class="px-2 text-2xl text-start"></span>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onSave($event)">Save</button>
+        </div>
+    </mat-dialog-actions>
+</div>

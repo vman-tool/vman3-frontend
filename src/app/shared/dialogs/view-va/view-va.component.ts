@@ -6,6 +6,9 @@ import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.servi
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 import { settingsConfigData } from 'app/modules/settings/interface';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
   selector: 'app-view-va',
@@ -23,6 +26,7 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
     @Inject(MAT_DIALOG_DATA) public data: any,
     private vaRecordsService: VaRecordsService,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
     private settingConfigService: SettingConfigService
   ) { }
    
@@ -34,7 +38,10 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
   async getSummaryConfigurations(){
     this.summaryInfo = await lastValueFrom(this.settingConfigService.getSettingsConfig()?.pipe(
       map(async (response: settingsConfigData| null) => {
-        return response !== null ? await this.indexedDBService.getQuestionsByKeys(response?.va_summary) : null
+        return response !== null 
+        // ? await this.indexedDBService.getQuestionsByKeys(response?.va_summary) 
+        ? await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, response?.va_summary) 
+        : null
       })
     ))
   }
@@ -49,7 +56,8 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
   }
 
   async getQuestions(): Promise<any> {
-    this.odkQuestions = await this.indexedDBService.getQuestions()
+    // this.odkQuestions = await this.indexedDBService.getQuestions()
+    this.odkQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS)
     this.getSummaryConfigurations();
   }
 
@@ -58,8 +66,6 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
     if (dialogElement) {
       (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
-      (dialogElement as HTMLElement).style.borderRadius = '10px';
-      (dialogElement as HTMLElement).classList.add('rounded-full');
     }
   }
 

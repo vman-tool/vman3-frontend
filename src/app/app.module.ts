@@ -15,8 +15,6 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { AuthInterceptor } from './core/interceptors/csrfinterceptor.service';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ConfigService } from './app.service';
-import { lastValueFrom, Observable } from 'rxjs';
-import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
 import { SharedConfirmationComponent } from './shared/dialogs/shared-confirmation/shared-confirmation.component';
 
 // import { NgbModal } from '@ng-bootstrap/ng-bootstrap';

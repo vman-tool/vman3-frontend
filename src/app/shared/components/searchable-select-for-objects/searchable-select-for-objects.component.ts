@@ -18,7 +18,7 @@ export class SearchableSelectForObjectsComponent implements OnInit {
   @Input() items: SearchFieldOption[] = [];
   @Input() placeholder: string = 'Search...';
   @Input() value_as_tooltip: boolean = true;
-  @Input() multiSelect: boolean = true;
+  @Input() multiSelect: boolean = false;
   @Input() inputSelectedItems: any[] = [];
 
   @Input() reset: EventEmitter<any> = new EventEmitter();
@@ -57,15 +57,19 @@ export class SearchableSelectForObjectsComponent implements OnInit {
     const filterValue = this.searchTerm.toLowerCase();
     this.filteredItems = this.items.filter(
       (item) =>
-        (item.label && item.label?.toLowerCase().includes(filterValue)) ||
+        (item?.label && item?.label?.toLowerCase().includes(filterValue)) ||
         (typeof item?.value !== 'object' &&
-          String(item.value).toLowerCase().includes(filterValue))
+          String(item?.value).toLowerCase().includes(filterValue))
     );
   }
 
   selectItem(item: SearchFieldOption, e?: Event): void {
     this.selectedItems = [item?.value];
     this.select.emit(this.selectedItems[0]);
+    if(!this.multiSelect){
+      this.isOpen = false;
+      this.selectedItemsString = item?.label ? item?.label : item?.value;
+    }
   }
 
   checkForItem(item: SearchFieldOption, e?: Event): void {
@@ -82,10 +86,8 @@ export class SearchableSelectForObjectsComponent implements OnInit {
     const itemIndex = this.selectedItems.indexOf(item.value);
 
     if (itemIndex > -1) {
-      // If item is already selected, remove it
       this.selectedItems.splice(itemIndex, 1);
     } else {
-      // If item is not selected, add it
       this.selectedItems.push(item.value);
     }
 

@@ -54,8 +54,6 @@ export class RoleFormComponent implements OnInit, AfterViewInit {
     if (dialogElement) {
       (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
-      (dialogElement as HTMLElement).style.borderRadius = '10px';
-      (dialogElement as HTMLElement).classList.add('rounded-full');
     }
   }
 

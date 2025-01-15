@@ -7,6 +7,8 @@ import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { MatDialog } from '@angular/material/dialog';
+import { INDEXED_DB_DATABASE_NAME } from 'app/shared/constants/indexedDB.constants';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +25,7 @@ export class AuthService {
     private http?: HttpClient,
     private router?: Router,
     private indexedDBService?: IndexedDBService,
+    private genericIndexedDBService?: GenericIndexedDbService
   ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error
@@ -203,11 +206,13 @@ export class AuthService {
     localStorage.removeItem("current_user");
     
     this.clearPrivilegeCache();
-    this.indexedDBService?.deleteDatabase("vmanDB");
+    this.indexedDBService?.deleteDatabase(INDEXED_DB_DATABASE_NAME);
+    this.genericIndexedDBService?.deleteDatabase();
   }
   
   clearLocalStorage() {
     localStorage.clear();
-    this.indexedDBService?.deleteDatabase("vmanDB");
+    this.indexedDBService?.deleteDatabase(INDEXED_DB_DATABASE_NAME);
+    this.genericIndexedDBService?.deleteDatabase();
   }
 }
