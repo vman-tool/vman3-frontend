@@ -29,6 +29,7 @@ export class CodingSheetComponent implements OnInit {
   gender: string = "";
   birthDate: string = "";
   deathDate: string = "";
+  clinicalNotes?: string;
 
   frameA: {
     a?: any,
@@ -39,7 +40,7 @@ export class CodingSheetComponent implements OnInit {
     timeinterval_c?: string,
     d?: any,
     timeinterval_d?: string,
-    constributories?: any[]
+    contributories?: any[]
   } = {}
 
   frameB: {
@@ -52,8 +53,8 @@ export class CodingSheetComponent implements OnInit {
 
   mannerOfDeath: {
     manner?: string,
-    dateofInjury?: string,
-    howexternalOrPoisoningAgent?: string
+    dateOfInjury?: string,
+    howExternalOrPoisoningAgent?: string
   } = {}
 
   placeOfOccurence: {
@@ -117,7 +118,6 @@ export class CodingSheetComponent implements OnInit {
         value: latestVA?.frameA?.b?.uuid
       }] : []
 
-
       this.selectedC = latestVA?.frameA?.c ? [{
         label: `${latestVA?.frameA?.c?.code} ${latestVA?.frameA?.c?.name}`,
         value: latestVA?.frameA?.c?.uuid
@@ -128,23 +128,32 @@ export class CodingSheetComponent implements OnInit {
         value: latestVA?.frameA?.d?.uuid
       }] : []
       
-      this.selectedContributories = latestVA?.frameA?.constributories?.length ? latestVA?.frameA?.constributories?.map((contributory: any) => {
+      this.selectedContributories = latestVA?.frameA?.contributories?.length ? latestVA?.frameA?.contributories?.map((contributory: any) => {
         return {
           label: `${contributory?.code} ${contributory?.name}`,
           value: contributory?.uuid
         }
       }) : []
 
-      this.frameB
-      this.mannerOfDeath
-      this.placeOfOccurence
-      this.fetalOrInfant
-      this.pregnantDeceased
+      this.frameA.timeinterval_a = latestVA?.frameA?.timeinterval_a
+      this.frameA.timeinterval_b = latestVA?.frameA?.timeinterval_b
+      this.frameA.timeinterval_c = latestVA?.frameA?.timeinterval_c
+      this.frameA.timeinterval_d = latestVA?.frameA?.timeinterval_d
+
+      this.frameB = latestVA?.frameB;
+      this.mannerOfDeath = latestVA?.mannerOfDeath
+      this.placeOfOccurence = {
+        place: latestVA?.placeOfOccurence?.place || '',
+        specific: latestVA?.placeOfOccurence?.specific || ''
+      }
+      this.fetalOrInfant = latestVA?.fetalOrInfant
+      this.pregnantDeceased = latestVA?.pregnantDeceased
+      this.clinicalNotes = latestVA?.clinicalNotes
     }
   }
 
   setContributories(contributories: any[]){
-    this.frameA.constributories = contributories;
+    this.frameA.contributories = contributories;
   }
 
   onSubmitform(){
@@ -155,9 +164,10 @@ export class CodingSheetComponent implements OnInit {
         frameA: this.frameA, 
         frameB: this.frameB, 
         mannerOfDeath: this.mannerOfDeath, 
-        paceOfOccurence: this.placeOfOccurence, 
+        placeOfOccurence: this.placeOfOccurence, 
         fetalOrInfant: this.fetalOrInfant, 
-        pregnantDeceased: this.pregnantDeceased
+        pregnantDeceased: this.pregnantDeceased,
+        clinicalNotes: this.clinicalNotes
       })
     }
   }
