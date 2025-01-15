@@ -15,6 +15,10 @@
         </div>
 
         <div class="options-list overflow-auto max-h-[120px]">
+            <div class="option" (click)="isCleared()">
+                <input type="radio" [checked]="!selectedOptions?.length" *ngIf="!multiSelect" name="clear" />
+                No Selection
+            </div>
             <div *ngFor="let option of filteredOptions; trackBy: trackByOption" (click)="selectOption(option)" class="option"
                 [class.selected]="isSelected(option)">
                 <input type="checkbox" [checked]="isSelected(option)" *ngIf="multiSelect" />

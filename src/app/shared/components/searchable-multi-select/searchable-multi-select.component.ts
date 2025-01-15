@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, Directive, HostListener, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, Directive, HostListener, ElementRef, ChangeDetectionStrategy, OnInit } from '@angular/core';
 
 export interface SelectOption {
   value: any;
@@ -11,11 +11,11 @@ export interface SelectOption {
   styleUrls: ['./searchable-multi-select.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchableMultiSelectComponent {
+export class SearchableMultiSelectComponent implements OnInit {
   @Input() options: SelectOption[] = [];
   @Input() placeholder: string = 'Select options';
   @Input() multiSelect: boolean = false;
-  @Input() selectedOptions: SelectOption[] = [];
+  @Input() selectedOptions?: SelectOption[];
   @Input() allowedAddOption: boolean = false;
   @Input() searchLabel: string = "Search options...";
   @Input() allowSearchOptions: boolean = true;
@@ -32,8 +32,12 @@ export class SearchableMultiSelectComponent {
 
   constructor(private elementRef: ElementRef){}
 
+  ngOnInit(): void {
+    this.onChange()
+  }
+
   get displayValue(): string {
-    return this.selectedOptions?.map(opt => opt?.label || opt?.value)?.join(', ');
+    return this.selectedOptions!?.map(opt => opt?.label || opt?.value)?.join(', ');
   }
 
   get filteredOptions(): SelectOption[] {
@@ -57,32 +61,43 @@ export class SearchableMultiSelectComponent {
 
   selectOption(option: SelectOption) {
     if (this.multiSelect) {
-      const index = this.selectedOptions.findIndex(
+      const index = this.selectedOptions!?.findIndex(
         selected => selected?.value === option?.value
       );
-
+      
       if (index > -1) {
-        this.selectedOptions.splice(index, 1);
+        this.selectedOptions?.splice(index, 1);
       } else {
-        this.selectedOptions.push(option);
+        this.selectedOptions?.push(option);
       }
+
     } else {
       this.selectedOptions = [option];
       this.isDropdownOpen = false;
     }
+    this.onChange()
+  }
 
+  onChange(){
     this.change.emit(
       this.multiSelect ?
-        this.selectedOptions?.map(opt => opt.value) :
-        this.selectedOptions[0]?.value
+        this.selectedOptions?.map(opt => opt?.value) :
+        this.selectedOptions?.length ? this.selectedOptions[0]?.value: undefined
     );
   }
 
   isSelected(option: SelectOption): boolean {
-    return this.selectedOptions?.some(
+    return this.selectedOptions!?.some(
       selected => selected?.value === option?.value
     );
   }
+
+  isCleared(){
+    this.selectedOptions = this.multiSelect ? this.selectedOptions : []
+    this.onChange()
+    this.closeDropdown();
+  }
+
 
   closeDropdown() {
     this.isDropdownOpen = false;
@@ -92,7 +107,7 @@ export class SearchableMultiSelectComponent {
   public onClick(target: any) {
     const clickedInside = this.elementRef.nativeElement.contains(target);
     if (!clickedInside) {
-      this.isDropdownOpen = false;
+      this.closeDropdown();
     }
   }
 }

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FieldMapping } from 'app/modules/settings/interface';
+import { SelectOption } from 'app/shared/components/searchable-multi-select/searchable-multi-select.component';
 
 @Component({
   selector: 'app-coding-sheet',
@@ -76,6 +77,12 @@ export class CodingSheetComponent implements OnInit {
     didPregnancyContributed?: string,
   } = {}
 
+  selectedA?: SelectOption[];
+  selectedB?: SelectOption[];
+  selectedC?: SelectOption[];
+  selectedD?: SelectOption[];
+  selectedContributories?: SelectOption[];
+
   constructor(
     private snackBar: MatSnackBar,
   ){}
@@ -100,10 +107,33 @@ export class CodingSheetComponent implements OnInit {
   assignValuesForUpdate(){
     const latestVA = this.codedVA?.length ? this.codedVA[0] : undefined
     if(latestVA){
-      const selectedA = [{
+      this.selectedA = latestVA?.frameA?.a ? [{
         label: `${latestVA?.frameA?.a?.code} ${latestVA?.frameA?.a?.name}`,
-        values: latestVA?.frameA?.a?.uuid
-      }]
+        value: latestVA?.frameA?.a?.uuid
+      }] : []
+
+      this.selectedB = latestVA?.frameA?.b ? [{
+        label: `${latestVA?.frameA?.b?.code} ${latestVA?.frameA?.b?.name}`,
+        value: latestVA?.frameA?.b?.uuid
+      }] : []
+
+
+      this.selectedC = latestVA?.frameA?.c ? [{
+        label: `${latestVA?.frameA?.c?.code} ${latestVA?.frameA?.c?.name}`,
+        value: latestVA?.frameA?.c?.uuid
+      }] : []
+
+      this.selectedD = latestVA?.frameA?.d ? [{
+        label: `${latestVA?.frameA?.d?.code} ${latestVA?.frameA?.d?.name}`,
+        value: latestVA?.frameA?.d?.uuid
+      }] : []
+      
+      this.selectedContributories = latestVA?.frameA?.constributories?.length ? latestVA?.frameA?.constributories?.map((contributory: any) => {
+        return {
+          label: `${contributory?.code} ${contributory?.name}`,
+          value: contributory?.uuid
+        }
+      }) : []
 
       this.frameB
       this.mannerOfDeath
@@ -111,6 +141,10 @@ export class CodingSheetComponent implements OnInit {
       this.fetalOrInfant
       this.pregnantDeceased
     }
+  }
+
+  setContributories(contributories: any[]){
+    this.frameA.constributories = contributories;
   }
 
   onSubmitform(){

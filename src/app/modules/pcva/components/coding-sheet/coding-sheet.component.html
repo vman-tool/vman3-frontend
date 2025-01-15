@@ -49,7 +49,7 @@
                             <label class="mr-4">
                                 a: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.a = $event" [selectedOptions]="[]" [options]="icdCodes!"
+                            <app-searchable-multi-select (change)="frameA.a = $event" [selectedOptions]="selectedA" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                 
                         </td>
@@ -62,7 +62,7 @@
                             <label class="mr-4">
                                 b: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.b = $event" [options]="icdCodes!"
+                            <app-searchable-multi-select (change)="frameA.b = $event" [selectedOptions]="selectedB" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                         </td>
                         <td class="col-span-4">
@@ -74,7 +74,7 @@
                             <label class="mr-4">
                                 c: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.c = $event" [options]="icdCodes!"
+                            <app-searchable-multi-select (change)="frameA.c = $event" [selectedOptions]="selectedC" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                         </td>
                         <td class="col-span-4">
@@ -86,7 +86,7 @@
                             <label class="mr-4">
                                 d: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.d = $event" [options]="icdCodes!"
+                            <app-searchable-multi-select (change)="frameA.d = $event" [selectedOptions]="selectedD" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                         </td>
                         <td class="col-span-4">
@@ -99,7 +99,7 @@
                             the conditions)
                         </td>
                         <td class="col-span-8 mt-2">
-                            <app-searchable-multi-select (change)="frameA.constributories = $event" [options]="icdCodes!"
+                            <app-searchable-multi-select (change)="setContributories($event)" [selectedOptions]="selectedContributories" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="true"></app-searchable-multi-select>
                         </td>
                     </tr>
