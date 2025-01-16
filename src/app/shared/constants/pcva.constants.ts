@@ -1,0 +1,1 @@
+export const OBJECTKEY_ICD10_INDEXDB = "codes"

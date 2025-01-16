@@ -10,10 +10,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SearchableSelectForObjectsComponent } from './components/searchable-select-for-objects/searchable-select-for-objects.component';
-import { BrowserModule } from '@angular/platform-browser';
+import { SearchableMultiSelectComponent } from './components/searchable-multi-select/searchable-multi-select.component';
 @NgModule({
   declarations: [
-    SearchableSelectForObjectsComponent
+    SearchableSelectForObjectsComponent,
+    SearchableMultiSelectComponent
   ],
   imports: [
     CommonModule,
@@ -31,7 +32,8 @@ import { BrowserModule } from '@angular/platform-browser';
   ],
   providers: [DatePipe],
   exports: [
-    SearchableSelectForObjectsComponent
+    SearchableSelectForObjectsComponent,
+    SearchableMultiSelectComponent
   ],
 })
 export class SharedModule {}

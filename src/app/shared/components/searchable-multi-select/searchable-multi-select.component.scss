@@ -1,0 +1,97 @@
+input {
+    outline: none !important;
+
+    &:focus {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+
+.searchable-multi-select {
+    position: relative;
+    min-width: 100%;
+    border-radius: 5px;
+}
+
+.select-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    input {
+        width: 90%;
+    }
+}
+
+.dropdown-icon {
+    font-size: 0.7em;
+    color: #888;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    z-index: 1000;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.internal-search {
+    width: 100%;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+
+    a {
+        color: #333;
+        text-decoration: none;
+        display: block;
+        padding: 4px 16px;
+    }
+}
+
+.options-list {
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.option {
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.option:hover {
+    background-color: #f0f0f0;
+}
+
+.option.selected {
+    background-color: #e0e0e0;
+}
+
+.no-results {
+    padding: 8px;
+    text-align: center;
+    color: #888;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    margin-right: 8px;
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

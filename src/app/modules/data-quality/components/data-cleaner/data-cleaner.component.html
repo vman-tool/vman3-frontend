@@ -1,0 +1,90 @@
+<div class="container relative max-w-4xl px-4 py-8 mx-auto">
+  <!-- Close Button -->
+  <button
+    class="absolute px-3 py-1 text-white bg-red-500 rounded-full top-4 right-4 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+    (click)="closeDialog()">
+    ✕
+  </button>
+
+  <h1 class="mb-6 text-3xl font-bold text-gray-800">Data Cleaner</h1>
+
+  <!-- Error Details -->
+  <div class="p-6 mb-6 bg-white rounded-lg shadow-md">
+    <h2 class="mb-4 text-2xl font-semibold text-gray-700">Error Details</h2>
+    <div class="space-y-2" *ngIf="!isLoading; else errorShimmer">
+      <p class="text-gray-700"><span class="font-semibold">Type:</span> {{ error?.error_type }}</p>
+      <p class="text-gray-700"><span class="font-semibold">Group:</span> {{ error?.group }}</p>
+      <p class="text-gray-700"><span class="font-semibold">Message:</span> {{ error?.error_message }}</p>
+    </div>
+    <ng-template #errorShimmer>
+      <div class="space-y-2">
+        <div class="h-6 bg-gray-200 rounded animate-pulse"></div>
+        <div class="h-6 bg-gray-200 rounded animate-pulse"></div>
+        <div class="h-6 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Form Data -->
+  <div class="p-6 bg-white rounded-lg shadow-md">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-semibold text-gray-700">Form Data</h2>
+      <button type="submit"
+        class="px-4 py-2 font-bold text-white transition duration-200 bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50"
+        (click)="saveChanges()" [disabled]="isFormDataLoading || isSaving">
+        <span *ngIf="!isSaving">Save Changes</span>
+        <span *ngIf="isSaving" class="flex items-center">
+          <svg class="w-5 h-5 mr-3 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+          Saving...
+        </span>
+      </button>
+    </div>
+
+    <!-- Save Message -->
+    <div *ngIf="saveMessage" class="p-4 mb-4 rounded-md" [ngClass]="{
+      'bg-green-100 text-green-700': saveMessageType === 'success',
+      'bg-red-100 text-red-700': saveMessageType === 'error'
+    }">
+      {{ saveMessage }}
+    </div>
+
+    <!-- Search Input -->
+    <div class="mb-6">
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" placeholder="Search form fields..."
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <form (ngSubmit)="saveChanges()">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2" *ngIf="!isFormDataLoading; else formDataShimmer">
+        <div *ngFor="let item of filteredFormData | keyvalue" class="space-y-2">
+          <label [for]="item.key" class="block text-sm font-medium text-gray-700">
+            {{ getDefinition(item.key) }}
+          </label>
+          <ng-container [ngSwitch]="isLongText(item.value)">
+            <textarea *ngSwitchCase="true" [id]="item.key" [(ngModel)]="formData[item.key]"
+              (ngModelChange)="onFieldChange(item.key, $event)" [name]="item.key"
+              class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"></textarea>
+            <input *ngSwitchDefault [id]="item.key" [(ngModel)]="formData[item.key]"
+              (ngModelChange)="onFieldChange(item.key, $event)" [name]="item.key"
+              class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </ng-container>
+        </div>
+      </div>
+      <ng-template #formDataShimmer>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div *ngFor="let i of [1,2,3,4,5,6]" class="space-y-2">
+            <div class="w-3/4 h-4 bg-gray-200 rounded animate-pulse"></div>
+            <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </ng-template>
+    </form>
+  </div>
+</div>

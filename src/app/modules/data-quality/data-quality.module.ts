@@ -9,11 +9,20 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { DataCheckComponent } from './components/data-check/data-check.component';
+import { HttpClientModule } from '@angular/common/http';
+import { ErrorListComponent } from './components/error-list/error-list.component';
+import { DataCleanerComponent } from './components/data-cleaner/data-cleaner.component';
 
 @NgModule({
-  declarations: [DataQualityComponent, DataCheckComponent],
+  declarations: [
+    DataQualityComponent,
+    DataCheckComponent,
+    ErrorListComponent,
+    DataCleanerComponent,
+  ],
   imports: [
     CommonModule,
+
     MatDatepickerModule,
     MatNativeDateModule,
     MatFormFieldModule,
@@ -22,5 +31,6 @@ import { DataCheckComponent } from './components/data-check/data-check.component
     BaseChartDirective,
     CcvaRoutingModule,
   ],
+  exports: [ErrorListComponent, DataCleanerComponent],
 })
 export class DataQualityModule {}

@@ -1,0 +1,34 @@
+<div class="searchable-multi-select w-full" (clickOutside)="closeDropdown()">
+    <div class="select-input" (click)="toggleDropdown()">
+        <input type="text" readonly value="{{ displayValue }}" placeholder="{{placeholder}}"/>
+        <span class="dropdown-icon">▼</span>
+    </div>
+
+    <div *ngIf="isDropdownOpen" class="dropdown">
+        <div class="grid grid-cols-12" *ngIf="allowSearchOptions">
+            <input type="text" placeholder="{{ searchLabel }}" [(ngModel)]="searchTerm" class="internal-search col-span-10" />
+            <a 
+                *ngIf="filteredOptions.length === 0 && allowedAddOption" 
+                class="col-span-2 mr-2 mt-2 text-gray-500 hover:text-blue-500 hover:cursor-pointer"
+                (click)="onAddOption()"
+            >add this option</a>
+        </div>
+
+        <div class="options-list overflow-auto max-h-[120px]">
+            <div class="option" (click)="isCleared()" *ngIf="!multiSelect">
+                <input type="radio" [checked]="!selectedOptions.length" name="clear" />
+                No Selection
+            </div>
+            <div *ngFor="let option of filteredOptions; trackBy: trackByOption" (click)="selectOption(option)" class="option"
+                [class.selected]="isSelected(option)">
+                <input type="checkbox" [checked]="isSelected(option)" *ngIf="multiSelect" />
+                <input type="radio" [checked]="isSelected(option)" *ngIf="!multiSelect" name="singleSelectGroup" />
+                {{ option?.label }}
+            </div>
+
+            <div *ngIf="filteredOptions.length === 0" class="no-results">
+                No options found
+            </div>
+        </div>
+    </div>
+</div>

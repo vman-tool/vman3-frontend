@@ -31,4 +31,8 @@ export class VaRecordsService {
     const params = va_questions_ids?.length ? `?questions_keys=${va_questions_ids.join(',')}` : ""
     return this.http.get(`${this.configService.API_URL}/pcva/form_questions${params}`);
   }
+
+  codeAssignedVA(va_data: any) {
+    return this.http.post(`${this.configService.API_URL}/pcva/code-assigned-va`, va_data);
+  }
 }

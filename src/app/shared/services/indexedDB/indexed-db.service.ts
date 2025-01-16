@@ -40,13 +40,10 @@ export class IndexedDBService {
       this.currentRetry++;
       
       try {
-        // Close existing connection
         await this.closeDatabase();
         
-        // Clear cache
         this.cache.clear();
         
-        // Reinitialize with incremented version
         this.dbPromise = this.initDB(true);
         await this.dbPromise;
         
@@ -59,7 +56,6 @@ export class IndexedDBService {
           console.error('Max recovery attempts reached. Reloading page...');
           this.reloadPage();
         } else {
-          // Try recovery again
           await this.handleDatabaseError();
         }
       }
@@ -69,7 +65,6 @@ export class IndexedDBService {
   }
 
   private reloadPage() {
-    // Save any necessary state to localStorage before reload
     localStorage.setItem('indexeddb_recovery', 'true');
     window.location.reload();
   }
@@ -121,7 +116,6 @@ export class IndexedDBService {
     }
   }
 
-  // Rest of the methods remain the same...
   async addQuestions(questions: any) {
     try {
       const db = await this.getDb();
