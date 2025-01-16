@@ -117,7 +117,7 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
       this.pcvaSettingsService.bulkUploadICD10Codes(this.file).subscribe({
         next: (res: any) => {
           this.notificationMessage('ICD10 codes uploaded successfully');
-          this.dialogRef.close();
+          this.dialogRef.close(true);
         },
         error: (err) => {
           this.notificationMessage('Error uploading ICD10 codes');
@@ -136,7 +136,7 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
     this.pcvaSettingsService.createICD10Code([code]).subscribe({
       next: (res: any) => {
         this.notificationMessage('ICD10 code created successfully');
-        this.dialogRef.close();
+        this.dialogRef.close(true);
       },
       error: (err) => {
         this.notificationMessage('Error creating ICD10 code');
