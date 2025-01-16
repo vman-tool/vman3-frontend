@@ -38,58 +38,58 @@
                     </mat-expansion-panel-header>
                     <tr class="grid grid-cols-12 grid-rows-5 frameA">
                         <td class="col-span-4"></td>
-                        <td class="col-span-4">Cause of death</td>
-                        <td class="col-span-4">Time interval from onset to death</td>
+                        <td class="col-span-5">Cause of death</td>
+                        <td class="col-span-3">Time interval from onset to death</td>
                         <td class="col-span-4 row-span-4">1. Report disease or condition leading to death: <br>
                             Report event chain is due to order (if applicable) <br>
                             State the underlying cause on the lowest field
                 
                         </td>
-                        <td class="col-span-4 flex">
+                        <td class="col-span-5 flex">
                             <label class="mr-4">
                                 a: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.a = $event" [selectedOptions]="selectedA" [options]="icdCodes!"
+                            <app-searchable-multi-select class="w-full" (change)="frameA.a = $event" [selectedOptions]="selectedA" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                 
                         </td>
-                        <td class="col-span-4">
+                        <td class="col-span-3">
                             <input type="text" name="timeinterval_a" [(ngModel)]="frameA.timeinterval_a"
-                                class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
+                                class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full h-[42px] rounded-[3px]"
                                 id="">
                         </td>
-                        <td class="col-span-4 flex">
+                        <td class="col-span-5 flex">
                             <label class="mr-4">
                                 b: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.b = $event" [selectedOptions]="selectedB" [options]="icdCodes!"
+                            <app-searchable-multi-select class="w-full" (change)="frameA.b = $event" [selectedOptions]="selectedB" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                         </td>
-                        <td class="col-span-4">
+                        <td class="col-span-3">
                             <input type="text" name="timeinterval_b" [(ngModel)]="frameA.timeinterval_b"
                                 class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                                 id="">
                         </td>
-                        <td class="col-span-4 flex">
+                        <td class="col-span-5 flex">
                             <label class="mr-4">
                                 c: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.c = $event" [selectedOptions]="selectedC" [options]="icdCodes!"
+                            <app-searchable-multi-select class="w-full" (change)="frameA.c = $event" [selectedOptions]="selectedC" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                         </td>
-                        <td class="col-span-4">
+                        <td class="col-span-3">
                             <input type="text" name="timeinterval_c" [(ngModel)]="frameA.timeinterval_c"
                                 class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full h-[40px] rounded-[3px]"
                                 id="">
                         </td>
-                        <td class="col-span-4 flex">
+                        <td class="col-span-5 flex">
                             <label class="mr-4">
                                 d: &nbsp;
                             </label>
-                            <app-searchable-multi-select (change)="frameA.d = $event" [selectedOptions]="selectedD" [options]="icdCodes!"
+                            <app-searchable-multi-select class="w-full" (change)="frameA.d = $event" [selectedOptions]="selectedD" [options]="icdCodes!"
                                 [placeholder]="'Select Disease'" [multiSelect]="false"></app-searchable-multi-select>
                         </td>
-                        <td class="col-span-4">
+                        <td class="col-span-3">
                             <input type="text" name="timeinterval_d" [(ngModel)]="frameA.timeinterval_d"
                                 class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                                 id="">

@@ -115,7 +115,11 @@ export class CodedVaComponent implements OnInit {
           fieldsMapping: this.fieldsMapping,
           codedData: codedData?.data
         }
-        this.dialog.open(CodeVaComponent, dialogConfig)
+        this.dialog.open(CodeVaComponent, dialogConfig).afterClosed().subscribe((response: any) => {
+      if(response){
+        this.loadCodedVAs();
+      }
+    })
       }
   
     onPageChange(event: any) {
