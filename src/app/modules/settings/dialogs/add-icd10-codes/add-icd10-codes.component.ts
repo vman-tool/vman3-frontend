@@ -17,9 +17,8 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
 
   categories?: any;
 
-  addedCategory?: string;
   loading: boolean = false;
-  selectedCategories?: any;
+  selectedCategories: any[] = [];
 
 
   constructor(
@@ -62,17 +61,16 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
     })
   }
 
-  createCategory(category: string){
-    this.addedCategory = category;
-    this.pcvaSettingsService.createICD10Category({name: this.addedCategory}).subscribe({
+  createCategory(addedCategory: string){
+    this.pcvaSettingsService.createICD10Category({name: addedCategory}).subscribe({
       next: (res: any) => {
         this.notificationMessage('Category created successfully');
-        this.selectedCategories = res?.data?.filter((category: any) => category?.name === this.addedCategory)?.map((category: any) => {
+        this.selectedCategories = res?.data?.filter((category: any) => category?.name === addedCategory)?.map((category: any) => {
           return {
             value: category?.uuid,
             label: category?.name
           }
-        } );
+        });
         this.getCategories();
       },
       error: (err) => {
