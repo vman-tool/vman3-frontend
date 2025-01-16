@@ -16,7 +16,7 @@
         </div>
         <div class="col-span-12">
             <mat-dialog-content class="center-content">
-                <div class="grid grid-cols-12 gap-6">
+                <div class="grid grid-cols-12 gap-6 pb-5">
                     <div class="col-span-12">
                         <label class="block text-gray-700">Code:</label>
                         <input type="text" [(ngModel)]="code"
@@ -28,6 +28,7 @@
                             class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                     </div>
                     <div class="col-span-12" *ngIf="categories || !loading">
+                        {{ selectedCategories }}
                         <label class="block text-gray-700">Category:</label>
                         <app-searchable-multi-select
                             [allowedAddOption]="true"
@@ -35,7 +36,8 @@
                             (change)="onSelectCategory($event)"
                             (addOption)="createCategory($event)"
                             [options]="categories"
-                            [placeholder]="'Select Disease'" [multiSelect]="false"
+                            [placeholder]="'Select category'" 
+                            [multiSelect]="false"
                         ></app-searchable-multi-select>
                     </div>
                     <div class="col-span-12 flex">
@@ -64,7 +66,7 @@
         </div>
     </div>
     <mat-dialog-actions align="end">
-        <div class="flex items-center justify-between mt-4">
+        <div class="flex items-center justify-between mt-5">
             <span class="px-2 text-2xl text-start"></span>
             <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onSave($event)">Save</button>
         </div>

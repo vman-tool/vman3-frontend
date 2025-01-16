@@ -15,7 +15,7 @@ export class SearchableMultiSelectComponent implements OnInit {
   @Input() options: SelectOption[] = [];
   @Input() placeholder: string = 'Select options';
   @Input() multiSelect: boolean = false;
-  @Input() selectedOptions?: SelectOption[];
+  @Input() selectedOptions: SelectOption[] = [];
   @Input() allowedAddOption: boolean = false;
   @Input() searchLabel: string = "Search options...";
   @Input() allowSearchOptions: boolean = true;
@@ -37,7 +37,7 @@ export class SearchableMultiSelectComponent implements OnInit {
   }
 
   get displayValue(): string {
-    return this.selectedOptions!?.map(opt => opt?.label || opt?.value)?.join(', ');
+    return this.selectedOptions?.length ? this.selectedOptions?.map(opt => opt?.label || opt?.value)?.join(', ') : "";
   }
 
   get filteredOptions(): SelectOption[] {
@@ -61,9 +61,9 @@ export class SearchableMultiSelectComponent implements OnInit {
 
   selectOption(option: SelectOption) {
     if (this.multiSelect) {
-      const index = this.selectedOptions!?.findIndex(
+      const index = this.selectedOptions?.length ? this.selectedOptions?.findIndex(
         selected => selected?.value === option?.value
-      );
+      ) : -1;
       
       if (index > -1) {
         this.selectedOptions?.splice(index, 1);
