@@ -13,6 +13,11 @@ export class CodersComponent implements OnInit {
   
   codersData$?: Observable<any>;
   loadingData: boolean = false;
+
+  pageNumber?: number = 0;
+  pageSizeOptions = [10, 20, 50, 100]
+  limit?: number;
+  paging?: boolean;
   
   constructor(
     private codersService: CodersService,
@@ -20,11 +25,15 @@ export class CodersComponent implements OnInit {
   ){}
 
   ngOnInit(): void {
+    this.getCoders(); 
+  }
+
+  getCoders(){
     this.loadingData = true
-    this.codersData$ = this.codersService.getCoders(true).pipe(
+    this.codersData$ = this.codersService.getCoders(undefined, false).pipe(
       map((response) => {
         this.loadingData = false
-       return response;
+        return response;
       }),
       catchError((error: any) => {
         this.loadingData = false
@@ -41,7 +50,17 @@ export class CodersComponent implements OnInit {
     dialogConfig.data = {
       coder: coder
     }
-    this.dialog.open(AssignVaComponent, dialogConfig)
+    this.dialog.open(AssignVaComponent, dialogConfig).afterClosed().subscribe((result: any) => {
+      if(result){
+        this.getCoders();
+      }
+    })
+  }
+
+  onPageChange(event: any) {
+    this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
+    this.limit = Number(event?.pageSize);
+    this.getCoders();
   }
 
 }

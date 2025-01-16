@@ -167,9 +167,15 @@
             </app-searchable-select>
 
             <!-- death_date -->
+            <app-searchable-select id="birth date" label="Birth Date" [control]="fieldMappingForm.get('birth_date')!"
+              [items]="fields" placeholder="Search birth date">
+            </app-searchable-select>
+            
+            <!-- death_date -->
             <app-searchable-select id="death date" label="death date" [control]="fieldMappingForm.get('death_date')!"
               [items]="fields" placeholder="Search death date">
             </app-searchable-select>
+            
             <!-- date -->
             <app-searchable-select id="date" label="today's date" [control]="fieldMappingForm.get('date')!"
               [items]="fields" placeholder="Search date">

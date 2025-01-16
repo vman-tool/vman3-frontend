@@ -12,13 +12,10 @@ import {
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from './app-routing.module';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { CsrfInterceptorService } from './core/interceptors/csrfinterceptor.service';
+import { AuthInterceptor } from './core/interceptors/csrfinterceptor.service';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ConfigService } from './app.service';
-import { lastValueFrom, Observable } from 'rxjs';
-import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
 import { SharedConfirmationComponent } from './shared/dialogs/shared-confirmation/shared-confirmation.component';
-// import { CsrfInterceptorService } from './core/interceptors/csrf-interceptor.service';
 
 // import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 // const config: SocketIoConfig = {
@@ -50,7 +47,7 @@ export function initializeApp(configService: ConfigService) {
     },
     {
       provide: HTTP_INTERCEPTORS,
-      useClass: CsrfInterceptorService,
+      useClass: AuthInterceptor,
       multi: true,
     },
     provideHttpClient(withInterceptorsFromDi()),

@@ -34,10 +34,11 @@ export interface FieldMapping {
   date: string;
   location_level1: string;
   location_level2?: string;
-  deceased_gender?: string;
+  deceased_gender: string;
   is_adult: string;
   is_child: string;
   is_neonate: string;
+  birth_date: string;
   death_date: string;
   interview_date: string;
   submitted_date: string;

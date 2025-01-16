@@ -1,73 +1,27 @@
-import { HttpErrorResponse, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
-import { AuthService } from '../services/authentication/auth.service';
-import { ErrorEmitters } from '../emitters/error.emitters';
-import { Router } from '@angular/router';
+import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, catchError, filter, map, Observable, switchMap, take, throwError } from "rxjs";
+import { AuthService } from "../services/authentication/auth.service";
+import { ErrorEmitters } from "../emitters/error.emitters";
 
 @Injectable({
   providedIn: 'root'
 })
-export class CsrfInterceptorService {
-
-  horizontalPosition: MatSnackBarHorizontalPosition = 'end';
-  verticalPosition: MatSnackBarVerticalPosition = 'top';
+export class AuthInterceptor implements HttpInterceptor {
+  private isRefreshing = false;
+  private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
   constructor(
     private authService: AuthService,
-    private router: Router
-  ) {}
+  ) { }
 
-  refresh: boolean = Boolean(localStorage.getItem('refresh_request'));
-
-  
-  intercept(request: HttpRequest<any>, next: HttpHandler) {
-    localStorage.setItem("latest_route", this.router!.url)
-    
-    let modifiedRequest = this.addHeaders(request);
-
-    return next.handle(modifiedRequest).pipe(
-      catchError((requestError: HttpErrorResponse) => {
-        if (requestError.status === 401) {
-          localStorage.setItem('refresh_request', String(true))
-          if(!this.refresh){
-            console.log("Refresh-Response: ", requestError.status)
-            this.refresh = Boolean(localStorage.getItem('refresh_request'));
-            return this.authService.refresh_token().pipe(
-              map((response) => {
-                if (response.status === 200) {
-                  localStorage.removeItem('refresh_request')
-                  console.log("refresh called in intercetor and succeeded!",)
-                  this.authService.saveUserData(response);
-                  modifiedRequest = this.addHeaders(request);
-                  return next.handle(modifiedRequest);
-                } else {
-                  console.log("refresh called in intercetor and failed!")
-                  localStorage.removeItem('refresh_request')
-                  this.authService.logout();
-                  return throwError(() => requestError);
-                }
-              }),
-              catchError((error) => {
-                console.log("Error occured in refresh interceptor... ")
-                localStorage.removeItem('refresh_request')
-                this.authService.logout();
-                return throwError(() => error);
-              })
-            );
-          }
-          else {
-            console.log("refresh called more than one time!")
-            this.authService.logout();
-            return throwError(() => requestError);
-          }
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    return next.handle(this.addAuthToken(request)).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401 && !request.url.includes('auth/refresh')) {
+          return this.handle401Error(request, next);
         }
-        if(!requestError.status){
-          console.log("Connection error: ")
-        }
-        return throwError(() => requestError);
+        return throwError(() => error);
       }),
       map((response: any) => {
         ErrorEmitters.successEmitter.emit();
@@ -76,18 +30,41 @@ export class CsrfInterceptorService {
     );
   }
 
-
-  addHeaders(request: HttpRequest<any>): HttpRequest<any> {
-    const access_token = localStorage.getItem('access_token');
-    const authHeader = 'Authorization';
-    let headers = request.headers;
-
-    if (!request.url.includes('auth/refresh')) {
-      headers = access_token ? headers.set(authHeader, `Bearer ${access_token}`) : headers;
+  private addAuthToken(request: HttpRequest<any>): HttpRequest<any> {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      return request.clone({
+        setHeaders: { Authorization: `Bearer ${token}` }
+      });
     }
-    return request.clone({
-      headers,
-      withCredentials: true
-    });
+    return request;
+  }
+
+  private handle401Error(request: HttpRequest<any>, next: HttpHandler) {
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+      this.refreshTokenSubject.next(null);
+
+      return this.authService.refresh_token().pipe(
+        switchMap((response) => {
+          this.isRefreshing = false;
+          this.refreshTokenSubject.next(response.access_token);
+          return next.handle(this.addAuthToken(request));
+        }),
+        catchError((error) => {
+          this.isRefreshing = false;
+          this.authService.logout();
+          return throwError(() => error);
+        })
+      );
+    } else {
+      return this.refreshTokenSubject.pipe(
+        filter(token => token !== null),
+        take(1),
+        switchMap(token => {
+          return next.handle(this.addAuthToken(request));
+        })
+      );
+    }
   }
 }

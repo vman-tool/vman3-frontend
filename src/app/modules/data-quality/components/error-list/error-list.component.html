@@ -1,0 +1,76 @@
+<div class="container px-4 py-8 mx-auto max-w-7xl">
+  <span class="mb-6 text-3xl font-bold text-gray-800">Error List</span>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap gap-4 mb-6">
+    <div class="flex-1 min-w-[200px]">
+      <label for="errorType" class="block mb-2 text-sm font-medium text-gray-700">Error Type</label>
+      <select id="errorType" [(ngModel)]="selectedErrorType" (change)="onFilterChange()"
+        class="w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">All Types</option>
+        <option *ngFor="let type of errorTypes" [value]="type">{{type}}</option>
+      </select>
+    </div>
+    <div class="flex-1 min-w-[200px]">
+      <label for="group" class="block mb-2 text-sm font-medium text-gray-700">Group</label>
+      <select id="group" [(ngModel)]="selectedGroup" (change)="onFilterChange()"
+        class="w-full px-3 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">All Groups</option>
+        <option *ngFor="let group of groups" [value]="group">{{group}}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Error Table -->
+  <div class="overflow-x-auto bg-white rounded-lg shadow">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Error Type</th>
+          <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Group</th>
+          <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Message</th>
+          <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Action</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <ng-container *ngIf="!isLoading; else loadingTemplate">
+          <tr *ngFor="let error of errors" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">{{ error.error_type }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ error.group }}</td>
+            <td class="px-6 py-4">
+              <div class="max-w-xs overflow-hidden text-sm text-gray-900 truncate">{{ error.error_message }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <button (click)="openDataCleaner(error)"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Clean Data
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+        <ng-template #loadingTemplate>
+          <tr *ngFor="let i of [1,2,3,4,5]">
+            <td colspan="4" class="px-6 py-4">
+              <div class="h-4 bg-gray-200 rounded animate-pulse"></div>
+            </td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex items-center justify-between mt-6">
+    <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1"
+      class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+      Previous
+    </button>
+    <span class="text-sm text-gray-700">
+      Page {{ currentPage }} of {{ ceil(totalItems / itemsPerPage) }}
+    </span>
+    <button (click)="onPageChange(currentPage + 1)" [disabled]="currentPage * itemsPerPage >= totalItems"
+      class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+      Next
+    </button>
+  </div>
+</div>

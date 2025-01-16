@@ -13,7 +13,6 @@ export class AllAssignedService {
   ) { }
 
   getAssignedVARecords(pager?: {paging?: boolean, page_number?: number, limit?: number}, include_deleted?: string, va_id?: string, coder?: any) {
-    // TODO: PASS permissions for coders to get filtered coders
     let params = pager?.paging ? `?paging=${pager?.paging}`: '';
 
     params = params?.length && pager?.page_number ? params+`&page=${pager?.page_number}` : pager?.page_number ? params+`?page=${pager?.page_number}` : params;

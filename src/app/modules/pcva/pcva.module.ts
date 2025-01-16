@@ -11,6 +11,8 @@ import { CodersComponent } from './components/coders/coders.component';
 import { AssignVaComponent } from './dialogs/assign-va/assign-va.component';
 import { ViewVaComponent } from '../../shared/dialogs/view-va/view-va.component';
 import { CodeVaComponent } from './dialogs/code-va/code-va.component';
+import { CodingSheetComponent } from './components/coding-sheet/coding-sheet.component';
+import { FormsModule } from '@angular/forms';
 
 
 
@@ -23,13 +25,15 @@ import { CodeVaComponent } from './dialogs/code-va/code-va.component';
     CodersComponent,
     AssignVaComponent,
     ViewVaComponent,
-    CodeVaComponent
+    CodeVaComponent,
+    CodingSheetComponent
   ],
   imports: [
     CommonModule,
     PcvaRoutingModule,
     SharedModule,
-    MaterialModule
+    MaterialModule,
+    FormsModule
   ],
   exports: [
     PcvaComponent

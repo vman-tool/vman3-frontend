@@ -38,6 +38,15 @@
             class="flex items-center justify-center h-10 px-4 py-3 text-white bg-blue-600 rounded-md">
             Download Data
           </button> -->
+          <div class="flex items-center mb-4 space-x-4">
+            <label for="dateType" class="text-sm font-medium text-gray-700">Output</label>
+            <select id="dateType" [(ngModel)]="selectedSuccessType" (change)="onFilterChange()"
+              class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              <option value="">All</option>
+              <option value="Undeterminant">Undeterminant</option>
+              <option [defaultSelected]="true" value="success">Success</option>
+            </select>
+          </div>
           <!-- Dropdown menu -->
           <div class="relative" #dropdownMenu>
             <button (click)="toggleDropdown()"

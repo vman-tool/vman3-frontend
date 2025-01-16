@@ -9,6 +9,9 @@ import { LocalStorageSettingsService } from '../../services/local_storage.servic
 import * as privileges from 'app/shared/constants/privileges.constants';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
+import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
 
 @Component({
   selector: 'app-data-sync',
@@ -47,6 +50,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private webSockettService: WebSockettService,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
     private vaRecordsService: VaRecordsService,
     private authService: AuthService,
     private snackBar: MatSnackBar
@@ -58,7 +62,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.formsubmission_status();
     this.initializeWebSocket();
 
-    this.syncedQuestions = await this.indexedDBService.getQuestions();
+    // this.syncedQuestions = await this.indexedDBService.getQuestions();
+    this.syncedQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS);
     if (!this.syncedQuestions?.length) {
       await this.syncQuestionsIfNeeded();
     }
@@ -74,7 +79,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   async syncQuestionsIfNeeded() {
     this.isQuestionsSyncing = true;
 
-    this.syncedQuestions = await this.indexedDBService.getQuestions();
+    // this.syncedQuestions = await this.indexedDBService.getQuestions();
+    this.syncedQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS);
 
     if (!this.syncedQuestions?.length) {
       console.log('No synced questions found, starting sync...');
@@ -82,9 +88,13 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         this.vaRecordsService.getQuestions().pipe(
           map(async (response: any) => {
             if (response?.data) {
-              await this.indexedDBService.addQuestions(response?.data);
-              await this.indexedDBService.addQuestionsAsObject(response?.data);
-              return await this.indexedDBService.getQuestions();
+              // await this.indexedDBService.addQuestions(response?.data);
+              // await this.indexedDBService.addQuestionsAsObject(response?.data);
+
+              await this.genericIndexedDbService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
+              await this.genericIndexedDbService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS,response?.data);
+              // return await this.indexedDBService.getQuestions();
+              return await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS);
             }
           })
         )
@@ -209,8 +219,13 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         this.vaRecordsService.getQuestions().pipe(
           map(async (response: any) => {
             if (response?.data) {
-              await this.indexedDBService.addQuestions(response?.data);
-              return await this.indexedDBService.getQuestions();
+              // await this.indexedDBService.addQuestions(response?.data);
+              // return await this.indexedDBService.getQuestions();
+
+              await this.genericIndexedDbService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
+              await this.genericIndexedDbService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS, response?.data);
+
+              return await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS);
             }
           })
         )
@@ -221,9 +236,16 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       this.syncedQuestions = await lastValueFrom(
         this.dataSyncService.syncQuestions().pipe(
           map(async (response: any) => {
-            await this.indexedDBService.addQuestions(response?.data);
+            // await this.indexedDBService.addQuestions(response?.data);
+            // this.forceChecked = !this.forceChecked;
+            // return await this.indexedDBService.getQuestions();
+            
+            await this.genericIndexedDbService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
+            await this.genericIndexedDbService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS, response?.data);
+            
             this.forceChecked = !this.forceChecked;
-            return await this.indexedDBService.getQuestions();
+            
+            return await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS);
           })
         )
       );

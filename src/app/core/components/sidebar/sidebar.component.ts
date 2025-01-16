@@ -5,6 +5,9 @@ import { lastValueFrom, map } from 'rxjs';
 import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
+import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
 
 @Component({
   selector: 'app-sidebar',
@@ -21,6 +24,7 @@ export class SidebarComponent {
     private router: Router,
     private vaRecordsService: VaRecordsService,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDBService: GenericIndexedDbService
   ) {
   }
 
@@ -124,6 +128,13 @@ export class SidebarComponent {
             route: '/users',
             hasAccess: await this.hasAccess([privileges.USERS_MODULE_VIEW])
           },
+          {
+            displayText: 'PCVA Configuration',
+            icon: 'ph ph-first-aid-kit', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon_asset: '',
+            route: '/pcva-configuration',
+            hasAccess: await this.hasAccess([])
+          },
         ],
       },
     ];
@@ -146,14 +157,18 @@ export class SidebarComponent {
       }
     }
 
-    const questions = await this.indexedDBService.getQuestions();
+    // const questions = await this.indexedDBService.getQuestions();
+    const questions = await this.genericIndexedDBService.getData(OBJECTSTORE_VA_QUESTIONS);
 
     if(!questions.length){
       await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
         map(async (response: any) => {
           if(response?.data){
-            await this.indexedDBService.addQuestions(response?.data);
-            await this.indexedDBService.addQuestionsAsObject(response?.data);
+            // await this.indexedDBService.addQuestions(response?.data);
+            // await this.indexedDBService.addQuestionsAsObject(response?.data);
+
+            await this.genericIndexedDBService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
+            await this.genericIndexedDBService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS,response?.data);
           }
         })
       ));

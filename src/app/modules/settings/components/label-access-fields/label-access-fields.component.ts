@@ -5,6 +5,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { SettingConfigService } from '../../services/settings_configs.service';
 import { lastValueFrom } from 'rxjs';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
   selector: 'app-label-access-fields',
@@ -32,6 +34,7 @@ export class LabelAccessFieldsComponent implements OnInit {
   constructor(
     private usersService: UsersService,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
     private settingConfigService: SettingConfigService,
     private snackBar: MatSnackBar,
     private formBuilder: FormBuilder
@@ -74,7 +77,8 @@ export class LabelAccessFieldsComponent implements OnInit {
   async setLocations() {
     const savedFieldLabel = this.field_labels?.find((field_label: any) => field_label?.field_id === this.selectedLocationType?.value) || undefined;
     const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value));
-    let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value]);
+    // let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value]);
+    let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value]);
 
     locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
 

@@ -9,6 +9,8 @@ import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.servi
 import { lastValueFrom } from 'rxjs';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 
 @Component({
@@ -34,6 +36,7 @@ export class ConfigurationComponent {
     public dialog: MatDialog,
     private settingConfigService: SettingConfigService,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
     private authService: AuthService,
   ) {}
 
@@ -76,7 +79,8 @@ export class ConfigurationComponent {
           this.fieldLabels = data?.field_labels;
           this.vaSummaryObjects =
             data?.va_summary && data?.va_summary !== null
-              ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary)
+              // ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary)
+              ? await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, data?.va_summary)
               : [];
         }
         this.isLoading = false; // Stop isLoading
@@ -123,7 +127,8 @@ export class ConfigurationComponent {
       if (result) {
         if (type === 'va_summary') {
           this.vaSummaryData = result;
-          this.vaSummaryObjects = await this.indexedDBService.getQuestionsByKeys(result);
+          // this.vaSummaryObjects = await this.indexedDBService.getQuestionsByKeys(result);
+          this.vaSummaryObjects = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, result);
         }
 
         this.odkApiData = result;

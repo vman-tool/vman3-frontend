@@ -7,6 +7,8 @@ import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { MatDialog } from '@angular/material/dialog';
+import { INDEXED_DB_DATABASE_NAME } from 'app/shared/constants/indexedDB.constants';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +25,7 @@ export class AuthService {
     private http?: HttpClient,
     private router?: Router,
     private indexedDBService?: IndexedDBService,
+    private genericIndexedDBService?: GenericIndexedDbService
   ) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
       this.error = error
@@ -152,24 +155,29 @@ export class AuthService {
     this.cachedPrivileges = [];
   }
 
+  private calculateExpiryTime(timestamp: string){
+
+    const now = new Date().getTime() / 1000;
+    let expiry_timestamp_array = (now + Number(timestamp)).toString()?.split(".");
+
+    expiry_timestamp_array[1] = expiry_timestamp_array[1]?.length === 2 ? expiry_timestamp_array[1] + "0" : expiry_timestamp_array[1]?.length === 1 ? expiry_timestamp_array[1] + "00" : expiry_timestamp_array[1];
+
+    return expiry_timestamp_array.join(".");
+  }
+
   saveUserData(response: any) {
     this.clearUserData()
 
     localStorage.setItem("access_token", response?.access_token)
     localStorage.setItem("refresh_token", response?.refresh_token)
     
-    const now = new Date().getTime()/1000;
-    let expiry_timestamp_array = (now + Number(response?.expires_in)).toString()?.split(".")
-    expiry_timestamp_array[1] = expiry_timestamp_array[1]?.length === 2 ? expiry_timestamp_array[1]+"0" : expiry_timestamp_array[1]?.length === 1 ? expiry_timestamp_array[1]+"00" : expiry_timestamp_array[1]
-
-    const expiry_timestamp_string = expiry_timestamp_array.join(".")
+    const expiry_timestamp_string = this.calculateExpiryTime(response?.expires_in);
     
-    let refresh_timestamp_array = (now + Number(response?.refresh_token_expires_in)).toString()?.split(".")
-    refresh_timestamp_array[1] = refresh_timestamp_array[1]?.length === 2 ? refresh_timestamp_array[1]+"0" : refresh_timestamp_array[1]?.length === 1 ? refresh_timestamp_array[1]+"00" : refresh_timestamp_array[1]
+    const refresh_timestamp_string = this.calculateExpiryTime(response?.refresh_token_expires_in);
+    
     
     this.autoRefresh(Number(response?.refresh_token_expires_in));
 
-    const refresh_timestamp_string = refresh_timestamp_array.join(".")
 
     localStorage.setItem("access_token_expiry", expiry_timestamp_string)
     localStorage.setItem("refresh_token_expiry", refresh_timestamp_string)
@@ -198,11 +206,13 @@ export class AuthService {
     localStorage.removeItem("current_user");
     
     this.clearPrivilegeCache();
-    this.indexedDBService?.deleteDatabase("vmanDB");
+    this.indexedDBService?.deleteDatabase(INDEXED_DB_DATABASE_NAME);
+    this.genericIndexedDBService?.deleteDatabase();
   }
   
   clearLocalStorage() {
     localStorage.clear();
-    this.indexedDBService?.deleteDatabase("vmanDB");
+    this.indexedDBService?.deleteDatabase(INDEXED_DB_DATABASE_NAME);
+    this.genericIndexedDBService?.deleteDatabase();
   }
 }
