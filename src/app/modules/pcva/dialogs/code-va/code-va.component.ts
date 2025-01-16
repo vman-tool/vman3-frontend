@@ -76,7 +76,7 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
     this.vaRecordsService.codeAssignedVA(coded_va).subscribe({
       next: (response: any) => {
         this.notificationMessage('VA coded successfully!');
-        this.matDialogRef.close();
+        this.matDialogRef.close(true);
       },
       error: (error: any) => {
         this.notificationMessage('Failed to submit VA code!');
