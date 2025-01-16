@@ -17,9 +17,8 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
 
   categories?: any;
 
-  addedCategory?: string;
   loading: boolean = false;
-  selectedCategories?: any;
+  selectedCategories: any[] = [];
 
 
   constructor(
@@ -62,17 +61,16 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
     })
   }
 
-  createCategory(category: string){
-    this.addedCategory = category;
-    this.pcvaSettingsService.createICD10Category({name: this.addedCategory}).subscribe({
+  createCategory(addedCategory: string){
+    this.pcvaSettingsService.createICD10Category({name: addedCategory}).subscribe({
       next: (res: any) => {
         this.notificationMessage('Category created successfully');
-        this.selectedCategories = res?.data?.filter((category: any) => category?.name === this.addedCategory)?.map((category: any) => {
+        this.selectedCategories = res?.data?.filter((category: any) => category?.name === addedCategory)?.map((category: any) => {
           return {
             value: category?.uuid,
             label: category?.name
           }
-        } );
+        });
         this.getCategories();
       },
       error: (err) => {
@@ -119,7 +117,7 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
       this.pcvaSettingsService.bulkUploadICD10Codes(this.file).subscribe({
         next: (res: any) => {
           this.notificationMessage('ICD10 codes uploaded successfully');
-          this.dialogRef.close();
+          this.dialogRef.close(true);
         },
         error: (err) => {
           this.notificationMessage('Error uploading ICD10 codes');
@@ -138,7 +136,7 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
     this.pcvaSettingsService.createICD10Code([code]).subscribe({
       next: (res: any) => {
         this.notificationMessage('ICD10 code created successfully');
-        this.dialogRef.close();
+        this.dialogRef.close(true);
       },
       error: (err) => {
         this.notificationMessage('Error creating ICD10 code');

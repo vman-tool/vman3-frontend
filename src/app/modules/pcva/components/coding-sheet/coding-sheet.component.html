@@ -55,7 +55,7 @@
                         </td>
                         <td class="col-span-4">
                             <input type="text" name="timeinterval_a" [(ngModel)]="frameA.timeinterval_a"
-                                class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
+                                class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                                 id="">
                         </td>
                         <td class="col-span-4 flex">
@@ -67,7 +67,7 @@
                         </td>
                         <td class="col-span-4">
                             <input type="text" name="timeinterval_b" [(ngModel)]="frameA.timeinterval_b"
-                                class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
+                                class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                                 id="">
                         </td>
                         <td class="col-span-4 flex">
@@ -79,7 +79,7 @@
                         </td>
                         <td class="col-span-4">
                             <input type="text" name="timeinterval_c" [(ngModel)]="frameA.timeinterval_c"
-                                class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full h-[40px] rounded-[3px]"
+                                class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full h-[40px] rounded-[3px]"
                                 id="">
                         </td>
                         <td class="col-span-4 flex">
@@ -91,7 +91,7 @@
                         </td>
                         <td class="col-span-4">
                             <input type="text" name="timeinterval_d" [(ngModel)]="frameA.timeinterval_d"
-                                class="border-[1px] focus:border-[1px] focus:border-gray-400 border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
+                                class="border-[1px] focus:border-[1px] focus:border-gray-400 pl-[10px] pr-[10px] border-gray-300 w-full mt-[3px] h-[35px] rounded-[3px]"
                                 id="">
                         </td>
                         <td class="col-span-4 mt-2">
@@ -99,8 +99,7 @@
                             the conditions)
                         </td>
                         <td class="col-span-8 mt-2">
-                            <app-searchable-multi-select (change)="setContributories($event)" [selectedOptions]="selectedContributories" [options]="icdCodes!"
-                                [placeholder]="'Select Disease'" [multiSelect]="true"></app-searchable-multi-select>
+                            <app-searchable-multi-select (change)="setContributories($event)" [selectedOptions]="selectedContributories || []" [options]="icdCodes!" [placeholder]="'Select Disease'" [multiSelect]="true"></app-searchable-multi-select>
                         </td>
                     </tr>
                 </mat-expansion-panel>

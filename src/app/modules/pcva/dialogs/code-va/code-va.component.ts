@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
-import { map, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, Observable, Subject, takeUntil } from 'rxjs';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -17,6 +17,13 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
   vaRecord$?: Observable<any>;
   odkQuestions: any;
   questionsIds?: string[];
+  displayQuestions: any;
+
+  searchText: string = '';
+    
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+  searchTerm: string = '';
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -38,6 +45,7 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
   ngOnInit(): void {
     this.getVaRecord();
     this.getQuestions();
+    this.setupSearch();
   }
 
   getVaRecord(): any {
@@ -51,7 +59,8 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
 
   async getQuestions(): Promise<any> {
     // this.odkQuestions = await this.indexedDBService.getQuestions()
-    this.odkQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS)
+    this.odkQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS);
+    this.displayQuestions = this.odkQuestions;
   }
 
   ngAfterViewInit() {
@@ -74,5 +83,20 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
         console.error(error);
       }
     })
+  }
+
+  private setupSearch(): void {
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe((searchTerm: string) => {
+      
+      this.displayQuestions = this.odkQuestions?.filter((question: any) => question?.key?.toLowerCase().includes(searchTerm.toLowerCase()) ||  question?.value?.label?.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+  }
+
+  onSearch(): void {
+    this.searchSubject.next(this.searchText);
   }
 }

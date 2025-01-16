@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../../modules/pcva/services/va-records/va-records.service';
-import { lastValueFrom, map, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, lastValueFrom, map, Observable, Subject, takeUntil } from 'rxjs';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 import { settingsConfigData } from 'app/modules/settings/interface';
@@ -13,13 +13,20 @@ import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constan
 @Component({
   selector: 'app-view-va',
   templateUrl: './view-va.component.html',
-  styleUrl: './view-va.component.scss'
+  styleUrl: './view-va.component.scss',
 })
 export class ViewVaComponent implements OnInit, AfterViewInit{
   vaRecord$?: Observable<any>;
-  odkQuestions: any;
+  odkQuestions?: any[];
+  displayQuestions?: any[];
   questionsIds?: string[];
   summaryInfo?: any;
+
+  searchText: string = '';
+  
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+  searchTerm: string = '';
 
   constructor(
     private dialogRef: MatDialogRef<ViewVaComponent>,
@@ -28,11 +35,23 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
     private indexedDBService: IndexedDBService,
     private genericIndexedDbService: GenericIndexedDbService,
     private settingConfigService: SettingConfigService
-  ) { }
+  ) {}
    
   ngOnInit(): void {
     this.getVaRecord();
     this.getQuestions();
+    this.setupSearch();
+  }
+
+  private setupSearch(): void {
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe((searchTerm: string) => {
+      
+      this.displayQuestions = this.odkQuestions?.filter((question: any) => question?.key?.toLowerCase().includes(searchTerm.toLowerCase()) ||  question?.value?.label?.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
   }
 
   async getSummaryConfigurations(){
@@ -58,6 +77,7 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
   async getQuestions(): Promise<any> {
     // this.odkQuestions = await this.indexedDBService.getQuestions()
     this.odkQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS)
+    this.displayQuestions = this.odkQuestions;
     this.getSummaryConfigurations();
   }
 
@@ -68,6 +88,16 @@ export class ViewVaComponent implements OnInit, AfterViewInit{
       (dialogElement as HTMLElement).style.minWidth = '0';
     }
   }
+
+  onSearch(): void {
+    this.searchSubject.next(this.searchText);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
 
   onClose(){
     this.dialogRef.close()

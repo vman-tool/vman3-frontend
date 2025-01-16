@@ -78,11 +78,11 @@ export class CodingSheetComponent implements OnInit {
     didPregnancyContributed?: string,
   } = {}
 
-  selectedA?: SelectOption[];
-  selectedB?: SelectOption[];
-  selectedC?: SelectOption[];
-  selectedD?: SelectOption[];
-  selectedContributories?: SelectOption[];
+  selectedA: SelectOption[] = [];
+  selectedB: SelectOption[] = [];
+  selectedC: SelectOption[] = [];
+  selectedD: SelectOption[] = [];
+  selectedContributories: SelectOption[] = [];
 
   constructor(
     private snackBar: MatSnackBar,
