@@ -6,6 +6,7 @@ import { ConfigurationComponent } from './components/configuration/configuration
 import { DataSyncComponent } from './components/data-sync/data-sync.component';
 import { UsersComponent } from './components/users/users.component';
 import * as privileges  from 'app/shared/constants/privileges.constants';
+import { PcvaSettingsComponent } from './components/pcva-settings/pcva-settings.component';
 
 const routes: Routes = [
   {
@@ -37,6 +38,12 @@ const routes: Routes = [
         component: UsersComponent,
         canActivate: [PrivilegeGuard],
         data: { requiredPrivilege: [privileges.USERS_MODULE_VIEW]}
+      },
+      {
+        path: 'pcva-configuration',
+        component: PcvaSettingsComponent,
+        canActivate: [PrivilegeGuard],
+        data: { requiredPrivilege: []}
       },
     ],
   },

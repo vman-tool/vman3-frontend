@@ -50,7 +50,11 @@ export class CodersComponent implements OnInit {
     dialogConfig.data = {
       coder: coder
     }
-    this.dialog.open(AssignVaComponent, dialogConfig)
+    this.dialog.open(AssignVaComponent, dialogConfig).afterClosed().subscribe((result: any) => {
+      if(result){
+        this.getCoders();
+      }
+    })
   }
 
   onPageChange(event: any) {

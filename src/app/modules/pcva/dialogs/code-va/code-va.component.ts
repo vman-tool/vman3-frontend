@@ -1,34 +1,55 @@
 import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
-import { map, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, Observable, Subject, takeUntil } from 'rxjs';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
   selector: 'app-code-va',
   templateUrl: './code-va.component.html',
-  styleUrl: './code-va.component.scss'
+  styleUrls: ['./code-va.component.scss']
 })
 export class CodeVaComponent implements OnInit, AfterViewInit{
   vaRecord$?: Observable<any>;
   odkQuestions: any;
   questionsIds?: string[];
+  displayQuestions: any;
+
+  searchText: string = '';
+    
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+  searchTerm: string = '';
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
+    private matDialogRef: MatDialogRef<CodeVaComponent>,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService
+    private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
+    private snackBar: MatSnackBar
   ) { }
    
+  notificationMessage(message: string): void {
+    this.snackBar.open(`${message}`, 'close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 3 * 1000,
+    });
+  }
 
   ngOnInit(): void {
     this.getVaRecord();
     this.getQuestions();
+    this.setupSearch();
   }
 
   getVaRecord(): any {
-    this.vaRecord$ = this.vaRecordsService.getVARecords(undefined, undefined, undefined, undefined, false, this.data?.va?.vaId).pipe(
+    this.vaRecord$ = this.vaRecordsService.getVARecords(undefined, undefined, undefined, undefined, false, this.data?.va).pipe(
       map((response: any) => {
           response['data'] = filter_keys_without_data(response.data)
           return response
@@ -37,7 +58,9 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
   }
 
   async getQuestions(): Promise<any> {
-    this.odkQuestions = await this.indexedDBService.getQuestions()
+    // this.odkQuestions = await this.indexedDBService.getQuestions()
+    this.odkQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS);
+    this.displayQuestions = this.odkQuestions;
   }
 
   ngAfterViewInit() {
@@ -45,8 +68,35 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
     if (dialogElement) {
       (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
-      (dialogElement as HTMLElement).style.borderRadius = '10px';
-      (dialogElement as HTMLElement).classList.add('rounded-full');
     }
+  }
+
+  onSave(coded_va: any): void {
+  //  console.log(coded_va);
+    this.vaRecordsService.codeAssignedVA(coded_va).subscribe({
+      next: (response: any) => {
+        this.notificationMessage('VA coded successfully!');
+        this.matDialogRef.close(true);
+      },
+      error: (error: any) => {
+        this.notificationMessage('Failed to submit VA code!');
+        console.error(error);
+      }
+    })
+  }
+
+  private setupSearch(): void {
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe((searchTerm: string) => {
+      
+      this.displayQuestions = this.odkQuestions?.filter((question: any) => question?.key?.toLowerCase().includes(searchTerm.toLowerCase()) ||  question?.value?.label?.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+  }
+
+  onSearch(): void {
+    this.searchSubject.next(this.searchText);
   }
 }

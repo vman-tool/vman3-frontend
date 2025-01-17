@@ -7,6 +7,8 @@ import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.servi
 import { SettingConfigService } from '../../services/settings_configs.service';
 import { FormBuilder } from '@angular/forms';
 import { FieldLabel } from '../../interface';
+import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
   selector: 'app-assign-roles-form',
@@ -52,6 +54,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     private usersService: UsersService,
     private snackBar: MatSnackBar,
     private indexedDBService: IndexedDBService,
+    private genericIndexedDbService: GenericIndexedDbService,
     private settingConfigService: SettingConfigService,
     private formBuilder: FormBuilder,
   ){}
@@ -121,8 +124,6 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     if (dialogElement) {
       (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
-      (dialogElement as HTMLElement).style.borderRadius = '10px';
-      (dialogElement as HTMLElement).classList.add('rounded-full');
     }
   }
 
@@ -193,7 +194,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   async setLocations(){
     const savedFieldLabel = this.field_labels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
       const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
-      let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
+      // let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
+      let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value])
       
       locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
       
