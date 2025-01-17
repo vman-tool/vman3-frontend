@@ -35,10 +35,11 @@
       <tbody class="bg-white divide-y divide-gray-200">
         <ng-container *ngIf="!isLoading; else loadingTemplate">
           <tr *ngFor="let error of errors" class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">{{ error.error_type }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ error.error_types.join(',') }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ error.group }}</td>
             <td class="px-6 py-4">
-              <div class="max-w-xs overflow-hidden text-sm text-gray-900 truncate">{{ error.error_message }}</div>
+              <div class="max-w-xs overflow-hidden text-sm text-gray-900 truncate">{{ error.error_messages.join(',') }}
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <button (click)="openDataCleaner(error)"
