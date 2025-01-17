@@ -23,7 +23,9 @@ export class CcvaGraphsComponent implements OnInit {
   @Input() graphData: any;
   @Input() charts: { [key: string]: any } = {}; // Store chart instances
   isDropdownOpen: boolean = false;
-
+  sliderValue: number = 10;
+  maxSliderValue: number = 20;
+  originalChartData: { [key: string]: any } = {};
   @ViewChild('dropdownMenu') dropdownMenu!: ElementRef;
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
@@ -178,14 +180,13 @@ export class CcvaGraphsComponent implements OnInit {
         });
     });
   }
-
+  OnSlideChange(): void {
+    this.filterGraphData();
+  }
   loadChartData(data: any) {
     let graphs = data.graphs ?? [];
     for (let key in graphs) {
-      console.log('index', graphs[key].index);
-      console.log('data', graphs[key]);
-      console.log('values', graphs[key].values);
-      const chartLabels = graphs[key].index; // Create unique labels for each chart
+      const chartLabels = graphs[key].index;
       const chartData = [
         {
           label: 'csmf',
@@ -196,10 +197,74 @@ export class CcvaGraphsComponent implements OnInit {
       ];
       if (chartLabels?.length > 0) {
         this.renderChart(key, chartLabels, chartData);
+        this.originalChartData[key] = {
+          labels: chartLabels,
+          data: [...graphs[key].values],
+        };
+        this.filterGraphData();
       }
     }
     this.isLoading = false;
   }
+
+  filterGraphData(): void {
+    for (let key in this.originalChartData) {
+      if (this.originalChartData[key]) {
+        const originalData = this.originalChartData[key].data;
+        const originalLabels = this.originalChartData[key].labels;
+
+        // Use the sliderValue to determine how many data points to show
+        const dataToShow = Math.max(
+          1,
+          Math.min(this.sliderValue, originalData.length)
+        );
+
+        const filteredData = originalData.slice(0, dataToShow);
+        const filteredLabels = originalLabels.slice(0, dataToShow);
+
+        const chartData = [
+          {
+            label: 'csmf',
+            data: filteredData,
+            backgroundColor: this.getChartColor(key),
+            borderWidth: 1,
+          },
+        ];
+        console.log(filteredLabels.length, filteredData.length);
+        this.renderChart(key, filteredLabels, chartData);
+      }
+    }
+  }
+
+  updateCharts(): void {
+    for (let key in this.charts) {
+      if (this.charts[key] && this.charts[key].chart) {
+        this.charts[key].chart.update();
+      }
+    }
+  }
+
+  // loadChartData(data: any) {
+  //   let graphs = data.graphs ?? [];
+  //   for (let key in graphs) {
+  //     console.log('index', graphs[key].index);
+  //     console.log('data', graphs[key]);
+  //     console.log('values', graphs[key].values);
+  //     const chartLabels = graphs[key].index; // Create unique labels for each chart
+  //     const chartData = [
+  //       {
+  //         label: 'csmf',
+  //         data: graphs[key].values,
+  //         backgroundColor: this.getChartColor(key),
+  //         borderWidth: 1,
+  //       },
+  //     ];
+  //     if (chartLabels?.length > 0) {
+  //       this.renderChart(key, chartLabels, chartData);
+  //     }
+  //   }
+  //   this.isLoading = false;
+  // }
 
   getChartColor(key: string): string {
     const colors: any = {

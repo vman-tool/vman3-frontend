@@ -12,6 +12,7 @@ import { DataCheckComponent } from './components/data-check/data-check.component
 import { HttpClientModule } from '@angular/common/http';
 import { ErrorListComponent } from './components/error-list/error-list.component';
 import { DataCleanerComponent } from './components/data-cleaner/data-cleaner.component';
+import { MainErrorComponent } from './components/main/main.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { DataCleanerComponent } from './components/data-cleaner/data-cleaner.com
     DataCheckComponent,
     ErrorListComponent,
     DataCleanerComponent,
+    MainErrorComponent,
   ],
   imports: [
     CommonModule,
