@@ -60,6 +60,27 @@
           <option value="v">Very Low</option>
         </select>
       </div>
+
+      <div>
+        <label for="dataSource" class="block text-sm font-medium text-gray-700">Data Source</label>
+        <select id="dataSource" [(ngModel)]="dataSource" (change)="onDataSourceChange()"
+          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="available">Available Data</option>
+          <option value="csv">Upload CSV</option>
+        </select>
+      </div>
+
+      <!-- File input (visible only when CSV option is selected) -->
+      <div *ngIf="dataSource === 'csv'" class="flex items-center space-x-2">
+        <input type="file" id="csvFile" (change)="onFileSelected($event)" accept=".csv" class="hidden" />
+        <label for="csvFile"
+          class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded cursor-pointer hover:bg-green-600">
+          Select CSV File
+        </label>
+        <span *ngIf="selectedFile" class="text-sm text-gray-600">
+          {{ selectedFile.name }}
+        </span>
+      </div>
       <!-- CCVA Algorithm Dropdown -->
       <div>
         <label for="ccvaAlgorithm" class="block text-sm font-medium text-gray-700">CCVA Algorithm</label>
