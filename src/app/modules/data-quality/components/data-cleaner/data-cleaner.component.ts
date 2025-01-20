@@ -2,20 +2,14 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DataCleanerService } from '../../services/data-cleaner.service';
-
-interface ErrorData {
-  uuid: string;
-  error_type: string;
-  error_message: string;
-  group: string;
-}
+import { ErrorItem } from '../error-list/error-list.component';
 
 @Component({
   selector: 'app-data-cleaner',
   templateUrl: './data-cleaner.component.html',
 })
 export class DataCleanerComponent implements OnInit {
-  error: ErrorData | undefined;
+  error: ErrorItem | undefined;
   formData: { [key: string]: any } = {};
   keyDefinitions: any = {};
   isLoading: boolean = true;
@@ -31,7 +25,7 @@ export class DataCleanerComponent implements OnInit {
     private route: ActivatedRoute,
     private dataCleanerService: DataCleanerService,
     private dialogRef: MatDialogRef<DataCleanerComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ErrorData
+    @Inject(MAT_DIALOG_DATA) public data: ErrorItem
   ) {}
 
   ngOnInit(): void {
@@ -48,7 +42,7 @@ export class DataCleanerComponent implements OnInit {
 
   loadErrorDetails(id: string) {
     this.isLoading = true;
-    this.dataCleanerService.getErrorDetails(id).subscribe(
+    return this.dataCleanerService.getErrorDetails(id).subscribe(
       (errorResponse) => {
         this.error = errorResponse.data['error'];
         if (this.error && this.error.uuid) {

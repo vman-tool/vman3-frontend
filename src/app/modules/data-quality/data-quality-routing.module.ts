@@ -5,6 +5,7 @@ import { DataQualityComponent } from './data-quality.component';
 import { DataCheckComponent } from './components/data-check/data-check.component';
 import { ErrorListComponent } from './components/error-list/error-list.component';
 import { DataCleanerComponent } from './components/data-cleaner/data-cleaner.component';
+import { MainErrorComponent } from './components/main/main.component';
 
 const routes: Routes = [
   {
@@ -18,8 +19,15 @@ const routes: Routes = [
       },
       {
         path: '',
-        component: ErrorListComponent,
+        component: MainErrorComponent,
+        children: [
+          {
+            path: 'errors',
+            component: ErrorListComponent,
+          },
+        ],
       },
+
       {
         path: 'cleaner/:id',
         component: DataCleanerComponent,

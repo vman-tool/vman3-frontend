@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { RunCcvaService } from '../../services/run-ccva.service';
 import { ConfigService } from 'app/app.service';
 import { WebSockettService } from '../../../settings/services/web-socket.service';
@@ -13,6 +19,7 @@ import { TriggersService } from '../../../../core/services/triggers/triggers.ser
   styleUrls: ['./run-ccva.component.scss'],
 })
 export class RunCcvaComponent implements OnInit, OnDestroy {
+  @ViewChild('fileInput') fileInput: ElementRef | undefined;
   filter_startDate: any;
   filter_endDate: any;
 
@@ -36,6 +43,8 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   private messageSubscription: Subscription | undefined;
   private countdownInterval: any = null;
 
+  dataSource: 'available' | 'csv' = 'available';
+  selectedFile: File | null = null;
   constructor(
     private configService: ConfigService,
     private runCcvaService: RunCcvaService,
@@ -73,6 +82,18 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
     if (storedProgress) {
       this.restoreProgress(storedProgress); // Restore progress from localStorage
+    }
+  }
+  onDataSourceChange() {
+    if (this.dataSource === 'available') {
+      this.selectedFile = null;
+    }
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
     }
   }
 
@@ -122,33 +143,88 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       hiv_status: this.hivStatus,
       date_type: this.selectedDateType,
     };
+    if (this.dataSource === 'csv') {
+      this.uploadCSVAndRunCCVA(filter);
+    } else {
+      this.runCcvaService.run_ccva(filter).subscribe({
+        next: (response: any) => {
+          if (response?.data) {
+            console.log('CCVA task started:', response.data);
+            this.isTaskRunning = true;
+            if (response?.data) {
+              this.updateProgress(response?.data);
+            }
 
-    this.runCcvaService.run_ccva(filter).subscribe({
+            const taskId = response.data.task_id;
+            localStorage.setItem(this.taskIdKey, taskId); // Store task ID in localStorage
+            this.connectToSocket(taskId);
+            this.isCCvaRunning = false;
+          }
+        },
+        error: (error) => {
+          console.error('Error starting CCVA task:', error);
+          this.isCCvaRunning = false;
+          this.isTaskRunning = false;
+          this.triggersService.triggerCCVAListFunction();
+          console.log(error.error.detail);
+          this.snackBar.open(
+            `${
+              error.error.detail ??
+              error.error.message ??
+              'Failed to start CCVA task'
+            }`,
+            'Close',
+            {
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+              duration: 3000,
+            }
+          );
+        },
+      });
+    }
+  }
+  private uploadCSVAndRunCCVA(filter: any) {
+    if (!this.selectedFile) {
+      console.error('No file selected');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+
+    // Append filter parameters to formData
+    Object.keys(filter).forEach((key) => {
+      if (filter[key] !== null) {
+        formData.append(key, filter[key]);
+      }
+    });
+
+    this.runCcvaService.runCcvaWithCSV(formData).subscribe({
       next: (response: any) => {
         if (response?.data) {
-          console.log('CCVA task started:', response.data);
+          console.log('CCVA task started with CSV:', response.data);
           this.isTaskRunning = true;
           if (response?.data) {
             this.updateProgress(response?.data);
           }
 
           const taskId = response.data.task_id;
-          localStorage.setItem(this.taskIdKey, taskId); // Store task ID in localStorage
+          localStorage.setItem(this.taskIdKey, taskId);
           this.connectToSocket(taskId);
           this.isCCvaRunning = false;
         }
       },
       error: (error) => {
-        console.error('Error starting CCVA task:', error);
+        console.error('Error starting CCVA task with CSV:', error);
         this.isCCvaRunning = false;
         this.isTaskRunning = false;
         this.triggersService.triggerCCVAListFunction();
-        console.log(error.error.detail);
         this.snackBar.open(
           `${
             error.error.detail ??
             error.error.message ??
-            'Failed to start CCVA task'
+            'Failed to start CCVA task with CSV'
           }`,
           'Close',
           {
@@ -160,7 +236,6 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       },
     });
   }
-
   connectToSocket(taskId: string) {
     if (!taskId) {
       console.error('No taskId provided');

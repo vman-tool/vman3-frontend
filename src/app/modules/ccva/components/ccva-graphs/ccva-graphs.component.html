@@ -1,5 +1,5 @@
 <app-va-filters></app-va-filters>
-<div class="p-4 mx-auto mb-96">
+<div class="mx-auto mb-96">
   <div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 md:grid-cols-3">
     <!-- Skeleton Loader for Bar Chart -->
     <div *ngFor="let item of [1,2,3,4,5,6]"
@@ -58,11 +58,17 @@
               </svg>
             </button>
             <div *ngIf="isDropdownOpen"
+<<<<<<< HEAD
               class="absolute right-0 z-10 w-48 py-2 mt-2 mb-5 bg-white rounded-md shadow-lg dark:bg-gray-800">
               <!-- <a href="#" (click)="checkData()"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">Check</a>
               -->
               <div class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">
+=======
+              class="absolute right-0 z-10 w-64 py-2 mt-2 mb-5 bg-white rounded-md shadow-lg dark:bg-gray-800">
+              <div
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">
+>>>>>>> 4bd52ca011c1da07dd913d3759ad53ec226f8703
                 <label class="inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer" (change)="toggleCcvaSourceView($event)"
                     [checked]="ccva_graph_db_source">
@@ -75,6 +81,15 @@
               <a href="#" (click)="downloadCsv()"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">Download
                 Data</a>
+              <hr>
+              <div class="px-4 py-2">
+                <label for="slider" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  CMSF total Value: {{ sliderValue }}
+                </label>
+                <input id="slider" type="range" (ngModelChange)="OnSlideChange()" [(ngModel)]="sliderValue" min="0"
+                  [max]="maxSliderValue"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+              </div>
             </div>
           </div>
         </div>

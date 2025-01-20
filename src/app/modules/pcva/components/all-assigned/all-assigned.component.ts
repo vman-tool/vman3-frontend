@@ -125,7 +125,11 @@ export class AllAssignedComponent implements OnInit {
       }),
       fieldsMapping: this.fieldsMapping
     }
-    this.dialog.open(CodeVaComponent, dialogConfig)
+    this.dialog.open(CodeVaComponent, dialogConfig).afterClosed().subscribe((response: any) => {
+      if(response){
+        this.loadAssignedVas();
+      }
+    })
   }
 
 }
