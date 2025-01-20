@@ -58,17 +58,9 @@
               </svg>
             </button>
             <div *ngIf="isDropdownOpen"
-<<<<<<< HEAD
-              class="absolute right-0 z-10 w-48 py-2 mt-2 mb-5 bg-white rounded-md shadow-lg dark:bg-gray-800">
-              <!-- <a href="#" (click)="checkData()"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">Check</a>
-              -->
-              <div class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">
-=======
               class="absolute right-0 z-10 w-64 py-2 mt-2 mb-5 bg-white rounded-md shadow-lg dark:bg-gray-800">
               <div
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">
->>>>>>> 4bd52ca011c1da07dd913d3759ad53ec226f8703
                 <label class="inline-flex items-center cursor-pointer">
                   <input type="checkbox" class="sr-only peer" (change)="toggleCcvaSourceView($event)"
                     [checked]="ccva_graph_db_source">
@@ -77,16 +69,26 @@
                   <span class="text-sm text-gray-700 ms-3 dark:text-gray-200"> Local CSMF </span>
                 </label>
               </div>
-              <hr>
+              <hr />
+              <div
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" class="sr-only peer" >
+                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500">
+                  </div>
+                  <span class="text-sm text-gray-700 ms-3 dark:text-gray-200"> Include Undeterminants </span>
+                </label>
+              </div>
+              <hr />
               <a href="#" (click)="downloadCsv()"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">Download
                 Data</a>
               <hr>
               <div class="px-4 py-2">
                 <label for="slider" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                  CMSF total Value: {{ sliderValue }}
+                  Causes to display: {{ sliderValue }}
                 </label>
-                <input id="slider" type="range" (ngModelChange)="OnSlideChange()" [(ngModel)]="sliderValue" min="0"
+                <input id="slider" type="range" (ngModelChange)="OnSlideChange()" [(ngModel)]="sliderValue" min="5" step="5"
                   [max]="maxSliderValue"
                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
               </div>

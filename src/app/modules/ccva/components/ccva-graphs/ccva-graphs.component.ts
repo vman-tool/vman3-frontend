@@ -24,7 +24,7 @@ export class CcvaGraphsComponent implements OnInit {
   @Input() charts: { [key: string]: any } = {}; // Store chart instances
   isDropdownOpen: boolean = false;
   sliderValue: number = 10;
-  maxSliderValue: number = 20;
+  maxSliderValue: number = 30;
   originalChartData: { [key: string]: any } = {};
   @ViewChild('dropdownMenu') dropdownMenu!: ElementRef;
   public chartLabels: any[] = [];
