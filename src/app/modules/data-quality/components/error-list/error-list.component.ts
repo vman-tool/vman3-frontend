@@ -3,10 +3,10 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ErrorListService } from '../../services/error-list.service';
 import { DataCleanerComponent } from '../data-cleaner/data-cleaner.component';
 
-interface ErrorItem {
+export interface ErrorItem {
   uuid: string;
-  error_type: string;
-  error_message: string;
+  error_types: string[];
+  error_messages: string[];
   group: string;
 }
 
@@ -46,7 +46,7 @@ export class ErrorListComponent implements OnInit {
       )
       .subscribe(
         (response) => {
-          this.errors = response.data;
+          this.errors = response.data['individualErrorsResults'];
           this.totalItems = response.total;
           this.isLoading = false;
           this.updateFilterOptions();
@@ -59,8 +59,9 @@ export class ErrorListComponent implements OnInit {
   }
 
   updateFilterOptions() {
+    console.log(this.errors, this.selectedErrorType);
     this.errorTypes = [
-      ...new Set(this.errors.map((error) => error.error_type)),
+      ...new Set(this.errors.map((error) => error.error_types).flat()),
     ];
     this.groups = [...new Set(this.errors.map((error) => error.group))];
   }
