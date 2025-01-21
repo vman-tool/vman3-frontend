@@ -6,6 +6,7 @@ import { CodedVaComponent } from "./components/coded-va/coded-va.component";
 import { DiscordantsVaComponent } from "./components/discordants-va/discordants-va.component";
 import { AllAssignedComponent } from "./components/all-assigned/all-assigned.component";
 import { CodersComponent } from "./components/coders/coders.component";
+import { PcvaResultsComponent } from "./components/pcva-results/pcva-results.component";
 
 
 const routes: Routes = [
@@ -38,6 +39,11 @@ const routes: Routes = [
         // PCVA Discordants Component
         path: 'discordants',
         component: DiscordantsVaComponent
+      },
+      {
+        // PCVA Resuls Component
+        path: 'pcva-results',
+        component: PcvaResultsComponent
       },
     ]
   },
