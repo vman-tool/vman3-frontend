@@ -93,6 +93,13 @@ export class SidebarComponent {
             route: '/discordants',
             hasAccess: true,
           },
+          {
+            displayText: 'Data Export',
+            icon: 'ph-download',
+            icon_asset: '',
+            route: '/pcva-results',
+            hasAccess: true,
+          },
         ],
       },
       {
