@@ -1,8 +1,17 @@
 import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
-import { map, Observable } from 'rxjs';
+import { lastValueFrom, map, Observable } from 'rxjs';
 import { flatten, keyBy }  from 'lodash';
+import {
+  MatColumnDef,
+  MatHeaderRowDef,
+  MatNoDataRow,
+  MatRowDef,
+  MatTable,
+  MatTableDataSource,
+} from '@angular/material/table';
+import { Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-assign-va',
@@ -36,10 +45,11 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
     this.loadVARecords();
   }
 
-  loadVARecords(){
+  async loadVARecords(){
     this.loadingData = true
-    this.vaRecords$ = this.vaRecordsService.getVARecords(this.paging, this.pageNumber, this.limit, this.include_assignments).pipe(
+    this.vaRecords$ = this.vaRecordsService.getUnassignedVARecords({paging: this.paging, page_number: this.pageNumber, limit: this.limit},this.coder?.uuid).pipe(
       map((response: any) => {
+        console.log(response)
         if(!this.headers){
           this.headers = Object.keys(response?.data[0])
           this.lastHeader = this.headers[this.headers.length - 1]
@@ -56,6 +66,8 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
           return va
         })
 
+        this.responsestore = response;
+
         
         this.assignments = keyBy(flatten(tempAssignments?.map((assignment: any) => {
           return {
@@ -64,12 +76,14 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
           }
         })), 'vaId')
         this.loadingData = false
+
         return {
           ...response,
           data: responseWithoutAssignments
         }
       })
     )
+    
   }
 
   ngAfterViewInit() {
@@ -79,6 +93,10 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
       (dialogElement as HTMLElement).style.minWidth = '0';
       (dialogElement as HTMLElement).style.borderRadius = '5px';
     }
+  }
+
+  announceSortChange(sortState: any){
+    console.log(sortState)
   }
 
   onSelectVA(e: Event, selectedVA: string | any[]){
@@ -118,7 +136,8 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
   }
 
   onPageChange(event: any) {
-    this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
+    this.pageNumber = this.pageNumber == 0 && this.pageNumber < event.pageIndex ? event.pageIndex + 1 : this.pageNumber !== 0 && this.pageNumber! > event.pageIndex ? event.pageIndex - 1 : event.pageIndex;
+    this.pageNumber = this.pageNumber! < 0 ? 0 : this.pageNumber;
     this.limit = Number(event?.pageSize);
     this.loadVARecords();
   }

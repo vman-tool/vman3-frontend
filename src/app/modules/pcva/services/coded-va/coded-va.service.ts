@@ -38,7 +38,7 @@ export class CodedVaService {
 
   downloadPcvaResults() {
      return this.http
-     .get(`${this.configService.API_URL}/pcva/export_pcva_results`, { responseType: 'blob' })
+     .get(`${this.configService.API_URL}/pcva/export-pcva-results`, { responseType: 'blob' })
       .subscribe((blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

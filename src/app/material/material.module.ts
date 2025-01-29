@@ -22,6 +22,7 @@ import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { MatTabsModule } from '@angular/material/tabs';
 import {MatRadioModule} from '@angular/material/radio';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableModule } from '@angular/material/table';
 import {
   MAT_SNACK_BAR_DEFAULT_OPTIONS,
   MatSnackBar,
@@ -31,29 +32,30 @@ import {
 
 
 const materialComponents: any[] = [
-  MatButtonModule,
-  MatIconModule,
-  MatSidenavModule,
-  MatToolbarModule,
-  MatListModule,
-  MatChipsModule,
-  MatCardModule,
-  MatSlideToggleModule,
-  MatMenuModule,
-  MatPaginatorModule,
-  MatProgressBarModule,
-  MatDialogModule,
-  MatFormFieldModule,
-  MatInputModule,
-  MatNativeDateModule,
-  MatDatepickerModule,
-  MatSelectModule,
-  MatCheckboxModule,
-  MatExpansionModule,
-  MatSnackBarModule,
-  MatTabsModule,
-  MatRadioModule,
-  MatTooltipModule
+    MatButtonModule,
+    MatIconModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatListModule,
+    MatChipsModule,
+    MatCardModule,
+    MatSlideToggleModule,
+    MatMenuModule,
+    MatPaginatorModule,
+    MatProgressBarModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatNativeDateModule,
+    MatDatepickerModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatExpansionModule,
+    MatSnackBarModule,
+    MatTabsModule,
+    MatRadioModule,
+    MatTooltipModule,
+    MatTableModule
 ]
 
 @NgModule({
