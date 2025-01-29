@@ -1,24 +1,15 @@
-import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AfterViewInit, Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
-import { lastValueFrom, map, Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { flatten, keyBy }  from 'lodash';
-import {
-  MatColumnDef,
-  MatHeaderRowDef,
-  MatNoDataRow,
-  MatRowDef,
-  MatTable,
-  MatTableDataSource,
-} from '@angular/material/table';
-import { Sort } from '@angular/material/sort';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-assign-va',
-  templateUrl: './assign-va.component.html',
-  styleUrl: './assign-va.component.scss'
+  selector: 'app-unassign-va',
+  templateUrl: './unassign-va.component.html',
+  styleUrl: './unassign-va.component.scss'
 })
-export class AssignVaComponent implements OnInit, AfterViewInit {
+export class UnassignVaComponent implements OnInit, AfterViewInit {
   vaRecords$?: Observable<any>
   pageNumber?: number = 0;
   pageSizeOptions = [10, 20, 50, 100]
@@ -36,7 +27,7 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
   
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private matDialogRef: MatDialogRef<AssignVaComponent>,
+    private matDialogRef: MatDialogRef<UnassignVaComponent>,
     private vaRecordsService: VaRecordsService
   ) {
     this.coder = data?.coder
@@ -48,7 +39,7 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
 
   async loadVARecords(){
     this.loadingData = true
-    this.vaRecords$ = this.vaRecordsService.getUnassignedVARecords({paging: this.paging, page_number: this.pageNumber, limit: this.limit},this.coder?.uuid).pipe(
+    this.vaRecords$ = this.vaRecordsService.getUncodedAssignedVARecords({paging: this.paging, page_number: this.pageNumber, limit: this.limit},this.coder?.uuid).pipe(
       map((response: any) => {
         console.log(response)
         if(!this.headers){
@@ -96,10 +87,6 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
     }
   }
 
-  announceSortChange(sortState: any){
-    console.log(sortState)
-  }
-
   onSelectVA(e: Event, selectedVA: string | any[]){
     if(e.target instanceof HTMLInputElement && e.target.checked){
       if(typeof selectedVA === 'object'){
@@ -121,15 +108,15 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onUnAssignVA(e: Event){
+  onUnassignVA(e: Event){
     const data = {
       vaIds: this.selectedVAs,
       coder: this.coder?.uuid
     }
-    this.vaRecordsService.assignVARecords(data).subscribe({
+    this.vaRecordsService.unassignVARecords(data).subscribe({
       next: (response: any) => {
         this.reloadOnClose = true;
-        this.loadVARecords()
+        this.loadVARecords();
       },
       error: (error: any) => {
         console.error(error)

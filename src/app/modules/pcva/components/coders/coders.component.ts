@@ -3,6 +3,7 @@ import { CodersService } from '../../services/coders/coders.service';
 import { catchError, map, Observable } from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AssignVaComponent } from '../../dialogs/assign-va/assign-va.component';
+import { UnassignVaComponent } from '../../dialogs/unassign-va/unassign-va.component';
 
 @Component({
   selector: 'app-coders',
@@ -51,6 +52,21 @@ export class CodersComponent implements OnInit {
       coder: coder
     }
     this.dialog.open(AssignVaComponent, dialogConfig).afterClosed().subscribe((result: any) => {
+      if(result){
+        this.getCoders();
+      }
+    })
+  }
+  
+  onUnassignCoder(e: Event, coder: any){
+    let dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = "80vw";
+    dialogConfig.panelClass = "cdk-overlay-pane"
+    dialogConfig.data = {
+      coder: coder
+    }
+    this.dialog.open(UnassignVaComponent, dialogConfig).afterClosed().subscribe((result: any) => {
       if(result){
         this.getCoders();
       }

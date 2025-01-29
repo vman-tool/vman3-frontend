@@ -35,8 +35,24 @@ export class VaRecordsService {
     return this.http.get(`${this.configService.API_URL}/pcva/get-unassigned-va${params}`);
   }
   
+  getUncodedAssignedVARecords(pager?: {paging?: boolean, page_number?: number, limit?: number}, coder?: any) {
+    let params = pager?.paging ? `?paging=${pager?.paging}`: '';
+
+    params = params?.length && pager?.page_number ? params+`&page_number=${pager?.page_number}` : pager?.page_number ? params+`?page_number=${pager?.page_number}` : params;
+    params = params?.length && pager?.limit ? params+`&limit=${pager?.limit}` : pager?.limit ? params+`?limit=${pager?.limit}` : params;
+    
+    params = params?.length && coder ? params+`&coder=${coder}` : coder ? params+`?coder=${coder}` : params
+
+    
+    return this.http.get(`${this.configService.API_URL}/pcva/get-uncoded-assigned-va${params}`);
+  }
+  
   assignVARecords(data: any) {
     return this.http.post(`${this.configService.API_URL}/pcva/assign-va`, data);
+  }
+  
+  unassignVARecords(data: any) {
+    return this.http.post(`${this.configService.API_URL}/pcva/unassign-va`, data);
   }
 
   getQuestions(va_questions_ids?: string[]){
