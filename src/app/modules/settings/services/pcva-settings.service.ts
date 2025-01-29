@@ -12,7 +12,7 @@ export class PcvaSettingsService {
   getICD10Codes(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string){
     let params = `?paging=${pager?.paging}`;
 
-    params = params?.length && pager?.page_number ? params + `&page=${pager?.page_number}` : pager?.page_number ? params + `?page=${pager?.page_number}` : params;
+    params = params?.length && pager?.page_number ? params + `&page_number=${pager?.page_number}` : pager?.page_number ? params + `?page_number=${pager?.page_number}` : params;
     params = params?.length && pager?.limit ? params + `&limit=${pager?.limit}` : pager?.limit ? params + `?limit=${pager?.limit}` : params;
     params = params?.length && search_term?.length ? params + `&search_term=${search_term}` : search_term?.length ? params + `?search_term=${search_term}` : params;
 

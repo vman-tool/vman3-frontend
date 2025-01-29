@@ -80,7 +80,8 @@ export class Icd10CodesComponent implements OnInit {
   }
 
   onPageChange(event: any) {
-    this.pageNumber = event.pageIndex > 0 ? event.pageIndex + 1 : event.pageIndex;
+    this.pageNumber = this.pageNumber == 0 && this.pageNumber < event.pageIndex ? event.pageIndex + 1 : this.pageNumber !== 0 && this.pageNumber! > event.pageIndex ? event.pageIndex - 1 : event.pageIndex;
+    this.pageNumber = this.pageNumber! < 0 ? 0 : this.pageNumber;
     this.limit = Number(event?.pageSize);
     this.loadICD10Codes();
   }
