@@ -35,4 +35,17 @@ export class CodedVaService {
 
     return this.http.get(`${this.configService.API_URL}/pcva/get-coded-va-details/${va}${params}`);
   }
+
+  downloadPcvaResults() {
+     return this.http
+     .get(`${this.configService.API_URL}/pcva/export_pcva_results`, { responseType: 'blob' })
+      .subscribe((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pcva_results.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });;
+  }
 }

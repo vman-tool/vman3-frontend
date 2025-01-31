@@ -97,7 +97,7 @@ export class CodedVaComponent implements OnInit {
     }
 
     async onUpdateCodedVA(va: any){
-      const codedData: any = await lastValueFrom(this.codedVaService.getCodedVADetails(undefined, false, va, this.current_user?.uuid, true))
+      const codedData: any = await lastValueFrom(this.codedVaService.getCodedVADetails(undefined, false, va, this.current_user?.uuid, false));
         let dialogConfig = new MatDialogConfig();
         dialogConfig.autoFocus = true;
         dialogConfig.width = "95vw";
