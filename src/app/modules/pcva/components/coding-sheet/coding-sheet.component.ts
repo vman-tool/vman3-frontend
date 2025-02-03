@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, signal, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'app/app.service';
 import { FieldMapping } from 'app/modules/settings/interface';
@@ -12,13 +12,15 @@ import { DiscordantsVaService } from '../../services/discordants-va/discordants-
   styleUrl: './coding-sheet.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CodingSheetComponent implements OnInit {
+export class CodingSheetComponent implements OnInit, AfterViewChecked {
+  @ViewChild('chatContainer') private chatContainer?: ElementRef;
   @Input() icdCodes?: any[]; 
   @Input() settings: FieldMapping = {} as FieldMapping; 
   @Input() vaRecord?: any;
   @Input() codedVA?: any;
   @Input() allowChat?: boolean = false;
   @Input() messages?: any[] = [];
+  @Input() current_user?: any;
 
   @Output() save: EventEmitter<any> = new EventEmitter<any>();
 
@@ -36,7 +38,7 @@ export class CodingSheetComponent implements OnInit {
   birthDate: string = "";
   deathDate: string = "";
   clinicalNotes?: string;
-  newMessage = '';
+  newMessage: string = '';
 
   frameA: {
     a?: any,
@@ -118,6 +120,10 @@ export class CodingSheetComponent implements OnInit {
     if(this.allowChat){
       this.initializeWebSocket();
     }
+  }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
   }
 
   assignValuesForUpdate(){
@@ -213,38 +219,45 @@ export class CodingSheetComponent implements OnInit {
   }
 
   private initializeWebSocket(): void {
-    const token = localStorage.getItem('access_token');
 
-    this.discordantsVaService.connect(this.vaRecord?.instanceid)
+    this.discordantsVaService.connect(this.vaRecord?.instanceid);
 
     this.discordantsVaService.messages$.subscribe((message) => {
-      console.log(message)
+      const messages = this.messages
+      if(message?.va){
+        messages?.push(message)
+        
+        this.messages = []
+        setTimeout(() => {
+          this.messages = messages;
+        }, 200)
+        this.scrollToBottom()
+      }
+      
+      
     })
     
-    // this.webSockettService.connect(
-    //   `${this.configService.API_URL_WS}/discordants/chat/${this.vaRecord?.instanceid}`
-    // );
-
-    // this.messageSubscription = this.webSockettService.messages.subscribe(
-    //   (data: string) => {
-    //     try {
-    //       const parsedData = JSON.parse(data);
-    //       this.newMessage = "";
-    //       console.log(parsedData)
-    //     } catch (error) {
-    //       console.error('Error parsing WebSocket message:', error);
-    //     }
-    //   }
-    // );
   }
 
-
+  private scrollToBottom(): void {
+    try {
+      if(this.chatContainer){
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer?.nativeElement?.scrollHeight;
+      }
+    } catch(err) {
+      console.error('Scroll to bottom failed', err);
+    }
+  }
 
 
   sendMessage() {
     if (this.newMessage.trim()) {
       this.discordantsVaService.sendMessage({ text: this.newMessage });
-      // this.webSockettService.sendMessage(this.newMessage)
+      this.newMessage = '';
     }
+  }
+
+  ngOnDestroy(){
+    this.discordantsVaService.close()
   }
 }

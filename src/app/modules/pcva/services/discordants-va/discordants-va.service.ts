@@ -33,10 +33,9 @@ export class DiscordantsVaService {
   }
 
   public connect(va_id: string): void {
-    let count = 1
     const token = localStorage.getItem('access_token') || '';
     this.socket$ = webSocket({
-      url: `${this.configService.API_URL_WS}/pcva/get-discordant-messages/${va_id}?token=${token}`,
+      url: `${this.configService.API_URL_WS}/discordants/chat/${va_id}?token=${token}`,
       deserializer: (msg) => JSON.parse(msg.data),
     });
 
