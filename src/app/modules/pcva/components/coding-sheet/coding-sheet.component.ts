@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfigService } from 'app/app.service';
 import { FieldMapping } from 'app/modules/settings/interface';
+import { WebSockettService } from 'app/modules/settings/services/web-socket.service';
 import { SelectOption } from 'app/shared/components/searchable-multi-select/searchable-multi-select.component';
+import { DiscordantsVaService } from '../../services/discordants-va/discordants-va.service';
 
 @Component({
   selector: 'app-coding-sheet',
@@ -14,6 +17,8 @@ export class CodingSheetComponent implements OnInit {
   @Input() settings: FieldMapping = {} as FieldMapping; 
   @Input() vaRecord?: any;
   @Input() codedVA?: any;
+  @Input() allowChat?: boolean = false;
+  @Input() messages?: any[] = [];
 
   @Output() save: EventEmitter<any> = new EventEmitter<any>();
 
@@ -25,11 +30,13 @@ export class CodingSheetComponent implements OnInit {
   readonly subPanelCOpenState = signal(false);
   readonly subPanelDOpenState = signal(false);
   readonly panelClinicalOpenState = signal(false);
+  readonly panelChatSectionOpenState = signal(false);
   
   gender: string = "";
   birthDate: string = "";
   deathDate: string = "";
   clinicalNotes?: string;
+  newMessage = '';
 
   frameA: {
     a?: any,
@@ -83,9 +90,13 @@ export class CodingSheetComponent implements OnInit {
   selectedC: SelectOption[] = [];
   selectedD: SelectOption[] = [];
   selectedContributories: SelectOption[] = [];
+  messageSubscription: any;
 
   constructor(
     private snackBar: MatSnackBar,
+    private configService: ConfigService,
+    private webSockettService: WebSockettService,
+    private discordantsVaService: DiscordantsVaService
   ){}
 
   notificationMessage(message: string): void {
@@ -103,6 +114,10 @@ export class CodingSheetComponent implements OnInit {
     this.deathDate = this.vaRecord[this.settings.death_date];
 
     this.assignValuesForUpdate();
+
+    if(this.allowChat){
+      this.initializeWebSocket();
+    }
   }
 
   assignValuesForUpdate(){
@@ -157,7 +172,6 @@ export class CodingSheetComponent implements OnInit {
   }
 
   onSubmitform(){
-    console.log('Form submitted', this.frameA, this.frameB, this.mannerOfDeath, this.placeOfOccurence, this.fetalOrInfant, this.pregnantDeceased);
     if(this.validateframeA() && this.validateframeB()){
       this.save.emit({
         assigned_va: this.vaRecord?.instanceid,
@@ -196,5 +210,41 @@ export class CodingSheetComponent implements OnInit {
       return false;
     }
     return true;
+  }
+
+  private initializeWebSocket(): void {
+    const token = localStorage.getItem('access_token');
+
+    this.discordantsVaService.connect(this.vaRecord?.instanceid)
+
+    this.discordantsVaService.messages$.subscribe((message) => {
+      console.log(message)
+    })
+    
+    // this.webSockettService.connect(
+    //   `${this.configService.API_URL_WS}/discordants/chat/${this.vaRecord?.instanceid}`
+    // );
+
+    // this.messageSubscription = this.webSockettService.messages.subscribe(
+    //   (data: string) => {
+    //     try {
+    //       const parsedData = JSON.parse(data);
+    //       this.newMessage = "";
+    //       console.log(parsedData)
+    //     } catch (error) {
+    //       console.error('Error parsing WebSocket message:', error);
+    //     }
+    //   }
+    // );
+  }
+
+
+
+
+  sendMessage() {
+    if (this.newMessage.trim()) {
+      this.discordantsVaService.sendMessage({ text: this.newMessage });
+      // this.webSockettService.sendMessage(this.newMessage)
+    }
   }
 }

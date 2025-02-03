@@ -29,8 +29,9 @@ Set ```config.json``` inside assets folder located in ``` srs/assets/``` with va
 
 ```
 {
-  "API_URL": "http://backend-url",
-  "API_URL_WS": "ws://backend-url/ws"
+  "API_URL": "http://backend-url/vman/api/v1",
+  "BASE_URL": "http://backend-url/",
+  "API_URL_WS": "ws://backend-url/vman/api/v1/ws"
 }
 
 ```

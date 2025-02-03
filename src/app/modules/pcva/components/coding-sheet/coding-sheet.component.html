@@ -388,6 +388,47 @@
                             </td>
                         </tr>
                     </mat-expansion-panel>
+
+                    <mat-expansion-panel [expanded]="panelChatSectionOpenState()" (opened)="panelChatSectionOpenState.set(true)"
+                        (closed)="panelChatSectionOpenState.set(false)" hideToggle *ngIf="allowChat">
+                        <mat-expansion-panel-header class="mat-expansion-panel-header-colored">
+                            <mat-panel-title> {{panelChatSectionOpenState() ? '▼' : '▶'}} Chat Section
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <tr class="grid grid-cols-12 mt-2">
+                            <div class="col-span-12 min-h-[300px] max-h-[400px] bg-white flex flex-col">
+                                <div class="flex-1 overflow-y-auto p-4 space-y-4 mb-[70px]">
+                                    <div *ngFor="let message of messages"
+                                        [class]="message.isSent ? 'flex items-start justify-end' : 'flex items-start'">
+                            
+                                        <div *ngIf="!message.isSent" class="w-8 h-8 rounded-full bg-gray-200"></div>
+                            
+                                        <div [class]="message.isSent ? 
+                                           'bg-blue-500 text-white rounded-lg p-3 max-w-[80%]' : 
+                                           'ml-2 bg-gray-100 rounded-lg p-3 max-w-[80%]'">
+                                            <p [class]="message.isSent ? 'text-white' : 'text-gray-900'">{{ message.content }}</p>
+                                            <span [class]="message.isSent ? 'text-xs opacity-75' : 'text-xs text-gray-500'">
+                                                {{ message.timestamp }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <div class="absolute bottom-0 left-0 right-0 border-t bg-white p-4">
+                                    <div class="flex items-center space-x-2">
+                                        <textarea type="text" name="newMessage" [(ngModel)]="newMessage" placeholder="Type a message..."
+                                            class="flex-1 border min-h-[50px] max-h-[200px] rounded-md p-5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        </textarea>
+                            
+                                        <a (click)="sendMessage()"
+                                            class="bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 hover:cursor-pointer">
+                                            ➤
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </tr>
+                    </mat-expansion-panel>
                     
             </mat-accordion>
         </tbody>
