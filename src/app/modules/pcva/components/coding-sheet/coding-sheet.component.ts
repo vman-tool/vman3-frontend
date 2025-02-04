@@ -1,10 +1,7 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, signal, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, signal, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ConfigService } from 'app/app.service';
 import { FieldMapping } from 'app/modules/settings/interface';
-import { WebSockettService } from 'app/modules/settings/services/web-socket.service';
 import { SelectOption } from 'app/shared/components/searchable-multi-select/searchable-multi-select.component';
-import { DiscordantsVaService } from '../../services/discordants-va/discordants-va.service';
 
 @Component({
   selector: 'app-coding-sheet',
@@ -12,7 +9,7 @@ import { DiscordantsVaService } from '../../services/discordants-va/discordants-
   styleUrl: './coding-sheet.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CodingSheetComponent implements OnInit, AfterViewChecked {
+export class CodingSheetComponent implements OnInit {
   @ViewChild('chatContainer') private chatContainer?: ElementRef;
   @Input() icdCodes?: any[]; 
   @Input() settings: FieldMapping = {} as FieldMapping; 
@@ -96,11 +93,6 @@ export class CodingSheetComponent implements OnInit, AfterViewChecked {
 
   constructor(
     private snackBar: MatSnackBar,
-    private configService: ConfigService,
-    private webSockettService: WebSockettService,
-    private discordantsVaService: DiscordantsVaService,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
   ){}
 
   notificationMessage(message: string): void {
@@ -118,14 +110,6 @@ export class CodingSheetComponent implements OnInit, AfterViewChecked {
     this.deathDate = this.vaRecord[this.settings.death_date];
 
     this.assignValuesForUpdate();
-
-    if(this.allowChat){
-      this.initializeChatConnection();
-    }
-  }
-
-  ngAfterViewChecked() {
-    this.scrollToBottom();
   }
 
   assignValuesForUpdate(){
@@ -218,59 +202,5 @@ export class CodingSheetComponent implements OnInit, AfterViewChecked {
       return false;
     }
     return true;
-  }
-
-  trackByFn(index: number, message: any) {
-    return message?.uuid;
-  }
-
-  private initializeChatConnection(): void {
-
-    this.discordantsVaService.connect(this.vaRecord?.instanceid);
-
-    this.discordantsVaService.messages$.subscribe((message) => {
-      const messages = this.messages || [];
-      this.messages = []
-      if(message?.va){
-        this.ngZone.run(() => {
-          messages.push(message);
-          this.messages = messages
-          this.cdr.markForCheck();
-          this.scrollToBottom();
-        });
-      }
-
-    })
-    
-  }
-
-  private scrollToBottom(): void {
-    try {
-      if(this.chatContainer){
-        this.chatContainer.nativeElement.scrollTop = this.chatContainer?.nativeElement?.scrollHeight;
-      }
-    } catch(err) {
-      console.error('Scroll to bottom failed', err);
-    }
-  }
-
-
-  sendMessage() {
-    if (this.newMessage.trim()) {
-      if (!this.discordantsVaService.isSocketConnected){
-        this.discordantsVaService.connect(this.vaRecord?.instanceid);
-      }
-
-      if (!this.discordantsVaService.isSocketConnected){
-        this.notificationMessage('Failed to send message. Please try again later.');
-        return;
-      }
-      this.discordantsVaService.sendMessage({ text: this.newMessage });
-      this.newMessage = '';
-    }
-  }
-
-  ngOnDestroy(){
-    this.discordantsVaService.close()
   }
 }
