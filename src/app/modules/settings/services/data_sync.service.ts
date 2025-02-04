@@ -18,6 +18,20 @@ export class DataSyncService {
       )
       .pipe(map((response: any) => response));
   }
+  csvDataUpload(formData: FormData): Observable<any> {
+    return this.http.post(
+      `${this.configService.API_URL}/settings/upload-csv`,
+      formData
+    );
+  }
+  // csvDataUpload(cached: boolean = false): Observable<any> {
+  //   return this.http
+  //     .post<any>(
+  //       `${this.configService.API_URL}/odk/fetch_endpoint_with_async`,
+  //       {}
+  //     )
+  //     .pipe(map((response: any) => response));
+  // }
 
   formsubmission_status(cached: boolean = false): Observable<any> {
     return this.http

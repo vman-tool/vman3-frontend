@@ -1,130 +1,126 @@
 <div class="mx-auto ">
   <!-- Header Section with Labels for Date Range, Malaria Status, CCVA Algorithm, HIV Status, and Run Button -->
-  <div class="flex flex-col mb-4 space-y-4" *ngIf="isTaskRunning==false">
-    <span class="text-xl font-bold text-gray-700">CCVA Analysis</span>
+  <div class="mx-auto mb-10" *ngIf="!isTaskRunning">
+    <span class="mb-6 text-2xl font-bold text-gray-700">CCVA Analysis</span>
 
-    <!-- Date Picker and Filter Section -->
-    <div class="flex items-center justify-between space-x-4">
-      <!-- Date Type Dropdown -->
-      <div>
-        <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
-        <select id="dateType" [(ngModel)]="selectedDateType"
-          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="submission_date">Submission Date</option>
-          <option value="death_date">Date of Death</option>
-          <option value="interview_date">Interview Date</option>
+    <div class="mt-3 space-y-6">
+      <!-- Date Type and Range Section -->
+      <div class="flex items-end space-x-4">
+        <!-- Date Type Dropdown -->
+        <div class="">
+          <label for="dateType" class="block mb-1 text-sm font-medium text-gray-700">Date Type</label>
+          <app-custom-dropdown id="dateType" [options]="[
+          { value: 'submission_date', label: 'Submission Date' },
+          { value: 'death_date', label: 'Date of Death' },
+          { value: 'interview_date', label: 'Interview Date' }
+        ]" [(selectedValue)]="selectedDateType"></app-custom-dropdown>
+        </div>
 
-        </select>
-      </div>
-      <!-- Date Range Dropdown -->
-      <div>
-        <label for="dateRangeOption" class="block text-sm font-medium text-gray-700">Date Range</label>
-        <select id="dateRangeOption" [(ngModel)]="dateRangeOption" (change)="onDateRangeChange()"
-          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="all">All</option>
-          <option value="custom">Custom Date</option>
-        </select>
-      </div>
+        <!-- Date Range Dropdown -->
+        <div class="">
+          <label for="dateRangeOption" class="block mb-1 text-sm font-medium text-gray-700">Date Range</label>
+          <app-custom-dropdown id="dateRangeOption" [options]="[
+          { value: 'all', label: 'All' },
+          { value: 'custom', label: 'Custom Date' }
+        ]" [(selectedValue)]="dateRangeOption" (selectedValueChange)="onDateRangeChange()"></app-custom-dropdown>
+        </div>
 
-      <!-- Start Date Picker (Shown only when "Custom Date" is selected) -->
-      <div *ngIf="dateRangeOption === 'custom'">
-        <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
-        <input id="startDate" type="date" [(ngModel)]="filter_startDate"
-          class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-      </div>
+        <!-- Start Date Input -->
+        <div class="" *ngIf="dateRangeOption === 'custom'">
+          <label for="startDate" class="block mb-1 text-sm font-medium text-gray-700">Start Date</label>
+          <input id="startDate" type="date" [(ngModel)]="filter_startDate"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+        </div>
 
-      <!-- End Date Picker (Shown only when "Custom Date" is selected) -->
-      <div *ngIf="dateRangeOption === 'custom'">
-        <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
-        <input id="endDate" type="date" [(ngModel)]="filter_endDate"
-          class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-      </div>
-
-      <!-- Malaria Status Dropdown -->
-      <!-- <div>
-        <label for="malariaStatus" class="block text-sm font-medium text-gray-700">Malaria Status</label>
-        <select id="malariaStatus" [(ngModel)]="malariaStatus"
-          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="h">High</option>
-          <option value="l">Low</option>
-          <option value="v">Very Low</option>
-        </select>
-      </div> -->
-      <div>
-        <label for="malariaStatus" class="block text-sm font-medium text-gray-700">Malaria Status</label>
-        <div class="relative w-40">
-          <select id="malariaStatus" [(ngModel)]="malariaStatus"
-            class="block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm appearance-none pr-8 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            <option value="h">High</option>
-            <option value="l">Low</option>
-            <option value="v">Very Low</option>
-          </select>
-          <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
-            <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+        <!-- End Date Input -->
+        <div class="" *ngIf="dateRangeOption === 'custom'">
+          <label for="endDate" class="block mb-1 text-sm font-medium text-gray-700">End Date</label>
+          <input id="endDate" type="date" [(ngModel)]="filter_endDate"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
         </div>
       </div>
-      <!-- HIV Status Dropdown -->
-      <div>
-        <label for="hivStatus" class="block text-sm font-medium text-gray-700">HIV Status</label>
-        <select id="hivStatus" [(ngModel)]="hivStatus"
-          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="h">High</option>
-          <option value="l">Low</option>
-          <option value="v">Very Low</option>
-        </select>
+
+      <!-- Status and Algorithm Section -->
+      <div class="flex items-end justify-between">
+        <div class="flex items-end space-x-4">
+          <!-- Malaria Status Dropdown -->
+          <div class="">
+            <label for="malariaStatus" class="block mb-1 text-sm font-medium text-gray-700">Malaria Status</label>
+            <app-custom-dropdown id="malariaStatus" [options]="[
+            { value: 'h', label: 'High' },
+            { value: 'l', label: 'Low' },
+            { value: 'v', label: 'Very Low' }
+          ]" [(selectedValue)]="malariaStatus"></app-custom-dropdown>
+          </div>
+
+          <!-- HIV Status Dropdown -->
+          <div class="">
+            <label for="hivStatus" class="block mb-1 text-sm font-medium text-gray-700">HIV Status</label>
+            <app-custom-dropdown id="hivStatus" [options]="[
+            { value: 'h', label: 'High' },
+            { value: 'l', label: 'Low' },
+            { value: 'v', label: 'Very Low' }
+          ]" [(selectedValue)]="hivStatus"></app-custom-dropdown>
+          </div>
+
+          <!-- CCVA Algorithm Dropdown -->
+          <div class="">
+            <label for="ccvaAlgorithm" class="block mb-1 text-sm font-medium text-gray-700">CCVA Algorithm</label>
+            <app-custom-dropdown id="ccvaAlgorithm" [options]="[
+            { value: 'InterVA5', label: 'InterVA5' },
+            { value: 'InsilicoVA', label: 'InsilicoVA' }
+          ]" [(selectedValue)]="ccvaAlgorithm"></app-custom-dropdown>
+          </div>
+        </div>
+
+        <!-- Run CCVA Button -->
+        <div class="flex items-end">
+          <button *ngIf="!isCCvaRunning"
+            class="px-6 py-2 font-bold text-white transition duration-300 bg-blue-500 rounded hover:bg-blue-700"
+            (click)="onRunCCVA()">
+            Run CCVA
+          </button>
+          <button *ngIf="isCCvaRunning"
+            class="px-6 py-2 font-bold text-white transition duration-300 bg-red-500 rounded hover:bg-red-700"
+            (click)="onCancel()">
+            Cancel
+            <span
+              class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
+          </button>
+        </div>
       </div>
 
-      <div>
-        <label for="dataSource" class="block text-sm font-medium text-gray-700">Data Source</label>
-        <select id="dataSource" [(ngModel)]="dataSource" (change)="onDataSourceChange()"
-          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="available">Available Data</option>
-          <option value="csv">Upload CSV</option>
-        </select>
-      </div>
+      <!-- Data Source and Upload Section -->
+      <!-- TODOS: THIS IS TEMPORARY HIDE  -->
+      <!-- <div class="flex items-end justify-between">
+        <div class="flex items-end space-x-4">
 
-      <!-- File input (visible only when CSV option is selected) -->
-      <div *ngIf="dataSource === 'csv'" class="flex items-center space-x-2">
-        <input type="file" id="csvFile" (change)="onFileSelected($event)" accept=".csv" class="hidden" />
-        <label for="csvFile"
-          class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded cursor-pointer hover:bg-green-600">
-          Select CSV File
-        </label>
-        <span *ngIf="selectedFile" class="text-sm text-gray-600">
-          {{ selectedFile.name }}
-        </span>
-      </div>
-      <!-- CCVA Algorithm Dropdown -->
-      <div>
-        <label for="ccvaAlgorithm" class="block text-sm font-medium text-gray-700">CCVA Algorithm</label>
-        <select id="ccvaAlgorithm" [(ngModel)]="ccvaAlgorithm"
-          class="block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-          <option value="InterVA5">InterVA5</option>
-          <option value="InsilicoVA">InsilicoVA</option>
-          <!-- Add more algorithm options as needed -->
-        </select>
-      </div>
+          <div>
+            <label for="dataSource" class="block mb-1 text-sm font-medium text-gray-700">Data Source</label>
+            <app-custom-dropdown id="dataSource" [options]="[
+            { value: 'available', label: 'Available Data' },
+            { value: 'csv', label: 'Upload CSV' }
+          ]" [(selectedValue)]="dataSource" (selectedValueChange)="onDataSourceChange()"></app-custom-dropdown>
+          </div>
 
 
-
-      <!-- Run CCVA Button -->
-      <div class="flex items-center pt-3">
-
-        <button *ngIf="!isCCvaRunning" class="px-5 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
-          (click)="onRunCCVA()">Run CCVA</button>
-
-        <!-- Cancel Button to Stop Task -->
-        <button *ngIf="isCCvaRunning" class="px-6 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
-          (click)="onCancel()">Cancel
-          <span
-            class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
-        </button>
-      </div>
+          <div *ngIf="dataSource === 'csv'" class="flex items-center space-x-2">
+            <input type="file" id="csvFile" (change)="onFileSelected($event)" accept=".csv" class="hidden" />
+            <label for="csvFile"
+              class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded cursor-pointer hover:bg-green-600">
+              Select CSV File
+            </label>
+            <span *ngIf="selectedFile" class="text-sm text-gray-600">
+              {{ selectedFile.name }}
+            </span>
+          </div>
+        </div>
+      </div> -->
     </div>
   </div>
+
+
+
 
   <!-- Scrollable Content Section -->
   <div class="overflow-y-auto max-h-[calc(100vh-200px)]">

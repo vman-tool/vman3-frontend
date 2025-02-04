@@ -29,7 +29,7 @@ export class CcvaGraphsComponent implements OnInit {
   @ViewChild('dropdownMenu') dropdownMenu!: ElementRef;
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
-  selectedSuccessType: string = 'success';
+  selectedSuccessType: string = 'all';
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
   public isLoading = true;
@@ -38,6 +38,8 @@ export class CcvaGraphsComponent implements OnInit {
   created_at: string = '';
   task_id: string = '';
   ccva_graph_db_source: boolean = true;
+  include_undeterminants_ingraph = true;
+  tempoChartData = [];
   filterData: {
     locations: string[];
     start_date?: string;
@@ -171,6 +173,7 @@ export class CcvaGraphsComponent implements OnInit {
               this.elapsed_time = progressData.data[0].elapsed_time;
               this.created_at = progressData.data[0].created_at;
             }
+            this.tempoChartData = progressData.data[0];
             this.loadChartData(progressData.data[0]);
           },
           error: (error) => {
@@ -186,7 +189,25 @@ export class CcvaGraphsComponent implements OnInit {
   loadChartData(data: any) {
     let graphs = data.graphs ?? [];
     for (let key in graphs) {
-      const chartLabels = graphs[key].index;
+      let chartLabels = graphs[key].index;
+      // i want to remove the  chartlabels that is "Undeterminant" from the chart and it data if the include_undeterminants_ingraph is false
+      if (
+        chartLabels.includes('Undeterminant') &&
+        this.include_undeterminants_ingraph == false
+      ) {
+        console.log('Undeterminant found');
+
+        const index = chartLabels.indexOf('Undeterminant');
+        if (index > -1) {
+          let newChartLabels = [...chartLabels];
+          const newChartValues = [...graphs[key].values];
+          newChartLabels.splice(index, 1);
+          newChartValues.splice(index, 1);
+          chartLabels = newChartLabels;
+          graphs[key].values = newChartValues;
+        }
+      }
+
       const chartData = [
         {
           label: 'csmf',
@@ -330,6 +351,10 @@ export class CcvaGraphsComponent implements OnInit {
     this.filterData['ccva_graph_db_source'] = this.ccva_graph_db_source;
 
     this.ngOnInit();
+  }
+  toggleChangeUndeterminants(event: any) {
+    this.include_undeterminants_ingraph = event.target.checked;
+    this.loadChartData(this.tempoChartData);
   }
 
   onFilterChange() {
