@@ -120,6 +120,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   onFileSelected(event: Event): void {
+    this.fileErrors = '';
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
@@ -128,12 +129,14 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         this.parseCSV(this.selectedFile);
       } else {
         this.showError('Please select a CSV file.');
+        this.isDataSyncing = false;
         this.resetFileInput();
       }
     }
   }
 
   parseCSV(file: File): void {
+    this.isDataSyncing = true;
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -164,6 +167,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         ', '
       )}`;
       this.showError(this.fileErrors);
+      this.isDataSyncing = false;
       this.resetFileInput();
     } else {
       if (this.mismatchedHeadersAdditinal.length > 0) {
@@ -190,6 +194,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   uploadFile(): void {
     if (!this.selectedFile) {
       this.showError('No file selected');
+      this.isDataSyncing = false;
       return;
     }
 
@@ -203,16 +208,21 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         if (response?.data) {
           console.log('Upload successful:', response.data);
+
           this.showSuccess('File uploaded successfully');
         }
       },
       error: (error) => {
         console.error('Error uploading CSV:', error);
+        this.resetFileInput();
+        this.isDataSyncing = false;
         this.showError(
           error.error.detail || error.error.message || 'Failed to upload CSV'
         );
       },
       complete: () => {
+        this.resetFileInput();
+        this.formsubmission_status();
         this.isDataSyncing = false; // Hide loading state
       },
     });
@@ -286,7 +296,6 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error during data sync:', error);
         this.isDataSyncing = false;
-        this.isDataSyncing = false;
         this.isTaskRunning = false;
         this.isLoadingFormSubmissionStatus = false;
         this.isTaskRunning = false;
@@ -334,7 +343,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error during data sync:', error);
         this.isDataSyncing = false;
-        this.isDataSyncing = false;
+
         this.isTaskRunning = false;
         // this.triggersService.triggerCCVAListFunction();
         console.log(error.error.detail);
@@ -526,6 +535,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
           this.uploadFile();
         } else {
           this.showError('Header mapping is incomplete. Please try again.');
+          this.isDataSyncing = false;
           this.resetFileInput();
         }
       });
