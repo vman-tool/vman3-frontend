@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConfigService } from 'app/app.service';
-import { catchError, retry, Subject } from 'rxjs';
+import { catchError, retry, Subject, takeUntil } from 'rxjs';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 @Injectable({
@@ -12,6 +12,8 @@ export class DiscordantsVaService {
   private socket$?: WebSocketSubject<any>;
   private messagesSubject$ = new Subject<any>();
   public messages$ = this.messagesSubject$.asObservable();
+  private isConnected = false;
+  private isDisconnected$: Subject<boolean> = new Subject<boolean>();
 
   constructor(private configService: ConfigService, private http: HttpClient) {
    }
@@ -42,13 +44,21 @@ export class DiscordantsVaService {
     this.socket$
       .pipe(
         retry({ count: 3, delay: 3000 }),
+        takeUntil(this.isDisconnected$),
         catchError((error) => {
           console.error('WebSocket error:', error);
           return [];
         })
       )
-      .subscribe((message) => {
-        this.messagesSubject$.next(message);
+      .subscribe({
+        next: (message) => {
+          this.messagesSubject$.next(message);
+        },
+        error: (error) => {
+          console.error('WebSocket error:', error);
+          this.isConnected = false;
+        },
+        complete: () => this.isConnected = false
       });
   }
 
@@ -58,8 +68,13 @@ export class DiscordantsVaService {
     }
   }
 
+  isSocketConnected(): boolean {
+    return this.isConnected;
+  }
+
   public close(): void {
     if (this.socket$) {
+      this.isDisconnected$.next(true)
       this.socket$.complete();
     }
   }

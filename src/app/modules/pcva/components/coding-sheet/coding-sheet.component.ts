@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnInit, Output, signal, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, signal, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'app/app.service';
 import { FieldMapping } from 'app/modules/settings/interface';
@@ -98,7 +98,9 @@ export class CodingSheetComponent implements OnInit, AfterViewChecked {
     private snackBar: MatSnackBar,
     private configService: ConfigService,
     private webSockettService: WebSockettService,
-    private discordantsVaService: DiscordantsVaService
+    private discordantsVaService: DiscordantsVaService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ){}
 
   notificationMessage(message: string): void {
@@ -118,7 +120,7 @@ export class CodingSheetComponent implements OnInit, AfterViewChecked {
     this.assignValuesForUpdate();
 
     if(this.allowChat){
-      this.initializeWebSocket();
+      this.initializeChatConnection();
     }
   }
 
@@ -218,23 +220,26 @@ export class CodingSheetComponent implements OnInit, AfterViewChecked {
     return true;
   }
 
-  private initializeWebSocket(): void {
+  trackByFn(index: number, message: any) {
+    return message?.uuid;
+  }
+
+  private initializeChatConnection(): void {
 
     this.discordantsVaService.connect(this.vaRecord?.instanceid);
 
     this.discordantsVaService.messages$.subscribe((message) => {
-      const messages = this.messages
+      const messages = this.messages || [];
+      this.messages = []
       if(message?.va){
-        messages?.push(message)
-        
-        this.messages = []
-        setTimeout(() => {
-          this.messages = messages;
-        }, 200)
-        this.scrollToBottom()
+        this.ngZone.run(() => {
+          messages.push(message);
+          this.messages = messages
+          this.cdr.markForCheck();
+          this.scrollToBottom();
+        });
       }
-      
-      
+
     })
     
   }
@@ -252,6 +257,14 @@ export class CodingSheetComponent implements OnInit, AfterViewChecked {
 
   sendMessage() {
     if (this.newMessage.trim()) {
+      if (!this.discordantsVaService.isSocketConnected){
+        this.discordantsVaService.connect(this.vaRecord?.instanceid);
+      }
+
+      if (!this.discordantsVaService.isSocketConnected){
+        this.notificationMessage('Failed to send message. Please try again later.');
+        return;
+      }
       this.discordantsVaService.sendMessage({ text: this.newMessage });
       this.newMessage = '';
     }

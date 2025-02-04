@@ -1,0 +1,17 @@
+<div *ngIf="messages">
+    <div *ngFor="let message of messages;"
+        [class]="message?.created_by === current_user?.uuid ? 'flex items-start justify-end' : 'flex items-start'">
+        <div [class]="message?.created_by === current_user?.uuid ?
+                                                'bg-blue-500 text-white mt-2 rounded-lg p-3 max-w-[80%]' :
+                                                'ml-2 bg-gray-100 mt-2 rounded-lg p-3 max-w-[80%]'">
+            <p [class]="message?.created_by === current_user?.uuid ? 'text-white' : 'text-gray-900'">
+                {{ message?.message }}
+            </p>
+            <span [class]="message?.created_by === current_user?.uuid ? 'text-xs opacity-75' : 'text-xs text-white-500'">
+                <i>
+                    {{ message?.created_at | date:'dd/MM/yyyy HH:mm' }}
+                </i>
+            </span>
+        </div>
+    </div>
+</div>

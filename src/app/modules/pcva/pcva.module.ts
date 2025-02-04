@@ -15,6 +15,7 @@ import { CodingSheetComponent } from './components/coding-sheet/coding-sheet.com
 import { FormsModule } from '@angular/forms';
 import { PcvaResultsComponent } from './components/pcva-results/pcva-results.component';
 import { UnassignVaComponent } from './dialogs/unassign-va/unassign-va.component';
+import { DiscordantsChatsComponent } from './components/discordants-chats/discordants-chats.component';
 
 
 
@@ -30,7 +31,8 @@ import { UnassignVaComponent } from './dialogs/unassign-va/unassign-va.component
     CodeVaComponent,
     CodingSheetComponent,
     PcvaResultsComponent,
-    UnassignVaComponent
+    UnassignVaComponent,
+    DiscordantsChatsComponent
   ],
   imports: [
     CommonModule,
