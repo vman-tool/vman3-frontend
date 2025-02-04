@@ -30,13 +30,26 @@
       <div *ngIf="dataSource === 'csv'" class="mt-4">
         <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" class="hidden" />
         <button (click)="fileInput.click()"
-          class="px-4 py-2 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          Select CSV File And Upload
+          class="px-4 py-2 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          [disabled]="isDataSyncing">
+          <span *ngIf="!isDataSyncing">Select CSV File And Upload</span>
+          <span *ngIf="isDataSyncing" class="flex items-center">
+            Uploading...
+            <svg class="w-4 h-4 ml-2 animate-spin" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+          </span>
         </button>
         <span *ngIf="selectedFile" class="ml-2 text-sm text-gray-600">
           {{ selectedFile.name }}
         </span>
       </div>
+
+
+
       <!-- error meaasage -->
       <div *ngIf="fileErrors" class="text-red-500">
         {{ fileErrors }}

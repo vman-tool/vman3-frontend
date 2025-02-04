@@ -196,39 +196,33 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     const formData = new FormData();
     formData.append('file', this.selectedFile);
     formData.append('KEY', 'instanceid');
-    // Append filter parameters to formData
-    // Object.keys(filter).forEach((key) => {
-    //   if (filter[key] !== null) {
-    //     formData.append(key, filter[key]);
-    //   }
-    // });
+
+    this.isDataSyncing = true; // Show loading state
+
     this.dataSyncService.csvDataUpload(formData).subscribe({
       next: (response: any) => {
         if (response?.data) {
-          console.log(':', response.data);
-          this.isTaskRunning = true;
-          this.updateProgress(response.data);
-
-          const taskId = response.data.task_id;
-          // localStorage.setItem(this.taskIdKey, taskId);
-          // this.connectToSocket(taskId);
-          // this.isCCvaRunning = false;
+          console.log('Upload successful:', response.data);
+          this.showSuccess('File uploaded successfully');
         }
       },
       error: (error) => {
-        console.error('Error starting CCVA task with CSV:', error);
-        // this.isCCvaRunning = false;
-        this.isTaskRunning = false;
-        // this.triggersService.triggerCCVAListFunction();
+        console.error('Error uploading CSV:', error);
         this.showError(
-          error.error.detail ||
-            error.error.message ||
-            'Failed to start CCVA task with CSV'
+          error.error.detail || error.error.message || 'Failed to upload CSV'
         );
+      },
+      complete: () => {
+        this.isDataSyncing = false; // Hide loading state
       },
     });
   }
 
+  showSuccess(message: string): void {
+    // Implement your success handling logic here
+    console.log(message);
+    alert(message); // Or use a more sophisticated success display mechanism
+  }
   async syncQuestionsIfNeeded() {
     this.isQuestionsSyncing = true;
 
