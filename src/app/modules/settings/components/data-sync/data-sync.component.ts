@@ -140,7 +140,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (result) => {
+      complete: (result: any) => {
         this.csvHeaders = result.meta.fields || [];
         this.checkHeaders();
       },
