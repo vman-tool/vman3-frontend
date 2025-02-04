@@ -1,5 +1,5 @@
 <div class="overflow-hidden">
-    <h2 mat-dialog-title class="text-center">Assign VA to {{coder?.name | titlecase }}</h2>
+    <h2 mat-dialog-title class="text-center">Unassign (Remove) VA from {{coder?.name | titlecase }}</h2>
     <mat-dialog-content class="overflow-hidden" *ngIf="{ vaRecords: vaRecords$ | async } as params">
         <div>
             <div class="m-2" *ngIf="!params?.vaRecords && loadingData">
@@ -17,7 +17,8 @@
                                     style="transition: all 0.15s ease 0s;"
                                     [checked]="selectedVAs.length === params?.vaRecords?.data?.length" />
                             </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th
+                                class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Coders
                             </th>
                             <th *ngFor="let header of headers;"
@@ -36,18 +37,19 @@
                                 *ngFor="let va of params?.vaRecords?.data; let i = index">
                                 <td class="px-5 py-3 border-b border-gray-200 text-sm">
                                     <input (click)="onSelectVA($event, va?.instanceid)" id="customCheckLogin"
-                                        type="checkbox" class="form-checkbox border-0 rounded text-gray-800 ml-1 w-4 h-4"
+                                        type="checkbox"
+                                        class="form-checkbox border-0 rounded text-gray-800 ml-1 w-4 h-4"
                                         style="transition: all 0.15s ease 0s;"
                                         [checked]="selectedVAs.includes(va?.instanceid) || this.assignments[va?.instanceid]?.coder === coder?.uuid" />
                                 </td>
                                 <td>
                                     @if(va['coders']?.length){
 
-                                        @for (coder of va['coders']; track $index) {
-                                            <p class="text-gray-900 text-center whitespace-no-wrap">{{ coder?.name }}</p>
-                                        }
+                                    @for (coder of va['coders']; track $index) {
+                                    <p class="text-gray-900 text-center whitespace-no-wrap">{{ coder?.name }}</p>
+                                    }
                                     } @else {
-                                        <p class="text-gray-900 text-center whitespace-no-wrap">-</p>
+                                    <p class="text-gray-900 text-center whitespace-no-wrap">-</p>
                                     }
                                 </td>
                                 <td class="px-5 py-3 border-b border-gray-200 text-sm" *ngFor="let header of headers;">
@@ -69,11 +71,14 @@
             </div>
         </div>
         <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.vaRecords?.total > 0">
-            <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="params?.vaRecords?.total" [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
+            <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions"
+                [length]="params?.vaRecords?.total" [pageIndex]="pageNumber" [pageSize]="limit"
+                (page)="onPageChange($event)"></mat-paginator>
         </div>
     </mat-dialog-content>
     <mat-dialog-actions>
+        <p class="text-[14px]"><i><i class="ph-warning text-red-400"></i> You can only remove VA(s) that have not been coded.</i></p>
         <button mat-button (click)="onClose()">Close</button>
-        <button mat-button (click)="onUnAssignVA($event)">Assign Selected</button>
+        <button mat-button (click)="onUnassignVA($event)">Unassign Selected</button>
     </mat-dialog-actions>
 </div>

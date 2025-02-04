@@ -72,7 +72,9 @@
                 </td>
                 <td class="px-5 py-3 text-sm border-b border-gray-200 text-center">
                   <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"
-                    (click)="onAssignCoder($event, coder)"><i class="ph-user-bold"></i></a>
+                    (click)="onAssignCoder($event, coder)"><i class="ph-plus"></i></a>
+                  <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer ml-4"
+                    (click)="onUnassignCoder($event, coder)"><i class="ph-minus"></i></a>
                 </td>
               </tr>
             </ng-container>
