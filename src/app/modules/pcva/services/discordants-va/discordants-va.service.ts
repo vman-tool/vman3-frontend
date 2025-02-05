@@ -33,8 +33,11 @@ export class DiscordantsVaService {
   getDiscordantMessages(va_id: string){
     return this.http.get(`${this.configService.API_URL}/pcva/get-discordant-messages/${va_id}`);
   }
+  readDiscordantMessages(va_id: string){
+    return this.http.post(`${this.configService.API_URL}/pcva/messages/${va_id}/read`, null);
+  }
 
-  public connect(va_id: string): void {
+  connect(va_id: string): void {
     const token = localStorage.getItem('access_token') || '';
     this.socket$ = webSocket({
       url: `${this.configService.API_URL_WS}/discordants/chat/${va_id}?token=${token}`,
@@ -62,7 +65,7 @@ export class DiscordantsVaService {
       });
   }
 
-  public sendMessage(msg: any): void {
+  sendMessage(msg: any): void {
     if (this.socket$) {
       this.socket$.next(msg);
     }
@@ -72,7 +75,7 @@ export class DiscordantsVaService {
     return this.isConnected;
   }
 
-  public close(): void {
+  close(): void {
     if (this.socket$) {
       this.isDisconnected$.next(true)
       this.socket$.complete();

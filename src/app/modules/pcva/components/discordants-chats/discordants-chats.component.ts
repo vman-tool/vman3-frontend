@@ -33,11 +33,23 @@ export class DiscordantsChatsComponent implements OnInit, AfterViewChecked {
     });
   }
   ngOnInit() {
+    if (this.vaRecord?.instanceid){
+      this.readMessages();
+    }
     this.initializeChatConnection();
   }
 
   ngAfterViewChecked() {
     this.scrollToBottom();
+  }
+
+  readMessages(){
+    this.discordantsVaService.readDiscordantMessages(this.vaRecord?.instanceid).subscribe({
+      next: (response) => {}, 
+      error: (error) => {
+        this.notificationMessage('Failed to read messages');
+      }
+    });
   }
 
   private initializeChatConnection(): void {
@@ -87,6 +99,7 @@ export class DiscordantsChatsComponent implements OnInit, AfterViewChecked {
   }
 
   ngOnDestroy(){
+    this.readMessages();
     this.discordantsVaService.close()
   }
 }

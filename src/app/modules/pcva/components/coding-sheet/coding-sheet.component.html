@@ -396,7 +396,7 @@
                             </mat-panel-title>
                         </mat-expansion-panel-header>
                         <tr class="grid grid-cols-12 mt-2">
-                            <div class="col-span-12">
+                            <div class="col-span-12" *ngIf="panelChatSectionOpenState()">
                                 <app-discordants-chats 
                                 [current_user]="current_user"
                                 [messages]="messages"
