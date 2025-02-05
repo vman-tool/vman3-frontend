@@ -4,9 +4,15 @@
         <div *ngIf="messages">
             <div *ngFor="let message of messages;"
                 [class]="message?.created_by === current_user?.uuid ? 'flex items-start justify-end' : 'flex items-start'">
+                
+                <div class="w-8 h-8 mt-2 rounded-full "
+                    [class]="message?.created_by === current_user?.uuid ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900'"
+                >
+                   <p class="text-center relative top-[4px]">{{ message?.created_by === current_user?.uuid ? 'U' : coders[message?.created_by] }} </p>
+                </div>
                 <div [class]="message?.created_by === current_user?.uuid ?
                                                         'bg-blue-500 text-white mt-2 rounded-lg p-3 max-w-[80%]' :
-                                                        'ml-2 bg-gray-100 mt-2 rounded-lg p-3 max-w-[80%]'">
+                                                        'bg-gray-100 mt-2 rounded-lg p-3 max-w-[80%]'">
                     <p [class]="message?.created_by === current_user?.uuid ? 'text-white' : 'text-gray-900'">
                         {{ message?.message }}
                     </p>

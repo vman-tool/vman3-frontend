@@ -18,6 +18,7 @@ export class CodingSheetComponent implements OnInit {
   @Input() allowChat?: boolean = false;
   @Input() messages?: any[] = [];
   @Input() current_user?: any;
+  @Input() coders?: any;
 
   @Output() save: EventEmitter<any> = new EventEmitter<any>();
 

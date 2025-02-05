@@ -10,6 +10,7 @@ import { settingsConfigData } from 'app/modules/settings/interface';
 import { OBJECTSTORE_ICD10 } from 'app/shared/constants/indexedDB.constants';
 import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { assign_coder_chat_name } from '../../helpers/discordants-chats.helpers';
 
 @Component({
   selector: 'app-discordants-va',
@@ -128,6 +129,7 @@ export class DiscordantsVaComponent implements OnInit {
           fieldsMapping: this.fieldsMapping,
           codedData: discordantData?.data?.discordant,
           messages: discordantData?.data?.messages,
+          coders: assign_coder_chat_name(discordantData?.data?.coders),
           allowChat: true
         }
         this.dialog.open(CodeVaComponent, dialogConfig).afterClosed().subscribe((response: any) => {

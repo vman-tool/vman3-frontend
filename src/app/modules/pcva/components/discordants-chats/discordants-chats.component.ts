@@ -15,6 +15,7 @@ export class DiscordantsChatsComponent implements OnInit, AfterViewChecked {
   @Input() messages?: any[] = []
   @Input() vaRecord?: any;
   @Input() current_user?: any;
+  @Input() coders?: any;
   
   newMessage: string = '';
 
@@ -63,6 +64,7 @@ export class DiscordantsChatsComponent implements OnInit, AfterViewChecked {
         this.ngZone.run(() => {
           messages.push(message);
           this.messages = messages
+          this.autoAssignCoderName(message?.created_by)
           this.cdr.markForCheck();
           this.scrollToBottom();
         });
@@ -70,6 +72,19 @@ export class DiscordantsChatsComponent implements OnInit, AfterViewChecked {
 
     })
     
+  }
+
+  autoAssignCoderName(coder: string){
+    const coders = Object.keys(this.coders);
+    if(!coders.includes(coder)){
+      let name = this.coders[coders[coders?.length - 1]];
+      let last_character = Number(name[name?.length - 1]) + 1;
+      let newName = name[0]+String(last_character)
+      this.coders = {
+        ...this.coders,
+        [coder]: newName
+      }
+    }
   }
 
   private scrollToBottom(): void {
