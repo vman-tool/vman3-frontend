@@ -1,0 +1,42 @@
+
+<div class="min-h-[300px] max-h-[400px] bg-white flex flex-col">
+    <div #chatContainer class="flex-1 overflow-y-auto p-4 space-y-4 mb-[70px]">
+        <div *ngIf="messages">
+            <div *ngFor="let message of messages;"
+                [class]="message?.created_by === current_user?.uuid ? 'flex items-start justify-end' : 'flex items-start'">
+                
+                <div class="w-8 h-8 mt-2 rounded-full "
+                    [class]="message?.created_by === current_user?.uuid ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900'"
+                >
+                   <p class="text-center relative top-[4px]">{{ message?.created_by === current_user?.uuid ? 'U' : coders[message?.created_by] }} </p>
+                </div>
+                <div [class]="message?.created_by === current_user?.uuid ?
+                                                        'bg-blue-500 text-white mt-2 rounded-lg p-3 max-w-[80%]' :
+                                                        'bg-gray-100 mt-2 rounded-lg p-3 max-w-[80%]'">
+                    <p [class]="message?.created_by === current_user?.uuid ? 'text-white' : 'text-gray-900'">
+                        {{ message?.message }}
+                    </p>
+                    <span
+                        [class]="message?.created_by === current_user?.uuid ? 'text-xs opacity-75' : 'text-xs text-white-500'">
+                        <i>
+                            {{ message?.created_at | date:'dd/MM/yyyy HH:mm' }}
+                        </i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="absolute bottom-0 left-0 right-0 border-t bg-white p-4">
+        <div class="flex items-center space-x-2">
+            <textarea type="text" name="newMessage" [(ngModel)]="newMessage" placeholder="Type a message..."
+                class="flex-1 border min-h-[50px] max-h-[200px] rounded-md p-5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                          </textarea>
+    
+            <a (click)="sendMessage()"
+                class="bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 hover:cursor-pointer">
+                ➤
+            </a>
+        </div>
+    </div>
+</div>

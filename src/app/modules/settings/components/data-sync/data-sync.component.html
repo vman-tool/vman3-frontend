@@ -1,42 +1,103 @@
-<div class="mx-auto ">
+<div class="p-4 mx-auto">
   <span class="text-xl font-bold text-gray-700">Data Synchronization</span>
   <hr class="my-5">
-  <!-- Header Section with Labels for Date Range, Malaria Status, CCVA Algorithm, HIV Status, and Run Button -->
+
   <div *ngIf="!isLoadingFormSubmissionStatus">
-    <div *ngIf="isTaskRunning==false" class="flex flex-col mb-4 space-y-4">
-
-
-
-      <div class="flex items-center justify-between space-x-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-semibold">Total Synced Data: {{ formSubmissionStatus?.available_data_count }}</p>
-            <p class="text-sm font-semibold">Last Sync Date: {{ formSubmissionStatus?.latest_date }}</p>
-          </div>
+    <div *ngIf="!isTaskRunning" class="space-y-6">
+      <!-- Sync Status -->
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold">Total Synced Data: {{ formSubmissionStatus?.available_data_count }}</p>
+          <p class="text-sm font-semibold">Last Sync Date: {{ formSubmissionStatus?.latest_date }}</p>
         </div>
-        <div class="flex items-center pt-3">
+      </div>
 
-          <button *ngIf="!isDataSyncing" class="px-5 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
-            (click)="manualSync()">Manual Sync</button>
-
-          <!-- Cancel Button to Stop Task -->
-          <button *ngIf="isDataSyncing" class="px-6 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
-            (click)="onCancel()">Cancel
-            <span
-              class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
-          </button>
+      <!-- Data Source Selection -->
+      <div class="space-y-4">
+        <span class="text-sm font-medium text-gray-700">Select Data Source:</span>
+        <div class="flex space-x-4">
+          <label class="inline-flex items-center">
+            <input type="radio" class="text-blue-600 form-radio" name="dataSource" value="api" [(ngModel)]="dataSource">
+            <span class="ml-2">API Sync</span>
+          </label>
+          <label class="inline-flex items-center">
+            <input type="radio" class="text-blue-600 form-radio" name="dataSource" value="csv" [(ngModel)]="dataSource">
+            <span class="ml-2">Upload CSV</span>
+          </label>
         </div>
+      </div>
+
+      <div *ngIf="dataSource === 'csv'" class="mt-4">
+        <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" class="hidden" />
+        <button (click)="fileInput.click()"
+          class="px-4 py-2 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          [disabled]="isDataSyncing">
+          <span *ngIf="!isDataSyncing">Select CSV File And Upload</span>
+          <span *ngIf="isDataSyncing" class="flex items-center">
+            Uploading...
+            <svg class="w-4 h-4 ml-2 animate-spin" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+          </span>
+        </button>
+        <span *ngIf="selectedFile" class="ml-2 text-sm text-gray-600">
+          {{ selectedFile.name }}
+        </span>
+      </div>
+
+
+
+      <!-- error meaasage -->
+      <div *ngIf="fileErrors" class="text-red-500">
+        {{ fileErrors }}
+      </div>
+
+      <!-- CSV Upload (visible when CSV is selected) -->
+      <!-- <div *ngIf="dataSource === 'csv'" class="space-y-2">
+        <input type="file" id="csvFile" (change)="onFileSelected($event)" accept=".csv" class="hidden" />
+        <label for="csvFile"
+          class="inline-block px-4 py-2 text-sm font-medium text-white transition duration-300 bg-green-500 rounded cursor-pointer hover:bg-green-600">
+          Select CSV File
+        </label>
+        <span *ngIf="selectedFile" class="ml-2 text-sm text-gray-600">
+          {{ selectedFile.name }}
+        </span>
+      </div> -->
+
+      <!-- Sync Button -->
+      <div class="flex justify-end">
+        <button *ngIf="!isDataSyncing && (dataSource === 'api' && !fileErrors)"
+          class="px-5 py-2 font-bold text-white transition duration-300 bg-blue-500 rounded hover:bg-blue-700"
+          (click)="manualSync()">
+          {{ dataSource === 'api' ? 'Manual Sync' : 'Upload and Sync' }}
+        </button>
+        <button *ngIf="isDataSyncing"
+          class="px-6 py-2 font-bold text-white transition duration-300 bg-red-500 rounded hover:bg-red-700"
+          (click)="onCancel()">
+          Cancel
+          <span
+            class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
+        </button>
       </div>
     </div>
   </div>
+
+  <!-- Header Mapping Modal -->
+  <!-- <app-header-mapping *ngIf="showMappingModal" [mismatchedHeaders]="mismatchedHeaders" [csvHeaders]="csvHeaders"
+    (headerMapped)="onHeaderMapped($event)"></app-header-mapping> -->
+
+  <!-- Loading State -->
   <div *ngIf="isLoadingFormSubmissionStatus">
     <div class="flex items-center justify-center p-4 bg-gray-200 border rounded-lg shadow-sm animate-pulse">
       <span
-        class="inline-block w-4 h-4 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
-
+        class="inline-block w-4 h-4 border-4 border-blue-500 rounded-full spinner-border animate-spin border-t-transparent"></span>
     </div>
   </div>
 </div>
+
 
 <hr class="my-15">
 <div *ngIf="isTaskRunning" class="p-4 bg-white rounded shadow-md">

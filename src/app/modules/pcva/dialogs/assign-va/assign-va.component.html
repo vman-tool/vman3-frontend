@@ -1,5 +1,5 @@
 <div class="overflow-hidden">
-    <h2 mat-dialog-title class="text-center">{{coder?.name}}</h2>
+    <h2 mat-dialog-title class="text-center">Assign VA to {{coder?.name | titlecase }}</h2>
     <mat-dialog-content class="overflow-hidden" *ngIf="{ vaRecords: vaRecords$ | async } as params">
         <div>
             <div class="m-2" *ngIf="!params?.vaRecords && loadingData">
@@ -17,15 +17,15 @@
                                     style="transition: all 0.15s ease 0s;"
                                     [checked]="selectedVAs.length === params?.vaRecords?.data?.length" />
                             </th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Coders
+                            </th>
                             <th *ngFor="let header of headers;"
-                                class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                class="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 {{ header }}
-                            <th
-                                class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                assignments
                             </th>
                             <th
-                                class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                class="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Action
                             </th>
                         </tr>
@@ -40,10 +40,19 @@
                                         style="transition: all 0.15s ease 0s;"
                                         [checked]="selectedVAs.includes(va?.instanceid) || this.assignments[va?.instanceid]?.coder === coder?.uuid" />
                                 </td>
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm" *ngFor="let header of headers;">
-                                    <p class="text-gray-900 whitespace-no-wrap">{{ va[header] }}</p>
+                                <td>
+                                    @if(va['coders']?.length){
+
+                                        @for (coder of va['coders']; track $index) {
+                                            <p class="text-gray-900 text-center whitespace-no-wrap">{{ coder?.name }}</p>
+                                        }
+                                    } @else {
+                                        <p class="text-gray-900 text-center whitespace-no-wrap">-</p>
+                                    }
                                 </td>
-                                <td></td>
+                                <td class="px-5 py-3 border-b border-gray-200 text-sm" *ngFor="let header of headers;">
+                                    <p class="text-gray-900 text-center whitespace-no-wrap">{{ va[header] }}</p>
+                                </td>
                                 <td class="px-5 py-3 border-b border-gray-200 text-sm">
                                     <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i
                                             class="ph-user-plus-bold"></i></a>
@@ -64,7 +73,7 @@
         </div>
     </mat-dialog-content>
     <mat-dialog-actions>
-        <button mat-button mat-dialog-close>Close</button>
-        <button mat-button (click)="onAssignVA($event)">Assign Selected</button>
+        <button mat-button (click)="onClose()">Close</button>
+        <button mat-button (click)="onUnAssignVA($event)">Assign Selected</button>
     </mat-dialog-actions>
 </div>

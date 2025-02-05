@@ -61,3 +61,9 @@ export interface SystemImages {
   logo?: string;
   home_image?: string;
 }
+
+export interface PCVAConfigurations {
+  useICD11: boolean;
+  vaAssignmentLimit: number;
+  concordanceLevel: number;
+}
