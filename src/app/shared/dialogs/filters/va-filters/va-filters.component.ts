@@ -1,15 +1,24 @@
 import { Component, EventEmitter, Input, OnInit } from '@angular/core';
 import { FilterService } from '../../../services/filter.service';
 import { LocationService } from '../../../services/location.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
 import { SearchableSelectComponent } from '../../../components/searchable-select/searchable-select.component';
 import { SharedModule } from '../../../shared.module';
+import { CustomDropdownComponent } from '../../../components/custom-dropdown/custom-dropdown.component';
+import { CcvaModule } from '../../../../modules/ccva/ccva.module';
 @Component({
   selector: 'app-va-filters',
   standalone: true,
-  imports: [FormsModule, CommonModule, SharedModule],
+
+  imports: [
+    FormsModule,
+    CommonModule,
+    SharedModule,
+    FormsModule,
+    CustomDropdownComponent,
+  ],
   templateUrl: './va-filters.component.html',
   styleUrl: './va-filters.component.scss',
 })

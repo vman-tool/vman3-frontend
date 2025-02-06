@@ -24,6 +24,8 @@ import { LabelAccessFieldsComponent } from './components/label-access-fields/lab
 import { PcvaSettingsComponent } from './components/pcva-settings/pcva-settings.component';
 import { Icd10CodesComponent } from './components/icd-10-codes/icd-10-codes.component';
 import { AddIcd10CodesComponent } from './dialogs/add-icd10-codes/add-icd10-codes.component';
+import { HeaderMappingModalComponent } from './dialogs/header-mapping/header-mapping.component';
+import { PcvaConfigurationsComponent } from './components/pcva-configurations/pcva-configurations.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +46,8 @@ import { AddIcd10CodesComponent } from './dialogs/add-icd10-codes/add-icd10-code
     LabelAccessFieldsComponent,
     PcvaSettingsComponent,
     Icd10CodesComponent,
-    AddIcd10CodesComponent
+    AddIcd10CodesComponent,
+    PcvaConfigurationsComponent,
   ],
   imports: [
     CommonModule,
@@ -55,6 +58,7 @@ import { AddIcd10CodesComponent } from './dialogs/add-icd10-codes/add-icd10-code
     FormsModule,
     MaterialModule,
     SearchableSelectComponent,
+    HeaderMappingModalComponent,
   ],
 })
 export class SettingsModule {}

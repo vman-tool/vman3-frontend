@@ -388,6 +388,24 @@
                             </td>
                         </tr>
                     </mat-expansion-panel>
+
+                    <mat-expansion-panel [expanded]="panelChatSectionOpenState()" (opened)="panelChatSectionOpenState.set(true)"
+                        (closed)="panelChatSectionOpenState.set(false)" hideToggle *ngIf="allowChat && vaRecord && current_user">
+                        <mat-expansion-panel-header class="mat-expansion-panel-header-colored">
+                            <mat-panel-title> {{panelChatSectionOpenState() ? '▼' : '▶'}} Chat Section
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <tr class="grid grid-cols-12 mt-2">
+                            <div class="col-span-12" *ngIf="panelChatSectionOpenState()">
+                                <app-discordants-chats 
+                                [current_user]="current_user"
+                                [messages]="messages"
+                                [vaRecord]="vaRecord"
+                                [coders]="coders"
+                                ></app-discordants-chats>
+                            </div>
+                        </tr>
+                    </mat-expansion-panel>
                     
             </mat-accordion>
         </tbody>

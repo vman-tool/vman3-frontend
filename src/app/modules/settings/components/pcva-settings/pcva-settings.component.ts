@@ -6,6 +6,5 @@ import { Component } from '@angular/core';
   styleUrl: './pcva-settings.component.scss'
 })
 export class PcvaSettingsComponent {
-selectedTab: string = "configuration";
-
+  selectedTab: string = "configuration";
 }

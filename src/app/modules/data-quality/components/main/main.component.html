@@ -10,11 +10,11 @@
   </div>
 
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-    <div *ngFor="let error of groupedErrors" class="p-6 bg-white rounded-lg shadow-md">
+    <!-- <div *ngFor="let error of groupedErrors" class="p-6 bg-white rounded-lg shadow-md">
       <div class="mb-2 text-sm font-medium text-gray-500">{{ error.error_type }}</div>
       <div class="text-2xl font-bold">{{ error.total }}</div>
       <p class="text-xs text-gray-500">Total errors</p>
-    </div>
+    </div> -->
   </div>
   <!-- List view of grouped errors -->
   <div class="mt-8 overflow-hidden bg-white rounded-lg shadow-md">
@@ -75,7 +75,7 @@
               [title]="error.error_messages.join(', ')">
               <ol>
                 <li *ngFor="let message of error.error_messages; let i = index">
-                  - . {{ message }}
+                  - {{ message }}
                 </li>
               </ol>
             </td>
