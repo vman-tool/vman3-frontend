@@ -1,5 +1,0 @@
-{
-  "API_URL": "http://localhost:8080/vman/api/v1",
-  "BASE_URL": "http://localhost:8080",
-  "API_URL_WS": "ws://localhost:8080/vman/api/v1/ws"
-}
