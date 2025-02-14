@@ -45,6 +45,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.navigate();
   }
 
+  get documentationUrl(){
+    return this.configService.DOCUMENTATION_URL
+  }
+
   navigate(){
     const access_expiry_token = localStorage.getItem('access_token_expiry');
     if (access_expiry_token){
