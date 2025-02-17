@@ -174,7 +174,13 @@ export class CodingSheetComponent implements OnInit {
         placeOfOccurence: this.placeOfOccurence, 
         fetalOrInfant: this.fetalOrInfant, 
         pregnantDeceased: this.pregnantDeceased,
-        clinicalNotes: this.clinicalNotes
+        clinicalNotes: this.clinicalNotes,
+        [this.settings.birth_date]: this.birthDate,
+        [this.settings.birth_date]:this.deathDate,
+        [this.settings.deceased_gender]: this.gender,
+        [this.settings.is_adult]: this.vaRecord[this.settings.is_adult],
+        [this.settings.is_child]: this.vaRecord[this.settings.is_child],
+        [this.settings.is_neonate]: this.vaRecord[this.settings.is_neonate]
       })
     }
   }
