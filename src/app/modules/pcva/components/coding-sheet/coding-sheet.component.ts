@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, signal, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FieldMapping } from 'app/modules/settings/interface';
 import { SelectOption } from 'app/shared/components/searchable-multi-select/searchable-multi-select.component';
@@ -10,10 +10,15 @@ import { SelectOption } from 'app/shared/components/searchable-multi-select/sear
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingSheetComponent implements OnInit {
+  @ViewChild('chatContainer') private chatContainer?: ElementRef;
   @Input() icdCodes?: any[]; 
   @Input() settings: FieldMapping = {} as FieldMapping; 
   @Input() vaRecord?: any;
   @Input() codedVA?: any;
+  @Input() allowChat?: boolean = false;
+  @Input() messages?: any[] = [];
+  @Input() current_user?: any;
+  @Input() coders?: any;
 
   @Output() save: EventEmitter<any> = new EventEmitter<any>();
 
@@ -25,11 +30,13 @@ export class CodingSheetComponent implements OnInit {
   readonly subPanelCOpenState = signal(false);
   readonly subPanelDOpenState = signal(false);
   readonly panelClinicalOpenState = signal(false);
+  readonly panelChatSectionOpenState = signal(false);
   
   gender: string = "";
   birthDate: string = "";
   deathDate: string = "";
   clinicalNotes?: string;
+  newMessage: string = '';
 
   frameA: {
     a?: any,
@@ -83,6 +90,7 @@ export class CodingSheetComponent implements OnInit {
   selectedC: SelectOption[] = [];
   selectedD: SelectOption[] = [];
   selectedContributories: SelectOption[] = [];
+  messageSubscription: any;
 
   constructor(
     private snackBar: MatSnackBar,
@@ -157,7 +165,6 @@ export class CodingSheetComponent implements OnInit {
   }
 
   onSubmitform(){
-    console.log('Form submitted', this.frameA, this.frameB, this.mannerOfDeath, this.placeOfOccurence, this.fetalOrInfant, this.pregnantDeceased);
     if(this.validateframeA() && this.validateframeB()){
       this.save.emit({
         assigned_va: this.vaRecord?.instanceid,
@@ -167,7 +174,13 @@ export class CodingSheetComponent implements OnInit {
         placeOfOccurence: this.placeOfOccurence, 
         fetalOrInfant: this.fetalOrInfant, 
         pregnantDeceased: this.pregnantDeceased,
-        clinicalNotes: this.clinicalNotes
+        clinicalNotes: this.clinicalNotes,
+        [this.settings.birth_date]: this.birthDate,
+        [this.settings.birth_date]:this.deathDate,
+        [this.settings.deceased_gender]: this.gender,
+        [this.settings.is_adult]: this.vaRecord[this.settings.is_adult],
+        [this.settings.is_child]: this.vaRecord[this.settings.is_child],
+        [this.settings.is_neonate]: this.vaRecord[this.settings.is_neonate]
       })
     }
   }

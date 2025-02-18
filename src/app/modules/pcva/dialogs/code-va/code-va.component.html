@@ -82,7 +82,7 @@
                 <div class="mt-2">
                     <div class="flex items-center mb-4 gap-4">
                         <label class="block text-sm font-medium text-gray-500 w-1/4 px-2"> Coder's Name:</label>
-                        <input type="text" disabled class="flex-1 p-2 border border-gray-300 rounded-md"
+                        <input type="text" disabled class="flex-1 p-2 border border-gray-300 rounded-md" name="coders_name"
                             placeholder="{{ data?.current_user?.name }}">
                     </div>
                 </div>
@@ -92,6 +92,10 @@
                         [settings]="data?.fieldsMapping"
                         [vaRecord]="params?.vaRecord?.data[0]"
                         [codedVA]="data?.codedData"
+                        [messages]="data?.messages"
+                        [allowChat]="data?.allowChat"
+                        [current_user]="data?.current_user"
+                        [coders]="data?.coders"
                         (save)="onSave($event)"
                     ></app-coding-sheet>
                 </div>

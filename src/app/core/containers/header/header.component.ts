@@ -28,6 +28,10 @@ export class HeaderComponent implements OnInit {
     }
   }
 
+  get documetationUrl(){
+    return this.configService.DOCUMENTATION_URL
+  }
+
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }

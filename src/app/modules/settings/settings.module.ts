@@ -25,6 +25,7 @@ import { PcvaSettingsComponent } from './components/pcva-settings/pcva-settings.
 import { Icd10CodesComponent } from './components/icd-10-codes/icd-10-codes.component';
 import { AddIcd10CodesComponent } from './dialogs/add-icd10-codes/add-icd10-codes.component';
 import { HeaderMappingModalComponent } from './dialogs/header-mapping/header-mapping.component';
+import { PcvaConfigurationsComponent } from './components/pcva-configurations/pcva-configurations.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import { HeaderMappingModalComponent } from './dialogs/header-mapping/header-map
     PcvaSettingsComponent,
     Icd10CodesComponent,
     AddIcd10CodesComponent,
+    PcvaConfigurationsComponent,
   ],
   imports: [
     CommonModule,

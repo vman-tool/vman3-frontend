@@ -33,4 +33,8 @@ export class ConfigService {
   get API_URL_WS(): string {
     return this.config?.API_URL_WS;
   }
+
+  get DOCUMENTATION_URL(): string {
+    return this.config?.DOCUMENTATION_URL;
+  }
 }
