@@ -35,6 +35,16 @@ export class CodedVaService {
 
     return this.http.get(`${this.configService.API_URL}/pcva/get-coded-va-details/${va}${params}`);
   }
+  
+  getPCVAResults(pager?: { paging?: boolean, page_number?: number, limit?: number }) {
+    let params = pager?.paging ? `?paging=${pager?.paging}` : '';
+
+    params = params?.length && pager?.page_number ? params + `&page=${pager?.page_number}` : pager?.page_number ? params + `?page=${pager?.page_number}` : params;
+    params = params?.length && pager?.limit ? params + `&limit=${pager?.limit}` : pager?.limit ? params + `?limit=${pager?.limit}` : params;
+
+
+    return this.http.get(`${this.configService.API_URL}/pcva/get-pcva-results${params}`);
+  }
 
   downloadPcvaResults() {
      return this.http

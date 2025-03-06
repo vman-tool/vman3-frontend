@@ -1,13 +1,14 @@
-<div class="container px-4 mx-auto sm:px-8 max-w-7xl">
+<div class="container">
   <div class="py-8">
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-4" *ngIf="pcvaresults">
         <span class="px-2 text-2xl text-start">PCVA Results</span>
         <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="downloadPcvaResults()">Export Results</button>
     </div>
-    <div class="overflow-x-auto">
-      <div class="inline-block min-w-full overflow-hidden rounded-lg shadow">
-        <table class="min-w-full leading-normal">
-          <thead>
+    <div class="overflow-x-none">
+      <div class="w-full overflow-hidden">
+        <div class="relative w-full overflow-x-auto shadow-md sm:rounded-lg">
+          <table class="w-full divide-y divide-gray-200 table-auto">
+          <thead *ngIf="pcvaresults">
             <tr>
               <th
                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
@@ -15,221 +16,75 @@
               </th>
               <th
                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Region
+                Coder
               </th>
               <th
                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                District
+                Cause A
               </th>
               <th
                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Interview Day
+                cause B
               </th>
               <th
                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                Interviewer Name
+                Cause C
               </th>
               <th
                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                View
+                Cause D
+              </th>
+              <th
+                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                Underlying cause
+              </th>
+              <th
+                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                View VA
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody *ngIf="pcvaresults">
+            @for(result of pcvaresults; track $index){
+              <tr>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ result?.va }}</p>
+                </td>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ result?.coder?.name }}</p>
+                </td>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ result?.cause_a }}</p>
+                </td>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ result?.cause_a }}</p>
+                </td>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ result?.cause_a }}</p>
+                </td>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ result?.cause_d }}</p>
+                </td>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ result?.cause_d || result?.cause_c || result?.cause_b || result?.cause_a }}</p>
+                </td>
+                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                  <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer" (click)="onOpenVA(result.va)"><i class="ph-eye"></i></a>
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tbody *ngIf="!pcvaresults">
             <tr>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 8d1be88a-4ed9-7599-d88e-a039d0b0a4a5
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Moshi</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Moshi_District_Council</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-07-30</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Robert Brown</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
+              <td class="px-5 py-3 text-sm text-center whitespace-no-wrap" colspan="6">
+                No pcva result was found.
               </td>
             </tr>
-            <tr class="bg-gray-200">
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 9e2ce99b-5fd0-860a-e99f-b14a1f1c9d2c
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Mbeya</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Mbeya_Region</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-02-12</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Emily Davis</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 0a3fd9ac-6e1b-9711-f3a0-b34c9e5e0d43
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Tanga</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Tanga_City_Council</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-08-21</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Sarah Wilson</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-            <tr class="bg-gray-200">
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 1b4f03d7-7e2c-9812-g4c5-b45b1d6e1e1b
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Morogoro</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Morogoro_Region</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-11-05</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Chris Johnson</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 2c5g14e8-8f3d-a223-h7b9-d42c5f2d2c1a
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Shinyanga</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Shinyanga_District_Council</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-04-17</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Lisa Martinez</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-            <tr class="bg-gray-200">
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 3d6e25f9-9g4e-b334-i8c6-e53d6e8f3b5e
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Kigoma</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Kigoma_Region</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-09-22</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Tom Harris</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 4e7f36g0-0h5i-243d-j9c7-f64d7g8h9a0b
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Pwani</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Pwani_Region</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-10-05</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Rachel Green</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-            <tr class="bg-gray-200">
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 5f8g47h1-1j6k-354e-k2d8-g75e8i9j0c1d
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Kilimanjaro</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Kilimanjaro_Region</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-11-16</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Daniel Adams</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">uuid: 6g9h58i2-2k7l-465f-l3e9-h86f9j0k1b2c
-                </p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Ruvuma</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Ruvuma_Region</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">2023-12-02</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <p class="text-gray-900 whitespace-no-wrap">Emma Clark</p>
-              </td>
-              <td class="px-5 py-3 text-sm border-b border-gray-200">
-                <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i class="ph-eye"></i></a>
-              </td>
-            </tr>
-
           </tbody>
         </table>
-        <div class="flex flex-col px-5 py-2 bg-white border-t xs:flex-row">
-          <mat-paginator [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
+        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="total > 0">
+          <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="total"
+            [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
         </div>
       </div>
     </div>
