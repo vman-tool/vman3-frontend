@@ -171,6 +171,9 @@ export class SettingsConfigsComponent implements OnInit {
         error: (error: any) => {
           console.error('Error saving cron settings', error);
           this.settingsError = 'Failed to save settings. Please try again.';
+        },
+      complete: () => {
+          this.isSavingSettings = false;
         }
       });
   }
