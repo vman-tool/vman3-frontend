@@ -165,7 +165,7 @@ export class SettingConfigService {
     this.configCache = null;
   }
 
-  getUniqueValuesOfField(field: string): Observable<any> { 
+  getUniqueValuesOfField(field: string): Observable<any> {
     return this.http.get<string[]>(`${this.configService.API_URL}/settings/get-field-unique-value?field=${field}`)
   }
 }
