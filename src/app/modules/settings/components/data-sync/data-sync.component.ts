@@ -28,6 +28,7 @@ import { RunCcvaService } from '../../../ccva/services/run-ccva.service';
   styleUrl: './data-sync.component.scss',
 })
 export class DataSyncComponent implements OnInit, OnDestroy {
+  selectedTab = 'data-synchronization';
   totalRecords: number | null = null;
   progress: string | null = null;
   formSubmissionStatus:

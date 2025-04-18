@@ -10,17 +10,17 @@
   </div>
 
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-    <!-- <div *ngFor="let error of groupedErrors" class="p-6 bg-white rounded-lg shadow-md">
+    <div *ngFor="let error of groupedErrors" class="p-6 bg-white rounded-lg shadow-md">
       <div class="mb-2 text-sm font-medium text-gray-500">{{ error.error_type }}</div>
       <div class="text-2xl font-bold">{{ error.total }}</div>
       <p class="text-xs text-gray-500">Total errors</p>
-    </div> -->
+    </div>
   </div>
   <!-- List view of grouped errors -->
-  <div class="mt-8 overflow-hidden bg-white rounded-lg shadow-md">
+  <!-- <div class="mt-8 overflow-hidden bg-white rounded-lg shadow-md">
     <div class="p-6">
       <span class="mb-2 text-lg font-semibold">Grouped Errors List</span>
-      <!-- <p class="mb-4 text-sm text-gray-500">Error types and their totals in a list format.</p> -->
+
     </div>
     <ul class="divide-y divide-gray-200">
       <li *ngFor="let error of groupedErrors" class="flex items-center justify-between px-6 py-2 hover:bg-gray-50">
@@ -28,7 +28,7 @@
         <span class="text-2xl font-bold text-gray-700">{{ error.total }}</span>
       </li>
     </ul>
-  </div>
+  </div> -->
 
   <div class="overflow-hidden bg-white rounded-lg shadow-md">
     <div class="flex items-center justify-between p-6 bg-gray-50">

@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   horizontalPosition: MatSnackBarHorizontalPosition = 'end';
   verticalPosition: MatSnackBarVerticalPosition = 'top';
   systemImages?: SystemImages;
-  
+  isLoading: boolean = false;
   constructor(
     private authService: AuthService,
     private settingConfigService: SettingConfigService,
@@ -40,7 +40,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.authenticated = authenticated;
     })
   }
-  
+
   ngAfterViewInit(){
     this.navigate();
   }
@@ -66,13 +66,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
     e?.preventDefault()
     e?.stopPropagation()
     let failed = true;
+
     if(this.username && this.password){
+      this.isLoading = true
       this.authService.login(this.username, this.password).pipe(tap((response) =>{
         this.password = undefined;
       })).subscribe(
         {
           next: (response: any)=> {
             failed = false
+            this.isLoading = false
             if (response?.access_token){
               this.username = undefined;
               this.navigate()
@@ -82,7 +85,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
                 panelClass: 'snack-success',
                 duration: 3 * 1000,
               })
-            } 
+            }
             if (!response?.ok && response?.status) {
               this.snackBar.open("Invalid username/password", "close",{
                 horizontalPosition: this.horizontalPosition,
@@ -101,6 +104,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
           },
           error: (error: any) => {
               failed = false
+              this.isLoading = false
               this.snackBar.open("Invalid username/password", "close",{
                 horizontalPosition: this.horizontalPosition,
                 verticalPosition: this.verticalPosition,
@@ -108,6 +112,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
               })
             },
             complete: () => {
+              this.isLoading = false
               if(failed){
                 this.snackBar.open("Invalid username/password", "close", {
                   horizontalPosition: this.horizontalPosition,
@@ -149,7 +154,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
         favicon: this.configService.BASE_URL+ this.systemImages?.favicon
       }
     }
-    
+
     if(this.systemImages === null || this.systemImages?.logo === null || !this.systemImages?.logo){
       this.systemImages = {
         ...this.systemImages,
@@ -160,8 +165,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
         ...this.systemImages,
         logo: this.configService.BASE_URL+ this.systemImages?.logo
       }
-    }  
-    
+    }
+
     if(this.systemImages === null || this.systemImages?.home_image === null || !this.systemImages?.home_image){
       this.systemImages = {
         ...this.systemImages,
@@ -172,8 +177,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
         ...this.systemImages,
         home_image:this.configService.BASE_URL+ this.systemImages?.home_image
       }
-    } 
-    
+    }
+
   }
-  
+
 }
