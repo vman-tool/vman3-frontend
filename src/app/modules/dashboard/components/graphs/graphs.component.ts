@@ -173,7 +173,7 @@ export class GraphsComponent implements OnInit {
     const yearMap = new Map<number, number[]>();
 
     // Initialize the yearMap with empty arrays for each year present in the data
-    monthly_submissions.forEach((submission) => {
+    monthly_submissions?.forEach((submission) => {
       if (submission.year !== null && submission.month !== null) {
         if (!yearMap.has(submission.year)) {
           yearMap.set(submission.year, new Array(12).fill(0));

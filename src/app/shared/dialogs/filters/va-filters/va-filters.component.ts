@@ -4,10 +4,8 @@ import { LocationService } from '../../../services/location.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
-import { SearchableSelectComponent } from '../../../components/searchable-select/searchable-select.component';
 import { SharedModule } from '../../../shared.module';
 import { CustomDropdownComponent } from '../../../components/custom-dropdown/custom-dropdown.component';
-import { CcvaModule } from '../../../../modules/ccva/ccva.module';
 @Component({
   selector: 'app-va-filters',
   standalone: true,

@@ -37,4 +37,8 @@ export class ConfigService {
   get DOCUMENTATION_URL(): string {
     return this.config?.DOCUMENTATION_URL;
   }
+  
+  get SOFTWARE_VERSION(): string {
+    return this.config?.SOFTWARE_VERSION;
+  }
 }

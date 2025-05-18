@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { SettingConfigService } from '../../services/settings_configs.service';
 import { lastValueFrom } from 'rxjs';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
@@ -32,8 +30,6 @@ export class LabelAccessFieldsComponent implements OnInit {
   initiatingForm: boolean = false;
 
   constructor(
-    private usersService: UsersService,
-    private indexedDBService: IndexedDBService,
     private genericIndexedDbService: GenericIndexedDbService,
     private settingConfigService: SettingConfigService,
     private snackBar: MatSnackBar,
