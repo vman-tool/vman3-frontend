@@ -288,13 +288,43 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
 
   patchFormCOnfigurations(config?: settingsConfigData | null) {
     if (!config || !Object.keys(config!?.field_mapping).length) {
+
+      //       const fieldMappingPayload: FieldMapping = {
+
+      //   table_name: 'table_name',
+      //   table_details: 'table details',
+      //   instance_id: 'instanceid',
+      //   va_id: 'VA ID',
+      //   consent_id: 'id10013',
+      //   date: 'today',
+      //   location_level1: 'id10005r',
+      //   location_level2: 'id10005d',
+      //   deceased_gender: 'id10019',
+      //   is_adult: 'isadult',
+      //   is_child: 'ischild',
+      //   is_neonate: 'isneonatal',
+      //   birth_date: 'id10021',
+      //   death_date: 'id10023',
+      //   interview_date: 'id10012',
+      //   submitted_date: 'today',
+      //   interviewer_name: 'id10010',
+      //   interviewer_phone: 'id10010phone',
+      //   interviewer_sex: 'id10010b',
+      //   resp_gender: 'id10007a',
+      //   resp_name: 'Id10007',
+      //   resp_phone: 'id10007Phone',
+      //   resp_relationship: 'id10008',
+      //   intv_gps: 'coordinates',
+      //   intv_gps_acc: 'accuracy',
+      // };
       const fieldMappingPayload: FieldMapping = {
         table_name: 'table_name',
         table_details: 'table details',
         instance_id: 'instanceid',
-        va_id: '',
+        va_id: 'VA ID',
         date: '',
         location_level1: '',
+        location_level2: '',
         deceased_gender: '',
         is_adult: '',
         is_child: '',
