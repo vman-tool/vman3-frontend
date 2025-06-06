@@ -22,7 +22,7 @@
       <div class="overflow-auto max-h-60">
         <div *ngFor="let item of filteredItems" (click)="selectItem(item)"
           class="block px-4 py-2 text-gray-700 cursor-pointer hover:bg-gray-100 active:bg-blue-100">
-          {{ item.label }}
+          {{ item.label }} ({{item.value }})
         </div>
       </div>
     </div>
