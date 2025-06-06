@@ -41,8 +41,8 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
 
   system_config: any;
   field_mapping: any; 
-  field_labels?: FieldLabel[];canAssignRoles: any;
-; 
+  field_labels?: FieldLabel[];
+  canAssignRoles: any; 
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
   user: any;
@@ -53,7 +53,6 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private usersService: UsersService,
     private snackBar: MatSnackBar,
-    private indexedDBService: IndexedDBService,
     private genericIndexedDbService: GenericIndexedDbService,
     private settingConfigService: SettingConfigService,
     private formBuilder: FormBuilder,

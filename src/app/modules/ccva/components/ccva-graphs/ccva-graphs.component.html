@@ -84,9 +84,6 @@
         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" *ngFor="let key of chartKeys">
           <span *ngIf="charts[key]" id="chart-{{key}}" class="chart-{{key}}">
             <!-- Dynamic Title -->
-            <!-- <span class="block mb-4 text-xl font-semibold text-center text-gray-700">
-              {{ getDynamicTitle(key) }}
-            </span> -->
             <div class="flex justify-between mb-4">
               <span class="block text-xl font-semibold text-center text-gray-700">
                 {{ getDynamicTitle(key) }}

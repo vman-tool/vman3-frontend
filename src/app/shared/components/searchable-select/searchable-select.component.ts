@@ -33,6 +33,7 @@ export class SearchableSelectComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
     this.filteredItems = [...this.items];
   }
 
@@ -47,6 +48,7 @@ export class SearchableSelectComponent implements OnInit {
   //   );
   // }
   filterItems(): void {
+
     const filterValue = this.searchTerm.toLowerCase();
     this.filteredItems = this.items.filter(
       (item) =>

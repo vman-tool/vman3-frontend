@@ -6,12 +6,13 @@ import {
   MatSnackBarHorizontalPosition,
   MatSnackBarVerticalPosition,
 } from '@angular/material/snack-bar';
-import { tap } from "rxjs";
+import { lastValueFrom, tap } from "rxjs";
 import { AuthEmitters } from "../../emitters/auth.emitters";
 import { AuthService } from "../../services/authentication/auth.service";
 import { SystemImages } from "app/modules/settings/interface";
 import { SettingConfigService } from "app/modules/settings/services/settings_configs.service";
 import { ConfigService } from "app/app.service";
+import { VersionService } from "app/shared/services/version.service";
 
 @Component({
   selector: "app-login",
@@ -26,10 +27,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
   verticalPosition: MatSnackBarVerticalPosition = 'top';
   systemImages?: SystemImages;
   isLoading: boolean = false;
+  SOFTWARE_VERSION: string = '';
   constructor(
     private authService: AuthService,
     private settingConfigService: SettingConfigService,
     private configService: ConfigService,
+    private versionService: VersionService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
@@ -39,6 +42,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     AuthEmitters.authEmitter.subscribe((authenticated: boolean) => {
       this.authenticated = authenticated;
     })
+    this.getSoftwareVersion();
   }
 
   ngAfterViewInit(){
@@ -48,6 +52,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
   get documentationUrl(){
     return this.configService.DOCUMENTATION_URL
   }
+
+  
+  
+    async getSoftwareVersion(){
+      this.versionService.getVersionService().subscribe({
+        next: (value: any) => {
+          this.SOFTWARE_VERSION = value;
+        }
+      })
+    }
 
   navigate(){
     const access_expiry_token = localStorage.getItem('access_token_expiry');
