@@ -3,7 +3,7 @@
     <div class="container mx-auto flex justify-center items-center">
         <img src="../../../../assets/icons/favicon.ico" alt="Logo" class="h-5 w-5 mr-4">
         <div class="text-gray-600 text-sm">
-            © {{copyrightYear}} VMan Development
+            © {{copyrightYear}} VMan <span *ngIf="SOFTWARE_VERSION">({{SOFTWARE_VERSION}})</span> Development
         </div>
     </div>
 </footer>

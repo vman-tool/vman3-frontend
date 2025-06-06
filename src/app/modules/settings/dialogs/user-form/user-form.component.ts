@@ -88,7 +88,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
           },
           error: (error) => {
             console.error(error);
-            this.notificationMessage('Failed to save user');
+            this.notificationMessage(error?.error?.detail || 'Failed to save user');
           }
         }
       )
@@ -103,7 +103,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
           },
           error: (error) => {
             console.error(error);
-            this.notificationMessage('Failed to save user');
+            this.notificationMessage(error?.error?.detail || 'Failed to save user');
           }
         }
       )
@@ -127,7 +127,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
           },
           error: (error) => {
             console.error(error);
-            this.notificationMessage('Failed to assign/unassign role');
+            this.notificationMessage(error?.message || error?.error?.detail || 'Failed to assign/unassign role');
           }
         }
       )
