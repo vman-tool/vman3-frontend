@@ -121,7 +121,7 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onUnAssignVA(e: Event){
+  onAssignVA(e: Event){
     const data = {
       vaIds: this.selectedVAs,
       coder: this.coder?.uuid
@@ -130,6 +130,7 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
       next: (response: any) => {
         this.reloadOnClose = true;
         this.loadVARecords()
+        this.selectedVAs = [];
       },
       error: (error: any) => {
         console.error(error)

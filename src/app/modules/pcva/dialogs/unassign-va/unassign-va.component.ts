@@ -117,6 +117,7 @@ export class UnassignVaComponent implements OnInit, AfterViewInit {
       next: (response: any) => {
         this.reloadOnClose = true;
         this.loadVARecords();
+        this.selectedVAs = [];
       },
       error: (error: any) => {
         console.error(error)
