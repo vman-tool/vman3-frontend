@@ -55,13 +55,13 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   
   
-    async getSoftwareVersion(){
-      this.versionService.getVersionService().subscribe({
-        next: (value: any) => {
-          this.SOFTWARE_VERSION = value;
-        }
-      })
-    }
+  async getSoftwareVersion(){
+    this.versionService.getVersionService().subscribe({
+      next: (value: any) => {
+        this.SOFTWARE_VERSION = value;
+      }
+    })
+  }
 
   navigate(){
     const access_expiry_token = localStorage.getItem('access_token_expiry');
