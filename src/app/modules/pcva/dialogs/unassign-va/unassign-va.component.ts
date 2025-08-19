@@ -1,8 +1,9 @@
 import { AfterViewInit, Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
 import { flatten, keyBy }  from 'lodash';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-unassign-va',
@@ -28,10 +29,19 @@ export class UnassignVaComponent implements OnInit, AfterViewInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private matDialogRef: MatDialogRef<UnassignVaComponent>,
-    private vaRecordsService: VaRecordsService
+    private vaRecordsService: VaRecordsService,
+    private snackBar: MatSnackBar
   ) {
     this.coder = data?.coder
   }
+
+  notificationMessage(message: string, horizontal: MatSnackBarHorizontalPosition = "end", vertical: MatSnackBarVerticalPosition = "top", duration: number = 3000): void {
+      this.snackBar.open(`${message}`, 'close', {
+        horizontalPosition: horizontal,
+        verticalPosition: vertical,
+        duration: duration,
+      });
+    }
 
   ngOnInit(): void {
     this.loadVARecords();
@@ -73,6 +83,11 @@ export class UnassignVaComponent implements OnInit, AfterViewInit {
           ...response,
           data: responseWithoutAssignments
         }
+      }),
+      catchError((error: any) => {
+        this.loadingData = false;
+        this.notificationMessage(error?.error?.detail ?? error?.message ?? "Failed to load VA records. Please try again later.", "center", undefined, 5000);
+        return [];
       })
     )
     
