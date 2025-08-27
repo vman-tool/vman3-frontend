@@ -22,6 +22,7 @@ import * as Papa from 'papaparse';
 import { MatDialog } from '@angular/material/dialog';
 import { HeaderMappingModalComponent } from '../../dialogs/header-mapping/header-mapping.component';
 import { RunCcvaService } from '../../../ccva/services/run-ccva.service';
+import { SettingConfigService } from '../../services/settings_configs.service';
 @Component({
   selector: 'app-data-sync',
   templateUrl: './data-sync.component.html',
@@ -38,6 +39,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         available_data_count: number;
       }
     | undefined;
+  syncStatusFromSettings?: any; // New property for sync status from settings
+  isLoadingSyncStatus: boolean = false; // Loading state for sync status
   elapsedTime: number | null = null;
   isTaskRunning = false;
   isDataSyncing = false;
@@ -45,6 +48,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   // Separate sync flags
 
   isQuestionsSyncing: boolean = false; // For syncing questions
+  isLoadingQuestions: boolean = false; // For initial questions loading
 
   syncedQuestions?: any[] = [];
   forceChecked: boolean = false;
@@ -95,13 +99,15 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private runCcvaService: RunCcvaService
+    private runCcvaService: RunCcvaService,
+    private settingConfigService: SettingConfigService
   ) {}
 
   async ngOnInit(): Promise<void> {
+    console.log('DataSyncComponent ngOnInit started');
     this.elapsedTime = null;
     await this.loadPreviousProgressFromLocalStorage();
-    this.formsubmission_status();
+    this.loadSyncStatusFromSettings(); // Load sync status from settings (includes form submission data)
     this.initializeWebSocket();
 
     // this.syncedQuestions = await this.indexedDBService.getQuestions();
@@ -118,6 +124,206 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         privileges.ODK_QUESTIONS_SYNC,
       ]),
     };
+
+    console.log('DataSyncComponent ngOnInit completed');
+    console.log('Initial sync status:', this.syncStatusFromSettings);
+  }
+
+  loadSyncStatusFromSettings() {
+    this.isLoadingSyncStatus = true;
+    this.isLoadingFormSubmissionStatus = true;
+    console.log('Loading sync status from API (includes form submission data)...');
+
+    this.dataSyncService.getSyncStatus().subscribe({
+      next: (response: any) => {
+        this.isLoadingSyncStatus = false;
+        this.isLoadingFormSubmissionStatus = false;
+        console.log('Sync status API response:', response);
+
+        if (response?.data) {
+          this.syncStatusFromSettings = response.data;
+
+          // Also populate form submission status from the same API response
+          this.formSubmissionStatus = {
+            earliest_date: response.data.earliest_date,
+            latest_date: response.data.latest_date,
+            available_data_count: response.data.available_data_count || response.data.total_synced_data
+          };
+
+          console.log('Sync status loaded from API:', this.syncStatusFromSettings);
+          console.log('Form submission status populated:', this.formSubmissionStatus);
+        } else {
+          console.log('No sync status data in response, using default');
+          this.initializeDefaultSyncStatus();
+        }
+      },
+      error: (error) => {
+        this.isLoadingSyncStatus = false;
+        this.isLoadingFormSubmissionStatus = false;
+        console.error('Error loading sync status from API:', error);
+        this.initializeDefaultSyncStatus();
+      }
+    });
+  }
+
+  private initializeDefaultSyncStatus() {
+    // Set default sync status
+    this.syncStatusFromSettings = {
+      last_sync_date: null,
+      last_sync_data_count: 0,
+      total_synced_data: 0
+    };
+
+    // Set default form submission status
+    this.formSubmissionStatus = {
+      earliest_date: '',
+      latest_date: '',
+      available_data_count: 0
+    };
+
+    console.log('Default sync status initialized:', this.syncStatusFromSettings);
+    console.log('Default form submission status initialized:', this.formSubmissionStatus);
+  }
+
+  debugSyncStatus() {
+    console.log('=== DEBUG SYNC STATUS ===');
+    console.log('syncStatusFromSettings:', this.syncStatusFromSettings);
+    console.log('formSubmissionStatus:', this.formSubmissionStatus);
+    console.log('isLoadingSyncStatus:', this.isLoadingSyncStatus);
+    console.log('Last sync date:', this.syncStatusFromSettings?.last_sync_date);
+    console.log('Formatted date:', this.formatSyncDate(this.syncStatusFromSettings?.last_sync_date));
+    console.log('========================');
+  }
+
+  debugProgressStatus() {
+    console.log('=== DEBUG PROGRESS STATUS ===');
+    console.log('isTaskRunning:', this.isTaskRunning);
+    console.log('isDataSyncing:', this.isDataSyncing);
+    console.log('totalRecords:', this.totalRecords);
+    console.log('progress:', this.progress);
+    console.log('elapsedTime:', this.elapsedTime);
+    console.log('message:', this.message);
+    console.log('WebSocket connected:', this.webSockettService ? 'Yes' : 'No');
+    console.log('selectedTab:', this.selectedTab);
+    console.log('==============================');
+  }
+
+  checkBackendSyncStatus() {
+    console.log('Checking backend sync status...');
+    this.dataSyncService.getSyncStatus().subscribe({
+      next: (response: any) => {
+        console.log('Backend sync status response:', response);
+        if (response?.data) {
+          console.log('Backend sync status:', response.data);
+          console.log('Backend last sync date:', response.data.last_sync_date);
+        } else {
+          console.log('No sync status found in backend');
+        }
+      },
+      error: (error) => {
+        console.error('Error checking backend sync status:', error);
+      }
+    });
+  }
+
+  forceRefreshSyncStatus() {
+    console.log('Force refreshing sync status...');
+    // Clear current status
+    this.syncStatusFromSettings = undefined;
+    this.isLoadingSyncStatus = true;
+
+    // Reload from backend
+    setTimeout(() => {
+      this.loadSyncStatusFromSettings();
+    }, 500);
+  }
+
+  setTestSyncStatus() {
+    console.log('Test sync status functionality removed - sync status is now updated automatically by backend');
+    this.showError('Test sync status functionality has been removed - sync status is now automatic');
+  }
+
+  refreshAllStatus() {
+    // Refresh sync status (which now includes form submission data)
+    this.loadSyncStatusFromSettings();
+  }
+
+  updateTotalSyncedData(newTotal: number) {
+    // This method is no longer needed - sync status is updated automatically by backend
+    console.log('updateTotalSyncedData called but not needed - backend handles sync status automatically');
+  }
+
+  showSyncStatusUpdateSuccess(message: string) {
+    this.snackBar.open(message, 'Close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 3000,
+    });
+  }
+
+  manualUpdateSyncStatus() {
+    console.log('Manual update sync status functionality removed - sync status is now updated automatically by backend');
+    this.showError('Manual update functionality has been removed - sync status is now automatic');
+  }
+
+  getSyncStatusSummary(): string {
+    if (!this.syncStatusFromSettings) {
+      return 'No sync status available';
+    }
+
+    const lastSync = this.formatSyncDate(this.syncStatusFromSettings.last_sync_date);
+    const totalData = this.syncStatusFromSettings.total_synced_data || 0;
+    const lastSyncCount = this.syncStatusFromSettings.last_sync_data_count || 0;
+
+    return `Last sync: ${lastSync} | Total data: ${totalData} | Last sync records: ${lastSyncCount}`;
+  }
+
+  getSyncStatusDisplayText(): string {
+    if (!this.syncStatusFromSettings?.last_sync_date) {
+      return 'Never synced';
+    }
+
+    const lastSync = this.formatSyncDate(this.syncStatusFromSettings.last_sync_date);
+    const lastSyncCount = this.syncStatusFromSettings.last_sync_data_count || 0;
+
+    if (lastSyncCount > 0) {
+      return `Last sync: ${lastSync} (${lastSyncCount} records)`;
+    } else {
+      return `Last sync: ${lastSync}`;
+    }
+  }
+
+  getLastSyncDateType(): string {
+    if (!this.syncStatusFromSettings?.last_sync_date) {
+      return 'undefined';
+    }
+    return typeof this.syncStatusFromSettings.last_sync_date;
+  }
+
+  formatSyncDate(dateString: string | null | undefined): string {
+    console.log('formatSyncDate called with:', dateString, 'type:', typeof dateString);
+
+    if (!dateString) {
+      console.log('No date string, returning "Never"');
+      return 'Never';
+    }
+
+    try {
+      const date = new Date(dateString);
+      console.log('Parsed date:', date, 'isValid:', !isNaN(date.getTime()));
+
+      if (isNaN(date.getTime())) {
+        console.log('Invalid date, returning "Invalid Date"');
+        return 'Invalid Date';
+      }
+
+      const formatted = date.toLocaleString();
+      console.log('Formatted date:', formatted);
+      return formatted;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
   }
 
   onFileSelected(event: Event): void {
@@ -188,7 +394,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.snackBar.open(message, 'Close', {
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      duration: 3000,
+      duration: 5000,
+      panelClass: ['error-snackbar']
     });
   }
 
@@ -206,9 +413,11 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.isDataSyncing = true; // Show loading state
 
     this.dataSyncService.csvDataUpload(formData).subscribe({
-      next: (response: any) => {
+      next: async (response: any) => {
         if (response?.data) {
           console.log('Upload successful:', response.data);
+
+          // Sync status will be updated automatically by backend - no manual update needed
 
           this.showSuccess('File uploaded successfully');
         }
@@ -223,7 +432,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       },
       complete: () => {
         this.resetFileInput();
-        this.formsubmission_status();
+        this.loadSyncStatusFromSettings(); // Refresh sync status (includes form submission data)
         this.isDataSyncing = false; // Hide loading state
       },
     });
@@ -234,6 +443,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     console.log(message);
     alert(message); // Or use a more sophisticated success display mechanism
   }
+
   async syncQuestionsIfNeeded() {
     this.isQuestionsSyncing = true;
 
@@ -260,6 +470,9 @@ export class DataSyncComponent implements OnInit, OnDestroy {
                 OBJECTKEY_ODK_QUESTIONS,
                 response?.data
               );
+
+              // Sync status will be updated automatically by backend - no manual update needed
+
               // return await this.indexedDBService.getQuestions();
               return await this.genericIndexedDbService.getData(
                 OBJECTSTORE_VA_QUESTIONS
@@ -282,49 +495,24 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   async hasAccess(privileges: string[]) {
     return await lastValueFrom(this.authService.hasPrivilege(privileges));
   }
-  formsubmission_status() {
-    this.isLoadingFormSubmissionStatus = true;
-
-    this.dataSyncService.formsubmission_status().subscribe({
-      next: (response: any) => {
-        this.isLoadingFormSubmissionStatus = false;
-        this.formSubmissionStatus = {
-          earliest_date: response.earliest_date,
-          latest_date: response.latest_date,
-          available_data_count: response.available_data_count,
-        };
-      },
-      error: (error) => {
-        console.error('Error during data sync:', error);
-        this.isDataSyncing = false;
-        this.isTaskRunning = false;
-        this.isLoadingFormSubmissionStatus = false;
-        this.isTaskRunning = false;
-        // this.triggersService.triggerCCVAListFunction();
-        console.log(error);
-        this.snackBar.open(
-          `${
-            error?.error?.detail ?? error.error.message ?? 'Failed to data sync'
-          }`,
-          'Close',
-          {
-            horizontalPosition: 'end',
-            verticalPosition: 'top',
-            duration: 3000,
-          }
-        );
-      },
-    });
-  }
+  // formsubmission_status method removed - data now comes from loadSyncStatusFromSettings()
 
   manualSync() {
     this.isDataSyncing = true; // Track only manual sync
 
+    // Show sync starting message
+    this.showSyncStatusUpdateSuccess('Manual sync starting...');
+
     this.dataSyncService.syncData().subscribe({
-      next: (response: any) => {
+      next: async (response: any) => {
         console.log('Manual sync initiated:', response);
+
+        // Don't update sync status here - wait for completion
+        // The sync status will be updated when WebSocket progress reaches 100%
+
         if (response.download_status === true) {
           this.isTaskRunning = true;
+          this.showSyncStatusUpdateSuccess('Sync in progress... Monitoring via WebSocket');
         } else {
           // this.isTaskRunning = false;
         }
@@ -365,6 +553,10 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
   onCancel() {
     this.isTaskRunning = false;
+
+    // Show sync cancelled message
+    this.showSyncStatusUpdateSuccess('Sync cancelled by user');
+
     // this.triggersService.triggerCCVAListFunction();
     // this.clearLocalStorage(); // Clear all task-related localStorage data
     this.webSockettService.disconnect();
@@ -429,6 +621,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
             this.forceChecked = !this.forceChecked;
 
+            // Sync status will be updated automatically by backend - no manual update needed
+
             return await this.genericIndexedDbService.getData(
               OBJECTSTORE_VA_QUESTIONS
             );
@@ -466,6 +660,27 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       this.progress = Math.round(parsedData.progress).toFixed(0).toString();
       this.elapsedTime = parsedData.elapsed_time;
       this.message = JSON.stringify(parsedData);
+
+      // Show progress updates
+      if (parsedData.progress > 0 && parsedData.progress < 100) {
+        this.showSyncStatusUpdateSuccess(`Sync progress: ${this.progress}% (${this.totalRecords} records)`);
+      }
+
+      // Check if sync is completed (progress = 100%)
+      if (parsedData.progress >= 100) {
+        this.isTaskRunning = false;
+
+        console.log('Sync completed! Updating sync status...');
+
+        // Sync status will be updated automatically by backend when sync completes
+        console.log('Sync completed! Backend will update sync status automatically');
+        this.showSyncStatusUpdateSuccess(`Data sync completed! ${this.totalRecords || 0} records synced.`);
+
+        // Force refresh to show updated status from backend
+        setTimeout(() => {
+          this.loadSyncStatusFromSettings();
+        }, 1000);
+      }
 
       // Store WebSocket progress data in localStorage with a TTL of 1 hour
       const odkProgressData = {

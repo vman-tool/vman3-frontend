@@ -11,12 +11,14 @@ import { settingsConfigData, SystemImages } from '../interface';
 })
 export class SettingConfigService {
   private configCache: Partial<settingsConfigData> | null = null;
+  private lastFetchTime: number = 0;
+  private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   constructor(private http: HttpClient, private configService: ConfigService) {}
 
   // General method to save data
   saveConnectionData(
-    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'field_labels',
+    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'field_labels' | 'sync_status',
     data: any
   ): Observable<ResponseMainModel<any>> {
     return this.http
@@ -51,9 +53,12 @@ export class SettingConfigService {
 
   // General method to get all configuration data
   getSettingsConfig(
-    cached: boolean = false
+    cached: boolean = true  // Default to using cache to prevent infinite requests
   ): Observable<settingsConfigData | null> {
-    if (this.configCache && cached) {
+    const now = Date.now();
+    const isCacheValid = this.configCache && cached && (now - this.lastFetchTime) < this.CACHE_DURATION;
+
+    if (isCacheValid) {
       return of(this.configCache as settingsConfigData);
     } else {
       return this.http
@@ -86,6 +91,13 @@ export class SettingConfigService {
                 field_labels:
                   response.data?.field_labels ||
                   [],
+                sync_status:
+                  response.data?.sync_status ||
+                  {
+                    last_sync_date: undefined,
+                    last_sync_data_count: 0,
+                    total_synced_data: 0
+                  },
               };
               return config;
             }
@@ -94,6 +106,7 @@ export class SettingConfigService {
           tap((data: settingsConfigData | null) => {
             if (data) {
               this.configCache = data;
+              this.lastFetchTime = Date.now();
             }
           }),
           catchError((error: any) => {
@@ -163,6 +176,7 @@ export class SettingConfigService {
 
   clearCache(): void {
     this.configCache = null;
+    this.lastFetchTime = 0;
   }
 
   getUniqueValuesOfField(field: string): Observable<any> {
