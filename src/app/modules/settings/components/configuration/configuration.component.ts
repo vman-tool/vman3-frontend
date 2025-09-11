@@ -32,6 +32,9 @@ export class ConfigurationComponent {
   vaSummaryObjects?: any;
   fieldLabels: FieldLabel[] | undefined;
 
+  // Cache state to prevent unnecessary reloads
+  private dataLoaded = false;
+
   constructor(
     public dialog: MatDialog,
     private settingConfigService: SettingConfigService,
@@ -45,7 +48,10 @@ export class ConfigurationComponent {
   }
 
   async ngOnInit(): Promise<void> {
-    this.loadOdkApiData();
+    // Only load data if not already loaded
+    if (!this.dataLoaded) {
+      this.loadOdkApiData();
+    }
 
     this.dataAccess = {
       addSystemConfigs: await this.hasAccess([privileges.SETTINGS_CREATE_SYSTEM_CONFIGS]),
@@ -62,7 +68,7 @@ export class ConfigurationComponent {
       viewSummaryFields: await this.hasAccess([privileges.SETTINGS_VIEW_VA_SUMMARY]),
       updateSystemImages: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_IMAGES]),
       updateAccessLocationsLabels: await this.hasAccess([privileges.USERS_UPDATE_ACCESS_LIMIT_LABELS])
-      
+
     }
   }
 
@@ -84,6 +90,7 @@ export class ConfigurationComponent {
               : [];
         }
         this.isLoading = false; // Stop isLoading
+        this.dataLoaded = true; // Mark data as loaded
       },
       error: (error) => {
         console.error('Failed to load ODK API data:', error);
@@ -102,9 +109,16 @@ export class ConfigurationComponent {
       if (result) {
         this.odkApiData = result;
         this.hasOdkApiData = true;
-        this.loadOdkApiData();
+        this.refreshData();
       }
     });
+  }
+
+  // Method to force refresh data
+  refreshData(): void {
+    this.dataLoaded = false;
+    this.settingConfigService.clearCache();
+    this.loadOdkApiData();
   }
 
   editForm(
@@ -133,7 +147,7 @@ export class ConfigurationComponent {
 
         this.odkApiData = result;
         this.hasOdkApiData = true;
-        this.loadOdkApiData()
+        this.refreshData();
       }
     });
   }
@@ -145,7 +159,7 @@ export class ConfigurationComponent {
   onLoadLabelAccess(){
     this.selectedTab = "";
 
-    this.loadOdkApiData();
+    this.refreshData();
 
     this.selectedTab = "label-access-fields";
 

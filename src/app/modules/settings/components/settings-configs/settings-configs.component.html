@@ -1,13 +1,27 @@
 <div class="container p-4 mx-auto">
-  <!-- API Cron Settings -->
-  <div class="p-6 mb-6 bg-white rounded-lg shadow-md">
-    <span class="block mb-4 text-xl font-semibold">Data scheduler sync Settings</span>
-
-    <div *ngIf="isLoadingSettings" class="flex justify-center my-4">
-      <div class="w-8 h-8 border-b-2 border-blue-600 rounded-full animate-spin"></div>
+  <!-- Unified Loading State -->
+  <div *ngIf="isLoadingAllSettings" class="min-h-[400px] flex justify-center items-center">
+    <div class="text-center">
+      <svg class="mx-auto mb-3 w-8 h-8 text-blue-500 animate-spin" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="text-lg font-medium text-blue-700">Loading Data Synchronization Settings</p>
+      <p class="text-sm text-blue-600">Please wait while we fetch your configuration settings...</p>
     </div>
+  </div>
 
-    <ng-container *ngIf="!isLoadingSettings">
+  <!-- Settings Content -->
+  <ng-container *ngIf="!isLoadingAllSettings">
+    <!-- API Cron Settings -->
+    <div class="p-6 mb-6 bg-white rounded-lg shadow-md">
+      <span class="block mb-4 text-xl font-semibold">Data scheduler sync Settings</span>
+
+      <div *ngIf="isLoadingSettings" class="flex justify-center my-4">
+        <div class="w-8 h-8 border-b-2 border-blue-600 rounded-full animate-spin"></div>
+      </div>
+
+      <ng-container *ngIf="!isLoadingSettings">
       <div class="mb-6">
         <label class="block mb-2 text-sm font-medium text-gray-700">Select Days:</label>
         <div class="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
@@ -123,4 +137,5 @@
       </button>
     </ng-container>
   </div>
+  </ng-container>
 </div>

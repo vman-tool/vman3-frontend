@@ -34,6 +34,7 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
   odkApiConfigForm!: FormGroup;
   vaSummaryForm!: FormGroup;
   selectedSummaryFields: string[] = [];
+  isSavingOdkConfig: boolean = false;
 
   // Your tables and fields arrays
   tables: string[] = ['Table1', 'Table2', 'Table3']; // Example data
@@ -256,10 +257,12 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
 
   onOdkApiConfigSubmit(): void {
     if (this.odkApiConfigForm.valid) {
+      this.isSavingOdkConfig = true;
       this.settingsConfigService
         .saveConnectionData('odk_api_configs', this.odkApiConfigForm.value)
         .subscribe(
           (response) => {
+            this.isSavingOdkConfig = false;
             this.snackBar.open(
               'ODK API configuration saved successfully',
               'Close',
@@ -270,11 +273,24 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
             this.dialogRef.close(true);
           },
           (error) => {
+            this.isSavingOdkConfig = false;
+            console.error('ODK API configuration save error:', error);
+            let errorMessage = 'Failed to save ODK API configuration';
+
+            if (error?.error?.detail) {
+              errorMessage = error.error.detail;
+            } else if (error?.message) {
+              errorMessage = error.message;
+            } else if (error?.error?.message) {
+              errorMessage = error.error.message;
+            }
+
             this.snackBar.open(
-              'Failed to save ODK API configuration',
+              errorMessage,
               'Close',
               {
-                duration: 3000,
+                duration: 5000, // Show error for 5 seconds
+                panelClass: ['error-snackbar'] // Add error styling
               }
             );
           }

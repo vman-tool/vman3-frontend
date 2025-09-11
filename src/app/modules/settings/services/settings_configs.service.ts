@@ -41,12 +41,8 @@ export class SettingConfigService {
         }),
         catchError((error: any) => {
           console.error('Error:', error);
-          return of({
-            data: [],
-            message: `Failed to save ${type.replace('_', ' ')}`,
-            error: error.message,
-            total: 0,
-          });
+          // Re-throw the error so the component's error handler can catch it
+          throw error;
         })
       );
   }
