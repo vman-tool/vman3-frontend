@@ -54,6 +54,7 @@ export interface settingsConfigData {
   field_mapping: FieldMapping;
   va_summary: string[];
   field_labels?: FieldLabel[];
+  sync_status?: SyncStatus;
 }
 
 export interface SystemImages {
@@ -66,4 +67,10 @@ export interface PCVAConfigurations {
   useICD11: boolean;
   vaAssignmentLimit: number;
   concordanceLevel: number;
+}
+
+export interface SyncStatus {
+  last_sync_date?: string;
+  last_sync_data_count?: number;
+  total_synced_data?: number;
 }

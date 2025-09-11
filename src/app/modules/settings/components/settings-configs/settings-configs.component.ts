@@ -95,17 +95,51 @@ export class SettingsConfigsComponent implements OnInit {
   isSavingBackupSettings: boolean = false;
   backupSettingsError: string | null = null;
 
-  // Loading states
+  // Unified loading state
+  isLoadingAllSettings: boolean = false;
+
+  // Individual loading states (for backward compatibility)
   isLoadingSettings: boolean = false;
   isLoadingBackupSettings: boolean = false;
 
   constructor(private settingsService: DataSyncSettingsService) {}
 
   ngOnInit(): void {
-    this.loadSettings();
-    this.loadBackupSettings();
+    this.loadAllSettings();
   }
 
+  // Unified method to load both settings in one API call
+  loadAllSettings(): void {
+    this.isLoadingAllSettings = true;
+    this.settingsError = null;
+    this.backupSettingsError = null;
+
+    this.settingsService.getSyncSettings()
+      .pipe(finalize(() => this.isLoadingAllSettings = false))
+      .subscribe({
+        next: (response) => {
+          // Load cron settings
+          this.daysOfWeek.forEach(day => {
+            day.checked = response.cron_settings.days.includes(day.value);
+          });
+          this.selectedTime = response.cron_settings.time || '00:00';
+          this.isSettingsChanged = false;
+
+          // Load backup settings
+          this.backupSettings = response.backup_settings;
+          this.isBackupSettingsChanged = false;
+
+          console.log('All settings loaded successfully');
+        },
+        error: (error: any) => {
+          console.error('Error loading settings', error);
+          this.settingsError = 'Failed to load settings. Please try again.';
+          this.backupSettingsError = 'Failed to load backup settings. Please try again.';
+        }
+      });
+  }
+
+  // Keep individual methods for backward compatibility
   loadSettings(): void {
     this.isLoadingSettings = true;
     this.settingsService.getCronSettings()
@@ -167,13 +201,11 @@ export class SettingsConfigsComponent implements OnInit {
         next: () => {
           console.log('Cron settings saved successfully');
           this.isSettingsChanged = false;
+          // Cache is automatically cleared in the service after saving
         },
         error: (error: any) => {
           console.error('Error saving cron settings', error);
           this.settingsError = 'Failed to save settings. Please try again.';
-        },
-      complete: () => {
-          this.isSavingSettings = false;
         }
       });
   }
@@ -188,6 +220,7 @@ export class SettingsConfigsComponent implements OnInit {
         next: () => {
           console.log('Backup settings saved successfully');
           this.isBackupSettingsChanged = false;
+          // Cache is automatically cleared in the service after saving
         },
         error: (error: any) => {
           console.error('Error saving backup settings', error);

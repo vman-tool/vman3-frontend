@@ -3,8 +3,8 @@
     <div class="border-b border-gray-200 dark:border-gray-700">
       <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
         <li class="me-2">
-          <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
-            (click)="selectedTab = 'data-synchronization'" [ngClass]="{
+          <a class="inline-flex justify-center items-center p-4 rounded-t-lg group hover:cursor-pointer"
+            (click)="onTabSelected('data-synchronization')" [ngClass]="{
              'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'data-synchronization',
              'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'data-synchronization'
            }">
@@ -16,11 +16,11 @@
           </a>
         </li>
         <li class="me-2" >
-          <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
-            (click)="selectedTab = 'questions-sync'" [ngClass]="{
-             'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'questions-sync',
-             'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'questions-sync'
-           }">
+                    <a class="inline-flex justify-center items-center p-4 rounded-t-lg group hover:cursor-pointer"
+            (click)="onTabSelected('questions-sync')" [ngClass]="{
+            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'questions-sync',
+            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'questions-sync'
+          }">
             <i class="fas fa-network-wired me-2" [ngClass]="{
                'text-blue-600 dark:text-blue-500': selectedTab === 'questions-sync',
                'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'questions-sync'
@@ -30,11 +30,11 @@
         </li>
 
         <li class="me-2" >
-          <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
-            (click)="selectedTab = 'settings'" [ngClass]="{
-             'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'settings',
-             'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'settings'
-           }">
+                    <a class="inline-flex justify-center items-center p-4 rounded-t-lg group hover:cursor-pointer"
+            (click)="onTabSelected('settings')" [ngClass]="{
+            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'settings',
+            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'settings'
+          }">
             <i class="fas fa-network-wired me-2" [ngClass]="{
                'text-blue-600 dark:text-blue-500': selectedTab === 'settings',
                'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'settings'
@@ -51,84 +51,202 @@
   <div *ngIf="selectedTab === 'data-synchronization'" id="data-synchronization"
     class="mt-4 tab-content">
 
-    <div *ngIf="!isLoadingFormSubmissionStatus">
-      <div *ngIf="!isTaskRunning" class="space-y-6">
-        <!-- Sync Status -->
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-semibold">Total Synced Data: {{ formSubmissionStatus?.available_data_count }}</p>
-            <p class="text-sm font-semibold">Last Sync Date: {{ formSubmissionStatus?.latest_date }}</p>
+    <!-- Data Sync Tab Loading State -->
+    <div *ngIf="isDataSyncTabLoading" class="space-y-6">
+      <div class="flex justify-center items-center p-8 bg-gray-50 rounded-lg border">
+        <div class="text-center">
+          <svg class="mx-auto mb-4 w-8 h-8 text-blue-500 animate-spin" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-lg font-semibold text-gray-700">Loading Data Synchronization</p>
+          <p class="text-sm text-gray-500">Fetching sync status and form data...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Sync Progress Display -->
+    <div *ngIf="!isLoadingFormSubmissionStatus && isTaskRunning" class="space-y-6">
+      <div class="p-6 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="text-center">
+          <h3 class="mb-4 text-xl font-bold text-blue-800">Data Synchronization in Progress</h3>
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="text-center">
+              <p class="text-2xl font-bold text-blue-600">{{ totalRecords || '0' }}</p>
+              <p class="text-sm text-gray-600">Total Records</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-green-600">{{ progress || '0' }}%</p>
+              <p class="text-sm text-gray-600">Progress</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-purple-600">{{ (elapsedTime | number:'1.0-1') || '0' }}s</p>
+              <p class="text-sm text-gray-600">Elapsed Time</p>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="mb-4 w-full h-4 bg-gray-200 rounded-full">
+            <div class="h-4 bg-blue-500 rounded-full transition-all duration-300" [style.width.%]="progress || 0"></div>
+          </div>
+
+          <!-- Cancel Button -->
+          <button (click)="onCancel()"
+            class="px-6 py-2 text-white bg-red-500 rounded-lg transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+            Cancel Sync
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Sync Main Content (when not loading and not syncing) -->
+    <div *ngIf="!isDataSyncTabLoading && !isTaskRunning" class="space-y-6">
+      <!-- Status Overview Card -->
+      <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">
+            <i class="mr-2 text-blue-600 fas fa-database"></i>
+            Data Synchronization Status
+          </h3>
+          <button
+            (click)="refreshAllStatus()"
+            class="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-lg transition-colors hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title="Refresh sync status">
+            <i class="mr-1 fas fa-sync-alt"></i>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Current Data Overview -->
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div class="p-4 text-center bg-blue-50 rounded-lg border border-blue-200">
+            <div class="mb-1 text-2xl font-bold text-blue-600">{{ formSubmissionStatus?.available_data_count || 0 | number }}</div>
+            <div class="text-sm font-medium text-blue-700">Total Records</div>
+          </div>
+
+          <div class="p-4 text-center bg-green-50 rounded-lg border border-green-200">
+            <div class="mb-1 text-lg font-semibold text-green-600">{{ getSyncStatusDisplayText() }}</div>
+            <div class="text-sm font-medium text-green-700">Last Sync</div>
+          </div>
+
+          <div class="p-4 text-center bg-amber-50 rounded-lg border border-amber-200">
+            <div class="mb-1 text-lg font-semibold text-amber-600">{{ getDataRangeText() }}</div>
+            <div class="text-sm font-medium text-amber-700">Data Range</div>
           </div>
         </div>
+
+        <!-- Detailed Information -->
+        <div *ngIf="formSubmissionStatus?.earliest_date || formSubmissionStatus?.latest_date" class="p-4 mt-6 bg-gray-50 rounded-lg border border-gray-200">
+          <h4 class="mb-3 text-sm font-semibold text-gray-700">
+            <i class="mr-2 fas fa-calendar-alt"></i>
+            Data Coverage Details
+          </h4>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div *ngIf="formSubmissionStatus?.earliest_date">
+              <p class="text-xs font-medium tracking-wide text-gray-600 uppercase">Earliest Record</p>
+              <p class="text-sm font-medium text-gray-800">{{ formatSyncDate(formSubmissionStatus?.earliest_date) }}</p>
+            </div>
+            <div *ngIf="formSubmissionStatus?.latest_date">
+              <p class="text-xs font-medium tracking-wide text-gray-600 uppercase">Latest Record</p>
+              <p class="text-sm font-medium text-gray-800">{{ formatSyncDate(formSubmissionStatus?.latest_date) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Synchronization Actions -->
+      <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <h3 class="mb-4 text-lg font-semibold text-gray-800">
+          <i class="mr-2 text-blue-600 fas fa-sync-alt"></i>
+          Start Data Synchronization
+        </h3>
 
         <!-- Data Source Selection -->
-        <div class="space-y-4">
-          <span class="text-sm font-medium text-gray-700">Select Data Source:</span>
-          <div class="flex space-x-4">
-            <label class="inline-flex items-center">
-              <input type="radio" class="text-blue-600 form-radio" name="dataSource" value="api" [(ngModel)]="dataSource">
-              <span class="ml-2">API Sync</span>
+        <div class="mb-6">
+          <label class="block mb-3 text-sm font-medium text-gray-700">Choose synchronization method:</label>
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label class="flex relative items-center p-4 bg-gray-50 rounded-lg border border-gray-200 transition-colors cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+              <input type="radio" class="sr-only" name="dataSource" value="api" [(ngModel)]="dataSource">
+              <div [class]="dataSource === 'api' ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'" class="flex-shrink-0 mr-3 w-4 h-4 rounded-full border-2 transition-colors">
+                <div *ngIf="dataSource === 'api'" class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900">
+                  <i class="mr-2 fas fa-cloud-download-alt"></i>
+                  API Synchronization
+                </div>
+                <div class="text-xs text-gray-500">Sync data from ODK Central server</div>
+              </div>
             </label>
-            <label class="inline-flex items-center">
-              <input type="radio" class="text-blue-600 form-radio" name="dataSource" value="csv" [(ngModel)]="dataSource">
-              <span class="ml-2">Upload CSV</span>
+
+            <label class="flex relative items-center p-4 bg-gray-50 rounded-lg border border-gray-200 transition-colors cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+              <input type="radio" class="sr-only" name="dataSource" value="csv" [(ngModel)]="dataSource">
+              <div [class]="dataSource === 'csv' ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'" class="flex-shrink-0 mr-3 w-4 h-4 rounded-full border-2 transition-colors">
+                <div *ngIf="dataSource === 'csv'" class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900">
+                  <i class="mr-2 fas fa-file-csv"></i>
+                  CSV Upload
+                </div>
+                <div class="text-xs text-gray-500">Upload data from CSV file</div>
+              </div>
             </label>
           </div>
         </div>
 
-        <div *ngIf="dataSource === 'csv'" class="mt-4">
+        <!-- CSV Upload Section -->
+        <div *ngIf="dataSource === 'csv'" class="p-4 mb-6 bg-blue-50 rounded-lg border border-blue-200">
           <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" class="hidden" />
-          <button (click)="fileInput.click()"
-            class="px-4 py-2 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            [disabled]="isDataSyncing">
-            <span *ngIf="!isDataSyncing">Select CSV File And Upload</span>
-            <span *ngIf="isDataSyncing" class="flex items-center">
-              Uploading...
-              <svg class="w-4 h-4 ml-2 animate-spin" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                </path>
-              </svg>
-            </span>
-          </button>
-          <span *ngIf="selectedFile" class="ml-2 text-sm text-gray-600">
-            {{ selectedFile.name }}
-          </span>
+          <div class="flex flex-col space-y-3">
+            <button (click)="fileInput.click()"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg border border-blue-300 transition-colors hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              [disabled]="isDataSyncing">
+              <i class="mr-2 fas fa-upload"></i>
+              <span *ngIf="!isDataSyncing">Choose CSV File</span>
+              <span *ngIf="isDataSyncing" class="flex items-center">
+                <svg class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Uploading...
+              </span>
+            </button>
+            <div *ngIf="selectedFile" class="flex items-center text-sm text-gray-600">
+              <i class="mr-2 text-green-500 fas fa-file-csv"></i>
+              <span>{{ selectedFile.name }}</span>
+            </div>
+          </div>
         </div>
 
 
 
-        <!-- error meaasage -->
-        <div *ngIf="fileErrors" class="text-red-500">
-          {{ fileErrors }}
+        <!-- Error Messages -->
+        <div *ngIf="fileErrors" class="p-3 mb-4 bg-red-50 rounded-lg border border-red-200">
+          <div class="flex items-center">
+            <i class="mr-2 text-red-500 fas fa-exclamation-triangle"></i>
+            <span class="text-sm font-medium text-red-700">{{ fileErrors }}</span>
+          </div>
         </div>
 
-        <!-- CSV Upload (visible when CSV is selected) -->
-        <!-- <div *ngIf="dataSource === 'csv'" class="space-y-2">
-          <input type="file" id="csvFile" (change)="onFileSelected($event)" accept=".csv" class="hidden" />
-          <label for="csvFile"
-            class="inline-block px-4 py-2 text-sm font-medium text-white transition duration-300 bg-green-500 rounded cursor-pointer hover:bg-green-600">
-            Select CSV File
-          </label>
-          <span *ngIf="selectedFile" class="ml-2 text-sm text-gray-600">
-            {{ selectedFile.name }}
-          </span>
-        </div> -->
+        <!-- Action Buttons -->
+        <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+          <div class="text-sm text-gray-500">
+            <i class="mr-1 fas fa-info-circle"></i>
+            {{ dataSource === 'api' ? 'Sync will fetch latest data from ODK Central' : 'CSV file will be processed and uploaded' }}
+          </div>
 
-        <!-- Sync Button -->
-        <div class="flex justify-end">
-          <button *ngIf="!isDataSyncing && (dataSource === 'api' && !fileErrors)"
-            class="px-5 py-2 font-bold text-white transition duration-300 bg-blue-500 rounded hover:bg-blue-700"
+          <button *ngIf="!isTaskRunning && (dataSource === 'api' && !fileErrors)"
+            class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [disabled]="isSyncButtonLoading"
             (click)="manualSync()">
-            {{ dataSource === 'api' ? 'Manual Sync' : 'Upload and Sync' }}
-          </button>
-          <button *ngIf="isDataSyncing"
-            class="px-6 py-2 font-bold text-white transition duration-300 bg-red-500 rounded hover:bg-red-700"
-            (click)="onCancel()">
-            Cancel
-            <span
-              class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
+            <svg *ngIf="isSyncButtonLoading" class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <i *ngIf="!isSyncButtonLoading" class="mr-2 fas fa-sync-alt"></i>
+            <span *ngIf="!isSyncButtonLoading">Start Data Synchronization</span>
+            <span *ngIf="isSyncButtonLoading">Initiating Sync...</span>
           </button>
         </div>
       </div>
@@ -137,93 +255,174 @@
     <!-- Header Mapping Modal -->
     <!-- <app-header-mapping *ngIf="showMappingModal" [mismatchedHeaders]="mismatchedHeaders" [csvHeaders]="csvHeaders"
       (headerMapped)="onHeaderMapped($event)"></app-header-mapping> -->
-
-    <!-- Loading State -->
-    <div *ngIf="isLoadingFormSubmissionStatus">
-      <div class="flex items-center justify-center p-4 bg-gray-200 border rounded-lg shadow-sm animate-pulse">
-        <span
-          class="inline-block w-4 h-4 border-4 border-blue-500 rounded-full spinner-border animate-spin border-t-transparent"></span>
-      </div>
-    </div>
   </div>
 
   <div *ngIf="selectedTab === 'questions-sync'" id="questions-sync"
     class="mt-4 tab-content">
-    <div *ngIf="isTaskRunning" class="p-4 bg-white rounded shadow-md">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-lg font-semibold">Total Records: {{ totalRecords }}</p>
-          <p class="text-lg font-semibold">Progress: {{ progress }}%</p>
-          <p class="text-lg font-semibold">Elapsed Time: {{ elapsedTime | number:'1.0-2' }}s</p>
-        </div>
+    <!-- Questions sync has its own loading indicator, not the data sync progress -->
 
-        <div class="flex items-center justify-center p-4 bg-gray-200 border rounded-full shadow-sm animate-pulse">
-          <span
-            class="inline-block w-4 h-4 border-4 border-blue-600 rounded-full spinner-border animate-spin border-t-transparent"></span>
-        </div>
 
+
+
+
+    <!-- Questions Sync Tab Loading State -->
+    <div *ngIf="isQuestionsSyncTabLoading" class="space-y-6">
+      <div class="flex justify-center items-center p-8 bg-gray-50 rounded-lg border">
+        <div class="text-center">
+          <svg class="mx-auto mb-4 w-8 h-8 text-green-500 animate-spin" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-lg font-semibold text-gray-700">Synchronizing Questions</p>
+          <p class="text-sm text-gray-500">Fetching form questions from ODK Central...</p>
+          <p class="mt-2 text-xs italic text-gray-600">(Do not refresh or leave this page)</p>
+
+          <!-- Indeterminate Progress Bar -->
+          <div class="mt-4 w-full h-2 bg-gray-200 rounded-full">
+            <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <!-- Progress Bar Section for Data Sync: Show only when data syncing -->
-      <div *ngIf="isDataSyncing" class="relative pt-1">
-        <div class="flex h-2 mb-4 overflow-hidden text-xs bg-blue-200 rounded">
-          <div [style.width.%]="progress"
-            class="flex flex-col justify-center text-center text-white bg-blue-500 shadow-none whitespace-nowrap">
+    <!-- Questions Sync In Progress State -->
+    <div *ngIf="!isQuestionsSyncTabLoading && isQuestionsSyncing" class="space-y-6">
+      <div class="flex justify-center items-center p-8 bg-green-50 rounded-lg border border-green-200">
+        <div class="text-center">
+          <svg class="mx-auto mb-4 w-8 h-8 text-green-500 animate-spin" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-lg font-semibold text-green-700">Synchronizing Questions</p>
+          <p class="text-sm text-green-600">Fetching form questions from ODK Central...</p>
+          <p class="mt-2 text-xs italic text-green-500">(Do not refresh or leave this page)</p>
+
+          <!-- Indeterminate Progress Bar -->
+          <div class="mt-4 w-full h-2 bg-green-200 rounded-full">
+            <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Questions Sync Main Content -->
+    <div *ngIf="!isQuestionsSyncTabLoading && !isQuestionsSyncing" class="space-y-6">
+      <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div class="flex justify-between items-start">
+          <!-- Status Display -->
+          <div class="flex-1">
+            <h3 class="mb-2 text-lg font-semibold text-gray-800">ODK Questions Synchronization</h3>
+            <div *ngIf="syncedQuestions && syncedQuestions.length > 0" class="mb-4">
+              <p class="font-medium text-green-600">
+                <i class="mr-2 fas fa-check-circle"></i>
+                {{ syncedQuestions.length }} questions synchronized
+              </p>
+              <p class="text-sm text-gray-500">Questions are ready for data processing</p>
+            </div>
+            <div *ngIf="!syncedQuestions || syncedQuestions.length === 0" class="mb-4">
+              <p class="font-medium text-orange-600">
+                <i class="mr-2 fas fa-exclamation-triangle"></i>
+                No questions found
+              </p>
+              <p class="text-sm text-gray-500">Click "Sync ODK Questions" to fetch questions from ODK Central</p>
+            </div>
+          </div>
+
+          <!-- Action Controls -->
+          <div class="flex items-center space-x-4">
+            <!-- Force Checkbox -->
+            <label class="inline-flex items-center" *ngIf="dataSyncAccess?.canSyncODKQuestions">
+              <input type="checkbox" class="hidden peer"
+                (change)="onForceCheck($event, !syncedQuestions?.length && !syncedQuestions)" [checked]="forceChecked">
+              <div class="flex justify-center items-center w-5 h-5 rounded border border-gray-400 transition-colors hover:cursor-pointer"
+                [ngClass]="{
+                  'bg-green-600 border-green-600 text-white': forceChecked,
+                  'hover:border-green-400': !forceChecked
+                }">
+                <i class="text-xs fas fa-check" *ngIf="forceChecked"></i>
+              </div>
+              <span class="ml-2 text-sm text-gray-700">Force refresh</span>
+            </label>
+
+            <!-- Sync Button -->
+            <button *ngIf="dataSyncAccess?.canSyncODKQuestions"
+              [disabled]="isQuestionsSyncing"
+              class="px-6 py-3 font-semibold text-white bg-green-600 rounded-lg transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              (click)="onSyncQuestions()">
+              <span *ngIf="!isQuestionsSyncing">
+                <i class="mr-2 fas fa-download"></i>
+                Sync ODK Questions
+              </span>
+              <span *ngIf="isQuestionsSyncing" class="flex items-center">
+                <svg class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Syncing...
+              </span>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
 
+ </div>
 
+  <div *ngIf="selectedTab === 'settings'" id="settings"
+    class="mt-4 tab-content">
 
-
-  <div class="p-4 mt-4 bg-white rounded shadow-md">
-    <div class="flex items-center justify-between">
-      <div *ngIf="syncedQuestions && !isQuestionsSyncing">
-        {{ syncedQuestions.length ? syncedQuestions.length + ' questions synced.' : 'Click sync ODK questions to sync' }}
-      </div>
-      <div *ngIf="!syncedQuestions?.length && !syncedQuestions && isQuestionsSyncing">
-        Syncing questions ...
-        <span class="text-xs italic text-gray-600">(Do not refresh, nor leave this page)</span>
-      </div>
-      <div class="flex items-center px-4 py-2">
-        <label class="inline-flex items-center mt-5" *ngIf="dataSyncAccess?.canSyncODKQuestions">
-          <input type="checkbox" class="hidden peer"
-            (change)="onForceCheck($event, !syncedQuestions?.length && !syncedQuestions)" [checked]="forceChecked">
-          <div class="flex items-center justify-center w-5 h-5 border border-gray-600 rounded hover:cursor-pointer"
-            [ngClass]="{
-              'opacity-50': !syncedQuestions,
-              'hover:cursor-not-allowed': !syncedQuestions?.length && !syncedQuestions,
-              'peer-checked:bg-blue-600 peer-checked:border-transparent peer-checked:text-white peer-focus:ring-2 peer-focus:ring-blue-500': syncedQuestions?.length || syncedQuestions,
-            }">
-            <i class="ph-check" *ngIf="forceChecked"></i>
-          </div>
-          <span class="ml-2 text-gray-700">Force</span>
-        </label>
-
-        <button *ngIf="dataSyncAccess?.canSyncODKQuestions"
-          class="px-4 py-2 ml-4 text-white bg-blue-500 rounded hover:bg-blue-700 hover:cursor-pointer" [ngClass]="{
-            'opacity-50': !syncedQuestions?.length && !syncedQuestions,
-            'hover:cursor-not-allowed': !syncedQuestions?.length && !syncedQuestions,
-          }" [disabled]="!syncedQuestions?.length && !syncedQuestions" (click)="onSyncQuestions()">
-          Sync ODK Questions
-        </button>
+    <!-- Settings Tab Loading State -->
+    <div *ngIf="isSettingsTabLoading" class="space-y-6">
+      <div class="flex justify-center items-center p-8 bg-gray-50 rounded-lg border">
+        <div class="text-center">
+          <svg class="mx-auto mb-4 w-8 h-8 text-purple-500 animate-spin" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-lg font-semibold text-gray-700">Loading System Configuration</p>
+          <p class="text-sm text-gray-500">Fetching settings and configuration data...</p>
+        </div>
       </div>
     </div>
 
-    <!-- Progress bar for syncing questions -->
-    <div class="relative pt-1">
-      <div class="flex h-2 mt-2 mb-4 overflow-hidden text-xs bg-blue-200 rounded">
-        <mat-progress-bar *ngIf="isQuestionsSyncing" mode="indeterminate"></mat-progress-bar>
+    <!-- Settings Main Content -->
+    <div *ngIf="!isSettingsTabLoading" class="space-y-6">
+      <!-- Settings Configuration Loading State -->
+      <div *ngIf="isSettingsLoading" class="min-h-[400px] flex justify-center items-center">
+        <div class="text-center">
+          <svg class="mx-auto mb-3 w-8 h-8 text-purple-500 animate-spin" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-lg font-medium text-purple-700">Loading Data Synchronization Settings</p>
+          <p class="text-sm text-purple-600">Please wait while we fetch your configuration settings...</p>
+        </div>
+      </div>
+
+      <!-- Settings Configuration Content -->
+      <div *ngIf="!isSettingsLoading" class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">
+              <i class="mr-2 text-purple-600 fas fa-cog"></i>
+              System Configuration
+            </h3>
+            <p class="text-sm text-gray-500">Configure system settings, ODK connections, and field mappings</p>
+          </div>
+          <button
+            (click)="refreshAllStatus()"
+            class="px-3 py-1.5 text-sm text-purple-600 bg-purple-50 rounded-lg transition-colors hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            title="Refresh configuration">
+            <i class="mr-1 fas fa-sync-alt"></i>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Settings Component -->
+        <div class="min-h-[200px]">
+          <app-settings-configs></app-settings-configs>
+        </div>
       </div>
     </div>
   </div>
-
-
- </div>
-
- <div *ngIf="selectedTab === 'settings'" id="settings"
- class="mt-4 tab-content">
-<app-settings-configs></app-settings-configs>
- </div>
