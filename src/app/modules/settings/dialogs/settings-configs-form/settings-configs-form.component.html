@@ -1,10 +1,10 @@
-<div class="h-full px-8 bg-white rounded-lg shadow-md ">
+<div class="px-8 h-full bg-white rounded-lg shadow-md">
   <!-- Header Section (fixed, non-scrollable) -->
   <!-- Tab Navigation -->
   <!-- <div class="border-b border-gray-200 dark:border-gray-700">
     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
       <li class="me-2">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg cursor-pointer group"
+        <a class="inline-flex justify-center items-center p-4 rounded-t-lg cursor-pointer group"
           (click)="selectedTab = 'system_configs'" [ngClass]="{
          'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'system_configs',
          'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'system_configs'
@@ -17,7 +17,7 @@
         </a>
       </li>
       <li class="me-2">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg cursor-pointer group"
+        <a class="inline-flex justify-center items-center p-4 rounded-t-lg cursor-pointer group"
           (click)="selectedTab = 'odk_api_configs'" [ngClass]="{
          'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'odk_api_configs',
          'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'odk_api_configs'
@@ -30,7 +30,7 @@
         </a>
       </li>
       <li class="me-2">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg cursor-pointer group"
+        <a class="inline-flex justify-center items-center p-4 rounded-t-lg cursor-pointer group"
           (click)="selectedTab = 'field_mapping'" [ngClass]="{
          'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'field_mapping',
          'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'field_mapping'
@@ -46,52 +46,52 @@
   </div> -->
 
   <!-- Scrollable Content Section -->
-  <div class="mt-6 ">
+  <div class="mt-6">
     <!-- System Configuration Section -->
     <div *ngIf="selectedTab === 'system_configs'" id="system_configs" class="tab-content">
       <div class="my-8">
         <span class="mb-4 text-xl font-semibold">System Configuration</span>
-        <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+        <hr class="my-8 h-px bg-gray-200 border-0 dark:bg-gray-700">
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="systemConfigForm" (ngSubmit)="onSystemConfigSubmit()">
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="w-1/4 text-sm font-medium text-gray-700">Application Name</label>
-              <input type="text" formControlName="app_name" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="app_name" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter application name" />
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Page Title</label>
-              <input type="text" formControlName="page_title" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="page_title" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter page title">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Page Subtitle</label>
-              <input type="text" formControlName="page_subtitle" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="page_subtitle" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter page subtitle">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 1</label>
-              <input type="text" formControlName="admin_level1" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="admin_level1" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter admin level 1">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 2</label>
-              <input type="text" formControlName="admin_level2" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="admin_level2" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter admin level 2">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 3</label>
-              <input type="text" formControlName="admin_level3" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="admin_level3" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter admin level 3">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Admin Level 4</label>
-              <input type="text" formControlName="admin_level4" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="admin_level4" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter admin level 4">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Map Center (Latitude, Longitude)</label>
-              <input type="text" formControlName="map_center" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="map_center" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter map center coordinates">
             </div>
             <button type="submit"
@@ -107,7 +107,7 @@
     <div *ngIf="selectedTab === 'field_mapping'" id="field_mapping" class="tab-content">
       <div class="my-8">
         <span class="mb-4 text-xl font-semibold">Field Mapping</span>
-        <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+        <hr class="my-8 h-px bg-gray-200 border-0 dark:bg-gray-700">
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="fieldMappingForm" (ngSubmit)="onFieldMappingSubmit()">
 
@@ -170,12 +170,12 @@
             <app-searchable-select id="birth date" label="Birth Date" [control]="fieldMappingForm.get('birth_date')!"
               [items]="fields" placeholder="Search birth date">
             </app-searchable-select>
-            
+
             <!-- death_date -->
             <app-searchable-select id="death date" label="death date" [control]="fieldMappingForm.get('death_date')!"
               [items]="fields" placeholder="Search death date">
             </app-searchable-select>
-            
+
             <!-- date -->
             <app-searchable-select id="date" label="today's date" [control]="fieldMappingForm.get('date')!"
               [items]="fields" placeholder="Search date">
@@ -224,43 +224,51 @@
       <!-- ODK API Configurations Section -->
       <div class="my-8">
         <span class="mb-4 text-xl font-semibold">ODK API Configuration</span>
-        <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+        <hr class="my-8 h-px bg-gray-200 border-0 dark:bg-gray-700">
         <div class="overflow-y-auto max-h-[calc(100vh-12rem)]">
           <form [formGroup]="odkApiConfigForm" (ngSubmit)="onOdkApiConfigSubmit()">
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">ODK Central URL</label>
-              <input type="url" formControlName="url" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="url" formControlName="url" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter ODK Central URL">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Username</label>
-              <input type="text" formControlName="username" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="username" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter username">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Password</label>
-              <input type="password" formControlName="password" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="password" formControlName="password" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter password">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Form ID</label>
-              <input type="text" formControlName="form_id" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="form_id" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter Form ID">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">Project ID</label>
-              <input type="text" formControlName="project_id" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="project_id" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter Project ID">
             </div>
-            <div class="flex items-center gap-4 mb-4">
+            <div class="flex gap-4 items-center mb-4">
               <label class="block w-1/4 text-sm font-medium text-gray-700">API Version</label>
-              <input type="text" formControlName="api_version" class="flex-1 p-2 border border-gray-300 rounded-md"
+              <input type="text" formControlName="api_version" class="flex-1 p-2 rounded-md border border-gray-300"
                 placeholder="Enter API Version">
             </div>
 
             <button type="submit"
-              class="float-right px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Save ODK API Configuration
+              [disabled]="isSavingOdkConfig"
+              class="float-right px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              <span *ngIf="!isSavingOdkConfig">Save ODK API Configuration</span>
+              <span *ngIf="isSavingOdkConfig" class="flex items-center">
+                <svg class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Validating & Saving...
+              </span>
             </button>
           </form>
 
