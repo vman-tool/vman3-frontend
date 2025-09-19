@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { UsersService } from '../../services/users.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { catchError, lastValueFrom, map, Observable } from 'rxjs';
+import { catchError, debounceTime, lastValueFrom, map, Observable, Subject, Subscription } from 'rxjs';
 import { AssignRolesFormComponent } from '../../dialogs/assign-roles-form/assign-roles-form.component';
 import { UserFormComponent } from '../../dialogs/user-form/user-form.component';
 import { ViewUserComponent } from '../../dialogs/view-user/view-user.component';
@@ -21,8 +21,8 @@ export class UsersListComponent implements OnInit {
 
   usersData$?: Observable<any>;
   loadingData: boolean = false;
-  pageNumber?: number;
-  limit?: number;
+  pageNumber?: number = 0;
+  limit?: number = 10;
 
   systemConfigData: SystemConfig | undefined;
   fieldMappingData: FieldMapping | undefined;
@@ -35,6 +35,10 @@ export class UsersListComponent implements OnInit {
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
   current_user?: any;
+
+  searchTerm: string = "";
+  private searchSubject = new Subject<string>();
+  private searchSubscription: Subscription;
   
   constructor(
     private usersService: UsersService,
@@ -42,7 +46,13 @@ export class UsersListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private settingConfigService: SettingConfigService,
     private authService: AuthService
-  ){}
+  ){
+    this.searchSubscription = this.searchSubject
+      .pipe(debounceTime(500))
+      .subscribe(() => {
+        this.loadUsers();
+      });
+  }
 
   ngOnInit(): void {
     this.current_user = JSON.parse(localStorage.getItem("current_user") || "{}");
@@ -71,15 +81,17 @@ export class UsersListComponent implements OnInit {
 
   loadUsers(){
     this.loadingData = true
+    console.log("Loading users at page number:", this.pageNumber);
     this.usersData$ = this.usersService.getUsers(
       {
         paging: true,
         page_number: this.pageNumber,
         limit: this.limit,
       },
-      "false"
+      "false",
+      this.searchTerm
     ).pipe(
-      map((response) => {
+      map((response: any) => {
         this.loadingData = false
        return response;
       }),
@@ -103,6 +115,11 @@ export class UsersListComponent implements OnInit {
         console.error('Failed to load Configurations:', error);
       }
     })  
+  }
+
+  onSearchChange(e: any){
+    this.pageNumber = 0;
+    this.searchSubject.next(this.searchTerm);
   }
 
   onAssignRoles(user: any){
