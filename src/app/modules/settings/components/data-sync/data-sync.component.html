@@ -311,7 +311,7 @@
         <div class="flex justify-between items-start">
           <!-- Status Display -->
           <div class="flex-1">
-            <h3 class="mb-2 text-lg font-semibold text-gray-800">ODK Questions Synchronization</h3>
+            <span class="mb-2 text-lg font-semibold text-gray-800">ODK Questions Synchronization</span>
             <div *ngIf="syncedQuestions && syncedQuestions.length > 0" class="mb-4">
               <p class="font-medium text-green-600">
                 <i class="mr-2 fas fa-check-circle"></i>
@@ -404,10 +404,10 @@
       <div *ngIf="!isSettingsLoading" class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
         <div class="flex justify-between items-center mb-4">
           <div>
-            <h3 class="text-lg font-semibold text-gray-800">
+            <span class="text-lg font-semibold text-gray-800">
               <i class="mr-2 text-purple-600 fas fa-cog"></i>
               System Configuration
-            </h3>
+            </span>
             <p class="text-sm text-gray-500">Configure system settings, ODK connections, and field mappings</p>
           </div>
           <button
