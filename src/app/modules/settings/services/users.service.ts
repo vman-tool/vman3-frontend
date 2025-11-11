@@ -22,12 +22,13 @@ export class UsersService {
     return this.http.put(`${this.configService.API_URL}/users/`, formData);
   }
 
- getUsers(pager?: {paging?: boolean, page_number?: number, limit?: number}, include_deleted?: string) {
+ getUsers(pager?: {paging?: boolean, page_number?: number, limit?: number}, include_deleted?: string, searchTerm?: string) {
      let params = pager?.paging ? `?paging=${pager?.paging}`: '';
 
     params = params?.length && pager?.page_number ? params+`&page_number=${pager?.page_number}` : pager?.page_number ? params+`?page_number=${pager?.page_number}` : params;
     params = params?.length && pager?.limit ? params+`&limit=${pager?.limit}` : pager?.limit ? params+`?limit=${pager?.limit}` : params;
     params = params?.length && include_deleted ? params+`&include_deleted=${include_deleted}` : include_deleted ? params+`?include_deleted=${include_deleted}` : params;
+    params = params?.length && searchTerm ? params+`&search=${searchTerm}` : searchTerm ? params+`?search=${searchTerm}` : params;
 
     return this.http.get(`${this.configService.API_URL}/users${params}`);
   }

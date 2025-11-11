@@ -11,6 +11,12 @@
             </mat-progress-bar>
         </div>
         <div class="overflow-x-auto">
+            <div class="py-6 grid grid-cols-1 gap-4 md:grid-cols-3 md:flex-row md:items-center md:justify-between">
+                <div class="px-8">
+                    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)" placeholder="Search by name or email"
+                        class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                </div>
+            </div>
             <div class="w-full overflow-hidden">
                 <table class="w-full divide-y divide-gray-200 table-auto" *ngIf="params?.usersData">
                     <thead *ngIf="params?.usersData?.data?.length">
