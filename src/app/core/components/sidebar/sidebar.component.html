@@ -10,7 +10,7 @@
             <img *ngIf="menuItem?.icon_asset" src="{{ menuItem?.icon_asset }}" alt="{{menuItem?.displayText}}-icon"
               class="h-5" />
             <i *ngIf="menuItem?.icon" class="{{ menuItem?.icon }}"></i>
-            <div [routerLink]="menuItem?.route" class="flex items-center justify-between w-full"
+            <div [routerLink]="menuItem?.route" class="flex justify-between items-center w-full"
               (click)="onSelectMenu(i)">
               <span class="text-[15px] ml-4 text-back">{{ menuItem?.displayText }}</span>
               <span class="text-md" id="arrow" *ngIf="menuItem?.subMenuItems?.length">

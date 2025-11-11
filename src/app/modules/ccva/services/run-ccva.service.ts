@@ -21,3 +21,17 @@ export class RunCcvaService {
     });
   }
 }
+@Injectable({
+  providedIn: 'root',
+})
+export class RunCcvaPublicService {
+  constructor(private http: HttpClient, private configService: ConfigService) {}
+  runCcvaWithCSV(formData: FormData): Observable<any> {
+    return this.http.post(
+      `${this.configService.API_URL}/ccva_public/upload`,
+      formData
+    );
+  }
+
+
+}

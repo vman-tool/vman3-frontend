@@ -13,7 +13,7 @@ export class DataSyncService {
   syncData(cached: boolean = false): Observable<any> {
     return this.http
       .post<any>(
-        `${this.configService.API_URL}/odk/fetch_endpoint_with_async`,
+        `${this.configService.API_URL}/odk/sync_odk_data_with_async`,
         {}
       )
       .pipe(map((response: any) => response));

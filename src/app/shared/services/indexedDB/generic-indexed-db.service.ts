@@ -12,7 +12,7 @@ export class GenericIndexedDbService {
   private maxRetries = 3;
   private currentRetry = 0;
   private isReconnecting = false;
-  private connectionTimeout = 5000; 
+  private connectionTimeout = 5000;
 
   constructor() {
     this.dbPromise = this.initDB();
@@ -251,7 +251,7 @@ export class GenericIndexedDbService {
     this.executeWithRetry(async () => {
 
       const version_number = Number(localStorage.getItem(INDEXED_DB_VERSION));
-  
+
       this.dbPromise = openDB(INDEXED_DB_DATABASE_NAME2, version_number + 1, {
         upgrade(db) {
           if (db.objectStoreNames.contains(storeName)) {
@@ -263,7 +263,7 @@ export class GenericIndexedDbService {
           }
         }
       });
-  
+
       await this.dbPromise;
       console.log('Database opened and upgrade completed');
     })
@@ -273,18 +273,18 @@ export class GenericIndexedDbService {
     this.executeWithRetry(async () => {
       await this.closeDatabase();
       const deleteRequest = indexedDB.deleteDatabase(INDEXED_DB_DATABASE_NAME2);
-  
+
       return new Promise((resolve, reject) => {
         deleteRequest.onsuccess = () => {
           console.log(`Database '${INDEXED_DB_DATABASE_NAME2}' deleted successfully`);
           resolve(true);
         };
-  
+
         deleteRequest.onerror = () => {
           console.error(`Failed to delete database '${INDEXED_DB_DATABASE_NAME2}':`, deleteRequest.error);
           reject(deleteRequest.error);
         };
-  
+
         deleteRequest.onblocked = () => {
           console.warn(`Database deletion blocked: Make sure all connections are closed.`);
           reject(new Error('Database deletion blocked'));
