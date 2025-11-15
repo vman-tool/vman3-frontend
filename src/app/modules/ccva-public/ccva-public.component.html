@@ -1,0 +1,399 @@
+<div class="mx-auto max-w-7xl">
+  <!-- Nav Header Section -->
+  <div class="sticky top-0 z-50 mb-4 bg-white border-b shadow-sm border-slate-200">
+    <div class="px-4 py-2.5">
+      <div class="flex justify-between items-center">
+        <div class="flex gap-2.5 items-center">
+
+          <div class="flex gap-2 items-baseline">
+            <h1 class="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+              VATools
+            </h1>
+            <span class="text-xs font-normal text-slate-500">Verbal Autopsy Tools</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-6">
+    <!-- Features Section -->
+    <div class="grid grid-cols-1 gap-3 mb-6 md:grid-cols-2 lg:grid-cols-4">
+      <div class="flex gap-3 items-start p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+        <div class="flex-shrink-0 p-1.5 bg-blue-500 rounded-md">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-800">Upload VA questionnaire data</p>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start p-3 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
+        <div class="flex-shrink-0 p-1.5 bg-purple-500 rounded-md">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-800">Automated cause-of-death determination</p>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start p-3 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg border border-emerald-200">
+        <div class="flex-shrink-0 p-1.5 bg-emerald-500 rounded-md">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-800">Generate mortality statistics & graphs</p>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start p-3 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+        <div class="flex-shrink-0 p-1.5 bg-amber-500 rounded-md">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-800">Export analysis reports</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Saved Results List Section -->
+    <div *ngIf="savedResults.length > 0" class="mb-6">
+      <button
+        (click)="isResultsListExpanded = !isResultsListExpanded"
+        class="flex justify-between items-center p-4 w-full bg-gradient-to-r rounded-xl border-2 transition-all duration-200 from-slate-50 to-slate-100 border-slate-200 hover:from-slate-100 hover:to-slate-200 hover:shadow-md">
+        <div class="flex gap-2.5 items-center">
+          <svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <h3 class="text-base font-bold text-slate-800">Processed Data History</h3>
+          <span class="px-2 py-0.5 text-xs font-bold bg-white rounded-full border text-slate-600 border-slate-300">({{ savedResults.length }} results)</span>
+        </div>
+        <svg
+          class="w-5 h-5 transition-transform duration-300 text-slate-700"
+          [class.rotate-180]="isResultsListExpanded"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div
+        class="overflow-hidden transition-all duration-300"
+        [style.max-height]="isResultsListExpanded ? '600px' : '0px'">
+        <div class="p-4 mt-2 bg-white rounded-xl border-2 shadow-sm border-slate-200">
+          <div class="overflow-y-auto space-y-2 max-h-96">
+            <div
+              *ngFor="let result of savedResults"
+              class="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 transition-all cursor-pointer hover:shadow-md"
+              (click)="loadResultFromIndexedDB(result.task_id)">
+              <div class="flex-1">
+                <div class="flex gap-2 items-center mb-1">
+                  <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <p class="text-sm font-semibold text-slate-800">{{ result.file_name }}</p>
+                </div>
+                <div class="flex flex-wrap gap-3 text-xs text-slate-600">
+                  <span class="flex gap-1 items-center">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ formatDate(result.completed_at || result.created_at) }}
+                  </span>
+                  <span class="flex gap-1 items-center">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    {{ result.total_records }} records
+                  </span>
+                  <span class="flex gap-1 items-center">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ result.elapsed_time }}
+                  </span>
+                </div>
+              </div>
+              <div class="flex gap-2 items-center">
+                <button
+                  (click)="loadResultFromIndexedDB(result.task_id); $event.stopPropagation()"
+                  class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-sm">
+                  View
+                </button>
+                <div class="relative group">
+                  <button
+                    (click)="$event.stopPropagation()"
+                    class="flex gap-1 items-center px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 rounded-lg transition-all duration-200 hover:bg-emerald-700 hover:shadow-sm">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Download
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+                  <div class="absolute right-0 invisible z-10 mt-1 w-48 bg-white rounded-lg border shadow-lg opacity-0 transition-all duration-200 border-slate-200 group-hover:opacity-100 group-hover:visible">
+                    <button
+                      (click)="downloadResultData(result.task_id, 'results', $event)"
+                      class="flex gap-2 items-center px-4 py-2 w-full text-xs font-medium text-left rounded-t-lg text-slate-700 hover:bg-slate-50">
+                      <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      Download Results (CSV)
+                    </button>
+                    <button
+                      (click)="downloadResultData(result.task_id, 'error_logs', $event)"
+                      class="flex gap-2 items-center px-4 py-2 w-full text-xs font-medium text-left rounded-b-lg text-slate-700 hover:bg-slate-50">
+                      <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                      </svg>
+                      Download Error Logs (CSV)
+                    </button>
+                  </div>
+                </div>
+                <button
+                  (click)="deleteResultFromIndexedDB(result.task_id, $event)"
+                  class="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-lg transition-all duration-200 hover:bg-red-600 hover:shadow-sm">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Upload Section -->
+    <div class="p-8 bg-gradient-to-br from-white rounded-xl border shadow-lg to-slate-50 border-slate-200">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <!-- File Selection Area -->
+        <div class="flex-1">
+          <label class="block mb-4 text-base font-bold text-slate-800">Select CSV File</label>
+          <div class="flex gap-4 items-center">
+            <input type="file" id="csvFile" (change)="onFileSelected($event)" accept=".csv" class="hidden" />
+            <label for="csvFile"
+              class="px-6 py-3.5 text-base font-semibold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl shadow-md transition-all duration-200 cursor-pointer hover:from-emerald-600 hover:to-emerald-700 hover:shadow-xl hover:scale-105 active:scale-100">
+              <span class="flex gap-2.5 items-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                Select CSV File
+              </span>
+            </label>
+
+            <!-- File Name Display -->
+            <div *ngIf="selectedFile" class="flex gap-3 items-center px-5 py-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200 shadow-sm">
+              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span class="text-sm font-semibold text-slate-800">{{ selectedFile.name }}</span>
+              <span class="text-xs font-medium text-slate-600">({{ (selectedFile.size / 1024).toFixed(2) }} KB)</span>
+            </div>
+          </div>
+
+
+        </div>
+
+        <!-- Run CCVA Button -->
+        <div class="flex items-end">
+          <button
+            *ngIf="!isCCvaRunning"
+            [disabled]="!selectedFile"
+            [class.opacity-50]="!selectedFile"
+            [class.cursor-not-allowed]="!selectedFile"
+            class="px-8 py-3.5 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl hover:scale-105 active:scale-100 disabled:hover:from-blue-600 disabled:hover:to-indigo-600 disabled:hover:shadow-none disabled:hover:scale-100"
+            (click)="onRunCCVA()">
+            <span class="flex gap-2.5 items-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Run CCVA
+            </span>
+          </button>
+          <button
+            *ngIf="isCCvaRunning"
+            class="px-8 py-3.5 text-base font-bold text-white bg-gradient-to-r from-red-500 to-rose-600 rounded-xl shadow-lg transition-all duration-200 hover:from-red-600 hover:to-rose-700 hover:shadow-2xl hover:scale-105 active:scale-100"
+            (click)="onCancel()">
+            <span class="flex gap-2.5 items-center">
+              <span class="inline-block w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></span>
+              Cancel
+            </span>
+          </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Section -->
+    <div *ngIf="isTaskRunning" class="p-8 mb-6 bg-gradient-to-br from-white rounded-xl border shadow-xl to-slate-50 border-slate-200">
+    <div class="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
+      <div class="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4">
+        <div class="p-4 bg-gradient-to-br rounded-xl border shadow-sm from-slate-50 to-slate-100 border-slate-200">
+          <p class="mb-2 text-xs font-bold tracking-wider uppercase text-slate-600">Total Records</p>
+          <p class="text-2xl font-extrabold text-slate-900">{{ totalRecords }}</p>
+        </div>
+        <div class="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm">
+          <p class="mb-2 text-xs font-bold tracking-wider text-blue-700 uppercase">Progress</p>
+          <p class="text-2xl font-extrabold text-blue-700">{{ progress }}%</p>
+        </div>
+        <div class="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl border border-purple-200 shadow-sm">
+          <p class="mb-2 text-xs font-bold tracking-wider text-purple-700 uppercase">Status</p>
+          <p class="text-sm font-bold truncate text-slate-800">{{ message || 'Processing...' }}</p>
+        </div>
+        <div class="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 shadow-sm">
+          <p class="mb-2 text-xs font-bold tracking-wider text-emerald-700 uppercase">Elapsed Time</p>
+          <p class="text-2xl font-extrabold text-slate-900">{{ elapsedTime }}</p>
+        </div>
+      </div>
+      <button
+        class="px-6 py-3.5 text-base font-bold text-white bg-gradient-to-r from-red-500 to-rose-600 rounded-xl shadow-lg transition-all duration-200 hover:from-red-600 hover:to-rose-700 hover:shadow-xl hover:scale-105 active:scale-100"
+        (click)="onCancel()">
+        Cancel
+      </button>
+    </div>
+    <div class="relative pt-2">
+      <div class="flex overflow-hidden h-4 text-xs rounded-full shadow-inner bg-slate-200">
+        <div [style.width.%]="progress"
+          class="flex flex-col justify-center text-center text-white whitespace-nowrap bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-full shadow-lg transition-all duration-300">
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs Section -->
+    <div class="mt-6">
+      <button
+        (click)="isLogsExpanded = !isLogsExpanded"
+        class="flex justify-between items-center p-4 mb-3 w-full bg-gradient-to-r rounded-xl border-2 transition-all duration-200 from-slate-50 to-slate-100 border-slate-200 hover:from-slate-100 hover:to-slate-200 hover:shadow-md">
+        <div class="flex gap-2.5 items-center">
+          <h3 class="text-base font-bold text-slate-800">Execution Logs</h3>
+          <span *ngIf="logs.length > 0" class="px-2 py-0.5 text-xs font-bold bg-white rounded-full border text-slate-600 border-slate-300">({{ logs.length }} entries)</span>
+        </div>
+        <div class="flex gap-2.5 items-center">
+          <button
+            *ngIf="logs.length > 0"
+            (click)="logs = []; $event.stopPropagation()"
+            class="px-3 py-1.5 text-xs font-semibold bg-white rounded-lg border transition-all duration-200 text-slate-700 border-slate-300 hover:bg-slate-50 hover:shadow-sm">
+            Clear
+          </button>
+          <svg
+            class="w-5 h-5 transition-transform duration-300 text-slate-700"
+            [class.rotate-180]="isLogsExpanded"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </button>
+      <div
+        class="overflow-hidden transition-all duration-300"
+        [style.max-height]="isLogsExpanded ? '400px' : '0px'">
+        <div #logsContainer class="overflow-auto p-5 max-h-96 font-mono text-sm bg-gradient-to-br rounded-xl border-2 shadow-2xl from-slate-900 to-slate-800 border-slate-700" style="scroll-behavior: smooth;">
+          <div *ngIf="logs.length === 0" class="font-medium text-slate-400">
+            <span class="font-bold text-emerald-400">$</span> Waiting for logs...
+          </div>
+          <div *ngFor="let log of logs; let last = last" class="mb-1.5 leading-relaxed text-slate-300" [attr.data-last]="last">
+            <span class="font-bold text-emerald-400">$</span> <span [class.text-red-400]="log.includes('ERROR')" [class.text-yellow-300]="log.includes('WARNING') || log.includes('WARN')" [class.font-semibold]="log.includes('ERROR') || log.includes('WARNING') || log.includes('WARN')">{{ log }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV Headers Preview (Persistent) -->
+    <div *ngIf="csvHeaders.length > 0 && !isTaskRunning" class="overflow-hidden mb-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border-2 border-blue-200 shadow-md transition-all duration-300">
+    <button
+      (click)="isCsvHeadersExpanded = !isCsvHeadersExpanded"
+      class="flex justify-between items-center p-4 w-full transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-100 hover:via-indigo-100 hover:to-purple-100">
+      <div class="flex gap-3 items-center">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="text-sm font-bold text-blue-800">CSV Headers Preview</span>
+        <span class="px-2 py-0.5 text-xs font-bold text-blue-700 bg-white rounded-full border border-blue-300">({{ csvHeaders.length }} columns)</span>
+      </div>
+      <svg
+        class="w-5 h-5 text-blue-600 transition-transform duration-300"
+        [class.rotate-180]="isCsvHeadersExpanded"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+    <div
+      class="overflow-hidden transition-all duration-300"
+      [style.max-height]="isCsvHeadersExpanded ? '500px' : '0px'">
+      <div class="p-4 pt-0">
+        <div class="flex flex-wrap gap-2.5">
+          <span *ngFor="let header of csvHeaders; let i = index"
+            class="px-3 py-1.5 text-xs font-semibold text-blue-900 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg border border-blue-300 shadow-sm">
+            {{ header }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Section (Persistent) -->
+  <div *ngIf="!isTaskRunning && logs.length > 0" class="mb-6">
+    <button
+      (click)="isLogsExpanded = !isLogsExpanded"
+      class="flex justify-between items-center p-4 w-full bg-gradient-to-r rounded-xl border-2 transition-all duration-200 from-slate-50 to-slate-100 border-slate-200 hover:from-slate-100 hover:to-slate-200 hover:shadow-md">
+      <div class="flex gap-2.5 items-center">
+        <h3 class="text-base font-bold text-slate-800">Execution Logs</h3>
+        <span class="px-2 py-0.5 text-xs font-bold bg-white rounded-full border text-slate-600 border-slate-300">({{ logs.length }} entries)</span>
+      </div>
+      <div class="flex gap-2.5 items-center">
+        <button
+          (click)="logs = []; $event.stopPropagation()"
+          class="px-3 py-1.5 text-xs font-semibold bg-white rounded-lg border transition-all duration-200 text-slate-700 border-slate-300 hover:bg-slate-50 hover:shadow-sm">
+          Clear
+        </button>
+        <svg
+          class="w-5 h-5 transition-transform duration-300 text-slate-700"
+          [class.rotate-180]="isLogsExpanded"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+    </button>
+    <div
+      class="overflow-hidden transition-all duration-300"
+      [style.max-height]="isLogsExpanded ? '400px' : '0px'">
+      <div #logsContainerPersistent class="overflow-auto p-5 max-h-96 font-mono text-sm bg-gradient-to-br rounded-xl border-2 shadow-2xl from-slate-900 to-slate-800 border-slate-700" style="scroll-behavior: smooth;">
+        <div *ngFor="let log of logs; let last = last" class="mb-1.5 leading-relaxed text-slate-300" [attr.data-last]="last">
+          <span class="font-bold text-emerald-400">$</span> <span [class.text-red-400]="log.includes('ERROR')" [class.text-yellow-300]="log.includes('WARNING') || log.includes('WARN')" [class.font-semibold]="log.includes('ERROR') || log.includes('WARNING') || log.includes('WARN')">{{ log }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Results Section - Only show when task is done and has completed -->
+    <div *ngIf="!isTaskRunning && data && (data.status === 'completed' || data.error === true)" class="overflow-y-auto max-h-[calc(100vh-300px)]">
+    <div class="mb-8">
+      <h2 class="mb-3 text-3xl font-extrabold tracking-tight text-slate-900">CCVA Background Analysis</h2>
+      <hr class="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-full border-0">
+    </div>
+
+    <!-- Charts Component -->
+    <app-ccva-public-graphs *ngIf="graphData" [graphData]="graphData"></app-ccva-public-graphs>
+
+    <!-- Empty State -->
+    <div *ngIf="!graphData || graphData.length === 0" class="p-16 text-center bg-gradient-to-br rounded-xl border-2 shadow-lg from-slate-50 to-slate-100 border-slate-200">
+      <svg class="mx-auto mb-6 w-20 h-20 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
+      <p class="mb-2 text-lg font-bold text-slate-700">No data available</p>
+      <p class="text-sm font-medium text-slate-600">Please run the CCVA to generate charts.</p>
+    </div>
+    </div>
+  </div>
+</div>

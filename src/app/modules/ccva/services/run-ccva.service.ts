@@ -21,3 +21,21 @@ export class RunCcvaService {
     });
   }
 }
+@Injectable({
+  providedIn: 'root',
+})
+export class RunCcvaPublicService {
+  constructor(private http: HttpClient, private configService: ConfigService) {}
+  runCcvaWithCSV(formData: FormData): Observable<any> {
+    return this.http.post(
+      `${this.configService.API_URL}/ccva_public/upload`,
+      formData
+    );
+  }
+
+  deleteCcvaByTaskId(taskId: string): Observable<any> {
+    return this.http.delete(
+      `${this.configService.API_URL}/ccva_public/task/${taskId}`
+    );
+  }
+}
