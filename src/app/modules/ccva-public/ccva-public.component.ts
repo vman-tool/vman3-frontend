@@ -12,10 +12,12 @@ import {
 } from '../ccva/services/run-ccva.service';
 import { ConfigService } from 'app/app.service';
 import { WebSockettService } from '../settings/services/web-socket.service';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { LocalStorageWithTTL } from '../../shared/services/localstorage_with_ttl.services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TriggersService } from '../../core/services/triggers/triggers.service';
+import { GenericIndexedDbService } from '../../shared/services/indexedDB/generic-indexed-db.service';
+import { OBJECTSTORE_CCVA_RESULTS } from '../../shared/constants/indexedDB.constants';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -88,12 +90,17 @@ export class CcvaPublicComponent implements OnInit, OnDestroy {
   logs: string[] = [];
   isCsvHeadersExpanded: boolean = true;
   isLogsExpanded: boolean = true;
+  savedResults: any[] = [];
+  isResultsListExpanded: boolean = false;
+  selectedResult: any = null;
+
   constructor(
     private configService: ConfigService,
     private runCcvaPublicService: RunCcvaPublicService,
     private webSockettService: WebSockettService,
     private snackBar: MatSnackBar,
-    private triggersService: TriggersService
+    private triggersService: TriggersService,
+    private indexedDbService: GenericIndexedDbService
   ) {}
 
   ngOnDestroy(): void {
@@ -108,7 +115,7 @@ export class CcvaPublicComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     // Restore task ID and progress from localStorage if available
     this.elapsedTime = '0:00:00';
     const storedTaskId = localStorage.getItem(this.taskIdKey);
@@ -126,6 +133,9 @@ export class CcvaPublicComponent implements OnInit, OnDestroy {
     if (storedProgress) {
       this.restoreProgress(storedProgress); // Restore progress from localStorage
     }
+
+    // Load saved results from IndexedDB
+    await this.loadSavedResults();
   }
   onDataSourceChange() {
     if (this.dataSource === 'available') {
@@ -269,6 +279,10 @@ export class CcvaPublicComponent implements OnInit, OnDestroy {
           const taskId = response.data.task_id;
           this.addLog(`Task ID: ${taskId}`);
           localStorage.setItem(this.taskIdKey, taskId);
+
+          // Save task to IndexedDB
+          this.saveTaskToIndexedDB(taskId, filter);
+
           this.connectToSocket(taskId);
           this.isCCvaRunning = false;
         }
@@ -355,27 +369,11 @@ export class CcvaPublicComponent implements OnInit, OnDestroy {
         clearInterval(this.countdownInterval);
       }
 
-      // open the graph view if
-      console.log(parsedData);
-if(parsedData.data){
-  var public_ccva_results:any[]=  JSON.parse(localStorage.getItem(
-    'public_ccva_results')??'[]');
-
-// if(public_ccva_results){
-
-// }
-public_ccva_results=[
-  public_ccva_results,
-  parsedData.data
-]
-
-  localStorage.setItem(
-   'public_ccva',
-   JSON.stringify(public_ccva_results)
-  )
-  this.graphData=parsedData.data;
-
-}
+      // Save results to IndexedDB
+      if(parsedData.data){
+        this.saveResultToIndexedDB(parsedData);
+        this.graphData=parsedData.data;
+      }
     } else if (parsedData.error === true) {
       this.isTaskRunning = false;
       // Collapse sections to save space after error
@@ -522,5 +520,317 @@ public_ccva_results=[
       const element = this.logsContainerPersistent.nativeElement;
       element.scrollTop = element.scrollHeight;
     }
+  }
+
+  // IndexedDB methods for saving and loading CCVA results
+  private async saveTaskToIndexedDB(taskId: string, filter: any) {
+    try {
+      const taskData = {
+        task_id: taskId,
+        status: 'running',
+        created_at: new Date().toISOString(),
+        file_name: this.selectedFile?.name || 'Unknown',
+        filter: filter,
+        progress: 0,
+        total_records: 0,
+        data: null
+      };
+      await this.indexedDbService.addDataAsIs(OBJECTSTORE_CCVA_RESULTS, taskId, taskData);
+    } catch (error) {
+      console.error('Error saving task to IndexedDB:', error);
+    }
+  }
+
+  private async saveResultToIndexedDB(parsedData: any) {
+    try {
+      const taskId = parsedData.task_id || this.data?.task_id || localStorage.getItem(this.taskIdKey);
+      if (!taskId) {
+        console.error('No task ID found to save result');
+        return;
+      }
+
+      // Try to get existing task data to preserve file_name and filter
+      let existingTask: any = null;
+      try {
+        const existing = await this.indexedDbService.getDataObjectStore(OBJECTSTORE_CCVA_RESULTS, taskId);
+        if (existing && existing.value) {
+          existingTask = existing.value;
+        }
+      } catch (e) {
+        // Task might not exist yet, that's okay
+      }
+
+      const resultData = {
+        task_id: taskId,
+        status: 'completed',
+        created_at: existingTask?.created_at || new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+        file_name: existingTask?.file_name || this.selectedFile?.name || 'Unknown',
+        filter: existingTask?.filter || {},
+        progress: 100,
+        total_records: parsedData.total_records || this.totalRecords,
+        elapsed_time: parsedData.elapsed_time || this.elapsedTime,
+        start_date: parsedData.start_date || this.start_date,
+        data: parsedData.data,
+        graphData: parsedData.data
+      };
+
+      await this.indexedDbService.addDataAsIs(OBJECTSTORE_CCVA_RESULTS, taskId, resultData);
+
+      // Reload the saved results list
+      await this.loadSavedResults();
+
+      // Delete from server database after confirming save to IndexedDB
+      await this.deleteFromServerDB(taskId);
+
+      this.snackBar.open('Results saved to browser storage and removed from server', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Error saving result to IndexedDB:', error);
+    }
+  }
+
+  private async deleteFromServerDB(taskId: string) {
+    try {
+      // Privacy-first: Automatically delete from server DB after saving to IndexedDB
+      // This ensures data is not kept on server longer than necessary
+      await firstValueFrom(this.runCcvaPublicService.deleteCcvaByTaskId(taskId));
+      console.log(`✅ Privacy: Successfully deleted task ${taskId} from server database`);
+    } catch (error) {
+      console.error('⚠️ Privacy: Error deleting from server database:', error);
+      // Note: If deletion fails, cron job will clean up after TTL expires (24 hours)
+      // Don't show error to user as data is already saved locally
+      // This is a cleanup operation, failure is not critical but will be handled by cron
+    }
+  }
+
+  private async loadSavedResults() {
+    try {
+      const allResults = await this.indexedDbService.getData(OBJECTSTORE_CCVA_RESULTS);
+      this.savedResults = (allResults || [])
+        .map((item: any) => item.value)
+        .filter((result: any) => result && result.status === 'completed' && result.data)
+        .sort((a: any, b: any) => {
+          const dateA = new Date(b.completed_at || b.created_at).getTime();
+          const dateB = new Date(a.completed_at || a.created_at).getTime();
+          return dateA - dateB;
+        });
+    } catch (error) {
+      console.error('Error loading saved results:', error);
+      this.savedResults = [];
+    }
+  }
+
+  async loadResultFromIndexedDB(taskId: string) {
+    try {
+      const result = await this.indexedDbService.getDataObjectStore(OBJECTSTORE_CCVA_RESULTS, taskId);
+      if (result && result.value && result.value.data) {
+        this.selectedResult = result.value;
+        this.graphData = result.value.graphData || result.value.data;
+        this.data = {
+          status: 'completed',
+          ...result.value
+        };
+        this.totalRecords = result.value.total_records || 0;
+        this.elapsedTime = result.value.elapsed_time || '0:00:00';
+        this.start_date = result.value.start_date || '';
+        this.isResultsListExpanded = false;
+
+        this.snackBar.open('Result loaded successfully', 'Close', {
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading result from IndexedDB:', error);
+      this.snackBar.open('Error loading result', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3000,
+      });
+    }
+  }
+
+  async deleteResultFromIndexedDB(taskId: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (!confirm('Are you sure you want to delete this result?')) {
+      return;
+    }
+
+    try {
+      // Mark as deleted by setting status to 'deleted'
+      const result = await this.indexedDbService.getDataObjectStore(OBJECTSTORE_CCVA_RESULTS, taskId);
+      if (result && result.value) {
+        const deletedData = {
+          ...result.value,
+          status: 'deleted',
+          deleted_at: new Date().toISOString()
+        };
+        await this.indexedDbService.addDataAsIs(OBJECTSTORE_CCVA_RESULTS, taskId, deletedData);
+      }
+
+      await this.loadSavedResults();
+
+      // If the deleted result was currently displayed, clear it
+      if (this.selectedResult && this.selectedResult.task_id === taskId) {
+        this.selectedResult = null;
+        this.graphData = [];
+        this.data = undefined;
+      }
+
+      this.snackBar.open('Result deleted', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('Error deleting result from IndexedDB:', error);
+      this.snackBar.open('Error deleting result', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3000,
+      });
+    }
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  }
+
+  async downloadResultData(taskId: string, type: 'results' | 'error_logs', event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    try {
+      const result = await this.indexedDbService.getDataObjectStore(OBJECTSTORE_CCVA_RESULTS, taskId);
+      if (result && result.value && result.value.data) {
+        const fileName = result.value.file_name.replace(/\.[^/.]+$/, '') || 'ccva_result';
+        const data = result.value.data;
+
+        let csvContent = '';
+        let downloadFileName = '';
+
+        if (type === 'results') {
+          const processedData = data.processed_data || [];
+          if (processedData.length === 0) {
+            this.snackBar.open('No processed data available to download', 'Close', {
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+              duration: 3000,
+            });
+            return;
+          }
+          csvContent = this.convertToCSV(processedData);
+          downloadFileName = `ccva_results_${fileName}_${taskId}.csv`;
+        } else if (type === 'error_logs') {
+          const errorLogs = data.error_logs || [];
+          if (errorLogs.length === 0) {
+            this.snackBar.open('No error logs available to download', 'Close', {
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+              duration: 3000,
+            });
+            return;
+          }
+          csvContent = this.convertToCSV(errorLogs);
+          downloadFileName = `ccva_error_logs_${fileName}_${taskId}.csv`;
+        }
+
+        // Create blob and download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = downloadFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        this.snackBar.open(`CSV file downloaded successfully`, 'Close', {
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          duration: 2000,
+        });
+      } else {
+        this.snackBar.open('No data available to download', 'Close', {
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Error downloading result data:', error);
+      this.snackBar.open('Error downloading data', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3000,
+      });
+    }
+  }
+
+  private convertToCSV(data: any): string {
+    if (!data || typeof data !== 'object') {
+      return '';
+    }
+
+    // Handle array of objects (most common case)
+    if (Array.isArray(data)) {
+      if (data.length === 0) return '';
+
+      // Get all unique keys from all objects
+      const allKeys = new Set<string>();
+      data.forEach((item: any) => {
+        if (item && typeof item === 'object') {
+          Object.keys(item).forEach(key => allKeys.add(key));
+        }
+      });
+
+      const headers = Array.from(allKeys);
+
+      // Create CSV header
+      const csvRows = [headers.map(h => this.escapeCSV(String(h))).join(',')];
+
+      // Create CSV rows
+      data.forEach((item: any) => {
+        if (item && typeof item === 'object') {
+          const row = headers.map(header => {
+            const value = item[header];
+            if (value === null || value === undefined) return '';
+            if (typeof value === 'object') return this.escapeCSV(JSON.stringify(value));
+            return this.escapeCSV(String(value));
+          });
+          csvRows.push(row.join(','));
+        }
+      });
+
+      return csvRows.join('\n');
+    } else {
+      // Handle single object - convert to key-value pairs
+      const rows: string[] = ['Key,Value'];
+      Object.keys(data).forEach(key => {
+        const value = data[key];
+        const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+        rows.push(`${this.escapeCSV(key)},${this.escapeCSV(valueStr)}`);
+      });
+      return rows.join('\n');
+    }
+  }
+
+  private escapeCSV(value: string): string {
+    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
   }
 }

@@ -33,5 +33,9 @@ export class RunCcvaPublicService {
     );
   }
 
-
+  deleteCcvaByTaskId(taskId: string): Observable<any> {
+    return this.http.delete(
+      `${this.configService.API_URL}/ccva_public/task/${taskId}`
+    );
+  }
 }
