@@ -35,7 +35,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      useHash: true,
+      useHash: false,  // Use path-based routing instead of hash-based
       preloadingStrategy: PreloadAllModules,
     }),
   ],
