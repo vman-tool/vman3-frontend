@@ -370,10 +370,10 @@ export class CcvaPublicComponent implements OnInit, OnDestroy {
       }
 
       // Save results to IndexedDB
-      if(parsedData.data){
+if(parsedData.data){
         this.saveResultToIndexedDB(parsedData);
-        this.graphData=parsedData.data;
-      }
+  this.graphData=parsedData.data;
+}
     } else if (parsedData.error === true) {
       this.isTaskRunning = false;
       // Collapse sections to save space after error
