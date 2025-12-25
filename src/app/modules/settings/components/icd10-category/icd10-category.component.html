@@ -1,0 +1,96 @@
+<div id="typesView" class="view-content">
+    <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center gap-3">
+            <h6 class="text-medium font-semibold text-gray-900">Categories</h6>
+        </div>
+        <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddICD10Category()">Add
+            ICD10
+            Major Categories </button>
+    </div>
+
+    <div *ngIf="{
+        icd10CategoryData: icd10CategoryData$ | async
+    } as params">
+        <div class="m-2" *ngIf="!params?.icd10CategoryData && loadingData">
+            <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
+            </mat-progress-bar>
+        </div>
+
+        <div *ngIf="params?.icd10CategoryData && !loadingData">
+            <div class="mb-4">
+                <input type="text" placeholder="Search major group..."
+                    class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                <table class="w-full divide-y divide-gray-200 table-auto" *ngIf="params?.icd10CategoryData">
+                    <thead *ngIf="params?.icd10CategoryData?.data?.length">
+                        <tr>
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                Title
+                            </th>
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                Description
+                            </th>
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                Broad
+                            </th>
+
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="params?.icd10CategoryData?.data?.length">
+                            <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
+                                *ngFor="let code of params?.icd10CategoryData?.data; let i = index">
+
+                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                    <p class="text-gray-900 whitespace-no-wrap">{{ code?.name }}</p>
+                                </td>
+                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                    <p class="text-gray-900 whitespace-no-wrap">{{ code?.description }}</p>
+                                </td>
+                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                    <p class="text-gray-900 whitespace-no-wrap">{{ code?.type?.name }}</p>
+
+                                <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                    <a mat-icon-button [matMenuTriggerFor]="menu"
+                                        class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
+                                            class="ph-dots-three-vertical"></i></a>
+                                    <mat-menu #menu="matMenu" class="bg-white">
+                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
+                                            <i class="ph-eye text-2xl mr-3"></i>
+                                            <span class="relative bottom-[7px]">View</span>
+                                        </button>
+
+                                    </mat-menu>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-container *ngIf="!params?.icd10CategoryData?.data?.length">
+                            <tr class="bg-gray-200">
+                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No user was found</td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+                <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row"
+                    *ngIf="params?.icd10CategoryData?.total > 0">
+                    <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="[5, 10, 20, 50]"
+                        [length]="params?.icd10CategoryData?.total" [pageIndex]="pageNumber" [pageSize]="limit"
+                        (page)="onPageChange($event)"></mat-paginator>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="!params?.icd10CategoryData && !loadingData">
+            <p>Could not get ICD10 Major Groups.</p>
+        </div>
+
+    </div>
+</div>

@@ -27,6 +27,11 @@ import { AddIcd10CodesComponent } from './dialogs/add-icd10-codes/add-icd10-code
 import { HeaderMappingModalComponent } from './dialogs/header-mapping/header-mapping.component';
 import { PcvaConfigurationsComponent } from './components/pcva-configurations/pcva-configurations.component';
 import { SettingsConfigsComponent } from './components/settings-configs/settings-configs.component';
+import { Icd10CategoryTypeComponent } from './components/icd10-category-type/icd10-category-type.component';
+import { Icd10CategoryComponent } from './components/icd10-category/icd10-category.component';
+import { Icd10CodesListComponent } from './components/icd10-codes-list/icd10-codes-list.component';
+import { AddIcd10CategoryComponent } from './dialogs/add-icd10-category/add-icd10-category.component';
+import { AddIcd10CategoryTypeComponent } from './dialogs/add-icd10-category-type/add-icd10-category-type.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +54,12 @@ import { SettingsConfigsComponent } from './components/settings-configs/settings
     Icd10CodesComponent,
     AddIcd10CodesComponent,
     PcvaConfigurationsComponent,
-    SettingsConfigsComponent
+    SettingsConfigsComponent,
+    Icd10CategoryTypeComponent,
+    Icd10CategoryComponent,
+    Icd10CodesListComponent,
+    AddIcd10CategoryComponent,
+    AddIcd10CategoryTypeComponent
   ],
   imports: [
     CommonModule,
