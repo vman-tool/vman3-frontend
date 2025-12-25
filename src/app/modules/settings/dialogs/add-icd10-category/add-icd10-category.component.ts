@@ -3,6 +3,7 @@ import { PcvaSettingsService } from '../../services/pcva-settings.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { add } from 'lodash';
+import { CsvExportService } from 'app/shared/services/csv-export.service';
 
 @Component({
   selector: 'app-add-icd10-category',
@@ -26,6 +27,7 @@ export class AddIcd10CategoryComponent {
       @Inject(MAT_DIALOG_DATA) public data: any,
       private snackbar: MatSnackBar,
       private pcvaSettingsService: PcvaSettingsService,
+      private csvExportService: CsvExportService
     ){}
   
     notificationMessage(message: string): void {
@@ -56,7 +58,7 @@ export class AddIcd10CategoryComponent {
           this.loading = false;
         },
         error: (err) => {
-          this.notificationMessage('Error fetching categories');
+          this.notificationMessage('Error fetching Broad Groups');
         }
       })
     }
@@ -84,6 +86,20 @@ export class AddIcd10CategoryComponent {
         (dialogElement as HTMLElement).style.maxWidth = '100vw';
         (dialogElement as HTMLElement).style.minWidth = '0';
       }
+    }
+
+    downloadSampleCSV(){
+      const sampleData = [];
+      for(let i = 0; i < this.categoryTypes?.length; i++){
+        sampleData.push({
+          name: `Sample Major group ${i + 1}`,
+          description: `This is a description for Sample Major group ${i + 1}`,
+          type: this.categoryTypes[i]?.value,
+          type_name: this.categoryTypes[i]?.label,
+        });
+      }
+      
+      this.csvExportService.exportToCSV(sampleData, 'sample-icd10-major-groups.csv');
     }
   
     onFileSelected(e: any){
