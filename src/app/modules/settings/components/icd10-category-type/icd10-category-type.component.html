@@ -17,12 +17,11 @@
         </div>
 
         <div *ngIf="params?.icd10CategoryTypesData && !loadingData">
-            <div class="mb-4">
+            <!-- <div class="mb-4">
                 <input type="text" placeholder="Search code..."
                     class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
+            </div> -->
 
-            <!-- Table -->
             <div class="overflow-x-auto border border-gray-200 rounded-lg">
                 <table class="w-full divide-y divide-gray-200 table-auto" *ngIf="params?.icd10CategoryTypesData">
                     <thead *ngIf="params?.icd10CategoryTypesData?.data?.length">
@@ -76,7 +75,7 @@
                         </ng-container>
                         <ng-container *ngIf="!params?.icd10CategoryTypesData?.data?.length">
                             <tr class="bg-gray-200">
-                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No user was found</td>
+                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No broad group was found</td>
                             </tr>
                         </ng-container>
                     </tbody>
