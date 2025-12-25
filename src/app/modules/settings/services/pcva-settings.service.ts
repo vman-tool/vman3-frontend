@@ -32,8 +32,16 @@ export class PcvaSettingsService {
     return this.http.post(`${this.configService.API_URL}/pcva/upload-icd10-data`, formData);
   }
 
+  bulkUploadICD10Categories(file: any){
+    const formData = new FormData();
+    if (file) {
+      formData.append('file', file);
+    }
+    return this.http.post(`${this.configService.API_URL}/pcva/upload-icd10-categories-data`, formData);
+  }
+
   createICD10Category(category: any){
-    return this.http.post(`${this.configService.API_URL}/pcva/create-icd10-categories`, [category]);
+    return this.http.post(`${this.configService.API_URL}/pcva/create-icd10-categories`, category);
   }
 
   getICD10Categories(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string){
@@ -46,8 +54,8 @@ export class PcvaSettingsService {
     return this.http.get(`${this.configService.API_URL}/pcva/icd10-categories${params}`)
   }
 
-  createICD10CategoryType(category: any){
-    return this.http.post(`${this.configService.API_URL}/pcva/create-icd10-category-types`, [category]);
+  createICD10CategoryType(categoryType: any){
+    return this.http.post(`${this.configService.API_URL}/pcva/create-icd10-category-types`, categoryType);
   }
 
   getICD10CategoryTypes(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string){
