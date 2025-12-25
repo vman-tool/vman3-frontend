@@ -130,7 +130,7 @@ export class AddIcd10CategoryComponent {
         const formData = new FormData();
         formData.append('file', this.file);
   
-        this.pcvaSettingsService.bulkUploadICD10Codes(this.file).subscribe({
+        this.pcvaSettingsService.bulkUploadICD10Categories(this.file).subscribe({
           next: (res: any) => {
             this.notificationMessage('Major Groups uploaded successfully');
             this.dialogRef.close(true);
