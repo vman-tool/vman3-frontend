@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { PcvaSettingsService } from '../../services/pcva-settings.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { add } from 'lodash';
 
 @Component({
   selector: 'app-add-icd10-category',
@@ -6,5 +10,142 @@ import { Component } from '@angular/core';
   styleUrl: './add-icd10-category.component.scss'
 })
 export class AddIcd10CategoryComponent {
+    name?: string;
+    description?: string;
+    file?: any;
+    categoryType?: string;
+  
+    categoryTypes?: any;
+  
+    loading: boolean = false;
+    selectedCategoryTypes: any[] = [];
+  
+  
+    constructor(
+      public dialogRef: MatDialogRef<AddIcd10CategoryComponent>,
+      @Inject(MAT_DIALOG_DATA) public data: any,
+      private snackbar: MatSnackBar,
+      private pcvaSettingsService: PcvaSettingsService,
+    ){}
+  
+    notificationMessage(message: string): void {
+      this.snackbar.open(`${message}`, 'close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3 * 1000,
+      });
+    }
+  
+  
+    ngOnInit(): void {
+      this.getCategoryTypes();
+    }
+  
+    getCategoryTypes(){
+      this.loading = true;
+      this.pcvaSettingsService.getICD10CategoryTypes({
+        paging: false,
+      }).subscribe({
+        next: (res: any) => {
+          this.categoryTypes = res?.data?.map((category: any) => {
+            return {
+              value: category?.uuid,
+              label: category?.name 
+            }
+          });
+          this.loading = false;
+        },
+        error: (err) => {
+          this.notificationMessage('Error fetching categories');
+        }
+      })
+    }
+  
+    createCategory(){
+      const categoryObject = {
+        name: this.name,
+        description: this.description,
+        type: this.selectedCategoryTypes[0]?.value
+      }
+      this.pcvaSettingsService.createICD10Category(categoryObject).subscribe({
+        next: (res: any) => {
+          this.notificationMessage('Category created successfully');
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          this.notificationMessage('Error creating category');
+        }
+      })
+    }
 
+    ngAfterViewInit() {
+      const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
+      if (dialogElement) {
+        (dialogElement as HTMLElement).style.maxWidth = '100vw';
+        (dialogElement as HTMLElement).style.minWidth = '0';
+      }
+    }
+  
+    onFileSelected(e: any){
+      e?.preventDefault();
+  
+      const fileInput = e?.target as HTMLInputElement;
+      if (fileInput?.files?.length) {
+        const file = fileInput.files[0];
+        this.file = file
+      }
+    }
+  
+    onSelectCategoryType(categoryType: string){
+      this.categoryType = categoryType;
+    }
+  
+    onClearFIle(){
+      this.file = undefined;
+    }
+  
+    onSave(e: any){
+      if(!(this.name && this.categoryType) && !this.file){
+        this.notificationMessage('Please fill in all required fields');
+        return;
+      }
+  
+      if(this.file){
+        const formData = new FormData();
+        formData.append('file', this.file);
+  
+        this.pcvaSettingsService.bulkUploadICD10Codes(this.file).subscribe({
+          next: (res: any) => {
+            this.notificationMessage('Major Groups uploaded successfully');
+            this.dialogRef.close(true);
+          },
+          error: (err) => {
+            this.notificationMessage('Error uploading Major Groups');
+          }
+        })
+  
+        return;
+      }
+  
+      const category = {
+        description: this.description,
+        name: this.name,
+        type: this.categoryType
+      }
+  
+      this.pcvaSettingsService.createICD10Category([category]).subscribe({
+        next: (res: any) => {
+          this.notificationMessage('Major Group created successfully');
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          this.notificationMessage('Error creating Major Group');
+        }
+      })
+      
+    }
+  
+    onClose() {
+      this.dialogRef.close()
+    }
 }

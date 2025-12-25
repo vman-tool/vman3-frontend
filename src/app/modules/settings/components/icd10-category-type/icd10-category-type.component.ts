@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
-import { AddIcd10CategoryComponent as AddIcd10CategoryTypeComponent } from '../../dialogs/add-icd10-category/add-icd10-category.component';
 import { catchError, map, Observable } from 'rxjs';
+import { AddIcd10CategoryTypeComponent } from '../../dialogs/add-icd10-category-type/add-icd10-category-type.component';
 
 @Component({
   selector: 'app-icd10-category-type',
@@ -55,7 +55,7 @@ export class Icd10CategoryTypeComponent {
         );
       }
   
-    onAddICD10Category(){
+    onAddICD10CategoryType(){
       const dialogRef = this.dialog.open(AddIcd10CategoryTypeComponent, {
         width: '800px',
         data: {},
