@@ -15,6 +15,11 @@ export class Icd10CategoryComponent {
       loadingData: boolean = false;
       pageNumber?: number;
       limit?: number;
+
+      selectedICD10CategoryTypes: any[] = [];
+      searchText?: string;
+      categoryTypes: any[] = [];
+      categoryTypesSelected: string[] = [];
       
       constructor(
         private snackBar: MatSnackBar,
@@ -32,6 +37,7 @@ export class Icd10CategoryComponent {
     
       ngOnInit(): void {
         this.loadICD10CodeCategories();
+        this.loadICD10CategoryTypes();
       }
     
       loadICD10CodeCategories(){
@@ -42,7 +48,8 @@ export class Icd10CategoryComponent {
               page_number: this.pageNumber,
               limit: this.limit,
             },
-            "false"
+            this.searchText,
+            this.categoryTypesSelected
           ).pipe(
             map((response) => {
               this.loadingData = false
@@ -66,6 +73,44 @@ export class Icd10CategoryComponent {
             this.loadICD10CodeCategories();
           }
         });
+      }
+
+      loadICD10CategoryTypes(){
+        this.pcvaSettings.getICD10CategoryTypes(
+          {
+            paging: false,
+          }
+        ).pipe(
+          map((response: any) => {
+            this.categoryTypes = response?.data?.map((categoryType: any) => {
+              return {
+                value: categoryType?.uuid,
+                label: categoryType?.name 
+              }
+            });
+            return this.categoryTypes; 
+          }),
+          catchError((error: any) => {
+            return error;
+          })
+        ).subscribe();
+      }
+
+      applyFilters(){
+        this.categoryTypesSelected = this.selectedICD10CategoryTypes.map(categoryType => categoryType.value);
+
+        this.loadICD10CodeCategories();
+      }
+
+      onSelectDropdown(value: any){
+        this.selectedICD10CategoryTypes = this.categoryTypes.filter(categoryType => value.includes(categoryType.value));
+      }
+
+      clearFilters(){
+        this.searchText = undefined;
+        this.selectedICD10CategoryTypes = []
+        this.categoryTypesSelected = []
+        this.loadICD10CodeCategories();
       }
     
       onPageChange(event: any) {

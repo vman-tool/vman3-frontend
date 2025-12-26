@@ -15,8 +15,7 @@
             </mat-progress-bar>
         </div>
 
-        <div>
-            
+        <div>  
             <div class="mb-4">
                 <div class="flex flex-col lg:flex-row gap-3 items-end">
                     <div class="w-full lg:flex-1" *ngIf="params?.icd10Data?.data?.length">
@@ -52,12 +51,16 @@
                         </button>
                     </div>
                 </div>
+
+                @if(searchText || selectedICD10Categories.length || selectedICD10CategoryTypes.length || categoriesSelected.length || categoryTypesSelected.length){
+
+                    <div class="flex items-center justify-between mt-3" (click)="clearFilters()">
+                        <button type="button" class="text-sm text-gray-600 hover:text-gray-900 underline">
+                            Clear all filters
+                        </button>
+                    </div>
+                }
             
-                <div class="flex items-center justify-between mt-3" (click)="clearFilters()">
-                    <button type="button" class="text-sm text-gray-600 hover:text-gray-900 underline">
-                        Clear all filters
-                    </button>
-                </div>
             </div>
             
             <div class="overflow-x-auto border border-gray-200 rounded-lg" *ngIf="params?.icd10Data && !loadingData">
