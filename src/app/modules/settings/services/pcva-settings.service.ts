@@ -10,12 +10,16 @@ export class PcvaSettingsService {
 
   constructor(private http: HttpClient, private configService: ConfigService) { }
 
-  getICD10Codes(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string){
+  getICD10Codes(pager?: { paging?: boolean, page_number?: number, limit?: number }, search_term?: string, categories?: string[], types?: string[]){
     let params = `?paging=${pager?.paging}`;
 
     params = params?.length && pager?.page_number ? params + `&page_number=${pager?.page_number}` : pager?.page_number ? params + `?page_number=${pager?.page_number}` : params;
     params = params?.length && pager?.limit ? params + `&limit=${pager?.limit}` : pager?.limit ? params + `?limit=${pager?.limit}` : params;
     params = params?.length && search_term?.length ? params + `&search_term=${search_term}` : search_term?.length ? params + `?search_term=${search_term}` : params;
+    params = params?.length && search_term?.length ? params + `&search_term=${search_term}` : search_term?.length ? params + `?search_term=${search_term}` : params;
+    params = params?.length && search_term?.length ? params + `&search_term=${search_term}` : search_term?.length ? params + `?search_term=${search_term}` : params;
+    params = params?.length && categories?.length ? params + `&categories=${categories.join(',')}` : categories?.length ? params + `?categories=${categories.join(',')}` : params;
+    params = params?.length && types?.length ? params + `&types=${types.join(',')}` : types?.length ? params + `?types=${types.join(',')}` : params;
 
     return this.http.get(`${this.configService.API_URL}/pcva/get-icd10${params}`)
   }

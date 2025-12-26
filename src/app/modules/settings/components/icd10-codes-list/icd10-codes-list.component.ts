@@ -17,6 +17,14 @@ export class Icd10CodesListComponent {
   pageNumber?: number;
   limit?: number;
   
+  selectedICD10Categories: any[] = [];
+  selectedICD10CategoryTypes: any[] = [];
+  searchText?: string;
+  categoryTypes: any[] = [];
+  categories: any[] = [];
+  categoriesSelected: string[] = [];
+  categoryTypesSelected: string[] = [];
+  
   constructor(
     private snackBar: MatSnackBar,
     public dialog: MatDialog,
@@ -33,27 +41,22 @@ export class Icd10CodesListComponent {
 
   ngOnInit(): void {
     this.loadICD10Codes();
+    this.loadICD10Categories();
+    this.loadICD10CategoryTypes();
   }
 
   loadICD10Codes(){
-    /* TODO: Display Categories into two groups
-      1. broad Grou
-      2. Major Group
-
-      For Broad Group there are 4 groups
-      1. Communicable Diseases
-      2. Non-Communicable Diseases
-      3. Injuries
-      4. Un-used
-    */
-      this.loadingData = true
+    
+    this.loadingData = true
     this.icd10Data$ = this.pcvaSettings.getICD10Codes(
         {
           paging: true,
           page_number: this.pageNumber,
           limit: this.limit,
         },
-        "false"
+        this.searchText,
+        this.categoriesSelected,
+        this.categoryTypesSelected
       ).pipe(
         map((response) => {
           this.loadingData = false
@@ -78,6 +81,75 @@ export class Icd10CodesListComponent {
       }
     });
   }
+
+  loadICD10Categories(){
+    this.pcvaSettings.getICD10Categories(
+      {
+        paging: false,
+      }
+    ).pipe(
+      map((response: any) => {
+        this.categories = response?.data?.map((category: any) => {
+          return {
+            value: category?.uuid,
+            label: category?.name 
+          }
+        });
+        return this.categories 
+      }),
+      catchError((error: any) => {
+        return error;
+      })
+    ).subscribe();
+  }
+  
+  loadICD10CategoryTypes(){
+    this.pcvaSettings.getICD10CategoryTypes(
+      {
+        paging: false,
+      }
+    ).pipe(
+      map((response: any) => {
+        this.categoryTypes = response?.data?.map((categoryType: any) => {
+          return {
+            value: categoryType?.uuid,
+            label: categoryType?.name 
+          }
+        });
+        return this.categoryTypes; 
+      }),
+      catchError((error: any) => {
+        return error;
+      })
+    ).subscribe();
+  }
+
+  applyFilters(){
+    this.categoriesSelected = this.selectedICD10Categories.map(category => category.value);
+    this.categoryTypesSelected = this.selectedICD10CategoryTypes.map(categoryType => categoryType.value);
+
+    this.loadICD10Codes();
+  }
+
+  onSelectDropdown(value: any, key?: string){
+    if(key === 'category'){
+      this.selectedICD10Categories = this.categories.filter(category => value.includes(category.value));
+    } 
+    
+    if(key === 'type'){
+      this.selectedICD10CategoryTypes = this.categoryTypes.filter(categoryType => value.includes(categoryType.value));
+    }
+  }
+
+  clearFilters(){
+    this.searchText = undefined;
+    this.selectedICD10Categories = []
+    this.selectedICD10CategoryTypes = []
+    this.categoriesSelected = []
+    this.categoryTypesSelected = []
+    this.loadICD10Codes();
+  }
+
 
   onPageChange(event: any) {
     this.pageNumber = this.pageNumber == 0 && this.pageNumber < event.pageIndex ? event.pageIndex + 1 : this.pageNumber !== 0 && this.pageNumber! > event.pageIndex ? event.pageIndex - 1 : event.pageIndex;
