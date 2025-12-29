@@ -20,7 +20,8 @@
         <div class="">
           <label for="dateRangeOption" class="block mb-1 text-sm font-medium text-gray-700">Date Range</label>
           <app-custom-dropdown id="dateRangeOption" [options]="[
-          { value: 'all', label: 'All' },
+             { value: '200', label: 'Top 200' },
+          { value: 'all', label: 'All Records' },
           { value: 'custom', label: 'Custom Date' }
         ]" [(selectedValue)]="dateRangeOption" (selectedValueChange)="onDateRangeChange()"></app-custom-dropdown>
         </div>
@@ -124,9 +125,18 @@
 
   <!-- Scrollable Content Section -->
   <div class="overflow-y-auto max-h-[calc(100vh-200px)]">
-    <span class="text-xl font-bold text-gray-700">CCVA Background Analysis</span>
+    <!-- <span class="text-xl font-bold text-gray-700">CCVA Background Analysis</span> -->
 
-    <div *ngIf="isTaskRunning" class="p-6 mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div *ngIf="isResultsPanelVisible" class="p-6 mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div class="flex justify-between mb-4">
+        <span class="text-lg font-semibold text-gray-800">Analysis Progress</span>
+        <button (click)="closeResultsPanel()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
       <div class="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
         <div class="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4">
           <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -146,7 +156,8 @@
             <p class="text-xl font-bold text-gray-900">{{ elapsedTime }}</p>
           </div>
         </div>
-        <button class="px-6 py-2 font-bold text-white transition duration-300 bg-red-500 rounded hover:bg-red-700"
+        <button *ngIf="isTaskRunning"
+          class="px-6 py-2 font-bold text-white transition duration-300 bg-red-500 rounded hover:bg-red-700"
           (click)="onCancel()">
           Cancel
         </button>

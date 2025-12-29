@@ -49,7 +49,7 @@
               <!-- <label for="checkbox-table-search-{{ row.created_at }}" class="sr-only">checkbox</label> -->
             </div>
           </td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.user_id }}</td>
+          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.run_by_name }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.created_at | date:'MMM d, y' }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.total_records }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.elapsed_time }}</td>
