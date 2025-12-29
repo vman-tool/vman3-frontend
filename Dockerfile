@@ -46,8 +46,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built Angular app from builder stage to Nginx html folder
 COPY --from=builder /app/dist/vman3-frontend/browser /usr/share/nginx/html
 
-# Expose port 80
-EXPOSE 80
+# Expose port 4200
+EXPOSE 4200
+
 
 # Run Nginx
 CMD ["nginx", "-g", "daemon off;"]
