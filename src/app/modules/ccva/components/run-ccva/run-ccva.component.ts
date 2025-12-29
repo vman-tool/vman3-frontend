@@ -23,7 +23,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   filter_startDate: any;
   filter_endDate: any;
 
-  dateRangeOption: string = 'all'; // 'all' or 'custom'
+  dateRangeOption: string = '200'; // 'all' or 'custom'
   selectedDateType = 'death_date';
   malariaStatus: string = 'h'; // Default value
   ccvaAlgorithm: string = 'InterVA5'; // Default value
@@ -37,6 +37,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   start_date: string = '';
   isCCvaRunning: boolean = false;
   isTaskRunning: boolean = false; // Tracks whether a task is running
+  isResultsPanelVisible: boolean = false; // Tracks whether the results panel is shown
   taskIdKey: string = 'ccva-taskId'; // Store task ID in localStorage key
   taskProgressKey: string = 'ccva-progress'; // Store progress data in localStorage key
   ccva_startTime: string = 'ccva-startTime';
@@ -78,6 +79,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
     if (storedTaskId) {
       this.isTaskRunning = true;
+      this.isResultsPanelVisible = true;
 
       // Fetch latest progress from backend to sync state immediately
       this.runCcvaService.getTaskProgress(storedTaskId).subscribe({
@@ -101,6 +103,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
     // Use stored progress as initial state while waiting for API/Socket
     if (storedProgress) {
+      this.isResultsPanelVisible = true;
       this.restoreProgress(storedProgress);
     }
   }
@@ -123,12 +126,21 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       this.filter_endDate = null;
     }
   }
+
+  closeResultsPanel() {
+    this.isResultsPanelVisible = false;
+    // Optionally clear logs/data if desired when closing:
+    // this.logs = [];
+    // this.data = null;
+  }
+
   onCCVACancel() {
     this.isCCvaRunning = false;
     this.onCancel();
   }
   onCancel() {
     this.isTaskRunning = false;
+    this.isResultsPanelVisible = false;
     this.triggersService.triggerCCVAListFunction();
     this.clearLocalStorage(); // Clear all task-related localStorage data
     this.webSockettService.disconnect();
@@ -143,6 +155,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   onRunCCVA() {
     this.isCCvaRunning = true;
+    this.isResultsPanelVisible = true;
 
     this.progress = 0;
     this.message = '';
@@ -159,6 +172,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     const filter = {
       start_date: this.dateRangeOption === 'custom' ? this.filter_startDate : null,
       end_date: this.dateRangeOption === 'custom' ? this.filter_endDate : null,
+      top: this.dateRangeOption === '200' ? 200 : null,
       malaria_status: this.malariaStatus,
       ccva_algorithm: this.ccvaAlgorithm,
       hiv_status: this.hivStatus,
@@ -173,6 +187,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
           if (response?.data) {
             console.log('CCVA task started:', response.data);
             this.isTaskRunning = true;
+            this.isResultsPanelVisible = true;
             if (response?.data) {
               this.updateProgress(response?.data);
             }
@@ -187,6 +202,11 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
           console.error('Error starting CCVA task:', error);
           this.isCCvaRunning = false;
           this.isTaskRunning = false;
+          // Keep panel visible if there was an error so user sees it? 
+          // Usually we show snackbar, but maybe logs/message in panel too if init failed?
+          // For now, follow existing pattern of hide/reset, but maybe implementation plan implied keeping it?
+          // existing code called triggersService and snackbar. I'll stick to that for startup failures.
+          this.isResultsPanelVisible = false;
           this.triggersService.triggerCCVAListFunction();
           console.log(error.error.detail);
           this.snackBar.open(
@@ -227,6 +247,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
         if (response?.data) {
           console.log('CCVA task started with CSV:', response.data);
           this.isTaskRunning = true;
+          this.isResultsPanelVisible = true;
           if (response?.data) {
             this.updateProgress(response?.data);
           }
@@ -241,6 +262,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
         console.error('Error starting CCVA task with CSV:', error);
         this.isCCvaRunning = false;
         this.isTaskRunning = false;
+        this.isResultsPanelVisible = false;
         this.triggersService.triggerCCVAListFunction();
         this.snackBar.open(
           `${error.error.detail ??
@@ -264,6 +286,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       return;
     }
     this.isTaskRunning = true;
+    this.isResultsPanelVisible = true;
     console.log('Connecting to WebSocket:', this.configService.API_URL_WS);
     this.webSockettService.connect(
       `${this.configService.API_URL_WS}/ccva_progress/${taskId}`
@@ -312,13 +335,16 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       this.scrollToBottom();
     }
 
+    // Ensure panel is visible when we get updates
+    this.isResultsPanelVisible = true;
+
     if (parsedData.status === 'completed') {
       this.data = parsedData;
       this.progress = 100;
       this.start_date = parsedData.start_date;
       this.elapsedTime = parsedData.elapsed_time;
       this.totalRecords = parsedData.total_records || 0;
-      this.isTaskRunning = false;
+      this.isTaskRunning = false; // Task finished, but panel stays
       this.triggersService.triggerCCVAListFunction(); // Trigger CCVA list refresh
       this.clearLocalStorage(); // Clear task-related data when task is completed
       if (this.countdownInterval) {
