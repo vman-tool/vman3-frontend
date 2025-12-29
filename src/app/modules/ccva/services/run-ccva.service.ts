@@ -20,6 +20,10 @@ export class RunCcvaService {
       ...filter,
     });
   }
+
+  getTaskProgress(taskId: string): Observable<any> {
+    return this.http.get(`${this.configService.API_URL}/ccva/progress/${taskId}`);
+  }
 }
 @Injectable({
   providedIn: 'root',

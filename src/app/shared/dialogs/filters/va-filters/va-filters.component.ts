@@ -37,7 +37,7 @@ export class VaFiltersComponent implements OnInit {
   isLoading: boolean = true;
   resetSelection = new EventEmitter<void>();
   closeDropdown = new EventEmitter<void>();
-  
+
   systemConfigData?: SystemConfig;
   fieldMappingData?: FieldMapping;
   fieldLabels: FieldLabel[] | undefined;
@@ -49,7 +49,7 @@ export class VaFiltersComponent implements OnInit {
     private settingConfigService: SettingConfigService,
     private genericIndexedDbService: GenericIndexedDbService,
     private datePipe: DatePipe
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.resetFilterData();
@@ -69,19 +69,19 @@ export class VaFiltersComponent implements OnInit {
     });
   }
 
-  async loadSystemConfigurations(){
-      await lastValueFrom(
-        this.settingConfigService.getSettingsConfig().pipe(map(() => {
-          (data: settingsConfigData | null) => {
-            if (!!data) {
-              this.systemConfigData = data?.system_configs;
-              this.fieldMappingData = data?.field_mapping;
-              this.fieldLabels = data?.field_labels;
-            }
+  async loadSystemConfigurations() {
+    await lastValueFrom(
+      this.settingConfigService.getSettingsConfig().pipe(map(() => {
+        (data: settingsConfigData | null) => {
+          if (!!data) {
+            this.systemConfigData = data?.system_configs;
+            this.fieldMappingData = data?.field_mapping;
+            this.fieldLabels = data?.field_labels;
           }
-        }))
-      )  
-    }
+        }
+      }))
+    )
+  }
   resetFilterData() {
     // Notify filterService of the reset
     this.filterService.setFilterData({
@@ -93,39 +93,40 @@ export class VaFiltersComponent implements OnInit {
     } as any);
   }
 
-  async getUserAccessLimit(){
+  async getUserAccessLimit() {
     this.loadSystemConfigurations();
     this.current_user = JSON.parse(localStorage.getItem("current_user") || "{}");
     const user_roles_data: any = await lastValueFrom(this.usersService.getUserRoles(this.current_user?.uuid));
     const access_limit = user_roles_data?.data?.access_limit;
-    
-    
+
+
     const savedFieldLabel = this.fieldLabels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
-          const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
-          let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value])
-          
-          locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
-          
-          if(locationsFromQuestions?.value?.options?.length && locationsFromDb?.data?.length){
-            this.allLocations = locationsFromQuestions?.value?.options?.filter((locationToFilter: any) => locationsFromDb?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
-              return {
-                name: savedFieldLabel?.options?.hasOwnProperty(location?.value) ? savedFieldLabel?.options[location?.value] : location?.label,
-                value: location?.value,
-                unique: location?.value
-              }
-            })
-          } else {
-            this.allLocations = locationsFromDb?.data?.map((location: any) => {
-              return {
-                name: savedFieldLabel?.options?.hasOwnProperty(location) ? savedFieldLabel?.options[location] : location,
-                value: location,
-                unique: location
-              }
-            }) || []
-          }
-          if(access_limit && this.selectedLocationType?.value === access_limit?.field){
-            this.selectedLocation = this.allLocations?.filter((location) => access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-          }
+    console.log(this.selectedLocationType, 'his.selectedLocationType')
+    const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
+    let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value])
+
+    locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
+
+    if (locationsFromQuestions?.value?.options?.length && locationsFromDb?.data?.length) {
+      this.allLocations = locationsFromQuestions?.value?.options?.filter((locationToFilter: any) => locationsFromDb?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
+        return {
+          name: savedFieldLabel?.options?.hasOwnProperty(location?.value) ? savedFieldLabel?.options[location?.value] : location?.label,
+          value: location?.value,
+          unique: location?.value
+        }
+      })
+    } else {
+      this.allLocations = locationsFromDb?.data?.map((location: any) => {
+        return {
+          name: savedFieldLabel?.options?.hasOwnProperty(location) ? savedFieldLabel?.options[location] : location,
+          value: location,
+          unique: location
+        }
+      }) || []
+    }
+    if (access_limit && this.selectedLocationType?.value === access_limit?.field) {
+      this.selectedLocation = this.allLocations?.filter((location) => access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
+    }
   }
 
   applyFilters(): void {

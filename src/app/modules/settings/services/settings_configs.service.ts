@@ -14,7 +14,7 @@ export class SettingConfigService {
   private lastFetchTime: number = 0;
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  constructor(private http: HttpClient, private configService: ConfigService) {}
+  constructor(private http: HttpClient, private configService: ConfigService) { }
 
   // General method to save data
   saveConnectionData(
@@ -141,15 +141,15 @@ export class SettingConfigService {
     );
   }
 
-  saveSystemImages(images: SystemImages){
+  saveSystemImages(images: SystemImages) {
     const formData = new FormData();
-    if(images.favicon){
+    if (images.favicon) {
       formData.append('favicon', images.favicon);
     }
-    if(images.logo){
+    if (images.logo) {
       formData.append('logo', images.logo);
     }
-    if(images.home_image){
+    if (images.home_image) {
       formData.append('login_image', images.home_image);
     }
 
@@ -161,7 +161,7 @@ export class SettingConfigService {
     )
   }
 
-  resetImages(){
+  resetImages() {
     return this.http.delete<any>(`${this.configService.API_URL}/settings/system_images/`).pipe(
       catchError((error: any) => {
         console.error('Error resetting system images:', error);
@@ -176,6 +176,7 @@ export class SettingConfigService {
   }
 
   getUniqueValuesOfField(field: string): Observable<any> {
+    console.log(field, 'get-field-unique-value')
     return this.http.get<string[]>(`${this.configService.API_URL}/settings/get-field-unique-value?field=${field}`)
   }
 }
