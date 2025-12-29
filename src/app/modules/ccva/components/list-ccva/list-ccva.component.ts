@@ -32,7 +32,7 @@ export class ListCcvaComponent implements OnInit {
     private snackBar: MatSnackBar,
     private router: Router,
     private triggersService: TriggersService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.triggersService.triggerCCVAListFunction$.subscribe(() => {
@@ -48,6 +48,12 @@ export class ListCcvaComponent implements OnInit {
 
     this.ccvaService.get_list__ccva_Results().subscribe(
       (response: any) => {
+
+        //    this.data = response.data.map((item: any) => ({
+        //   ...item,
+        //   start_range: item.start_range.split('T')[0] ?? item.start_range,
+        //   end_range: item.end_range.split('T')[0] ?? item.end_range,
+        // })); 
         this.data = response.data; // Assuming the API response has a 'data' field
         this.totalRecords = response.totalRecords; // Assuming the API response has a 'totalRecords' field
         this.isLoading = false; // Stop loading spinner

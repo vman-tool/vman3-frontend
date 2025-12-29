@@ -45,13 +45,16 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   dataSource: 'available' | 'csv' = 'available';
   selectedFile: File | null = null;
+  logs: string[] = []; // Array to store log messages
+  isLogsExpanded: boolean = true;
+  @ViewChild('logsContainer') private logsContainer: ElementRef | undefined; // Reference to logs container for auto-scrolling
   constructor(
     private configService: ConfigService,
     private runCcvaService: RunCcvaService,
     private webSockettService: WebSockettService,
     private snackBar: MatSnackBar,
     private triggersService: TriggersService
-  ) {}
+  ) { }
 
   ngOnDestroy(): void {
     this.webSockettService.disconnect();
@@ -75,13 +78,30 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
     if (storedTaskId) {
       this.isTaskRunning = true;
+
+      // Fetch latest progress from backend to sync state immediately
+      this.runCcvaService.getTaskProgress(storedTaskId).subscribe({
+        next: (progressData) => {
+          if (progressData) {
+            console.log('Restored progress from backend:', progressData);
+            this.updateProgress(progressData);
+          }
+        },
+        error: (err) => {
+          console.error('Failed to fetch task progress:', err);
+          // If backend says 404/error, maybe we should clear local storage?
+          // For now, we just rely on local storage fallback below
+        }
+      });
+
       this.connectToSocket(storedTaskId); // Reconnect to the WebSocket using stored task ID
     }
 
     console.log('Stored progress:', storedProgress);
 
+    // Use stored progress as initial state while waiting for API/Socket
     if (storedProgress) {
-      this.restoreProgress(storedProgress); // Restore progress from localStorage
+      this.restoreProgress(storedProgress);
     }
   }
   onDataSourceChange() {
@@ -128,21 +148,23 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.message = '';
     this.totalRecords = 0;
     this.elapsedTime = '0:00:00';
+    this.logs = []; // Reset logs
     this.countdownInterval = null;
 
     clearInterval(this.countdownInterval);
-    this.clearLocalStorage(); // Clear any previous task data
+    this.clearLocalStorage();
     this.ngOnInit();
+
     // Prepare filter object based on the selected options
     const filter = {
-      start_date:
-        this.dateRangeOption === 'custom' ? this.filter_startDate : null,
+      start_date: this.dateRangeOption === 'custom' ? this.filter_startDate : null,
       end_date: this.dateRangeOption === 'custom' ? this.filter_endDate : null,
       malaria_status: this.malariaStatus,
       ccva_algorithm: this.ccvaAlgorithm,
       hiv_status: this.hivStatus,
       date_type: this.selectedDateType,
     };
+
     if (this.dataSource === 'csv') {
       this.uploadCSVAndRunCCVA(filter);
     } else {
@@ -168,10 +190,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
           this.triggersService.triggerCCVAListFunction();
           console.log(error.error.detail);
           this.snackBar.open(
-            `${
-              error.error.detail ??
-              error.error.message ??
-              'Failed to start CCVA task'
+            `${error.error.detail ??
+            error.error.message ??
+            'Failed to start CCVA task'
             }`,
             'Close',
             {
@@ -184,6 +205,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       });
     }
   }
+
   private uploadCSVAndRunCCVA(filter: any) {
     if (!this.selectedFile) {
       console.error('No file selected');
@@ -221,10 +243,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
         this.isTaskRunning = false;
         this.triggersService.triggerCCVAListFunction();
         this.snackBar.open(
-          `${
-            error.error.detail ??
-            error.error.message ??
-            'Failed to start CCVA task with CSV'
+          `${error.error.detail ??
+          error.error.message ??
+          'Failed to start CCVA task with CSV'
           }`,
           'Close',
           {
@@ -236,6 +257,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       },
     });
   }
+
   connectToSocket(taskId: string) {
     if (!taskId) {
       console.error('No taskId provided');
@@ -265,10 +287,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
           }
         } catch (error: any) {
           this.snackBar.open(
-            `${
-              error.error.detail ??
-              error.error.message ??
-              'Failed to start CCVA task'
+            `${error.error.detail ??
+            error.error.message ??
+            'Failed to start CCVA task'
             }`,
             'Close',
             {
@@ -285,6 +306,12 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   // Update progress and store it in localStorage with 5-minute TTL
   private updateProgress(parsedData: any) {
+    // Process Log
+    if (parsedData.log) {
+      this.logs.push(parsedData.log);
+      this.scrollToBottom();
+    }
+
     if (parsedData.status === 'completed') {
       this.data = parsedData;
       this.progress = 100;
@@ -334,6 +361,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
         message: this.message,
         totalRecords: this.totalRecords,
         start_date: this.start_date,
+        logs: this.logs,
       };
       LocalStorageWithTTL.setItemWithTTL(
         this.taskProgressKey,
@@ -343,6 +371,16 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     }
   }
 
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      try {
+        if (this.logsContainer) {
+          this.logsContainer.nativeElement.scrollTop = this.logsContainer.nativeElement.scrollHeight;
+        }
+      } catch (err) { }
+    }, 100);
+  }
+
   // Restore progress from localStorage
   private restoreProgress(progressData: any) {
     this.progress = progressData.progress;
@@ -350,6 +388,9 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.message = progressData.message;
     this.totalRecords = progressData.totalRecords;
     this.start_date = progressData.start_date;
+    if (progressData.logs) {
+      this.logs = progressData.logs;
+    }
   }
 
   // Clear task-related data from localStorage

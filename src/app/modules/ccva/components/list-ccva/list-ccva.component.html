@@ -13,6 +13,7 @@
               <label for="checkbox-all-search" class="sr-only">checkbox</label>
             </div>
           </th>
+          <th scope="col" class="px-6 py-3">Run By</th>
           <th scope="col" class="px-6 py-3">Created At</th>
           <th scope="col" class="px-6 py-3">Total Records</th>
           <th scope="col" class="px-6 py-3">Elapsed Time</th>
@@ -25,12 +26,12 @@
       <tbody>
         <!-- No records found message -->
         <tr *ngIf="data.length === 0 && !isLoading" class="bg-gray-200">
-          <td colspan="8" class="px-6 py-4 text-center">No record was found</td>
+          <td colspan="9" class="px-6 py-4 text-center">No record was found</td>
         </tr>
 
         <!-- Loading spinner -->
         <tr *ngIf="isLoading">
-          <td colspan="8" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
+          <td colspan="9" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
             <div class="flex items-center justify-center h-full">
               <mat-spinner diameter="30" color="accent"></mat-spinner>
             </div>
@@ -48,11 +49,12 @@
               <!-- <label for="checkbox-table-search-{{ row.created_at }}" class="sr-only">checkbox</label> -->
             </div>
           </td>
+          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.user_id }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.created_at | date:'MMM d, y' }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.total_records }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.elapsed_time }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.start }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.end }}</td>
+          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.start.split('T')[0]|| row.start }}</td>
+          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.end.split('T')[0]||row.end }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4 font-bold text-sky-600">
             {{ row.isDefault ? 'Default' : '' }}
           </td>
