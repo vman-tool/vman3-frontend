@@ -2,6 +2,8 @@ import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
+import { CsvExportService } from 'app/shared/services/csv-export.service';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-add-icd10-codes',
@@ -26,13 +28,14 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private snackbar: MatSnackBar,
     private pcvaSettingsService: PcvaSettingsService,
+    private csvExportService: CsvExportService
   ){}
 
-  notificationMessage(message: string): void {
+  notificationMessage(message: string, duration?: number): void {
     this.snackbar.open(`${message}`, 'close', {
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      duration: 3 * 1000,
+      duration: duration ? duration : 3 * 1000,
     });
   }
 
@@ -83,6 +86,61 @@ export class AddIcd10CodesComponent implements OnInit, AfterViewInit {
     if (dialogElement) {
       (dialogElement as HTMLElement).style.maxWidth = '100vw';
       (dialogElement as HTMLElement).style.minWidth = '0';
+    }
+  }
+
+  async onDownloadSampleFile(){
+    const categoryTypes: any = await lastValueFrom(this.pcvaSettingsService.getICD10CategoryTypes({
+      paging: false,
+    }));
+
+    const categoryTypesCount = categoryTypes?.data?.length;
+    const categoriesCount = this.categories?.length;
+    const sampleCsvData = []
+
+    if(categoriesCount && categoryTypesCount){
+      this.notificationMessage(`Columns with UUIDs are actual data to guide you. Use the uuids in the category and type columns to map your data correctly.`, 7000);
+      if(categoriesCount >= categoryTypesCount){
+        for(let i = 0; i < categoriesCount; i++){
+          const type = i <= categoryTypesCount ? categoryTypes?.data[i]?.uuid : categoryTypes?.data[Math.floor(Math.random() * categoryTypesCount)]?.uuid;
+          const type_name = i <= categoryTypesCount ? categoryTypes?.data[i]?.name : categoryTypes?.data[Math.floor(Math.random() * categoryTypesCount)]?.name;
+          sampleCsvData.push({
+            code: `Code ${i + 1}`,
+            name: `Name ${i + 1}`,
+            category: this.categories[i]?.value,
+            category_name: this.categories[i]?.label,
+            type: type && type != "NaN" ? type : "",
+            type_name: type_name,
+          })
+        }
+      } else {
+        for(let i = 0; i < categoryTypesCount; i++){
+          const category = i <= categoriesCount ? this.categories[i]?.value : this.categories[Math.floor(Math.random() * categoriesCount)]?.value;
+          const category_name = i <= categoriesCount ? this.categories[i]?.label : this.categories[Math.floor(Math.random() * categoriesCount)]?.label;
+          
+          sampleCsvData.push({
+            code: `Code ${i + 1}`,
+            name: `Name ${i + 1}`,
+            category: category && category != "NaN" ? category : "",
+            category_name: category_name,
+            type: categoryTypes?.data[i]?.uuid,
+            type_name: categoryTypes?.data[i]?.name,
+          })
+        }
+      }
+    } else {
+      sampleCsvData.push({
+        code: `Code`,
+        name: `Name `,
+        category: "Sample Category Name",
+        type: "Sample Type Name",
+      })
+
+      this.notificationMessage(`There are no Major/Broad groups available. Please create them first to have a better sample CSV file./ Or add their names in this File and they'll be created automatically during upload (Not Recommended).`, 7000);
+    }
+
+    if(sampleCsvData.length){
+      this.csvExportService.exportToCSV(sampleCsvData, 'sample-icd10-codes.csv');
     }
   }
 

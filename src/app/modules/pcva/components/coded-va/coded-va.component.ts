@@ -108,7 +108,7 @@ export class CodedVaComponent implements OnInit {
           current_user: this.current_user,
           icdCodes: this.icdCodes?.map((code: any) => {
             return {
-              label: `(${code?.code}) ${code?.name}`,
+              label: `${code?.code} - ${code?.name}`,
               value: code?.uuid,
             }
           }),

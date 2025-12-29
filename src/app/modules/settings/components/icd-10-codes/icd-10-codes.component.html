@@ -1,87 +1,34 @@
-<div class="w-full" *ngIf="{
-    icd10Data: icd10Data$ | async
-} as params">
-    <div class="py-8">
-        <div class="flex items-center justify-between mb-4">
-            <span class="px-2 text-2xl text-start">ICD 10 Codes</span>
-            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddICD10()">Add ICD10 Codes</button>
-        </div>
-        <div class="m-2" *ngIf="!params?.icd10Data && loadingData">
-            <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
-            </mat-progress-bar>
-        </div>
-        <div class="overflow-x-auto">
-            <div class="w-full overflow-hidden">
-                <table class="w-full divide-y divide-gray-200 table-auto" *ngIf="params?.icd10Data">
-                    <thead *ngIf="params?.icd10Data?.data?.length">
-                        <tr>
-                            <th
-                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                                Code
-                            </th>
-                            <th
-                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                                Title
-                            </th>
-                            <th
-                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                                Category
-                            </th>
-                            <th
-                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                                Action
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <ng-container *ngIf="params?.icd10Data?.data?.length">
-                            <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
-                                *ngFor="let code of params?.icd10Data?.data; let i = index">
-
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <p class="text-gray-900 whitespace-no-wrap">{{ code?.code }}</p>
-                                </td>
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <p class="text-gray-900 whitespace-no-wrap">{{ code?.name }}</p>
-                                </td>
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <p class="text-gray-900 whitespace-no-wrap">{{ code?.category?.name }}</p>
-                                </td>
-                                
-                                <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                    <a mat-icon-button [matMenuTriggerFor]="menu"
-                                        class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i
-                                            class="ph-dots-three-vertical"></i></a>
-                                    <mat-menu #menu="matMenu" class="bg-white">
-                                        <!-- <button mat-menu-item *ngIf="canAssignRole" class="hover:text-blue-700 hover:cursor-pointer" (click)="onAssignRoles(user)">
-                                                <i class="ph-shield-check text-2xl mr-3"></i>
-                                                <span class="relative bottom-[7px]">Access Management</span>
-                                            </button> -->
-                                        <button mat-menu-item class="hover:text-blue-700 hover:cursor-pointer">
-                                            <i class="ph-eye text-2xl mr-3"></i>
-                                            <span class="relative bottom-[7px]">View</span>
-                                        </button>
-                                        
-                                    </mat-menu>
-                                </td>
-                            </tr>
-                        </ng-container>
-                        <ng-container *ngIf="!params?.icd10Data?.data?.length">
-                            <tr class="bg-gray-200">
-                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No user was found</td>
-                            </tr>
-                        </ng-container>
-                    </tbody>
-                </table>
-                <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.icd10Data?.total > 0">
-                    <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="[5, 10, 20, 50]"
-                        [length]="params?.icd10Data?.total" [pageIndex]="pageNumber" [pageSize]="limit"
-                        (page)="onPageChange($event)"></mat-paginator>
-                </div>
-            </div>
-            <div *ngIf="!params?.icd10Data && !loadingData">
-                <p>Could not get ICD10 Codes.</p>
-            </div>
-        </div>
+<div class="p-6">
+    <div class="flex gap-2 mb-6 border-b border-gray-200">
+        <button (click)="switchView('codes')" id="codesTab"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+            [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': view === 'codes' }"
+            >
+            ICD10 Codes
+        </button>
+        <button (click)="switchView('categories')" id="categoriesTab"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+            [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': view === 'categories' }"
+        >
+            Major Group
+        </button>
+        <button (click)="switchView('types')" id="typesTab"
+            class="px-4 py-2 text-sm font-medium"
+            [ngClass]="{ 'text-blue-600 border-b-2 border-blue-600': view === 'types' }"
+            >
+            Broad Group
+        </button>
     </div>
+
+    @if(view === 'codes'){
+        <app-icd10-codes-list></app-icd10-codes-list>
+    }
+
+    @if(view === 'categories'){
+        <app-icd10-category></app-icd10-category>
+    }
+
+    @if(view === 'types'){
+        <app-icd10-category-type></app-icd10-category-type>
+    }
 </div>

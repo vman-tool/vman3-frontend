@@ -117,28 +117,28 @@ export class CodingSheetComponent implements OnInit {
     const latestVA = this.codedVA?.length ? this.codedVA[0] : undefined
     if(latestVA){
       this.selectedA = latestVA?.frameA?.a ? [{
-        label: `${latestVA?.frameA?.a?.code} ${latestVA?.frameA?.a?.name}`,
+        label: `${latestVA?.frameA?.a?.code} - ${latestVA?.frameA?.a?.name}`,
         value: latestVA?.frameA?.a?.uuid
       }] : []
 
       this.selectedB = latestVA?.frameA?.b ? [{
-        label: `${latestVA?.frameA?.b?.code} ${latestVA?.frameA?.b?.name}`,
+        label: `${latestVA?.frameA?.b?.code} - ${latestVA?.frameA?.b?.name}`,
         value: latestVA?.frameA?.b?.uuid
       }] : []
 
       this.selectedC = latestVA?.frameA?.c ? [{
-        label: `${latestVA?.frameA?.c?.code} ${latestVA?.frameA?.c?.name}`,
+        label: `${latestVA?.frameA?.c?.code} - ${latestVA?.frameA?.c?.name}`,
         value: latestVA?.frameA?.c?.uuid
       }] : []
 
       this.selectedD = latestVA?.frameA?.d ? [{
-        label: `${latestVA?.frameA?.d?.code} ${latestVA?.frameA?.d?.name}`,
+        label: `${latestVA?.frameA?.d?.code} - ${latestVA?.frameA?.d?.name}`,
         value: latestVA?.frameA?.d?.uuid
       }] : []
       
       this.selectedContributories = latestVA?.frameA?.contributories?.length ? latestVA?.frameA?.contributories?.map((contributory: any) => {
         return {
-          label: `${contributory?.code} ${contributory?.name}`,
+          label: `${contributory?.code} - ${contributory?.name}`,
           value: contributory?.uuid
         }
       }) : []
