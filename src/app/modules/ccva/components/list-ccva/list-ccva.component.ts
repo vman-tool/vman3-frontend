@@ -121,15 +121,16 @@ export class ListCcvaComponent implements OnInit {
 
   // Action: Delete entry with confirmation
   deleteRow(row: any): void {
+    console.log(row, 'row');
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         message: `Are you sure you want to delete this entry?`,
         action: 'Delete',
       },
-    });
-
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+    }).afterClosed().subscribe((confirmed: boolean) => {
+      console.log('Confirmed:', confirmed);
       if (confirmed) {
+
         this.ccvaService.delete_ccva(row.id).subscribe(
           () => {
             console.log('Deleted successfully:', row.id);
