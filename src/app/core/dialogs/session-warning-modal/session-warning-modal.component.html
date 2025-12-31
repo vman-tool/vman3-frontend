@@ -1,0 +1,75 @@
+@if(showModal()){
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all duration-300">
+        <div class="mx-4 w-full max-w-sm overflow-hidden rounded-xl bg-white shadow-2xl"
+            [class.animate-shake]="secondsRemaining() <= 10">
+            <div class="bg-blue-700 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="rounded-full bg-white/20 p-2 backdrop-blur-sm">
+                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">Session Warning</h3>
+                        <p class="text-sm text-blue-100">You will be logged out soon</p>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="p-6">
+                <div class="mb-6 text-center">
+                    <div class="inline-flex items-baseline">
+                        <span class="text-4xl font-bold text-gray-900 font-mono">{{ formattedTime() }}</span>
+                        <span class="ml-2 text-gray-500">seconds</span>
+                    </div>
+                    <p class="mt-2 text-gray-600">
+                        Your session expires due to inactivity
+                    </p>
+                </div>
+    
+                <div class="mb-8">
+                    <div class="h-2 w-full rounded-full bg-gray-200">
+                        <div class="h-full rounded-full transition-all duration-1000" [class]="{
+                  'bg-blue-500': secondsRemaining() > 10,
+                  'bg-red-500': secondsRemaining() <= 10
+                }" [style.width.%]="progressPercentage()"></div>
+                    </div>
+                    <div class="mt-1 flex justify-between text-xs text-gray-500">
+                        <span>Complete</span>
+                        <span>Expired</span>
+                    </div>
+                </div>
+    
+                <div class="space-y-3">
+                    <button
+                        class="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition duration-200 hover:bg-blue-700 active:bg-blue-800"
+                        (click)="extendSession()">
+                        <div class="flex items-center justify-center gap-2">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Stay Signed In
+                        </div>
+                    </button>
+    
+                    <button
+                        class="w-full rounded-lg border border-gray-300 bg-white py-3 font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 active:bg-gray-100"
+                        (click)="logoutNow()">
+                        <div class="flex items-center justify-center gap-2">
+                            <img src="../../../../assets/icons/logout.svg" alt="logout" class="h-5 w-5" />
+                            Sign Out Now
+                        </div>
+                    </button>
+                </div>
+    
+                <div class="mt-6 text-center">
+                    <p class="text-xs text-gray-500">
+                        You'll be automatically redirected to login in
+                        <span class="font-medium text-gray-700">{{ formattedTime() }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

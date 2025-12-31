@@ -13,6 +13,7 @@ import { SystemImages } from "app/modules/settings/interface";
 import { SettingConfigService } from "app/modules/settings/services/settings_configs.service";
 import { ConfigService } from "app/app.service";
 import { VersionService } from "app/shared/services/version.service";
+import { UserActivityService } from "app/core/services/user-activity/user-activity.service";
 
 @Component({
   selector: "app-login",
