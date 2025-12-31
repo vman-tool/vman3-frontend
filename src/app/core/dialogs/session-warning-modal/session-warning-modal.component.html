@@ -2,17 +2,17 @@
     <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all duration-300">
         <div class="mx-4 w-full max-w-sm overflow-hidden rounded-xl bg-white shadow-2xl"
             [class.animate-shake]="secondsRemaining() <= 10">
-            <div class="bg-blue-700 px-6 py-4">
+            <div class="bg-gray-200 px-6 py-4">
                 <div class="flex items-center gap-3">
-                    <div class="rounded-full bg-white/20 p-2 backdrop-blur-sm">
-                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="rounded-full bg-white p-2 backdrop-blur-sm">
+                        <svg class="h-5 w-5 font-semibold text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-white">Session Warning</h3>
-                        <p class="text-sm text-blue-100">You will be logged out soon</p>
+                        <h3 class="font-semibold font-semibold text-gray-700">Session Warning</h3>
+                        <p class="text-sm font-semibold text-gray-700">You will be logged out soon</p>
                     </div>
                 </div>
             </div>
@@ -23,7 +23,7 @@
                         <span class="text-4xl font-bold text-gray-900 font-mono">{{ formattedTime() }}</span>
                         <span class="ml-2 text-gray-500">seconds</span>
                     </div>
-                    <p class="mt-2 text-gray-600">
+                    <p class="mt-2 text-gray-700">
                         Your session expires due to inactivity
                     </p>
                 </div>
