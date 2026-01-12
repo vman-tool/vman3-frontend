@@ -20,8 +20,10 @@ export class ListRecordsComponent implements OnInit {
   title: string = 'VA Data';
   data: any[] = [];
   isLoading: boolean = false;
-  pageNumber: number = 1;
+  pageNumber: number = 0;
+  pageSizeOptions = [10, 20, 50, 100]
   limit: number = 10;
+  paging?: boolean;
   totalRecords: number = 0;
   message: string = '';
   error: string | null = null;
@@ -54,27 +56,27 @@ export class ListRecordsComponent implements OnInit {
     this.isLoading = true;
     this.listRecordsService
       .getRecordsData(
-        this.pageNumber,
+        this.pageNumber ? this.pageNumber : 1,
         this.limit,
         this.filterData.startDate,
         this.filterData.endDate,
         this.filterData.locations
       )
-      .subscribe(
-        (response) => {
+      .subscribe({
+        next: (response) => {
           this.data = response.data;
           this.totalRecords = response.total;
           this.message = response.message;
           this.error = response.error;
         },
-        (error) => {
+        error: (error) => {
           console.log('Error: ', error);
           this.error = 'Failed to fetch records';
         },
-        () => {
+        complete: () => {
           this.isLoading = false;
         }
-      );
+      });
   }
 
   onOpenVA(va: any){
@@ -84,22 +86,34 @@ export class ListRecordsComponent implements OnInit {
     dialogConfig.height = "90vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
-      va: va
+      va: {
+        ...va,
+        instanceid: va?.vaId
+      }
     }
     this.dialog.open(ViewVaComponent, dialogConfig)
   }
 
-  goToPreviousPage(): void {
-    if (this.pageNumber > 1) {
-      this.pageNumber--;
-      this.loadRecords();
-    }
-  }
+  // goToPreviousPage(): void {
+  //   if (this.pageNumber > 1) {
+  //     this.pageNumber--;
+  //     this.loadRecords();
+  //   }
+  // }
 
-  goToNextPage(): void {
-    if (this.pageNumber * this.limit < this.totalRecords) {
-      this.pageNumber++;
-      this.loadRecords();
-    }
+  // goToNextPage(): void {
+  //   if (this.pageNumber * this.limit < this.totalRecords) {
+  //     this.pageNumber++;
+  //     this.loadRecords();
+  //   }
+  // }
+
+  onPageChange(event: any) {
+    this.pageNumber = this.pageNumber == 0 && this.pageNumber < event.pageIndex ? event.pageIndex + 1 : this.pageNumber !== 0 && this.pageNumber > event.pageIndex ? event.pageIndex - 1 : event.pageIndex;
+
+    console.log("==> Page number changed: ", this.pageNumber);
+    this.pageNumber = this.pageNumber! < 0 ? 0 : this.pageNumber;
+    this.limit = Number(event?.pageSize);
+    this.loadRecords();
   }
 }
