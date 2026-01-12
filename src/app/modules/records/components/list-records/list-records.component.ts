@@ -84,7 +84,10 @@ export class ListRecordsComponent implements OnInit {
     dialogConfig.height = "90vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
-      va: va
+      va: {
+        ...va,
+        instanceid: va?.vaId
+      }
     }
     this.dialog.open(ViewVaComponent, dialogConfig)
   }
