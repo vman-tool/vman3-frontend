@@ -29,6 +29,19 @@
           <span class="text-lg font-normal">ODK Api</span>
         </a>
       </li>
+      <li class="me-2" *ngIf="dataAccess?.canSyncODKQuestions">
+        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'questions-sync'; loadQuestionsSyncTab()" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'questions-sync',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'questions-sync'
+         }">
+          <i class="fas fa-sync me-2" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'questions-sync',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'questions-sync'
+           }"></i>
+          <span class="text-lg font-normal">Questions Sync</span>
+        </a>
+      </li>
       <li class="me-2" *ngIf="dataAccess?.viewFieldMapping">
         <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'field-mapping'" [ngClass]="{
@@ -164,6 +177,115 @@
           Add ODK API
         </button>
       </ng-template>
+    </div>
+  </div>
+
+  <div *ngIf="selectedTab === 'questions-sync' && dataAccess?.canSyncODKQuestions" id="questions-sync"
+    class="mt-4 tab-content">
+    <div class="my-8">
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+
+      <!-- Loading State -->
+      <div *ngIf="isQuestionsSyncTabLoading" class="space-y-6">
+        <div class="flex justify-center items-center p-8 bg-gray-50 rounded-lg border">
+          <div class="text-center">
+            <svg class="mx-auto mb-4 w-8 h-8 text-green-500 animate-spin" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            <p class="text-lg font-semibold text-gray-700">Synchronizing Questions</p>
+            <p class="text-sm text-gray-500">Fetching form questions from ODK Central...</p>
+            <p class="mt-2 text-xs italic text-gray-600">(Do not refresh or leave this page)</p>
+            <div class="mt-4 w-full h-2 bg-gray-200 rounded-full">
+              <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Syncing In Progress State -->
+      <div *ngIf="!isQuestionsSyncTabLoading && isQuestionsSyncing" class="space-y-6">
+        <div class="flex justify-center items-center p-8 bg-green-50 rounded-lg border border-green-200">
+          <div class="text-center">
+            <svg class="mx-auto mb-4 w-8 h-8 text-green-500 animate-spin" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            <p class="text-lg font-semibold text-green-700">Synchronizing Questions</p>
+            <p class="text-sm text-green-600">Fetching form questions from ODK Central...</p>
+            <p class="mt-2 text-xs italic text-green-500">(Do not refresh or leave this page)</p>
+            <div class="mt-4 w-full h-2 bg-green-200 rounded-full">
+              <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div *ngIf="!isQuestionsSyncTabLoading && !isQuestionsSyncing" class="space-y-6">
+        <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <span class="mb-2 text-lg font-semibold text-gray-800">ODK Questions Synchronization</span>
+              <div *ngIf="syncedQuestions && syncedQuestions.length > 0" class="mb-4">
+                <p class="font-medium text-green-600">
+                  <i class="mr-2 fas fa-check-circle"></i>
+                  {{ syncedQuestions.length }} questions synchronized
+                </p>
+                <p class="text-sm text-gray-500">Questions are ready for data processing</p>
+              </div>
+              <div *ngIf="!syncedQuestions || syncedQuestions.length === 0" class="mb-4">
+                <p class="font-medium text-orange-600">
+                  <i class="mr-2 fas fa-exclamation-triangle"></i>
+                  No questions found
+                </p>
+                <p class="text-sm text-gray-500">Click "Sync ODK Questions" to fetch questions from ODK Central</p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+              <!-- Force Checkbox -->
+              <label class="inline-flex items-center">
+                <input type="checkbox" class="hidden peer"
+                  (change)="onForceCheck($event, !syncedQuestions?.length && !syncedQuestions)"
+                  [checked]="forceChecked">
+                <div
+                  class="flex justify-center items-center w-5 h-5 rounded border border-gray-400 transition-colors hover:cursor-pointer"
+                  [ngClass]="{
+                    'bg-green-600 border-green-600 text-white': forceChecked,
+                    'hover:border-green-400': !forceChecked
+                  }">
+                  <i class="text-xs fas fa-check" *ngIf="forceChecked"></i>
+                </div>
+                <span class="ml-2 text-sm text-gray-700">Force refresh</span>
+              </label>
+
+              <!-- Sync Button -->
+              <button [disabled]="isQuestionsSyncing"
+                class="px-6 py-3 font-semibold text-white bg-green-600 rounded-lg transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                (click)="onSyncQuestions()">
+                <span *ngIf="!isQuestionsSyncing">
+                  <i class="mr-2 fas fa-download"></i>
+                  Sync ODK Questions
+                </span>
+                <span *ngIf="isQuestionsSyncing" class="flex items-center">
+                  <svg class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                  Syncing...
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
