@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { UserActivityService } from './services/user-activity/user-activity.service';
 
 @Component({
   selector: 'app-core',
@@ -7,5 +8,12 @@ import { Component } from '@angular/core';
 })
 export class CoreComponent {
   constructor(
-  ){}
+    private userActivityService: UserActivityService
+  ){
+
+  }
+
+  ngOnInit(){
+    this.userActivityService.startIdleTimer();
+  }
 }

@@ -155,10 +155,10 @@ export class AuthService {
     this.cachedPrivileges = [];
   }
 
-  private calculateExpiryTime(timestamp: string){
+  private calculateExpiryTime(seconds: string){
 
     const now = new Date().getTime() / 1000;
-    let expiry_timestamp_array = (now + Number(timestamp)).toString()?.split(".");
+    let expiry_timestamp_array = (now + Number(seconds)).toString()?.split(".");
 
     expiry_timestamp_array[1] = expiry_timestamp_array[1]?.length === 2 ? expiry_timestamp_array[1] + "0" : expiry_timestamp_array[1]?.length === 1 ? expiry_timestamp_array[1] + "00" : expiry_timestamp_array[1];
 
@@ -175,10 +175,6 @@ export class AuthService {
     
     const refresh_timestamp_string = this.calculateExpiryTime(response?.refresh_token_expires_in);
     
-    
-    this.autoRefresh(Number(response?.refresh_token_expires_in));
-
-
     localStorage.setItem("access_token_expiry", expiry_timestamp_string)
     localStorage.setItem("refresh_token_expiry", refresh_timestamp_string)
     localStorage.setItem("current_user", JSON.stringify(response.user))

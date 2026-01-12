@@ -1,8 +1,12 @@
 <div class="bg-white rounded-lg ">
   <app-va-filters [title]="title"></app-va-filters>
-  <div class="relative w-full overflow-x-auto shadow-md sm:rounded-lg">
+
+  <!-- Changed: Added 'max-h-[75vh]' and changed 'overflow-x-auto' to 'overflow-auto' to handle vertical scrolling -->
+  <div class="relative w-full overflow-auto shadow-md sm:rounded-lg max-h-[75vh]">
     <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
-      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+
+      <!-- Changed: Added 'sticky top-0 z-20' to keep header visible while scrolling -->
+      <thead class="sticky top-0 z-20 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
           <th scope="col" class="p-4">
             <div class="flex items-center">
@@ -53,12 +57,17 @@
           <td class="px-6 py-4">{{ row.interviewer_name }}</td>
           <td class="px-6 py-4">
             <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline hover:cursor-pointer"
-              (click)="onOpenVA(row?.vaId)"><i class="ph-eye"></i></a>
+              (click)="onOpenVA(row)"><i class="ph-eye"></i></a>
           </td>
         </tr>
       </tbody>
     </table>
-    <nav class="flex flex-wrap items-center justify-between p-5 pt-4 flex-column md:flex-row"
+
+    <div class="sticky bottom-0 z-20 px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="totalRecords > 0">
+      <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="totalRecords"
+        [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
+    </div>
+    <!-- <nav class="flex flex-wrap items-center justify-between p-5 pt-4 flex-column md:flex-row"
       aria-label="Table navigation">
       <span class="block w-full mb-4 text-sm font-normal text-gray-500 dark:text-gray-400 md:mb-0 md:inline md:w-auto">
         Showing <span class="font-semibold text-gray-900 dark:text-white">{{ (pageNumber - 1) * limit + 1 }}-{{
@@ -75,6 +84,6 @@
               class="flex items-center justify-center h-8 px-3 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Next</a>
           </li>
         </ul>
-    </nav>
+    </nav> -->
   </div>
 </div>

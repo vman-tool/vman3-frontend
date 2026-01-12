@@ -11,6 +11,7 @@ import { LoginComponent } from './components/login/login.component';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { AccountSettingsComponent } from './dialogs/account-settings/account-settings.component';
+import { SessionWarningModalComponent } from './dialogs/session-warning-modal/session-warning-modal.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { AccountSettingsComponent } from './dialogs/account-settings/account-set
     LoginComponent,
     SidebarComponent,
     AccountSettingsComponent,
+    SessionWarningModalComponent
   ],
   imports: [
     CommonModule,
