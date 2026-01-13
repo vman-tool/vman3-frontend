@@ -122,7 +122,7 @@ export class SidebarComponent {
             hasAccess: await this.hasAccess([privileges.SETTINGS_CONFIGS_VIEW]),
           },
           {
-            displayText: 'Data Synchronization',
+            displayText: 'Synchronization',
             icon: 'flaticon-target', // Replace with the actual Flaticon class for a sync/refresh icon
             icon_asset: '',
             route: '/sync',
