@@ -35,7 +35,7 @@ export class VaFiltersComponent implements OnInit {
   startDate?: Date;
   endDate?: Date;
   selectedLocation: string[] = [];
-  selectedResultsFilter: string = 'all';
+  selectedResultsFilter: string = 'both';
   allLocations: any[] = [];
   current_user?: any
 
