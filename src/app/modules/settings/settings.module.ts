@@ -12,6 +12,7 @@ import { SettingsConfigsFormComponent } from './dialogs/settings-configs-form/se
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConnectionFormComponent } from './dialogs/connection-form/connection-form.component';
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
 import { UsersListComponent } from './components/users-list/users-list.component';
 import { RolesComponent } from './components/roles/roles.component';
 import { RoleFormComponent } from './dialogs/role-form/role-form.component';
@@ -70,6 +71,7 @@ import { AddIcd10CategoryTypeComponent } from './dialogs/add-icd10-category-type
     FormsModule,
     MaterialModule,
     SearchableSelectComponent,
+    CustomDropdownComponent,
     HeaderMappingModalComponent,
   ],
 })
