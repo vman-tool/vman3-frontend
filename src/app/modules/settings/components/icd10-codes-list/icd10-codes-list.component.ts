@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, lastValueFrom, map, Observable } from 'rxjs';
 import { AddIcd10CodesComponent } from '../../dialogs/add-icd10-codes/add-icd10-codes.component';
-
+import { AuthService } from 'app/core/services/authentication/auth.service';
+import * as privileges  from 'app/shared/constants/privileges.constants';
 @Component({
   selector: 'app-icd10-codes-list',
   templateUrl: './icd10-codes-list.component.html',
@@ -24,11 +25,15 @@ export class Icd10CodesListComponent {
   categories: any[] = [];
   categoriesSelected: string[] = [];
   categoryTypesSelected: string[] = [];
+  canUpdateCodes: boolean = false;
+  canAddCodes: boolean = false;
+  canDeleteCodes: boolean = false;
   
   constructor(
     private snackBar: MatSnackBar,
     public dialog: MatDialog,
-    private pcvaSettings: PcvaSettingsService
+    private pcvaSettings: PcvaSettingsService,
+    private authService: AuthService
   ){}
 
   notificationMessage(message: string): void {
@@ -43,6 +48,13 @@ export class Icd10CodesListComponent {
     this.loadICD10Codes();
     this.loadICD10Categories();
     this.loadICD10CategoryTypes();
+    this.runPrivilegesCheck();
+  }
+  
+  async runPrivilegesCheck() {
+    this.canAddCodes = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_CREATE_ICD10_CODES]));
+    this.canUpdateCodes = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_UPDATE_ICD10_CODES]));
+    this.canDeleteCodes = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_DELETE_ICD10_CODES]));
   }
 
   loadICD10Codes(){
