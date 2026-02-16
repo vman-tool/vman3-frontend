@@ -10,14 +10,10 @@ import { lastValueFrom, map, Subscription } from 'rxjs';
 import { WebSockettService } from '../../services/web-socket.service';
 import { ConfigService } from '../../../../app.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
-import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
 import { LocalStorageSettingsService } from '../../services/local_storage.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
-import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
-import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
 import * as Papa from 'papaparse';
 import { MatDialog } from '@angular/material/dialog';
 import { HeaderMappingModalComponent } from '../../dialogs/header-mapping/header-mapping.component';
@@ -34,10 +30,10 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   progress: string | null = null;
   formSubmissionStatus:
     | {
-        earliest_date: string;
-        latest_date: string;
-        available_data_count: number;
-      }
+      earliest_date: string;
+      latest_date: string;
+      available_data_count: number;
+    }
     | undefined;
   syncStatusFromSettings?: any; // New property for sync status from settings
   isLoadingSyncStatus: boolean = false; // Loading state for sync status
@@ -45,23 +41,14 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   isTaskRunning = false;
   isDataSyncing = false;
   isLoadingFormSubmissionStatus = false;
-  // Separate sync flags
-
-  isQuestionsSyncing: boolean = false; // For syncing questions
-  isLoadingQuestions: boolean = false; // For initial questions loading
-
-  // Unified loading states
-  isSyncButtonLoading: boolean = false; // For sync button loading state
-  isSettingsLoading: boolean = false; // For settings tab loading
-  isInitialDataLoading: boolean = false; // For initial data loading across all tabs
-
   // Independent loading states for each tab
   isDataSyncTabLoading: boolean = false; // For Data Synchronization tab
-  isQuestionsSyncTabLoading: boolean = false; // For Questions Synchronization tab
   isSettingsTabLoading: boolean = false; // For Settings tab
+  isSyncButtonLoading: boolean = false;
+  isInitialDataLoading: boolean = false;
 
-  syncedQuestions?: any[] = [];
-  forceChecked: boolean = false;
+  // syncedQuestions?: any[] = [];
+  // forceChecked: boolean = false;
   dataSyncAccess?: any;
   csvData: any[] = [];
   private progressSub: Subscription | null = null;
@@ -71,6 +58,16 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   @ViewChild('fileInput') fileInput!: ElementRef;
   requiredHeadersAdditions = ['instanceid'];
+
+  // Data export option: 'combined' = combined PCVA & CCVA, 'ccva' = CCVA-data only, 'pcva' = PCVA-data only
+
+  // Filter options for Data Export / Filtering
+  selectedDateType: 'submission_date' | 'interview_date' | 'death_date' = 'submission_date';
+  filter_startDate: string | null = null;
+  filter_endDate: string | null = null;
+  includePcva: boolean = true;
+  includeCcva: boolean = true;
+
   requiredHeaders = [
     'isneonatal',
     'isadult',
@@ -104,14 +101,14 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private webSockettService: WebSockettService,
     private indexedDBService: IndexedDBService,
-    private genericIndexedDbService: GenericIndexedDbService,
-    private vaRecordsService: VaRecordsService,
+    // private genericIndexedDbService: GenericIndexedDbService,
+    // private vaRecordsService: VaRecordsService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private runCcvaService: RunCcvaService,
     private settingConfigService: SettingConfigService
-  ) {}
+  ) { }
 
   async ngOnInit(): Promise<void> {
     console.log('DataSyncComponent ngOnInit started');
@@ -121,11 +118,12 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.initializeWebSocket();
 
     // Load permissions
+    // Load permissions
     this.dataSyncAccess = {
       canSyncODKData: await this.hasAccess([privileges.ODK_DATA_SYNC]),
-      canSyncODKQuestions: await this.hasAccess([
-        privileges.ODK_QUESTIONS_SYNC,
-      ]),
+      // canSyncODKQuestions: await this.hasAccess([
+      //   privileges.ODK_QUESTIONS_SYNC,
+      // ]),
     };
 
     // Load the initially selected tab (data-synchronization by default)
@@ -143,11 +141,14 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       case 'data-synchronization':
         this.loadDataSyncTab();
         break;
-      case 'questions-sync':
-        this.loadQuestionsSyncTab();
-        break;
+      // case 'questions-sync':
+      //   this.loadQuestionsSyncTab();
+      //   break;
       case 'settings':
         this.loadSettingsTab();
+        break;
+      case 'data-export':
+        this.loadDataExportTab();
         break;
       default:
         console.warn(`Unknown tab: ${tabName}`);
@@ -168,50 +169,41 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     // (this is handled in the loadSyncStatusFromSettings callback)
   }
 
-  loadQuestionsSyncTab() {
-    console.log('Loading Questions Synchronization tab...');
-    this.isQuestionsSyncTabLoading = true;
+  // Load Data Export tab resources
+  loadDataExportTab() {
+    console.log('Loading Data Export tab...');
+    this.isSettingsTabLoading = true;
 
-    // Load questions data
-    this.loadQuestions().then(() => {
-      this.isQuestionsSyncTabLoading = false;
-      console.log('Questions Synchronization tab loaded');
-    }).catch((error) => {
-      console.error('Error loading questions tab:', error);
-      this.isQuestionsSyncTabLoading = false;
+    // Reuse settings config loader for now (fetch any settings if needed)
+    this.loadSettingsConfig()
+      .then(() => {
+        this.isSettingsTabLoading = false;
+        console.log('Data Export settings loaded');
+      })
+      .catch((error) => {
+        this.isSettingsTabLoading = false;
+        console.error('Error loading Data Export settings:', error);
+      });
+  }
+
+  exportData() {
+    // Temporary export handler - implement actual export logic here
+    console.log('Starting export with filters:', {
+      startDate: this.filter_startDate,
+      endDate: this.filter_endDate,
+      dateType: this.selectedDateType,
+      includePcva: this.includePcva,
+      includeCcva: this.includeCcva,
+    });
+
+    this.snackBar.open('Export started', 'Close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 3000,
     });
   }
 
-  loadSettingsTab() {
-    console.log('Loading Settings tab...');
-    // this.isSettingsTabLoading = true;
 
-    // Load settings configuration
-    this.loadSettingsConfig().then(() => {
-      this.isSettingsTabLoading = false;
-      console.log('Settings tab loaded');
-    }).catch((error) => {
-      console.error('Error loading settings tab:', error);
-      this.isSettingsTabLoading = false;
-    });
-  }
-
-  private async loadQuestions(): Promise<void> {
-    try {
-      // Load questions from IndexedDB or API
-      this.syncedQuestions = await this.genericIndexedDbService.getData(
-        OBJECTSTORE_VA_QUESTIONS
-      );
-
-      // If no questions found, try to sync them
-      if (!this.syncedQuestions?.length) {
-        await this.syncQuestionsIfNeeded();
-      }
-    } catch (error) {
-      console.error('Error loading questions:', error);
-      throw error;
-    }
-  }
 
   private async loadSettingsConfig(): Promise<void> {
     try {
@@ -418,7 +410,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   formatSyncDate(dateString: string | null | undefined): string {
-    console.log('formatSyncDate called with:', dateString, 'type:', typeof dateString);
+    // console.log('formatSyncDate called with:', dateString, 'type:', typeof dateString);
 
     if (!dateString) {
       console.log('No date string, returning "Never"');
@@ -427,7 +419,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     try {
       const date = new Date(dateString);
-      console.log('Parsed date:', date, 'isValid:', !isNaN(date.getTime()));
+      // console.log('Parsed date:', date, 'isValid:', !isNaN(date.getTime()));
 
       if (isNaN(date.getTime())) {
         console.log('Invalid date, returning "Invalid Date"');
@@ -561,52 +553,18 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     alert(message); // Or use a more sophisticated success display mechanism
   }
 
-  async syncQuestionsIfNeeded() {
-    this.isQuestionsSyncing = true;
+  loadSettingsTab() {
+    console.log('Loading Settings tab...');
+    // this.isSettingsTabLoading = true;
 
-    // this.syncedQuestions = await this.indexedDBService.getQuestions();
-    this.syncedQuestions = await this.genericIndexedDbService.getData(
-      OBJECTSTORE_VA_QUESTIONS
-    );
-
-    if (!this.syncedQuestions?.length) {
-      console.log('No synced questions found, starting sync...');
-      this.syncedQuestions = await lastValueFrom(
-        this.vaRecordsService.getQuestions().pipe(
-          map(async (response: any) => {
-            if (response?.data) {
-              // await this.indexedDBService.addQuestions(response?.data);
-              // await this.indexedDBService.addQuestionsAsObject(response?.data);
-
-              await this.genericIndexedDbService.addDataAsObjectValues(
-                OBJECTSTORE_VA_QUESTIONS,
-                response?.data
-              );
-              await this.genericIndexedDbService.addDataAsIs(
-                OBJECTSTORE_VA_QUESTIONS,
-                OBJECTKEY_ODK_QUESTIONS,
-                response?.data
-              );
-
-              // Sync status will be updated automatically by backend - no manual update needed
-
-              // return await this.indexedDBService.getQuestions();
-              return await this.genericIndexedDbService.getData(
-                OBJECTSTORE_VA_QUESTIONS
-              );
-            }
-          })
-        )
-      );
-    }
-
-    if (!this.syncedQuestions) {
-      console.error('Failed to sync questions.');
-    } else {
-      console.log(`${this.syncedQuestions.length} questions synced.`);
-    }
-
-    this.isQuestionsSyncing = false;
+    // Load settings configuration
+    this.loadSettingsConfig().then(() => {
+      this.isSettingsTabLoading = false;
+      console.log('Settings tab loaded');
+    }).catch((error) => {
+      console.error('Error loading settings tab:', error);
+      this.isSettingsTabLoading = false;
+    });
   }
 
   async hasAccess(privileges: string[]) {
@@ -660,8 +618,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         // this.triggersService.triggerCCVAListFunction();
         console.log(error.error.detail);
         this.snackBar.open(
-          `${
-            error.error.detail ?? error.error.message ?? 'Failed to data sync'
+          `${error.error.detail ?? error.error.message ?? 'Failed to data sync'
           }`,
           'Close',
           {
@@ -693,70 +650,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     // }
   }
 
-  // Sync Questions function
-  async onSyncQuestions() {
-    this.isQuestionsSyncing = true;
-    this.syncedQuestions = undefined;
 
-    if (!this.forceChecked) {
-      this.syncedQuestions = await lastValueFrom(
-        this.vaRecordsService.getQuestions().pipe(
-          map(async (response: any) => {
-            if (response?.data) {
-              // await this.indexedDBService.addQuestions(response?.data);
-              // return await this.indexedDBService.getQuestions();
-
-              await this.genericIndexedDbService.addDataAsObjectValues(
-                OBJECTSTORE_VA_QUESTIONS,
-                response?.data
-              );
-              await this.genericIndexedDbService.addDataAsIs(
-                OBJECTSTORE_VA_QUESTIONS,
-                OBJECTKEY_ODK_QUESTIONS,
-                response?.data
-              );
-
-              return await this.genericIndexedDbService.getData(
-                OBJECTSTORE_VA_QUESTIONS
-              );
-            }
-          })
-        )
-      );
-    }
-
-    if (!this.syncedQuestions) {
-      this.syncedQuestions = await lastValueFrom(
-        this.dataSyncService.syncQuestions().pipe(
-          map(async (response: any) => {
-            // await this.indexedDBService.addQuestions(response?.data);
-            // this.forceChecked = !this.forceChecked;
-            // return await this.indexedDBService.getQuestions();
-
-            await this.genericIndexedDbService.addDataAsObjectValues(
-              OBJECTSTORE_VA_QUESTIONS,
-              response?.data
-            );
-            await this.genericIndexedDbService.addDataAsIs(
-              OBJECTSTORE_VA_QUESTIONS,
-              OBJECTKEY_ODK_QUESTIONS,
-              response?.data
-            );
-
-            this.forceChecked = !this.forceChecked;
-
-            // Sync status will be updated automatically by backend - no manual update needed
-
-            return await this.genericIndexedDbService.getData(
-              OBJECTSTORE_VA_QUESTIONS
-            );
-          })
-        )
-      );
-    }
-
-    this.isQuestionsSyncing = false;
-  }
 
   // WebSocket connection setup and message handling
   private initializeWebSocket(): void {
@@ -849,11 +743,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.webSockettService.disconnect();
   }
 
-  onForceCheck(e: Event, notAllowed?: boolean) {
-    this.forceChecked = notAllowed
-      ? this.forceChecked
-      : (e?.target as HTMLInputElement).checked;
-  }
+
 
   // Clean up subscriptions and WebSocket connections
   private cleanUp(): void {

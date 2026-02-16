@@ -44,12 +44,33 @@
             (select)="onSearchableChange($event)" [reset]="resetSelection" [closeDropdown]="closeDropdown"
             (open)="onOpenSelectField($event)"></app-searchable-select-for-objects>
         </div>
+
+        <!-- Results Filter Dropdown -->
+        <!-- <div>
+          <label for="resultsFilter" class="block text-sm font-medium text-gray-700">Results Filter</label>
+          <select id="resultsFilter" [(ngModel)]="selectedResultsFilter"
+            class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            <option *ngFor="let option of resultsFilterOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div> -->
       </div>
 
-      <!-- Right Section: Apply and Reset Buttons -->
+      <!-- Right Section: Apply, Export, and Reset Buttons -->
       <div class="flex items-center ml-auto space-x-4">
         <button (click)="applyFilters()" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
           Apply
+        </button>
+        <button (click)="exportRecords()" [disabled]="isExporting" class="px-6 py-2 font-bold text-white rounded"
+          [ngClass]="isExporting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'">
+          <span *ngIf="!isExporting">
+            <i class="ph-download-simple mr-1"></i> Export
+          </span>
+          <span *ngIf="isExporting" class="flex items-center">
+            <mat-spinner diameter="20" class="mr-2" color="accent"></mat-spinner>
+            Exporting...
+          </span>
         </button>
         <button (click)="resetFilters()"
           class="px-6 py-2 font-bold text-white bg-yellow-500 rounded hover:bg-yellow-600">

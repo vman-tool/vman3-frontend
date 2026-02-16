@@ -12,6 +12,9 @@ import { FieldLabel, FieldMapping, settingsConfigData, SystemConfig } from 'app/
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
+import { ListRecordsService } from 'app/modules/records/services/list-records/list-records.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 @Component({
   selector: 'app-va-filters',
   standalone: true,
@@ -22,6 +25,7 @@ import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constan
     SharedModule,
     FormsModule,
     CustomDropdownComponent,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './va-filters.component.html',
   styleUrl: './va-filters.component.scss',
@@ -31,12 +35,22 @@ export class VaFiltersComponent implements OnInit {
   startDate?: Date;
   endDate?: Date;
   selectedLocation: string[] = [];
+  selectedResultsFilter: string = 'both';
   allLocations: any[] = [];
   current_user?: any
 
   isLoading: boolean = true;
+  isExporting: boolean = false;
   resetSelection = new EventEmitter<void>();
   closeDropdown = new EventEmitter<void>();
+
+  resultsFilterOptions = [
+    { value: 'both', label: 'With Both CCVA & PCVA' },
+    { value: 'all', label: 'All Records' },
+
+    { value: 'ccva_only', label: 'With CCVA Only' },
+    { value: 'pcva_only', label: 'With PCVA Only' }
+  ];
 
   systemConfigData?: SystemConfig;
   fieldMappingData?: FieldMapping;
@@ -48,7 +62,8 @@ export class VaFiltersComponent implements OnInit {
     private usersService: UsersService,
     private settingConfigService: SettingConfigService,
     private genericIndexedDbService: GenericIndexedDbService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private listRecordsService: ListRecordsService
   ) { }
 
   ngOnInit(): void {
@@ -195,5 +210,43 @@ export class VaFiltersComponent implements OnInit {
         (dialogElement as HTMLElement).classList.remove(removeClassName);
       }
     }
+  }
+
+  exportRecords(): void {
+    this.isExporting = true;
+    const formattedStartDate = this.startDate
+      ? this.datePipe.transform(this.startDate, 'yyyy-MM-dd')?.toString()
+      : undefined;
+    const formattedEndDate = this.endDate
+      ? this.datePipe.transform(this.endDate, 'yyyy-MM-dd')?.toString()
+      : undefined;
+
+    const locations = this.selectedLocation.length > 0 ? this.selectedLocation : undefined;
+
+    this.listRecordsService
+      .exportRecords(
+        formattedStartDate,
+        formattedEndDate,
+        locations,
+        this.selectedDateType,
+        this.selectedResultsFilter
+      )
+      .subscribe({
+        next: (blob: Blob) => {
+          // Create download link and trigger download
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `va_records_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.isExporting = false;
+        },
+        error: (error: any) => {
+          console.error('Export failed:', error);
+          alert('Failed to export records. Please try again.');
+          this.isExporting = false;
+        },
+      });
   }
 }

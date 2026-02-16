@@ -55,4 +55,35 @@ export class ListRecordsService {
       })
     );
   }
+
+  exportRecords(
+    startDate?: string,
+    endDate?: string,
+    locations?: string[],
+    dateType?: string,
+    resultsFilter?: string
+  ): Observable<Blob> {
+    let params = new HttpParams().set('file_format', 'excel');
+
+    if (startDate) {
+      params = params.set('start_date', startDate);
+    }
+    if (endDate) {
+      params = params.set('end_date', endDate);
+    }
+    if (locations && locations.length > 0) {
+      params = params.set('locations', locations.join(','));
+    }
+    if (dateType) {
+      params = params.set('date_type', dateType);
+    }
+    if (resultsFilter) {
+      params = params.set('results_filter', resultsFilter);
+    }
+
+    return this.http.get(`${this.configService.API_URL}/records/export`, {
+      params,
+      responseType: 'blob'
+    });
+  }
 }
