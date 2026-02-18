@@ -175,18 +175,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   // Load Data Export tab resources
   loadDataExportTab() {
     console.log('Loading Data Export tab...');
-    this.isSettingsTabLoading = true;
-
-    // Reuse settings config loader for now (fetch any settings if needed)
-    this.loadSettingsConfig()
-      .then(() => {
-        this.isSettingsTabLoading = false;
-        console.log('Data Export settings loaded');
-      })
-      .catch((error) => {
-        this.isSettingsTabLoading = false;
-        console.error('Error loading Data Export settings:', error);
-      });
+    // No specific loading required for export tab
+    this.isSettingsTabLoading = false;
   }
 
   exportData() {
