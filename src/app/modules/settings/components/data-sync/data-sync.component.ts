@@ -7,6 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { lastValueFrom, map, Subscription } from 'rxjs';
+import { DatePipe } from '@angular/common';
 import { WebSockettService } from '../../services/web-socket.service';
 import { ConfigService } from '../../../../app.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
@@ -45,6 +46,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   isDataSyncTabLoading: boolean = false; // For Data Synchronization tab
   isSettingsTabLoading: boolean = false; // For Settings tab
   isSyncButtonLoading: boolean = false;
+  isExporting: boolean = false;
   isInitialDataLoading: boolean = false;
 
   // syncedQuestions?: any[] = [];
@@ -107,7 +109,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private runCcvaService: RunCcvaService,
-    private settingConfigService: SettingConfigService
+    private settingConfigService: SettingConfigService,
+    private datePipe: DatePipe
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -187,19 +190,75 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   exportData() {
-    // Temporary export handler - implement actual export logic here
-    console.log('Starting export with filters:', {
-      startDate: this.filter_startDate,
-      endDate: this.filter_endDate,
-      dateType: this.selectedDateType,
-      includePcva: this.includePcva,
-      includeCcva: this.includeCcva,
-    });
+    this.isExporting = true; // Use a dedicated loading state
 
-    this.snackBar.open('Export started', 'Close', {
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      duration: 3000,
+    // Format dates
+    const formattedStartDate = this.filter_startDate
+      ? this.datePipe.transform(this.filter_startDate, 'yyyy-MM-dd')?.toString()
+      : undefined;
+    const formattedEndDate = this.filter_endDate
+      ? this.datePipe.transform(this.filter_endDate, 'yyyy-MM-dd')?.toString()
+      : undefined;
+
+    // Determine results filter based on checkboxes
+    // [x] PCVA + [x] CCVA -> 'all'
+    // [ ] PCVA + [x] CCVA -> 'ccva_only'
+    // [x] PCVA + [ ] CCVA -> 'pcva_only'
+    // [ ] PCVA + [ ] CCVA -> 'all' (default fallsafe)
+    let resultsFilter = 'all';
+
+    if (this.includePcva && this.includeCcva) {
+      resultsFilter = 'all';
+    } else if (this.includeCcva && !this.includePcva) {
+      resultsFilter = 'ccva_only';
+    } else if (this.includePcva && !this.includeCcva) {
+      resultsFilter = 'pcva_only';
+    } else {
+      // Both unchecked - default to 'all' or show error? 
+      // Assuming 'all' as a safe default to show everything available
+      resultsFilter = 'all';
+    }
+
+    console.log('Exporting with filter:', resultsFilter);
+
+    // Call export service to get token first
+    this.dataSyncService.getExportToken().subscribe({
+      next: (response) => {
+        const token = response.token;
+
+        // Construct URL
+        let url = `${this.configService.API_URL}/records/export?file_format=excel&results_filter=${resultsFilter}&token=${token}`;
+
+        if (formattedStartDate) {
+          url += `&start_date=${formattedStartDate}`;
+        }
+        if (formattedEndDate) {
+          url += `&end_date=${formattedEndDate}`;
+        }
+        if (this.selectedDateType) {
+          url += `&date_type=${this.selectedDateType}`;
+        }
+
+        // Open in new tab
+        window.open(url, '_blank');
+
+        this.isExporting = false;
+        this.snackBar.open('Export started in new tab', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top'
+        });
+      },
+      error: (error) => {
+        console.error('Failed to get export token:', error);
+        this.isExporting = false;
+        this.snackBar.open('Failed to initiate export', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
     });
   }
 

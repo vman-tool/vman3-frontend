@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ConfigService } from 'app/app.service';
@@ -8,7 +8,7 @@ import { ConfigService } from 'app/app.service';
   providedIn: 'root',
 })
 export class DataSyncService {
-  constructor(private http: HttpClient, private configService: ConfigService) {}
+  constructor(private http: HttpClient, private configService: ConfigService) { }
 
   syncData(cached: boolean = false): Observable<any> {
     return this.http
@@ -47,6 +47,44 @@ export class DataSyncService {
   getSyncStatus() {
     return this.http.get<any>(
       `${this.configService.API_URL}/odk/sync_status`
+    );
+  }
+
+  exportRecords(
+    startDate?: string,
+    endDate?: string,
+    locations?: string[],
+    dateType?: string,
+    resultsFilter?: string
+  ): Observable<Blob> {
+    let params = new HttpParams().set('file_format', 'excel');
+
+    if (startDate) {
+      params = params.set('start_date', startDate);
+    }
+    if (endDate) {
+      params = params.set('end_date', endDate);
+    }
+    if (locations && locations.length > 0) {
+      params = params.set('locations', locations.join(','));
+    }
+    if (dateType) {
+      params = params.set('date_type', dateType);
+    }
+    if (resultsFilter) {
+      params = params.set('results_filter', resultsFilter);
+    }
+
+    return this.http.get(`${this.configService.API_URL}/records/export`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
+  getExportToken(): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(
+      `${this.configService.API_URL}/records/export-token`,
+      {}
     );
   }
 }
