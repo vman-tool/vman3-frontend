@@ -35,7 +35,7 @@ export class VaFiltersComponent implements OnInit {
   startDate?: Date;
   endDate?: Date;
   selectedLocation: string[] = [];
-  selectedResultsFilter: string = 'both';
+  // selectedResultsFilter: string = 'both';
   allLocations: any[] = [];
   current_user?: any
 
@@ -212,41 +212,41 @@ export class VaFiltersComponent implements OnInit {
     }
   }
 
-  exportRecords(): void {
-    this.isExporting = true;
-    const formattedStartDate = this.startDate
-      ? this.datePipe.transform(this.startDate, 'yyyy-MM-dd')?.toString()
-      : undefined;
-    const formattedEndDate = this.endDate
-      ? this.datePipe.transform(this.endDate, 'yyyy-MM-dd')?.toString()
-      : undefined;
+  // exportRecords(): void {
+  //   this.isExporting = true;
+  //   const formattedStartDate = this.startDate
+  //     ? this.datePipe.transform(this.startDate, 'yyyy-MM-dd')?.toString()
+  //     : undefined;
+  //   const formattedEndDate = this.endDate
+  //     ? this.datePipe.transform(this.endDate, 'yyyy-MM-dd')?.toString()
+  //     : undefined;
 
-    const locations = this.selectedLocation.length > 0 ? this.selectedLocation : undefined;
+  //   const locations = this.selectedLocation.length > 0 ? this.selectedLocation : undefined;
 
-    this.listRecordsService
-      .exportRecords(
-        formattedStartDate,
-        formattedEndDate,
-        locations,
-        this.selectedDateType,
-        this.selectedResultsFilter
-      )
-      .subscribe({
-        next: (blob: Blob) => {
-          // Create download link and trigger download
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `va_records_export_${new Date().toISOString().split('T')[0]}.xlsx`;
-          link.click();
-          window.URL.revokeObjectURL(url);
-          this.isExporting = false;
-        },
-        error: (error: any) => {
-          console.error('Export failed:', error);
-          alert('Failed to export records. Please try again.');
-          this.isExporting = false;
-        },
-      });
-  }
+  //   this.listRecordsService
+  //     .exportRecords(
+  //       formattedStartDate,
+  //       formattedEndDate,
+  //       locations,
+  //       this.selectedDateType,
+  //       // this.selectedResultsFilter
+  //     )
+  //     .subscribe({
+  //       next: (blob: Blob) => {
+  //         // Create download link and trigger download
+  //         const url = window.URL.createObjectURL(blob);
+  //         const link = document.createElement('a');
+  //         link.href = url;
+  //         link.download = `va_records_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+  //         link.click();
+  //         window.URL.revokeObjectURL(url);
+  //         this.isExporting = false;
+  //       },
+  //       error: (error: any) => {
+  //         console.error('Export failed:', error);
+  //         alert('Failed to export records. Please try again.');
+  //         this.isExporting = false;
+  //       },
+  //     });
+  // }
 }

@@ -62,7 +62,7 @@
         <button (click)="applyFilters()" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
           Apply
         </button>
-        <button (click)="exportRecords()" [disabled]="isExporting" class="px-6 py-2 font-bold text-white rounded"
+        <!-- <button (click)="exportRecords()" [disabled]="isExporting" class="px-6 py-2 font-bold text-white rounded"
           [ngClass]="isExporting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'">
           <span *ngIf="!isExporting">
             <i class="ph-download-simple mr-1"></i> Export
@@ -71,7 +71,7 @@
             <mat-spinner diameter="20" class="mr-2" color="accent"></mat-spinner>
             Exporting...
           </span>
-        </button>
+        </button> -->
         <button (click)="resetFilters()"
           class="px-6 py-2 font-bold text-white bg-yellow-500 rounded hover:bg-yellow-600">
           Reset
