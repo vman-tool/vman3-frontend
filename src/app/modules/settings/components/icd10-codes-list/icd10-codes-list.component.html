@@ -3,8 +3,10 @@
         <div class="flex items-center gap-3">
             <span class="mb-6 text-l font-semibold">Codes</span>
         </div>
-        <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddICD10()">Add ICD10
-            Codes</button>
+        @if(canAddCodes){
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddICD10()">Add ICD10
+                Codes</button>
+        }
     </div>
 
     <div *ngIf="{

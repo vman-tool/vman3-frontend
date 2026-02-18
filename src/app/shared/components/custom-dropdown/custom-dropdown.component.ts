@@ -12,6 +12,7 @@ export class CustomDropdownComponent {
   @Input() options: { value: string; label: string }[] = []; // Dropdown options
   @Input() selectedValue: string | undefined = ''; // Selected value
   @Output() selectedValueChange = new EventEmitter<string>(); // Emit changes
+  @Input() widthClass = 'w-40';  // default Tailwind width
 
   // Handle value changes
   onChange(value: string) {

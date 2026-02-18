@@ -58,6 +58,16 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   @ViewChild('fileInput') fileInput!: ElementRef;
   requiredHeadersAdditions = ['instanceid'];
+
+  // Data export option: 'combined' = combined PCVA & CCVA, 'ccva' = CCVA-data only, 'pcva' = PCVA-data only
+
+  // Filter options for Data Export / Filtering
+  selectedDateType: 'submission_date' | 'interview_date' | 'death_date' = 'submission_date';
+  filter_startDate: string | null = null;
+  filter_endDate: string | null = null;
+  includePcva: boolean = true;
+  includeCcva: boolean = true;
+
   requiredHeaders = [
     'isneonatal',
     'isadult',
@@ -131,13 +141,14 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       case 'data-synchronization':
         this.loadDataSyncTab();
         break;
-        this.loadDataSyncTab();
-        break;
       // case 'questions-sync':
       //   this.loadQuestionsSyncTab();
       //   break;
       case 'settings':
         this.loadSettingsTab();
+        break;
+      case 'data-export':
+        this.loadDataExportTab();
         break;
       default:
         console.warn(`Unknown tab: ${tabName}`);
@@ -156,6 +167,40 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     // Data sync tab loading completes when sync status is loaded
     // (this is handled in the loadSyncStatusFromSettings callback)
+  }
+
+  // Load Data Export tab resources
+  loadDataExportTab() {
+    console.log('Loading Data Export tab...');
+    this.isSettingsTabLoading = true;
+
+    // Reuse settings config loader for now (fetch any settings if needed)
+    this.loadSettingsConfig()
+      .then(() => {
+        this.isSettingsTabLoading = false;
+        console.log('Data Export settings loaded');
+      })
+      .catch((error) => {
+        this.isSettingsTabLoading = false;
+        console.error('Error loading Data Export settings:', error);
+      });
+  }
+
+  exportData() {
+    // Temporary export handler - implement actual export logic here
+    console.log('Starting export with filters:', {
+      startDate: this.filter_startDate,
+      endDate: this.filter_endDate,
+      dateType: this.selectedDateType,
+      includePcva: this.includePcva,
+      includeCcva: this.includeCcva,
+    });
+
+    this.snackBar.open('Export started', 'Close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 3000,
+    });
   }
 
 

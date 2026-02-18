@@ -2,8 +2,10 @@ import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, lastValueFrom, map, Observable } from 'rxjs';
 import { AddIcd10CategoryTypeComponent } from '../../dialogs/add-icd10-category-type/add-icd10-category-type.component';
+import * as privileges  from 'app/shared/constants/privileges.constants';
+import { AuthService } from 'app/core/services/authentication/auth.service';
 
 @Component({
   selector: 'app-icd10-category-type',
@@ -15,11 +17,15 @@ export class Icd10CategoryTypeComponent {
     loadingData: boolean = false;
     pageNumber?: number;
     limit?: number;
+  canUpdateCodeCategoryType: boolean = false;
+  canDeleteCodeCategoryType: boolean = false;
+  canAddCodeCategoryType: boolean = false;
     
     constructor(
       private snackBar: MatSnackBar,
       public dialog: MatDialog,
-      private pcvaSettings: PcvaSettingsService
+      private pcvaSettings: PcvaSettingsService,
+      private authService: AuthService
     ){}
   
     notificationMessage(message: string): void {
@@ -32,6 +38,12 @@ export class Icd10CategoryTypeComponent {
   
     ngOnInit(): void {
       this.loadICD10CodeCategoryTypes();
+    }
+
+    async runPrivilegesCheck() {
+      this.canAddCodeCategoryType = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_CREATE_ICD10_CATEGORY_TYPES]));
+      this.canUpdateCodeCategoryType = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_UPDATE_ICD10_CATEGORY_TYPES]));
+      this.canDeleteCodeCategoryType = await lastValueFrom(this.authService.hasPrivilege([privileges.PCVA_DELETE_ICD10_CATEGORY_TYPES]));
     }
   
     loadICD10CodeCategoryTypes(){

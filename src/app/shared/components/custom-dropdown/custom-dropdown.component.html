@@ -1,4 +1,4 @@
-<div class="relative w-40">
+<div [class]="'relative ' + (widthClass || 'w-40')">
   <!-- Dropdown Select -->
   <select id="malariaStatus" [(ngModel)]="selectedValue" (ngModelChange)="onChange($event)"
     class="block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm appearance-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
