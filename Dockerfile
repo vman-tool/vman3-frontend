@@ -21,7 +21,7 @@
 # CMD ["nginx", "-g", "daemon off;"]
 
 # Stage 1: Build the Angular app
-FROM node:18-alpine as builder
+FROM node:22-alpine as builder
 
 WORKDIR /app
 
