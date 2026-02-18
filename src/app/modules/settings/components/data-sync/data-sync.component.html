@@ -363,11 +363,11 @@
         <!-- Filter Configuration Card -->
         <div class="p-5 bg-gray-50 rounded-lg border border-gray-200">
 
-          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             <!-- Date Range -->
-            <div class="space-y-2">
+            <div class="space-y-2 md:col-span-2 xl:col-span-2">
               <label class="block text-sm font-medium text-gray-700">Date Range</label>
-              <div class="flex items-center space-x-2">
+              <div class="flex flex-col sm:flex-row items-center sm:space-x-2 space-y-2 sm:space-y-0">
                 <div class="relative w-full">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-calendar text-gray-400"></i>
@@ -375,7 +375,8 @@
                   <input id="filterStartDate" type="date" [(ngModel)]="filter_startDate"
                     class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm transition-colors" />
                 </div>
-                <span class="text-gray-500 font-medium">-</span>
+                <span class="hidden sm:inline text-gray-500 font-medium">-</span>
+                <span class="sm:hidden text-gray-500 font-medium">to</span>
                 <div class="relative w-full">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-calendar text-gray-400"></i>
@@ -399,9 +400,10 @@
             </div>
 
             <!-- Include Checkboxes -->
-            <div class="space-y-2">
+            <div class="space-y-2 xl:col-span-3">
               <label class="block text-sm font-medium text-gray-700">Include Results</label>
-              <div class="flex flex-col space-y-3 p-3 bg-white rounded-lg border border-gray-200">
+              <div
+                class="flex flex-col sm:flex-row xl:flex-row space-y-3 sm:space-y-0 sm:space-x-6 xl:space-x-6 space-x-0 xl:space-y-0 p-3 bg-white rounded-lg border border-gray-200">
                 <label class="inline-flex items-center space-x-3 cursor-pointer group">
                   <input type="checkbox" [(ngModel)]="includePcva"
                     class="form-checkbox w-5 h-5 text-green-600 rounded focus:ring-green-500 transition duration-150 ease-in-out" />
