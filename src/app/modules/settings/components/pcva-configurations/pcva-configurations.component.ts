@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, model, signal, Signal } from '@angular/core';
 import { PCVAConfigurations } from '../../interface';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,12 +10,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class PcvaConfigurationsComponent {
 
-  config : PCVAConfigurations = {
+  config = model<PCVAConfigurations>({
     useICD11 : false,
-    vaAssignmentLimit : 2,
+    vaAssignmentLimit : 3,
     concordanceLevel : 2,
     showOtherCodersWork: true,
-  }
+  })
 
   constructor(private pcvaSettingsService: PcvaSettingsService, private snackBar: MatSnackBar){}
 
@@ -29,18 +29,24 @@ export class PcvaConfigurationsComponent {
 
   ngOnInit(){
     this.pcvaSettingsService.getPCVAConfigurations().subscribe((response: any) => {
-      console.log(response)
-      this.config = response?.data?.length ? response?.data : this.config;
+      this.config.set(response?.data ? response?.data : this.config);
     });
   }
 
+  updateConfig(key: keyof PCVAConfigurations, value: any) {
+    this.config.update(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  }
+
   saveConfigurations(){
-    if(this.config.concordanceLevel > this.config.vaAssignmentLimit){
+    if(this.config().concordanceLevel > this.config().vaAssignmentLimit){
       this.notificationMessage('Concordance level should not exceed VA assignment limit!');
       return;
     }
-    this.pcvaSettingsService.savePCVAConfigurations(this.config).subscribe((response: any) => {
-      this.config = response?.data?.length ? response?.data : this.config
+    this.pcvaSettingsService.savePCVAConfigurations(this.config()).subscribe((response: any) => {
+      this.config.set(response?.data ? response?.data : this.config)
       this.notificationMessage('PCVA Configurations saved successfully!');
     });
   }
