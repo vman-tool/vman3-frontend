@@ -95,7 +95,7 @@
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'label-access-fields'
            }"></i>
 
-          <span class="text-lg font-normal">Label Access Fields</span>
+          <span class="text-lg font-normal">Re-label Access Fields</span>
         </a>
       </li>
     </ul>
@@ -382,7 +382,6 @@
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
       <div>
-        <!-- <p>Under Construction</p> -->
         <app-label-access-fields [system_config]="systemConfigData" [field_mapping]="fieldMappingData"
           [field_labels]="fieldLabels" (load_settings)="onLoadLabelAccess()"></app-label-access-fields>
       </div>
