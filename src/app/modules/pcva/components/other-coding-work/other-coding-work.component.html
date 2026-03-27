@@ -1,0 +1,77 @@
+<table>
+    <tbody>
+        <mat-accordion>
+            @for(discordant of discordants; track $index){
+                <mat-expansion-panel #panel [expanded]="$last" hideToggle>
+                    <mat-expansion-panel-header>
+                        <mat-panel-title> {{ panel.expanded ? '▼' : '▶' }} {{ coders && discordant ? coders[discordant.assigned_va.coder.uuid]+"'s Coding Work" : "" }}
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <tr class="grid grid-cols-12 grid-rows-5 frameA">
+                        <td class="col-span-4 row-span-5"></td>
+                        <td class="col-span-5">Cause of death</td>
+                        <td class="col-span-3">Time interval from onset to death</td>
+                        <td class="col-span-5 flex">
+                            <label class="mr-4">
+                                a: &nbsp;
+                            </label>
+                            {{ discordant?.frameA?.a?.code }} - {{ discordant?.frameA?.a?.name }}
+                    
+                        </td>
+                        <td class="col-span-3">
+                            {{ discordant?.frameA?.timeinterval_a }}
+                        </td>
+                        <td class="col-span-5 flex">
+                            <label class="mr-4">
+                                b: &nbsp;
+                            </label>
+                            {{ discordant?.frameA?.b?.code }} - {{ discordant?.frameA?.b?.name }}
+                            
+                            </td>
+                            <td class="col-span-3">
+                                {{ discordant?.frameA?.timeinterval_b }}
+                            </td>
+                        <td class="col-span-5 flex">
+                            <label class="mr-4">
+                                c: &nbsp;
+                            </label>
+                            {{ discordant?.frameA?.c?.code }} - {{ discordant?.frameA?.c?.name }}
+                            
+                            </td>
+                            <td class="col-span-3">
+                                {{ discordant?.frameA?.timeinterval_c }}
+                            </td>
+                        <td class="col-span-5 flex">
+                            <label class="mr-4">
+                                d: &nbsp;
+                            </label>
+                            {{ discordant?.frameA?.d?.code }} - {{ discordant?.frameA?.d?.name }}
+                            
+                            </td>
+                            <td class="col-span-3">
+                                {{ discordant?.frameA?.timeinterval_d }}
+                            </td>
+                        <td class="col-span-4">
+                            Other significant conditions contributing to death
+                        </td>
+                        <td class="col-span-8">
+                            {{ discordant?.frameA?.contributories | joinIcdCodes:", " }}
+                        </td>
+
+                        @if(discordant?.clinicalNotes){
+                            <td class="col-span-12 mt-2">
+                                Clinical Notes
+                            </td>
+                            <td class="col-span-12 mt-2">
+                                <p class="text-justify hyphens-auto leading-relaxed">
+                                    {{ discordant?.clinicalNotes ?? "-" }}
+                                </p>
+                            </td>
+                        }
+                        
+                    </tr>
+                </mat-expansion-panel>
+            }
+        </mat-accordion>
+    </tbody>
+</table>

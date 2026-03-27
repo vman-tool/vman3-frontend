@@ -95,8 +95,9 @@
                                 id="">
                         </td>
                         <td class="col-span-4 mt-2">
-                            Other significant conditions contributing to death (time intervals can be included in brackets after
-                            the conditions)
+                            Other significant conditions contributing to death
+                            <!-- (time intervals can be included in brackets after
+                            the conditions) -->
                         </td>
                         <td class="col-span-8 mt-2">
                             <app-searchable-multi-select (change)="setContributories($event)" [selectedOptions]="selectedContributories || []" [options]="icdCodes!" [placeholder]="'Select Disease'" [multiSelect]="true"></app-searchable-multi-select>
@@ -388,6 +389,24 @@
                             </td>
                         </tr>
                     </mat-expansion-panel>
+
+                    @if(showOtherCodersWork){
+                        <mat-expansion-panel [expanded]="panelOtherCodersState()" (opened)="panelOtherCodersState.set(true)"
+                            (closed)="panelOtherCodersState.set(false)" hideToggle *ngIf="allowChat && vaRecord && current_user">
+                            <mat-expansion-panel-header class="mat-expansion-panel-header-colored">
+                                <mat-panel-title> {{panelOtherCodersState() ? '▼' : '▶'}} Other Coders' Work
+                                </mat-panel-title>
+                            </mat-expansion-panel-header>
+                            <tr class="grid grid-cols-12 mt-2">
+                                <div class="col-span-12" *ngIf="panelOtherCodersState()">
+                                    <app-other-coding-work
+                                        [discordants]="discordants"
+                                        [coders]="coders"
+                                    ></app-other-coding-work>
+                                </div>
+                            </tr>
+                        </mat-expansion-panel>
+                    }
 
                     <mat-expansion-panel [expanded]="panelChatSectionOpenState()" (opened)="panelChatSectionOpenState.set(true)"
                         (closed)="panelChatSectionOpenState.set(false)" hideToggle *ngIf="allowChat && vaRecord && current_user">

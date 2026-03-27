@@ -1,0 +1,21 @@
+mat-accordion {
+    border-radius: 0px !important;
+
+    .mat-expansion-panel {
+        border-radius: 0px !important;
+        margin-bottom: 0;
+        margin-top: 0;
+
+        .mat-expansion-panel-header {
+            padding-top: 10px 0;
+        }
+
+        .mat-expansion-panel-header-colored {
+            background-color: rgb(170, 174, 183);
+
+            mat-panel-title {
+                color: #fff !important;
+            }
+        }
+    }
+}

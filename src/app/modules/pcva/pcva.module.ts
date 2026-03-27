@@ -16,6 +16,8 @@ import { FormsModule } from '@angular/forms';
 import { PcvaResultsComponent } from './components/pcva-results/pcva-results.component';
 import { UnassignVaComponent } from './dialogs/unassign-va/unassign-va.component';
 import { DiscordantsChatsComponent } from './components/discordants-chats/discordants-chats.component';
+import { OtherCodingWorkComponent } from './components/other-coding-work/other-coding-work.component';
+import { JoinIcdCodesPipe } from './pipes/join-icd-codes.pipe';
 
 
 
@@ -39,7 +41,9 @@ import { DiscordantsChatsComponent } from './components/discordants-chats/discor
     PcvaRoutingModule,
     SharedModule,
     MaterialModule,
-    FormsModule
+    FormsModule,
+    OtherCodingWorkComponent,
+    JoinIcdCodesPipe
   ],
   exports: [
     PcvaComponent

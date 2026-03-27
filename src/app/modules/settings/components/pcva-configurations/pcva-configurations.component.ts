@@ -13,7 +13,8 @@ export class PcvaConfigurationsComponent {
   config : PCVAConfigurations = {
     useICD11 : false,
     vaAssignmentLimit : 2,
-    concordanceLevel : 2
+    concordanceLevel : 2,
+    showOtherCodersWork: true,
   }
 
   constructor(private pcvaSettingsService: PcvaSettingsService, private snackBar: MatSnackBar){}
@@ -28,6 +29,7 @@ export class PcvaConfigurationsComponent {
 
   ngOnInit(){
     this.pcvaSettingsService.getPCVAConfigurations().subscribe((response: any) => {
+      console.log(response)
       this.config = response?.data?.length ? response?.data : this.config;
     });
   }

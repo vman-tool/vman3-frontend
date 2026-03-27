@@ -67,6 +67,7 @@ export interface PCVAConfigurations {
   useICD11: boolean;
   vaAssignmentLimit: number;
   concordanceLevel: number;
+  showOtherCodersWork: boolean;
 }
 
 export interface SyncStatus {

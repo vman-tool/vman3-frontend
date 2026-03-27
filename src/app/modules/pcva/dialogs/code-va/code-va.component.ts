@@ -2,7 +2,6 @@ import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
 import { debounceTime, distinctUntilChanged, map, Observable, Subject, takeUntil } from 'rxjs';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
@@ -29,7 +28,6 @@ export class CodeVaComponent implements OnInit, AfterViewInit{
     @Inject(MAT_DIALOG_DATA) public data: any,
     private matDialogRef: MatDialogRef<CodeVaComponent>,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService,
     private genericIndexedDbService: GenericIndexedDbService,
     private snackBar: MatSnackBar
   ) { }
