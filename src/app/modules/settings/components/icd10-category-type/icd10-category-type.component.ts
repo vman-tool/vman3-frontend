@@ -38,6 +38,7 @@ export class Icd10CategoryTypeComponent {
   
     ngOnInit(): void {
       this.loadICD10CodeCategoryTypes();
+      this.runPrivilegesCheck();
     }
 
     async runPrivilegesCheck() {

@@ -84,6 +84,8 @@ export class DiscordantsChatsComponent implements OnInit, AfterViewChecked {
         ...this.coders,
         [coder]: newName
       }
+
+      console.log(this.coders)
     }
   }
 

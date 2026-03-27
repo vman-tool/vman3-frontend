@@ -6,11 +6,12 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { catchError, lastValueFrom, map, Observable, throwError } from 'rxjs';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
-import { settingsConfigData } from 'app/modules/settings/interface';
+import { PCVAConfigurations, settingsConfigData } from 'app/modules/settings/interface';
 import { OBJECTSTORE_ICD10 } from 'app/shared/constants/indexedDB.constants';
 import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { assign_coder_chat_name } from '../../helpers/discordants-chats.helpers';
+import { PcvaSettingsService } from 'app/modules/settings/services/pcva-settings.service';
 
 @Component({
   selector: 'app-discordants-va',
@@ -29,12 +30,15 @@ export class DiscordantsVaComponent implements OnInit {
   pageSizeOptions = [10, 20, 50, 100]
   limit?: number = 10;
 
+  pcvaSettings?: PCVAConfigurations; 
+
 
   constructor(
       private discordantsVaService: DiscordantsVaService,
       public dialog: MatDialog,
       private genericIndexedDbService: GenericIndexedDbService,
       private settingConfigService: SettingConfigService,
+      private pcvaSettingsService: PcvaSettingsService,
       private snackBar: MatSnackBar
     ) {}
 
@@ -51,23 +55,32 @@ export class DiscordantsVaComponent implements OnInit {
     this.current_user = JSON.parse(localStorage.getItem('current_user') || "")
     this.loadDiscordants()
     this.loadSettings()
+    this.loadPCVASettings()
   }
 
   async loadSettings(){
-      if(!this.icdCodes){
-        const codes = await this.genericIndexedDbService.getDataObjectStore(OBJECTSTORE_ICD10, OBJECTKEY_ICD10_INDEXDB);
-        this.icdCodes = codes?.value;
-      }
-  
-      this.fieldsMapping ? this.fieldsMapping : this.settingConfigService.getSettingsConfig().subscribe({
-        next: (response: settingsConfigData | null) => {
-          if (response != null) {
-            this.fieldsMapping = response.field_mapping
-          }
-        },
-        error: (error: any) => console.error('Error fetching settings config:', error)
-      });
+    if(!this.icdCodes){
+      const codes = await this.genericIndexedDbService.getDataObjectStore(OBJECTSTORE_ICD10, OBJECTKEY_ICD10_INDEXDB);
+      this.icdCodes = codes?.value;
     }
+
+    this.fieldsMapping ? this.fieldsMapping : this.settingConfigService.getSettingsConfig().subscribe({
+      next: (response: settingsConfigData | null) => {
+        if (response != null) {
+          this.fieldsMapping = response.field_mapping
+        }
+      },
+      error: (error: any) => console.error('Error fetching settings config:', error)
+    });
+  }
+
+  loadPCVASettings(){
+    this.pcvaSettingsService.getPCVAConfigurations().subscribe({
+      next: (response: any) => {
+        this.pcvaSettings = response?.data;
+      }
+    })
+  }
     
   loadDiscordants() {
     this.loadingData = true
@@ -111,7 +124,7 @@ export class DiscordantsVaComponent implements OnInit {
 
     async onResolveDiscorant(va: any){
       const discordantData: any = await lastValueFrom(this.discordantsVaService.getDiscordantMessages(va));
-      if(discordantData?.data?.discordant){
+      if(discordantData?.data?.coded && discordantData?.data?.discordants){
         let dialogConfig = new MatDialogConfig();
         dialogConfig.autoFocus = true;
         dialogConfig.width = "95vw";
@@ -127,16 +140,20 @@ export class DiscordantsVaComponent implements OnInit {
             }
           }),
           fieldsMapping: this.fieldsMapping,
-          codedData: discordantData?.data?.discordant,
+          codedData: discordantData?.data?.coded,
           messages: discordantData?.data?.messages,
+          discordants: discordantData?.data?.discordants,
           coders: assign_coder_chat_name(discordantData?.data?.coders),
-          allowChat: true
+          allowChat: true,
+          showOtherCodersWork: this.pcvaSettings?.showOtherCodersWork
         }
         this.dialog.open(CodeVaComponent, dialogConfig).afterClosed().subscribe((response: any) => {
           if(response){
             this.loadDiscordants();
           }
         })
+      } else {
+        this.notificationMessage("This VA record failed to get coding results!")
       }
     }
 

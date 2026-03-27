@@ -18,7 +18,9 @@ export class CodingSheetComponent implements OnInit {
   @Input() allowChat?: boolean = false;
   @Input() messages?: any[] = [];
   @Input() current_user?: any;
-  @Input() coders?: any;
+  @Input() coders?: any[] = [];
+  @Input() discordants?: any[] = [];
+  @Input() showOtherCodersWork?: boolean = true;
 
   @Output() save: EventEmitter<any> = new EventEmitter<any>();
 
@@ -31,6 +33,7 @@ export class CodingSheetComponent implements OnInit {
   readonly subPanelDOpenState = signal(false);
   readonly panelClinicalOpenState = signal(false);
   readonly panelChatSectionOpenState = signal(false);
+  readonly panelOtherCodersState = signal(false);
   
   gender: string = "";
   birthDate: string = "";

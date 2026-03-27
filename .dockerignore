@@ -1,1 +1,5 @@
+.angular
+.git
+dist
+node_modules
 src/assets/config.json

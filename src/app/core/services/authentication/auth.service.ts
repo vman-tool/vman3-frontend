@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, lastValueFrom, map, mergeMap, of, tap} from 'rxjs';
+import { Observable, catchError, lastValueFrom, map, mergeMap, of, tap, throwError } from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 import { AuthEmitters } from 'app/core/emitters/auth.emitters';
@@ -51,7 +51,7 @@ export class AuthService {
       .set('password', password);
     return this.http!.post(`${this.configService.API_URL}/auth/login`, formData, {headers: headers, withCredentials: true}).pipe(
       map((response: any) => {
-        if(this.success){
+        if (response?.access_token && response?.refresh_token) {
           this.saveUserData(response)
         }
         return response
@@ -94,7 +94,11 @@ export class AuthService {
   }
   
   refresh_token(): Observable<any>{
-    const refresh_token = localStorage.getItem("refresh_token")!
+    const refresh_token = localStorage.getItem("refresh_token");
+
+    if (!refresh_token || refresh_token === 'undefined' || refresh_token === 'null') {
+      return throwError(() => new Error('Missing refresh token'));
+    }
 
     const headers = new HttpHeaders({
       'refresh-token': refresh_token
@@ -166,6 +170,10 @@ export class AuthService {
   }
 
   saveUserData(response: any) {
+    if (!response?.access_token || !response?.refresh_token) {
+      return;
+    }
+
     this.clearUserData()
 
     localStorage.setItem("access_token", response?.access_token)
