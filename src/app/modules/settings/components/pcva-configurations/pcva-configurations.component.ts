@@ -12,7 +12,7 @@ export class PcvaConfigurationsComponent {
 
   config = model<PCVAConfigurations>({
     useICD11 : false,
-    vaAssignmentLimit : 3,
+    vaAssignmentLimit : 2,
     concordanceLevel : 2,
     showOtherCodersWork: true,
   })
@@ -45,9 +45,14 @@ export class PcvaConfigurationsComponent {
       this.notificationMessage('Concordance level should not exceed VA assignment limit!');
       return;
     }
-    this.pcvaSettingsService.savePCVAConfigurations(this.config()).subscribe((response: any) => {
-      this.config.set(response?.data ? response?.data : this.config)
-      this.notificationMessage('PCVA Configurations saved successfully!');
+    this.pcvaSettingsService.savePCVAConfigurations(this.config()).subscribe({
+      next: (response: any) => {
+        this.config.set(response?.data ? response?.data : this.config)
+        this.notificationMessage('PCVA Configurations saved successfully!');
+      },
+      error: (error: any) => {
+        this.notificationMessage("Failed to save PCVA configutation. Please, contact your IT Administrator!")
+      }
     });
   }
 }
