@@ -43,7 +43,6 @@ export class SubmissionsComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.initial();
-    this.loadRecords();
     this.filterService = inject(FilterService);
     this.setupEffect();
   }

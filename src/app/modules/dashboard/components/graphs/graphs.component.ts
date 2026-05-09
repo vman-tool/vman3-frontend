@@ -1,7 +1,6 @@
 import {
   Component,
   OnInit,
-  ChangeDetectorRef,
   effect,
   inject,
 } from '@angular/core';
@@ -71,7 +70,6 @@ export class GraphsComponent implements OnInit {
 
   constructor(
     public chartsService: ChartsService,
-    private cdr: ChangeDetectorRef,
     private ccvaService: CcvaService,
     private filterService: FilterService
   ) {
@@ -228,8 +226,7 @@ export class GraphsComponent implements OnInit {
             ],
           };
 
-          this.isLoading = false; // Set loading to false when data is fetched
-          this.cdr.detectChanges(); // Trigger change detection to update the chart
+          this.isLoading = false;
         },
         (error) => {
           this.errorMessage = error.message;

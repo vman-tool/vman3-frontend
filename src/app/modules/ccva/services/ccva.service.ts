@@ -1,11 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { of, tap } from 'rxjs';
 import { ConfigService } from '../../../app.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CcvaService {
+  private cache = new Map<string, any>();
+
   constructor(private http: HttpClient, private configService: ConfigService) {}
   get_ccva_by_id(
     ccvaId: string,
@@ -71,7 +74,18 @@ export class CcvaService {
     if (ccvaId && ccvaId.length > 0) {
       pathUrl = `${this.configService.API_URL}/ccva?ccva_id=${ccvaId}`;
     }
-    return this.http.get(pathUrl, { params });
+
+    const cacheKey = pathUrl + params.toString();
+    const request$ = this.http.get(pathUrl, { params }).pipe(
+      tap((data) => this.cache.set(cacheKey, data))
+    );
+
+    if (this.cache.has(cacheKey)) {
+      request$.subscribe({ error: () => {} });
+      return of(this.cache.get(cacheKey));
+    }
+
+    return request$;
   }
 
   // Get the list of CCVA results

@@ -69,8 +69,19 @@
             <label for="ccvaAlgorithm" class="block mb-1 text-sm font-medium text-gray-700">CCVA Algorithm</label>
             <app-custom-dropdown id="ccvaAlgorithm" [options]="[
             { value: 'InterVA5', label: 'InterVA5' },
+            { value: 'InterVA6', label: 'InterVA6 (2022)' },
             { value: 'InsilicoVA', label: 'InsilicoVA' }
           ]" [(selectedValue)]="ccvaAlgorithm"></app-custom-dropdown>
+          </div>
+
+          <!-- COVID Status Dropdown (only for InterVA6) -->
+          <div class="" *ngIf="ccvaAlgorithm === 'InterVA6'">
+            <label for="covidStatus" class="block mb-1 text-sm font-medium text-gray-700">COVID Prevalence</label>
+            <app-custom-dropdown id="covidStatus" [options]="[
+            { value: 'h', label: 'High' },
+            { value: 'l', label: 'Low' },
+            { value: 'v', label: 'Very Low' }
+          ]" [(selectedValue)]="covidStatus"></app-custom-dropdown>
           </div>
         </div>
 

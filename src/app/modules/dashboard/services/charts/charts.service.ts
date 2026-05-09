@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, map, catchError, of, tap } from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 
@@ -10,6 +10,7 @@ import { ErrorEmitters } from 'app/core/emitters/error.emitters';
 export class ChartsService {
   error?: string;
   success?: boolean;
+  private cache = new Map<string, any>();
 
   constructor(private http: HttpClient, private configService: ConfigService) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
@@ -42,10 +43,13 @@ export class ChartsService {
     if (locations && locations.length > 0) {
       params = params.set('locations', locations.join(','));
     }
-    return this.http
+
+    const cacheKey = params.toString();
+    const request$ = this.http
       .get<any>(`${this.configService.API_URL}/statistics/charts`, { params })
       .pipe(
         map((response: any) => response),
+        tap((data) => this.cache.set(cacheKey, data)),
         catchError((error: any) => {
           console.log('Error: ', error);
           return of({
@@ -56,5 +60,12 @@ export class ChartsService {
           });
         })
       );
+
+    if (this.cache.has(cacheKey)) {
+      request$.subscribe();
+      return of(this.cache.get(cacheKey));
+    }
+
+    return request$;
   }
 }
