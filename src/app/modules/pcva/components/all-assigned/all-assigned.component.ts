@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AllAssignedService } from '../../services/all-assigned/all-assigned.service';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, throwError, lastValueFrom } from 'rxjs';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ViewVaComponent } from '../../../../shared/dialogs/view-va/view-va.component';
 import { CodeVaComponent } from '../../dialogs/code-va/code-va.component';
@@ -43,22 +43,23 @@ export class AllAssignedComponent implements OnInit {
     this.getVASettings();
   }
 
-  async getVASettings() {
-    // TODO: Use ICD10/ICD11 Depending on user settings.
-
-    if(!this.icdCodes){
+  async getVASettings(): Promise<void> {
+    // TODO: Use ICD10/ICD11 depending on user settings.
+    if (!this.icdCodes) {
       const codes = await this.genericIndexedDbService.getDataObjectStore(OBJECTSTORE_ICD10, OBJECTKEY_ICD10_INDEXDB);
       this.icdCodes = codes?.value;
     }
 
-    this.fieldsMapping ? this.fieldsMapping : this.settingConfigService.getSettingsConfig().subscribe({
-      next: (response: settingsConfigData | null) => {
+    if (!this.fieldsMapping) {
+      try {
+        const response = await lastValueFrom(this.settingConfigService.getSettingsConfig());
         if (response != null) {
-          this.fieldsMapping = response.field_mapping
+          this.fieldsMapping = response.field_mapping;
         }
-      },
-      error: (error: any) => console.error('Error fetching settings config:', error)
-    });
+      } catch (error: any) {
+        console.error('Error fetching settings config:', error);
+      }
+    }
   }
 
   loadAssignedVas() {
@@ -109,7 +110,9 @@ export class AllAssignedComponent implements OnInit {
     this.dialog.open(ViewVaComponent, dialogConfig)
   }
   
-  onCodeVA(va: any){
+  async onCodeVA(va: any){
+    await this.getVASettings();
+
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
     dialogConfig.width = "95vw";
