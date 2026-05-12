@@ -4,8 +4,7 @@
             <span class="mb-6 text-l font-semibold">Codes</span>
         </div>
         @if(canAddCodes){
-            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddICD10()">Add ICD10
-                Codes</button>
+            <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" (click)="onAddICD10()">Add UCoD</button>
         }
     </div>
 
@@ -66,7 +65,7 @@
             </div>
             
             <div class="overflow-x-auto border border-gray-200 rounded-lg" *ngIf="params?.icd10Data && !loadingData">
-                <table class="w-full divide-y divide-gray-200 table-auto" params?.icd10Data?.data?.length>
+                <table class="w-full divide-y divide-gray-200 table-auto">
                     <thead>
                         <tr>
                             <th

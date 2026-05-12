@@ -26,20 +26,7 @@
                 'text-blue-600 dark:text-blue-500': selectedTab === 'ICD-10',
                 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'ICD-10'
             }"></i>
-                    <span class="text-lg font-normal">ICD 10</span>
-                </a>
-            </li>
-            <li class="me-2">
-                <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
-                    (click)="selectedTab = 'ICD-11'" [ngClass]="{
-            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'ICD-11',
-            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'ICD-11'
-            }">
-                    <i class="fas fa-network-wired me-2" [ngClass]="{
-                'text-blue-600 dark:text-blue-500': selectedTab === 'ICD-11',
-                'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'ICD-11'
-            }"></i>
-                    <span class="text-lg font-normal">ICD 11</span>
+                    <span class="text-lg font-normal">Target Cause List</span>
                 </a>
             </li>
         </ul>

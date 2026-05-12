@@ -12,10 +12,11 @@ import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition
   styleUrl: './assign-va.component.scss'
 })
 export class AssignVaComponent implements OnInit, AfterViewInit {
+  
   vaRecords$?: Observable<any>
   pageNumber?: number = 0;
   pageSizeOptions = [10, 20, 50, 100]
-  limit?: number;
+  limit: number = 10;
   paging?: boolean;
   include_assignments?: boolean = true;
   coder: any;
@@ -50,9 +51,8 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
 
   async loadVARecords(){
     this.loadingData = true
-    this.vaRecords$ = this.vaRecordsService.getUnassignedVARecords({paging: this.paging, page_number: this.pageNumber, limit: this.limit},this.coder?.uuid).pipe(
+    this.vaRecords$ = this.vaRecordsService.getUnassignedVARecords({paging: this.paging, page_number: this.pageNumber != null ? this.pageNumber + 1 : undefined, limit: this.limit},this.coder?.uuid).pipe(
       map((response: any) => {
-        console.log(response)
         if(!this.headers){
           this.headers = Object.keys(response?.data[0])
           this.lastHeader = this.headers[this.headers.length - 1]
@@ -71,7 +71,6 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
 
         this.responsestore = response;
 
-        
         this.assignments = keyBy(flatten(tempAssignments?.map((assignment: any) => {
           return {
             vaId: assignment?.vaId,
@@ -147,11 +146,12 @@ export class AssignVaComponent implements OnInit, AfterViewInit {
   }
 
   onPageChange(event: any) {
-    this.pageNumber = this.pageNumber == 0 && this.pageNumber < event.pageIndex ? event.pageIndex + 1 : this.pageNumber !== 0 && this.pageNumber! > event.pageIndex ? event.pageIndex - 1 : event.pageIndex;
-    this.pageNumber = this.pageNumber! < 0 ? 0 : this.pageNumber;
-    this.limit = Number(event?.pageSize);
+    this.pageNumber = event?.pageIndex ?? 0;
+    this.limit = Number(event?.pageSize ?? this.limit);
     this.loadVARecords();
   }
+
+  
 
   onClose(){
     this.matDialogRef.close(this.reloadOnClose);

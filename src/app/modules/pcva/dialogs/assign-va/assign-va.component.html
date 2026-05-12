@@ -68,8 +68,8 @@
                 </table>
             </div>
         </div>
-        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.vaRecords?.total > 0">
-            <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="params?.vaRecords?.total" [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
+        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="(params?.vaRecords?.total ?? 0) > 0">
+            <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="params?.vaRecords?.total ?? 0" [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
         </div>
     </mat-dialog-content>
     <mat-dialog-actions>
