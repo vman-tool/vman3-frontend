@@ -129,6 +129,13 @@ export class SidebarComponent {
             hasAccess: await this.hasAccess([privileges.ODK_MODULE_VIEW]),
           },
           {
+            displayText: 'Data Dictionary',
+            icon: 'ph ph-books', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon_asset: '',
+            route: '/data-dictionary',
+            hasAccess: await this.hasAccess([privileges.USERS_MODULE_VIEW])
+          },
+          {
             displayText: 'Users',
             icon: 'flaticon-people', // Replace with the actual Flaticon class for a sync/refresh icon
             icon_asset: '',

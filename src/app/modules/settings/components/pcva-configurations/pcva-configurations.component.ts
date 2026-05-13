@@ -19,6 +19,34 @@ export class PcvaConfigurationsComponent {
 
   constructor(private pcvaSettingsService: PcvaSettingsService, private snackBar: MatSnackBar){}
 
+  // UI state for loading manual PCVA data
+  upLoadPCVAData: boolean = false;
+  pcvaDictionaries = [
+    { value: '2016', label: 'WHO 2026' },
+    { value: '2022', label: 'WHO 2022' },
+    { value: 'other', label: 'Custom Dictionary' }
+  ];
+  selectedFileType: string = 'csv';
+  fileToUpload: File | null = null;
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length) {
+      this.fileToUpload = input.files[0];
+    } else {
+      this.fileToUpload = null;
+    }
+  }
+
+  uploadFile() {
+    if (!this.fileToUpload) {
+      this.notificationMessage('No file selected');
+      return;
+    }
+    // Placeholder: implement actual upload logic or emit an event
+    this.notificationMessage(`Uploading ${this.fileToUpload.name} as ${this.selectedFileType}`);
+  }
+
   notificationMessage(message: string): void {
     this.snackBar.open(`${message}`, 'close', {
       horizontalPosition: 'end',

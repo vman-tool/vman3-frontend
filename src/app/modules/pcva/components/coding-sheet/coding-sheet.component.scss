@@ -1,35 +1,187 @@
-.mat-accordion {
-    border-radius: 0px !important;
-
-    .mat-expansion-panel {
-        border-radius: 0px !important;
-        margin-bottom: 0;
-        margin-top: 0;
-        .mat-expansion-panel-header {
-            padding-top: 10px 0;
-        }
-        .mat-expansion-panel-header-colored {
-            background-color: rgb(170, 174, 183);
-            mat-panel-title {
-                color: #fff !important;
-            }
-        }
-    }
+/* ── 12-column grid row ─────────────────────────────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
-.frameA {
-    margin-bottom: 80px !important;
-    z-index: 100 !important;
+/* Column spans */
+.col-1  { grid-column: span 1; }
+.col-2  { grid-column: span 2; }
+.col-3  { grid-column: span 3; }
+.col-4  { grid-column: span 4; }
+.col-5  { grid-column: span 5; }
+.col-6  { grid-column: span 6; }
+.col-7  { grid-column: span 7; }
+.col-8  { grid-column: span 8; }
+.col-9  { grid-column: span 9; }
+.col-10 { grid-column: span 10; }
+.col-11 { grid-column: span 11; }
+.col-12 { grid-column: span 12; }
+
+/* ── Spacing helpers ────────────────────────────────────────────────────── */
+.mt-2  { margin-top: 8px; }
+.mt-4  { margin-top: 16px; }
+.mb-2  { margin-bottom: 8px; }
+.gap-8 { gap: 8px; }
+.ml-4  { margin-left: 16px; }
+
+/* ── Flex row helper (inline label + input pairs) ───────────────────────── */
+.flex-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Typography ─────────────────────────────────────────────────────────── */
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;        /* gray-700 */
+  line-height: 1.4;
+}
+
+.field-note {
+  font-size: 12px;
+  color: #6b7280;        /* gray-500 */
+  line-height: 1.6;
+  padding-top: 4px;
+}
+
+.row-prefix {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  min-width: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Form inputs ────────────────────────────────────────────────────────── */
+.form-input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid #d1d5db;   /* gray-300 */
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 13px;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6366f1;       /* indigo-500, matches Material default */
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.form-input:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
 }
 
 .clinical-notes {
-    outline: 2px solid #969191 !important;
-    border-radius: 5px;
-    padding: 10px;
-    
-    &:focus {
-        border: none !important;
-        box-shadow: none !important;
-        outline: 1px solid #000 !important;
-    }
+  width: 100%;
+  min-height: 200px;
+  max-height: 300px;
+  resize: vertical;
+}
+
+.input-narrow {
+  width: 90px;
+  flex-shrink: 0;
+}
+
+/* ── Radio labels ───────────────────────────────────────────────────────── */
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.radio-label input[type="radio"] {
+  accent-color: #6366f1;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Divider ────────────────────────────────────────────────────────────── */
+.form-divider {
+  height: 1px;
+  background: #e5e7eb;   /* gray-200 */
+  margin: 12px 0;
+}
+
+/* ── Sub-accordion wrapper (indented inside Frame B) ────────────────────── */
+.sub-accordion-wrap {
+  margin-top: 16px;
+  border-left: 3px solid #e5e7eb;
+  padding-left: 8px;
+}
+
+/* ── Form actions footer ────────────────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-primary {
+  padding: 8px 24px;
+  background: #4f46e5;    /* indigo-600 */
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: #4338ca;    /* indigo-700 */
+}
+
+/* ── Material accordion overrides ───────────────────────────────────────── */
+.mat-expansion-panel {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  border: 1px solid #e5e7eb !important;
+  margin-bottom: 8px !important;
+}
+
+.mat-expansion-panel-header-colored {
+  background: #f3f4f6 !important;   /* gray-100 */
+}
+
+.mat-expansion-panel-header-colored:hover {
+  background: #e5e7eb !important;
+}
+
+.mat-panel-title {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+}
+
+.mat-expansion-panel-body {
+  padding: 12px 16px 16px !important;
 }

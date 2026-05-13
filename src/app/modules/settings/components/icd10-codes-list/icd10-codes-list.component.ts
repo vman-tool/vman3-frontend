@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { catchError, lastValueFrom, map, Observable } from 'rxjs';
+import { catchError, lastValueFrom, map, Observable, tap } from 'rxjs';
 import { AddIcd10CodesComponent } from '../../dialogs/add-icd10-codes/add-icd10-codes.component';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges  from 'app/shared/constants/privileges.constants';
@@ -70,6 +70,10 @@ export class Icd10CodesListComponent {
         this.categoriesSelected,
         this.categoryTypesSelected
       ).pipe(
+        tap((response) => {
+          // DEBUG: inspect API response for troubleshooting
+          console.debug('ICD10 API response:', response);
+        }),
         map((response) => {
           this.loadingData = false
          return response;
