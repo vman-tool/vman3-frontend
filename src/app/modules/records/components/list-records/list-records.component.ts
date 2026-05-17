@@ -88,9 +88,6 @@ export class ListRecordsComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          // debug: inspect response
-          // eslint-disable-next-line no-console
-          console.log('loadRecords response', response);
           this.data = response.data;
           this.totalRecords = response.total;
           this.message = response.message;
@@ -107,13 +104,11 @@ export class ListRecordsComponent implements OnInit {
   }
 
   onSearch(): void {
+    this.pageNumber = 1;
     this.loadRecords();
   }
 
   onClearSearch(): void {
-    if (!this.searchValue) {
-      return;
-    }
     this.searchValue = '';
     this.loadRecords();
   }
