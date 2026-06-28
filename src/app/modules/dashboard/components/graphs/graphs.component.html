@@ -1,56 +1,46 @@
 <app-va-filters></app-va-filters>
 
-<div *ngIf="isLoading; else chartsContent " class="grid grid-cols-1 gap-4 md:grid-cols-3">
-  <!-- Skeleton Loader for Bar Chart -->
-  <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
-    <div class="w-full h-60 md:h-72">
-    </div>
+<!-- ── Skeleton loaders ────────────────────────────────────────────────────── -->
+<div *ngIf="isLoading; else chartsContent" class="grid grid-cols-1 gap-4 lg:grid-cols-5">
+  <div class="lg:col-span-2 p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
+    <div class="w-full h-60 md:h-72"></div>
   </div>
-  <!-- Skeleton Loader for Doughnut Chart -->
   <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
-    <div class="w-full h-60 md:h-72">
-    </div>
+    <div class="w-full h-60 md:h-72"></div>
   </div>
-  <!-- Skeleton Loader for Polar Area Chart -->
   <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
-    <div class="w-full h-60 md:h-72">
-    </div>
+    <div class="w-full h-60 md:h-72"></div>
+  </div>
+  <div class="p-4 bg-gray-200 border border-gray-300 rounded-lg shadow-lg animate-pulse">
+    <div class="w-full h-60 md:h-72"></div>
   </div>
 </div>
 
+<!-- ── Charts ──────────────────────────────────────────────────────────────── -->
 <ng-template #chartsContent>
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-3">
-    <!-- Bar Chart -->
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" id="monthly_submissions">
-      <div class="flex items-center justify-between mb-4">
-        <!-- Title centered -->
-        <span class="flex-grow block text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
-        <!-- Download icon on the right -->
-        <img (click)="downloadChart('monthly_submissions')" src="assets/icons/download.svg" class="h-6 cursor-pointer"
-          alt="Download chart" />
-      </div>
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-5">
 
-      <div class="flex justify-center w-full">
-        <div class="w-full h-60 md:h-72">
-          <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
-            [legend]="barChartLegend" [type]="barChartType">
-          </canvas>
-        </div>
+    <!-- Monthly Submissions — bar chart expands to fill row height -->
+    <div class="lg:col-span-2 p-4 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col" id="monthly_submissions">
+      <div class="flex items-center justify-between mb-4 shrink-0">
+        <span class="flex-grow block text-xl font-semibold text-center text-gray-700">Monthly Submissions</span>
+        <img (click)="downloadChart('monthly_submissions')" src="assets/icons/download.svg" class="h-6 cursor-pointer" alt="Download chart" />
+      </div>
+      <div class="flex-1 min-h-0">
+        <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
+          [legend]="barChartLegend" [type]="barChartType">
+        </canvas>
       </div>
     </div>
 
-    <!-- Doughnut Chart -->
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" id="distribution_age">
-      <div class="flex items-center justify-between mb-4">
-        <!-- Title centered -->
+    <!-- Distribution by Age Groups — doughnut vertically centred in available space -->
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col" id="distribution_age">
+      <div class="flex items-center justify-between mb-4 shrink-0">
         <span class="flex-grow block text-xl font-semibold text-center text-gray-700">Distribution of VA by Age Groups</span>
-        <!-- Download icon on the right -->
-        <img (click)="downloadChart('distribution_age')" src="assets/icons/download.svg" class="h-6 cursor-pointer"
-          alt="Download chart" />
+        <img (click)="downloadChart('distribution_age')" src="assets/icons/download.svg" class="h-6 cursor-pointer" alt="Download chart" />
       </div>
-      <!-- <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Distribution by Age Groups</span> -->
-      <div class="flex items-center justify-center w-full">
-        <div class="flex items-center justify-center w-auto h-60 md:h-72">
+      <div class="flex-1 min-h-0 flex items-center justify-center">
+        <div class="w-full max-h-72 h-full">
           <canvas baseChart [datasets]="doughnutChartData.datasets" [labels]="doughnutChartData.labels"
             [options]="doughnutChartOptions" [legend]="doughnutChartLegend" [type]="doughnutChartType">
           </canvas>
@@ -58,35 +48,101 @@
       </div>
     </div>
 
-    <!-- Polar Area Chart -->
-    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" id="gender_distribution">
-      <div class="flex items-center justify-between mb-4">
-        <!-- Title centered -->
+    <!-- Distribution by Sex — polar chart vertically centred in available space -->
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col" id="gender_distribution">
+      <div class="flex items-center justify-between mb-4 shrink-0">
         <span class="flex-grow block text-xl font-semibold text-center text-gray-700">Distribution of VA by Sex</span>
-        <!-- Download icon on the right -->
-        <img (click)="downloadChart('gender_distribution')" src="assets/icons/download.svg" class="h-6 cursor-pointer"
-          alt="Download chart" />
+        <img (click)="downloadChart('gender_distribution')" src="assets/icons/download.svg" class="h-6 cursor-pointer" alt="Download chart" />
       </div>
-      <!-- <span class="block mb-4 text-xl font-semibold text-center text-gray-700">Gender Distribution (Polar Area
-        Chart)</span> -->
-      <div class="flex justify-center w-full">
-        <div class="w-full h-60 md:h-72">
-          <canvas baseChart [data]="polarAreaChartData" [options]="polarAreaChartOptions" [type]="'polarArea'"
-            [legend]="true">
+      <div class="flex-1 min-h-0 flex items-center justify-center">
+        <div class="w-full max-h-72 h-full">
+          <canvas baseChart [data]="polarAreaChartData" [options]="polarAreaChartOptions" [type]="'polarArea'" [legend]="true">
           </canvas>
         </div>
       </div>
     </div>
+
+    <!-- Dataset Overview — col-span-1 = 20% -->
+    <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col" id="dataset_overview">
+
+      <div class="mb-4">
+        <span class="block text-xl font-semibold text-center text-gray-700">Dataset Overview</span>
+      </div>
+
+      <div *ngIf="!dataOverview" class="flex-1 flex items-center justify-center text-gray-300 text-sm">
+        No data
+      </div>
+
+      <ng-container *ngIf="dataOverview">
+
+        <!-- Total Records -->
+        <div class="text-center mb-4 pb-4 border-b border-gray-100">
+          <div class="text-3xl font-bold text-blue-600">{{ dataOverview.total | number }}</div>
+          <div class="text-xs text-gray-400 mt-1 uppercase tracking-wide">Total Records</div>
+        </div>
+
+        <!-- Submission Period -->
+        <div class="mb-4 pb-4 border-b border-gray-100">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Submission Period</div>
+          <div class="space-y-1.5 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400 text-xs">First</span>
+              <span class="font-medium text-gray-700 text-xs">{{ fmtDate(dataOverview.first_submission) }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400 text-xs">Last</span>
+              <span class="font-medium text-gray-700 text-xs">{{ fmtDate(dataOverview.last_submission) }}</span>
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-gray-400 text-xs">Span</span>
+              <span class="text-xs font-semibold text-emerald-600">{{ coverageLabel }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avg Submission Rate -->
+        <div class="mb-4 pb-4 border-b border-gray-100">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Avg Submission Rate</div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400 text-xs">Per day</span>
+              <span class="text-sm font-semibold text-gray-700">{{ avgPerDay }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400 text-xs">Per week</span>
+              <span class="text-sm font-semibold text-gray-700">{{ avgPerWeek }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400 text-xs">Per month</span>
+              <span class="text-sm font-semibold text-gray-700">{{ avgPerMonth }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Geographic Coverage -->
+        <div>
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Geographic Coverage</div>
+          <div class="flex gap-2">
+            <div class="flex-1 text-center bg-gray-50 rounded-lg py-3">
+              <div class="text-xl font-bold text-gray-700">{{ dataOverview.distinct_regions }}</div>
+              <div class="text-xs text-gray-400 mt-0.5">Regions</div>
+            </div>
+            <div class="flex-1 text-center bg-gray-50 rounded-lg py-3">
+              <div class="text-xl font-bold text-gray-700">{{ dataOverview.distinct_districts }}</div>
+              <div class="text-xs text-gray-400 mt-0.5">Districts</div>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+
   </div>
 </ng-template>
+
 <div class="flex flex-1 py-4"></div>
 
-<!-- <app-ccva-graphs [graphData]="graphData"></app-ccva-graphs> -->
-<!-- Display CCVA Graphs when task is not running -->
 <app-ccva-dashboard-graphs [graphData]="graphData"></app-ccva-dashboard-graphs>
 <app-submissions></app-submissions>
 
-
-<div class="pb-96">
-
-</div>
+<div class="pb-96"></div>

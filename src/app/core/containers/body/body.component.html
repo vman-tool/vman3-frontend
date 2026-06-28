@@ -19,7 +19,7 @@
 <div class="flex mb-5 h-[calc(100vh-7vh)] overflow-hidden bg-white">
   <app-sidebar class="{{ sidebarHidden ? 'hidden' : 'block' }} w-[250px]  duration-300"></app-sidebar>
 
-  <div class="flex-grow {{ sidebarHidden ? 'ml-0 w-full' : ' ml-10 w-[calc(100%-250px)]' }} px-4 overflow-y-auto">
+  <div class="flex-grow {{ sidebarHidden ? 'ml-0 w-full' : ' ml-10 w-[calc(100%-250px)]' }} px-4 overflow-y-auto pb-20">
     <router-outlet></router-outlet>
   </div>
 </div>

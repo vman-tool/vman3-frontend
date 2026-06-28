@@ -23,7 +23,10 @@ export class SubmissionsComponent implements OnInit {
   region: string | undefined;
   district: string | undefined;
 
-  isLoading: boolean = true; // Loading flag
+  sortColumn: keyof SubmissionsDataModel | null = null;
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  isLoading: boolean = true;
   filterData: {
     locations: string[];
     start_date?: string;
@@ -55,8 +58,6 @@ export class SubmissionsComponent implements OnInit {
       end_date: undefined,
       date_type: undefined,
     };
-    // this.loadMore();
-    // this.loadStatistics();
   }
 
   initial() {
@@ -84,14 +85,16 @@ export class SubmissionsComponent implements OnInit {
         }
       });
   }
+
   setupEffect() {
     effect(() => {
       this.filterData = this.filterService.filterData();
       this.loadRecords();
     });
   }
+
   loadRecords(): void {
-    this.isLoading = true; // Set loading to true when starting to fetch data
+    this.isLoading = true;
     this.listSubmissionsService
       .getsubmissionsData(
         this.pageNumber,
@@ -105,38 +108,60 @@ export class SubmissionsComponent implements OnInit {
         next: (response: ResponseMainModel<any>) => {
           this.dataSubmissions = response.data as [];
           this.totalRecords = response.total;
-          this.isLoading = false; // Set loading to false when data is fetched
+          this.isLoading = false;
         },
         error: (error) => {
           this.errorMessage = error.message;
-          this.isLoading = false; // Set loading to false if there's an error
+          this.isLoading = false;
         },
       });
   }
+
+  // ── Sorting ────────────────────────────────────────────────────────────────
+
+  get sortedData(): SubmissionsDataModel[] {
+    if (!this.sortColumn || !this.dataSubmissions?.length) return this.dataSubmissions ?? [];
+    const col = this.sortColumn;
+    const dir = this.sortDirection === 'asc' ? 1 : -1;
+    return [...this.dataSubmissions].sort((a, b) => {
+      const av = a[col], bv = b[col];
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+      return String(av ?? '').localeCompare(String(bv ?? '')) * dir;
+    });
+  }
+
+  onSort(col: keyof SubmissionsDataModel): void {
+    if (this.sortColumn === col) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = col;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  sortIcon(col: keyof SubmissionsDataModel): string {
+    if (this.sortColumn !== col) return 'ph ph-arrows-down-up text-gray-300 text-xs';
+    return this.sortDirection === 'asc'
+      ? 'ph ph-arrow-up text-gray-600 text-xs'
+      : 'ph ph-arrow-down text-gray-600 text-xs';
+  }
+
+  // ── Totals ─────────────────────────────────────────────────────────────────
 
   getTotalCount(): number {
     return this.dataSubmissions?.reduce((acc, record) => acc + record.count, 0);
   }
 
   getTotalAdults(): number {
-    return this.dataSubmissions?.reduce(
-      (acc, record) => acc + record.adults,
-      0
-    );
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.adults, 0);
   }
 
   getTotalChildren(): number {
-    return this.dataSubmissions?.reduce(
-      (acc, record) => acc + record.children,
-      0
-    );
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.children, 0);
   }
 
   getTotalNeonates(): number {
-    return this.dataSubmissions?.reduce(
-      (acc, record) => acc + record.neonates,
-      0
-    );
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.neonates, 0);
   }
 
   getTotalMale(): number {
@@ -144,16 +169,10 @@ export class SubmissionsComponent implements OnInit {
   }
 
   getTotalFemale(): number {
-    return this.dataSubmissions?.reduce(
-      (acc, record) => acc + record.female,
-      0
-    );
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.female, 0);
   }
 
   downloadRecords() {
-    this.listSubmissionsService.exportToExcel(
-      this.dataSubmissions,
-      'VA_Submissions'
-    );
+    this.listSubmissionsService.exportToExcel(this.dataSubmissions, 'VA_Submissions');
   }
 }

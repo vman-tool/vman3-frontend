@@ -34,6 +34,8 @@ export interface FieldMapping {
   date: string;
   location_level1: string;
   location_level2?: string;
+  location_level3?: string;
+  location_level4?: string;
   deceased_gender: string;
   is_adult: string;
   is_child: string;

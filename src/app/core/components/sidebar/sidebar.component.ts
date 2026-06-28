@@ -52,6 +52,20 @@ export class SidebarComponent {
         icon_asset: '../../../../assets/icons/data.svg',
         route: '/data-quality',
         hasAccess: true,
+        subMenuItems:[
+          {
+            displayText: 'General DQA',
+            icon: 'ph ph-clipboard-text',
+            route: '/sub-item-1',
+            hasAccess: true,
+          },
+          {
+            displayText: 'CCVA Errors',
+            icon: 'ph ph-cpu',
+            route: '/sub-item-2',
+            hasAccess: true,
+          }
+        ]
       },
       {
         displayText: 'Data Map',
@@ -130,10 +144,17 @@ export class SidebarComponent {
           },
           {
             displayText: 'Data Dictionary',
-            icon: 'ph ph-books', // Replace with the actual Flaticon class for a sync/refresh icon
+            icon: 'ph ph-books',
             icon_asset: '',
             route: '/data-dictionary',
             hasAccess: await this.hasAccess([privileges.USERS_MODULE_VIEW])
+          },
+          {
+            displayText: 'Data Export',
+            icon: 'ph ph-file-arrow-down',
+            icon_asset: '',
+            route: '/data-export',
+            hasAccess: await this.hasAccess([privileges.SETTINGS_DATA_EXPORT])
           },
           {
             displayText: 'Users',

@@ -26,7 +26,9 @@ export class ListRecordsService {
     limit: number = 10,
     startDate?: string,
     endDate?: string,
-    locations?: string[]
+    locations?: string[],
+    searchBy?: string,
+    searchValue?: string
   ): Observable<any> {
     let params = new HttpParams()
       .set('page_number', page.toString())
@@ -41,6 +43,17 @@ export class ListRecordsService {
     if (locations && locations.length > 0) {
       params = params.set('locations', locations.join(','));
     }
+    // Only include search parameters when a search value is provided
+    if (searchValue) {
+      params = params.set('search_by', searchBy || '');
+      params = params.set('search_value', searchValue);
+    }
+
+    // debug: log request URL and params
+    try {
+      // eslint-disable-next-line no-console
+      console.log('ListRecordsService.getRecordsData', `${this.configService.API_URL}/records`, params.toString());
+    } catch (e) {}
 
     return this.http.get<any>(`${this.configService.API_URL}/records`, { params }).pipe(
       map((response: any) => response),

@@ -1,0 +1,128 @@
+/* ── Search bar ─────────────────────────────────────────────────────────── */
+.search-bar {
+  display: flex;
+  flex-direction: row;       // single horizontal row
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: transparent;
+  flex-wrap: nowrap;         // prevent wrapping to second row
+  width: 50%;
+  min-width: 320px;         // prevents it from getting too cramped
+}
+
+/* Left group: "Search by" label + select */
+.search-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;            // never shrink — keeps select visible
+}
+
+/* Right group: text input + buttons — takes remaining space */
+.search-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;                   // expands to fill remaining width
+  min-width: 0;              // allows flex children to shrink below content size
+}
+
+/* ── Individual controls ────────────────────────────────────────────────── */
+.search-label {
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.search-select {
+  height: 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0 8px;
+  font-size: 13px;
+  color: #374151;
+  background: #ffffff;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #6366f1;
+  }
+}
+
+.search-input {
+  flex: 1;                   // fills all available space in the right group
+  min-width: 0;
+  height: 34px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 13px;
+  color: #111827;
+  background: #ffffff;
+
+  &:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+}
+
+.btn-search {
+  height: 34px;
+  padding: 0 14px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #1d4ed8;
+  }
+}
+
+.btn-clear {
+  height: 34px;
+  padding: 0 14px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #e5e7eb;
+  }
+}
+
+/* ── Responsive: narrow screens collapse gracefully ─────────────────────── */
+@media (max-width: 480px) {
+  .search-bar {
+    flex-wrap: wrap;
+    width: 100%;      // full width on mobile
+    min-width: unset;
+  }
+
+  .search-group {
+    width: 100%;
+  }
+
+  .search-input-group {
+    width: 100%;
+  }
+}

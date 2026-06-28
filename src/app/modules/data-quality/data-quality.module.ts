@@ -13,6 +13,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { ErrorListComponent } from './components/error-list/error-list.component';
 import { DataCleanerComponent } from './components/data-cleaner/data-cleaner.component';
 import { MainErrorComponent } from './components/main/main.component';
+import { GeneralDqaComponent } from './components/general-dqa/general-dqa.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { MainErrorComponent } from './components/main/main.component';
     ErrorListComponent,
     DataCleanerComponent,
     MainErrorComponent,
+    GeneralDqaComponent,
   ],
   imports: [
     CommonModule,

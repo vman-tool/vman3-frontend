@@ -205,6 +205,13 @@ export class DataSyncSettingsService {
     );
   }
 
+  // Fetch server time once for clock sync
+  getServerTime(): Observable<{ epoch_ms: number; utc: string; iso: string }> {
+    return this.http.get<{ epoch_ms: number; utc: string; iso: string }>(
+      `${this.configService.API_URL}/settings/server-time`
+    );
+  }
+
   // Get backup settings (uses unified endpoint)
   getBackupSettings(): Observable<BackupSettings> {
     return this.getSyncSettings().pipe(

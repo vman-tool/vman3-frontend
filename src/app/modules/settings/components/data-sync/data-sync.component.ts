@@ -39,6 +39,18 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   syncStatusFromSettings?: any; // New property for sync status from settings
   isLoadingSyncStatus: boolean = false; // Loading state for sync status
   elapsedTime: number | null = null;
+  // Client-side ticker — increments every second for smooth display
+  displayElapsedSec = 0;
+  recordsProcessed = 0;
+  serverTotal = 0;   // total records on ODK server
+  localCount = 0;    // records already in local DB before this sync
+  private elapsedTicker: ReturnType<typeof setInterval> | null = null;
+  // Fires if no WS message arrives after restoring a running task from localStorage,
+  // meaning the task finished while the user was away.
+  private wsInactivityTimer: ReturnType<typeof setTimeout> | null = null;
+  // Set while a cancel request has been sent but the "cancelled" WS ack hasn't arrived yet
+  isCancelling = false;
+  private cancelFallbackTimer: ReturnType<typeof setTimeout> | null = null;
   isTaskRunning = false;
   isDataSyncing = false;
   isLoadingFormSubmissionStatus = false;
@@ -46,7 +58,6 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   isDataSyncTabLoading: boolean = false; // For Data Synchronization tab
   isSettingsTabLoading: boolean = false; // For Settings tab
   isSyncButtonLoading: boolean = false;
-  isExporting: boolean = false;
   isInitialDataLoading: boolean = false;
 
   // syncedQuestions?: any[] = [];
@@ -60,15 +71,6 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   @ViewChild('fileInput') fileInput!: ElementRef;
   requiredHeadersAdditions = ['instanceid'];
-
-  // Data export option: 'combined' = combined PCVA & CCVA, 'ccva' = CCVA-data only, 'pcva' = PCVA-data only
-
-  // Filter options for Data Export / Filtering
-  selectedDateType: 'submission_date' | 'interview_date' | 'death_date' = 'submission_date';
-  filter_startDate: string | null = null;
-  filter_endDate: string | null = null;
-  includePcva: boolean = true;
-  includeCcva: boolean = true;
 
   requiredHeaders = [
     'isneonatal',
@@ -92,6 +94,9 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   ]; // Required headers for CSV data
 
   fileErrors = '';
+
+  syncHistory: any[] = [];
+  isLoadingHistory = false;
 
   csvHeaders: string[] = [];
   mismatchedHeaders: string[] = [];
@@ -150,9 +155,6 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       case 'settings':
         this.loadSettingsTab();
         break;
-      case 'data-export':
-        this.loadDataExportTab();
-        break;
       default:
         console.warn(`Unknown tab: ${tabName}`);
     }
@@ -167,90 +169,12 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     // Load sync status data specific to data sync tab
     this.loadSyncStatusFromSettings();
+    this.loadSyncHistory();
 
     // Data sync tab loading completes when sync status is loaded
     // (this is handled in the loadSyncStatusFromSettings callback)
   }
 
-  // Load Data Export tab resources
-  loadDataExportTab() {
-    console.log('Loading Data Export tab...');
-    // No specific loading required for export tab
-    this.isSettingsTabLoading = false;
-  }
-
-  exportData() {
-    this.isExporting = true; // Use a dedicated loading state
-
-    // Format dates
-    const formattedStartDate = this.filter_startDate
-      ? this.datePipe.transform(this.filter_startDate, 'yyyy-MM-dd')?.toString()
-      : undefined;
-    const formattedEndDate = this.filter_endDate
-      ? this.datePipe.transform(this.filter_endDate, 'yyyy-MM-dd')?.toString()
-      : undefined;
-
-    // Determine results filter based on checkboxes
-    // [x] PCVA + [x] CCVA -> 'all'
-    // [ ] PCVA + [x] CCVA -> 'ccva_only'
-    // [x] PCVA + [ ] CCVA -> 'pcva_only'
-    // [ ] PCVA + [ ] CCVA -> 'all' (default fallsafe)
-    let resultsFilter = 'all';
-
-    if (this.includePcva && this.includeCcva) {
-      resultsFilter = 'all';
-    } else if (this.includeCcva && !this.includePcva) {
-      resultsFilter = 'ccva_only';
-    } else if (this.includePcva && !this.includeCcva) {
-      resultsFilter = 'pcva_only';
-    } else {
-      // Both unchecked - default to 'all' or show error? 
-      // Assuming 'all' as a safe default to show everything available
-      resultsFilter = 'all';
-    }
-
-    console.log('Exporting with filter:', resultsFilter);
-
-    // Call export service to get token first
-    this.dataSyncService.getExportToken().subscribe({
-      next: (response) => {
-        const token = response.token;
-
-        // Construct URL
-        let url = `${this.configService.API_URL}/records/export?file_format=excel&results_filter=${resultsFilter}&token=${token}`;
-
-        if (formattedStartDate) {
-          url += `&start_date=${formattedStartDate}`;
-        }
-        if (formattedEndDate) {
-          url += `&end_date=${formattedEndDate}`;
-        }
-        if (this.selectedDateType) {
-          url += `&date_type=${this.selectedDateType}`;
-        }
-
-        // Open in new tab
-        window.open(url, '_blank');
-
-        this.isExporting = false;
-        this.snackBar.open('Export started in new tab', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top'
-        });
-      },
-      error: (error) => {
-        console.error('Failed to get export token:', error);
-        this.isExporting = false;
-        this.snackBar.open('Failed to initiate export', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top',
-          panelClass: ['error-snackbar']
-        });
-      }
-    });
-  }
 
 
 
@@ -622,8 +546,14 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   // formsubmission_status method removed - data now comes from loadSyncStatusFromSettings()
 
   manualSync() {
-    this.isDataSyncing = true; // Track only manual sync
-    this.isSyncButtonLoading = true; // Show button loading state
+    this.isDataSyncing = true;
+    this.isSyncButtonLoading = true;
+    // Reset completion state so the guard doesn't block the new sync's messages
+    this.serverTotal = 0;
+    this.localCount = 0;
+    this.recordsProcessed = 0;
+    this.progress = '0';
+    this.displayElapsedSec = 0;
 
     // Show sync starting message
     this.showSyncStatusUpdateSuccess('Manual sync starting...');
@@ -681,22 +611,38 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   onCancel() {
-    this.isTaskRunning = false;
-    this.isSyncButtonLoading = false; // Reset button loading state when sync is cancelled
+    if (this.isCancelling) return;
+    this.isCancelling = true;
 
-    // Show sync cancelled message
-    this.showSyncStatusUpdateSuccess('Sync cancelled by user');
+    this.dataSyncService.cancelSync().subscribe({
+      next: () => {
+        // Immediately clear the running UI — don't wait for the WS "cancelled"
+        // message.  isCancelling=true blocks any incoming "running" WS messages
+        // from re-enabling isTaskRunning until the "cancelled" ack arrives.
+        this.clearElapsedTicker();
+        this.clearWsInactivityTimer();
+        this.isTaskRunning = false;
+        this.isSyncButtonLoading = false;
+        this.localStorageSettingsService.removeItem('odk_progress');
 
-    // this.triggersService.triggerCCVAListFunction();
-    // this.clearLocalStorage(); // Clear all task-related localStorage data
-    this.webSockettService.disconnect();
-    // clearInterval(this.countdownInterval);
-    if (this.messageSubscription) {
-      this.messageSubscription.unsubscribe();
-    }
-    // if (this.countdownInterval) {
-    //   this.countdownInterval = false;
-    // }
+        // 30 s fallback: if the "cancelled" WS message never arrives (e.g. task
+        // already finished before the flag was checked), reset state and reload.
+        this.clearCancelFallbackTimer();
+        this.cancelFallbackTimer = setTimeout(() => {
+          this.isCancelling = false;
+          this.loadSyncStatusFromSettings();
+          this.loadSyncHistory();
+        }, 30000);
+      },
+      error: () => {
+        this.clearElapsedTicker();
+        this.clearWsInactivityTimer();
+        this.isTaskRunning = false;
+        this.isSyncButtonLoading = false;
+        this.isCancelling = false;
+        this.localStorageSettingsService.removeItem('odk_progress');
+      },
+    });
   }
 
 
@@ -721,67 +667,122 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   private updateProgress(parsedData: any): void {
-    if (parsedData) {
-      // this.isTaskRunning = true;
-      this.totalRecords = parsedData.total_records;
-      this.progress = Math.round(parsedData.progress).toFixed(0).toString();
-      this.elapsedTime = parsedData.elapsed_time;
-      this.message = JSON.stringify(parsedData);
+    if (!parsedData) return;
 
-      console.log('WebSocket progress update:', {
-        total_records: parsedData.total_records,
-        progress: parsedData.progress,
-        elapsed_time: parsedData.elapsed_time
-      });
+    // Cancel inactivity timer — a live message has arrived
+    this.clearWsInactivityTimer();
 
-      // Show progress updates
-      if (parsedData.progress > 0 && parsedData.progress < 100) {
-        this.showSyncStatusUpdateSuccess(`Sync progress: ${this.progress}% (${this.totalRecords} records)`);
-      }
+    // Ignore intermediate progress while cancellation is in progress.
+    // Only let terminal status messages (cancelled/completed/error) through.
+    if (this.isCancelling && parsedData.status === 'running') return;
 
-      // Check if sync is completed (progress = 100%)
-      if (parsedData.progress >= 100) {
-        console.log('Sync completed! Updating sync status...');
+    this.totalRecords = parsedData.total_records;
+    this.progress = Math.round(parsedData.progress).toFixed(0).toString();
+    this.elapsedTime = parsedData.elapsed_time ?? null;
+    this.recordsProcessed = parsedData.records_processed ?? 0;
+    this.message = JSON.stringify(parsedData);
 
-        // Sync status will be updated automatically by backend when sync completes
-        console.log('Sync completed! Backend will update sync status automatically');
-        this.showSyncStatusUpdateSuccess(`Data sync completed! ${this.totalRecords || 0} records synced.`);
+    if (parsedData.server_total != null) this.serverTotal = parsedData.server_total;
+    if (parsedData.local_count != null) this.localCount = parsedData.local_count;
 
-        // Wait 1 second before hiding progress and showing normal interface
-        setTimeout(() => {
-          this.isTaskRunning = false;
-          this.isSyncButtonLoading = false; // Reset button loading state when sync completes
+    // Sync client-side ticker to authoritative server elapsed time
+    if (parsedData.elapsed_time != null) {
+      this.displayElapsedSec = Math.round(parsedData.elapsed_time);
+    }
 
-          // Force refresh to show updated status from backend
-          this.loadSyncStatusFromSettings();
-        }, 1000);
-      }
+    // Start client-side ticker on first non-complete message
+    if (!this.elapsedTicker && parsedData.status !== 'completed' && parsedData.status !== 'error') {
+      this.startElapsedTicker();
+    }
 
-      // Store WebSocket progress data in localStorage with a TTL of 1 hour
-      const odkProgressData = {
+    // Sync completed
+    if (parsedData.progress >= 100 || parsedData.status === 'completed') {
+      // Guard: already handled AND no pending cancel to acknowledge
+      if (!this.isTaskRunning && !this.isCancelling) return;
+      this.clearElapsedTicker();
+      this.clearWsInactivityTimer();
+      this.clearCancelFallbackTimer();
+      this.isTaskRunning = false;
+      this.isSyncButtonLoading = false;
+      this.isCancelling = false;
+      this.localStorageSettingsService.removeItem('odk_progress');
+      this.showSyncStatusUpdateSuccess(
+        `Sync completed — ${(this.recordsProcessed ?? 0).toLocaleString()} new records synced.`
+      );
+      setTimeout(() => {
+        this.loadSyncStatusFromSettings();
+        this.loadSyncHistory();
+      }, 1500);
+      return;
+    }
+
+    // Sync cancelled by user
+    if (parsedData.status === 'cancelled') {
+      this.clearElapsedTicker();
+      this.clearWsInactivityTimer();
+      this.clearCancelFallbackTimer();
+      this.isTaskRunning = false;
+      this.isSyncButtonLoading = false;
+      this.isCancelling = false;
+      this.localStorageSettingsService.removeItem('odk_progress');
+      this.showSyncStatusUpdateSuccess(
+        `Sync cancelled — ${(this.recordsProcessed ?? 0).toLocaleString()} records were saved.`
+      );
+      setTimeout(() => {
+        this.loadSyncStatusFromSettings();
+        this.loadSyncHistory();
+      }, 1000);
+      return;
+    }
+
+    // Sync errored
+    if (parsedData.status === 'error') {
+      if (!this.isTaskRunning) return;
+      this.clearElapsedTicker();
+      this.clearWsInactivityTimer();
+      this.isTaskRunning = false;
+      this.isSyncButtonLoading = false;
+      this.isCancelling = false;
+      this.localStorageSettingsService.removeItem('odk_progress');
+      return;
+    }
+
+    this.isTaskRunning = true;
+
+    this.localStorageSettingsService.setItemWithTTL(
+      'odk_progress',
+      {
         totalRecords: this.totalRecords,
         progress: this.progress,
         elapsedTime: this.elapsedTime,
+        recordsProcessed: this.recordsProcessed,
+        serverTotal: this.serverTotal,
+        localCount: this.localCount,
         message: this.message,
-      };
-      this.isTaskRunning = true;
-      this.localStorageSettingsService.setItemWithTTL(
-        'odk_progress',
-        odkProgressData,
-        1000 * 60 * 60 * 1
-      ); // 1 hour
-    }
+      },
+      1000 * 60 * 60
+    );
   }
 
-  // Load previous progress from localStorage (if exists and valid)
   private async loadPreviousProgressFromLocalStorage(): Promise<void> {
-    const odkProgress =
-      this.localStorageSettingsService.getItemWithTTL('odk_progress');
+    const odkProgress = this.localStorageSettingsService.getItemWithTTL('odk_progress');
     if (odkProgress) {
       this.totalRecords = odkProgress.totalRecords;
       this.progress = odkProgress.progress;
-      this.elapsedTime = odkProgress.elapsedTime;
+      this.elapsedTime = odkProgress.elapsedTime ?? null;
+      this.recordsProcessed = odkProgress.recordsProcessed ?? 0;
+      this.displayElapsedSec = Math.round(odkProgress.elapsedTime ?? 0);
+      this.serverTotal = odkProgress.serverTotal ?? 0;
+      this.localCount = odkProgress.localCount ?? 0;
       this.message = odkProgress.message;
+      const pct = parseInt(odkProgress.progress ?? '0', 10);
+      if (pct > 0 && pct < 100) {
+        this.isTaskRunning = true;
+        this.startElapsedTicker();
+        // If the task finished while the user was away, no WS messages will
+        // arrive.  After 15 s with no activity, treat the sync as done.
+        this.startWsInactivityTimer();
+      }
     }
   }
 
@@ -789,7 +790,74 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
+    this.clearElapsedTicker();
+    this.clearWsInactivityTimer();
+    this.clearCancelFallbackTimer();
     this.webSockettService.disconnect();
+  }
+
+  // ── Smooth elapsed-time ticker ──────────────────────────────────────────
+
+  private startElapsedTicker(): void {
+    this.clearElapsedTicker();
+    this.elapsedTicker = setInterval(() => { this.displayElapsedSec++; }, 1000);
+  }
+
+  private clearElapsedTicker(): void {
+    if (this.elapsedTicker) {
+      clearInterval(this.elapsedTicker);
+      this.elapsedTicker = null;
+    }
+  }
+
+  private startWsInactivityTimer(): void {
+    this.clearWsInactivityTimer();
+    // If no WS message arrives within 15 s the task has already finished
+    this.wsInactivityTimer = setTimeout(() => {
+      if (this.isTaskRunning) {
+        this.isTaskRunning = false;
+        this.isSyncButtonLoading = false;
+        this.clearElapsedTicker();
+        this.localStorageSettingsService.removeItem('odk_progress');
+        this.loadSyncStatusFromSettings();
+        this.loadSyncHistory();
+      }
+    }, 15000);
+  }
+
+  private clearWsInactivityTimer(): void {
+    if (this.wsInactivityTimer) {
+      clearTimeout(this.wsInactivityTimer);
+      this.wsInactivityTimer = null;
+    }
+  }
+
+  private clearCancelFallbackTimer(): void {
+    if (this.cancelFallbackTimer) {
+      clearTimeout(this.cancelFallbackTimer);
+      this.cancelFallbackTimer = null;
+    }
+  }
+
+  // ── Derived progress helpers ────────────────────────────────────────────
+
+  get recordsPerSecond(): number {
+    if (!this.displayElapsedSec || !this.recordsProcessed) return 0;
+    return this.recordsProcessed / this.displayElapsedSec;
+  }
+
+  get estimatedSecondsRemaining(): number | null {
+    const pct = parseFloat(this.progress ?? '0');
+    const rps = this.recordsPerSecond;
+    if (pct <= 0 || pct >= 100 || !rps) return null;
+    return Math.round(((this.totalRecords ?? 0) * (1 - pct / 100)) / rps);
+  }
+
+  fmtDuration(sec: number): string {
+    if (sec < 60) return `${sec}s`;
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return s === 0 ? `${m}m` : `${m}m ${s}s`;
   }
 
 
@@ -857,6 +925,28 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     // Update the csvHeaders with the new headers
     this.csvHeaders = newHeaders;
+  }
+
+  loadSyncHistory(): void {
+    this.isLoadingHistory = true;
+    this.dataSyncService.getSyncHistory(20).subscribe({
+      next: (response: any) => {
+        this.syncHistory = response?.data ?? [];
+        this.isLoadingHistory = false;
+      },
+      error: () => {
+        this.syncHistory = [];
+        this.isLoadingHistory = false;
+      },
+    });
+  }
+
+  fmtHistoryDuration(sec: number): string {
+    if (!sec || sec < 1) return '< 1s';
+    if (sec < 60) return `${Math.round(sec)}s`;
+    const m = Math.floor(sec / 60);
+    const s = Math.round(sec % 60);
+    return s === 0 ? `${m}m` : `${m}m ${s}s`;
   }
 
   getDataRangeText(): string {

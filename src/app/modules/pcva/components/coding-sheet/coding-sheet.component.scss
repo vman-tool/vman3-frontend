@@ -21,6 +21,19 @@
 .col-11 { grid-column: span 11; }
 .col-12 { grid-column: span 12; }
 
+/*
+ * STACKING ORDER FIX FOR ROWS a, b, c, d
+ * Each row must have a higher z-index than the rows below it,
+ * so that row a's dropdown paints over b, c, d — not behind them.
+ * We target the form-row divs inside the col-8 cause container.
+ */
+.col-8 {
+  .form-row:nth-child(1) { z-index: 40; position: relative; }  /* row a — highest */
+  .form-row:nth-child(2) { z-index: 30; position: relative; }  /* row b */
+  .form-row:nth-child(3) { z-index: 20; position: relative; }  /* row c */
+  .form-row:nth-child(4) { z-index: 10; position: relative; }  /* row d — lowest */
+}
+
 /* ── Spacing helpers ────────────────────────────────────────────────────── */
 .mt-2  { margin-top: 8px; }
 .mt-4  { margin-top: 16px; }
@@ -166,10 +179,27 @@
   box-shadow: none !important;
   border: 1px solid #e5e7eb !important;
   margin-bottom: 8px !important;
+
+  /*
+   * KEY FIX: Angular Material sets overflow:hidden on panels by default,
+   * which clips any dropdown that tries to render outside the panel boundary.
+   * overflow:visible lets dropdowns paint on top of sibling panels below.
+   */
+  overflow: visible !important;
+}
+
+/* The inner content wrapper also needs overflow:visible */
+.mat-expansion-panel-content {
+  overflow: visible !important;
+}
+
+.mat-expansion-panel-body {
+  padding: 12px 16px 16px !important;
+  overflow: visible !important;
 }
 
 .mat-expansion-panel-header-colored {
-  background: #f3f4f6 !important;   /* gray-100 */
+  background: #f3f4f6 !important;
 }
 
 .mat-expansion-panel-header-colored:hover {
@@ -182,6 +212,34 @@
   color: #111827 !important;
 }
 
+/*
+ * DROPDOWN Z-INDEX + HEIGHT FIX
+ * Targets the dropdown list rendered by app-searchable-multi-select.
+ * The selectors below cover the most common class names — inspect your
+ * component's rendered HTML and adjust the selector to match exactly.
+ */
+app-searchable-multi-select {
+  position: relative;
+
+  .dropdown-list,
+  .options-list,
+  .select-dropdown,
+  .multiselect-dropdown,
+  ul.dropdown,
+  .dropdown-menu {
+    position: absolute !important;
+    z-index: 9999 !important;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+    /* Show more options before requiring scroll */
+    max-height: 280px !important;
+    overflow-y: auto !important;
+    min-width: 100%;
+  }
+}
 .mat-expansion-panel-body {
   padding: 12px 16px 16px !important;
 }

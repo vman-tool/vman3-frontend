@@ -7,7 +7,7 @@ import { DatePipe } from '@angular/common';
 import { SharedModule } from '../../../shared.module';
 import { CustomDropdownComponent } from '../../../components/custom-dropdown/custom-dropdown.component';
 import { UsersService } from 'app/modules/settings/services/users.service';
-import { lastValueFrom, map } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { FieldLabel, FieldMapping, settingsConfigData, SystemConfig } from 'app/modules/settings/interface';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
@@ -85,17 +85,34 @@ export class VaFiltersComponent implements OnInit {
   }
 
   async loadSystemConfigurations() {
-    await lastValueFrom(
-      this.settingConfigService.getSettingsConfig().pipe(map(() => {
-        (data: settingsConfigData | null) => {
-          if (!!data) {
-            this.systemConfigData = data?.system_configs;
-            this.fieldMappingData = data?.field_mapping;
-            this.fieldLabels = data?.field_labels;
-          }
-        }
-      }))
-    )
+    const data = await lastValueFrom(
+      this.settingConfigService.getSettingsConfig()
+    );
+    if (data) {
+      this.systemConfigData = data.system_configs;
+      this.fieldMappingData = data.field_mapping;
+      this.fieldLabels = data.field_labels;
+    }
+  }
+
+  get dateTypeOptions(): { value: string; label: string }[] {
+    const fm = this.fieldMappingData;
+    const opts: { value: string; label: string }[] = [];
+    if (!fm) {
+      return [
+        { value: 'submission_date', label: 'Submission Date' },
+        { value: 'interview_date', label: 'Interview Date' },
+        { value: 'death_date', label: 'Date of Death' },
+      ];
+    }
+    if (fm.submitted_date) opts.push({ value: 'submission_date', label: 'Submission Date' });
+    if (fm.interview_date) opts.push({ value: 'interview_date', label: 'Interview Date' });
+    if (fm.death_date) opts.push({ value: 'death_date', label: 'Date of Death' });
+    return opts.length ? opts : [
+      { value: 'submission_date', label: 'Submission Date' },
+      { value: 'interview_date', label: 'Interview Date' },
+      { value: 'death_date', label: 'Date of Death' },
+    ];
   }
   resetFilterData() {
     // Notify filterService of the reset
