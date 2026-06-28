@@ -50,6 +50,16 @@ export class DataSyncService {
     );
   }
 
+  getSyncHistory(limit: number = 20) {
+    return this.http.get<any>(
+      `${this.configService.API_URL}/odk/sync-history?limit=${limit}`
+    );
+  }
+
+  cancelSync(): Observable<any> {
+    return this.http.post<any>(`${this.configService.API_URL}/odk/cancel-sync`, {});
+  }
+
   exportRecords(
     startDate?: string,
     endDate?: string,

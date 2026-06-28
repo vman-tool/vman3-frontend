@@ -145,6 +145,18 @@
               placeholder="Search Location Level 2">
             </app-searchable-select>
 
+            <!-- Location Level 3 -->
+            <app-searchable-select id="Location Level 3" label="Location Level 3"
+              [control]="fieldMappingForm.get('location_level3')!" [items]="fields"
+              placeholder="Search Location Level 3">
+            </app-searchable-select>
+
+            <!-- Location Level 4 -->
+            <app-searchable-select id="Location Level 4" label="Location Level 4"
+              [control]="fieldMappingForm.get('location_level4')!" [items]="fields"
+              placeholder="Search Location Level 4">
+            </app-searchable-select>
+
             <!-- Deceased Gender -->
             <app-searchable-select id="Deceased Gender" label="Deceased Gender"
               [control]="fieldMappingForm.get('deceased_gender')!" [items]="fields"
@@ -167,12 +179,12 @@
             </app-searchable-select>
 
             <!-- death_date -->
-            <app-searchable-select id="birth date" label="Birth Date" [control]="fieldMappingForm.get('birth_date')!"
+            <app-searchable-select id="birth date" label="Date of Birth" [control]="fieldMappingForm.get('birth_date')!"
               [items]="fields" placeholder="Search birth date">
             </app-searchable-select>
 
             <!-- death_date -->
-            <app-searchable-select id="death date" label="death date" [control]="fieldMappingForm.get('death_date')!"
+            <app-searchable-select id="death date" label="Date of Death" [control]="fieldMappingForm.get('death_date')!"
               [items]="fields" placeholder="Search death date">
             </app-searchable-select>
 
@@ -181,7 +193,7 @@
               [items]="fields" placeholder="Search date">
             </app-searchable-select>
             <!-- submitted_date -->
-            <app-searchable-select id="submitted date" label="submitted date"
+            <app-searchable-select id="submitted date" label="Submission Date"
               [control]="fieldMappingForm.get('submitted_date')!" [items]="fields" placeholder="Search submitted date">
             </app-searchable-select>
 

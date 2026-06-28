@@ -134,6 +134,8 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       date: ['', Validators.required],
       location_level1: ['', Validators.required],
       location_level2: [''],
+      location_level3: [''],
+      location_level4: [''],
       deceased_gender: [''],
       is_adult: [''],
       is_child: [''],

@@ -6,6 +6,7 @@ import { DataCheckComponent } from './components/data-check/data-check.component
 import { ErrorListComponent } from './components/error-list/error-list.component';
 import { DataCleanerComponent } from './components/data-cleaner/data-cleaner.component';
 import { MainErrorComponent } from './components/main/main.component';
+import { GeneralDqaComponent } from './components/general-dqa/general-dqa.component';
 
 const routes: Routes = [
   {
@@ -13,25 +14,20 @@ const routes: Routes = [
     canActivate: [authGuard],
     component: DataQualityComponent,
     children: [
+      { path: '', redirectTo: 'sub-item-1', pathMatch: 'full' },
       {
-        path: 'e',
-        component: DataCheckComponent,
+        path: 'sub-item-1',
+        component: GeneralDqaComponent,
       },
       {
-        path: '',
+        path: 'sub-item-2',
         component: MainErrorComponent,
         children: [
-          {
-            path: 'errors',
-            component: ErrorListComponent,
-          },
+          { path: 'errors', component: ErrorListComponent },
         ],
       },
-
-      {
-        path: 'cleaner/:id',
-        component: DataCleanerComponent,
-      },
+      { path: 'e', component: DataCheckComponent },
+      { path: 'cleaner/:id', component: DataCleanerComponent },
     ],
   },
 ];

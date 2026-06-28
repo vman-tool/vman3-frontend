@@ -59,7 +59,7 @@
 // }
 
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { BackupSettings, DataSyncSettingsService, DayOfWeek } from '../../services/data_sync_settings.service';
 
@@ -68,7 +68,7 @@ import { BackupSettings, DataSyncSettingsService, DayOfWeek } from '../../servic
   templateUrl: './settings-configs.component.html',
   styleUrls: ['./settings-configs.component.scss']
 })
-export class SettingsConfigsComponent implements OnInit {
+export class SettingsConfigsComponent implements OnInit, OnDestroy {
   // Settings for API cron calls
   daysOfWeek: DayOfWeek[] = [
     { name: 'Monday', value: 'monday', checked: false },
@@ -102,10 +102,45 @@ export class SettingsConfigsComponent implements OnInit {
   isLoadingSettings: boolean = false;
   isLoadingBackupSettings: boolean = false;
 
+  // Server clock
+  serverTime: Date | null = null;
+  private serverClockOffset: number = 0;
+  private serverClockTicker: ReturnType<typeof setInterval> | null = null;
+
   constructor(private settingsService: DataSyncSettingsService) {}
 
   ngOnInit(): void {
     this.loadAllSettings();
+    this.syncServerClock();
+  }
+
+  ngOnDestroy(): void {
+    if (this.serverClockTicker) {
+      clearInterval(this.serverClockTicker);
+      this.serverClockTicker = null;
+    }
+  }
+
+  private syncServerClock(): void {
+    const clientEpochAtRequest = Date.now();
+    this.settingsService.getServerTime().subscribe({
+      next: (res) => {
+        this.serverClockOffset = res.epoch_ms - clientEpochAtRequest;
+        this.serverTime = new Date(Date.now() + this.serverClockOffset);
+        this.serverClockTicker = setInterval(() => {
+          this.serverTime = new Date(Date.now() + this.serverClockOffset);
+        }, 1000);
+      },
+      error: () => { /* silently skip if server-time endpoint unavailable */ }
+    });
+  }
+
+  get serverTimeDisplay(): string {
+    if (!this.serverTime) return '';
+    const h = this.serverTime.getUTCHours().toString().padStart(2, '0');
+    const m = this.serverTime.getUTCMinutes().toString().padStart(2, '0');
+    const s = this.serverTime.getUTCSeconds().toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
   }
 
   // Unified method to load both settings in one API call

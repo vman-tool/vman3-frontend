@@ -7,6 +7,7 @@ import { DataSyncComponent } from './components/data-sync/data-sync.component';
 import { UsersComponent } from './components/users/users.component';
 import * as privileges  from 'app/shared/constants/privileges.constants';
 import { PcvaSettingsComponent } from './components/pcva-settings/pcva-settings.component';
+import { DataExportComponent } from './components/data-export/data-export.component';
 
 const routes: Routes = [
   {
@@ -44,6 +45,12 @@ const routes: Routes = [
         component: PcvaSettingsComponent,
         canActivate: [PrivilegeGuard],
         data: { requiredPrivilege: []}
+      },
+      {
+        path: 'data-export',
+        component: DataExportComponent,
+        canActivate: [PrivilegeGuard],
+        data: { requiredPrivilege: [privileges.SETTINGS_DATA_EXPORT] }
       },
     ],
   },

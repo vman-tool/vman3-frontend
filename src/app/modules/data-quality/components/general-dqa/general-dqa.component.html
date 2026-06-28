@@ -1,0 +1,483 @@
+<div class="container p-6 mx-auto space-y-6">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <div class="text-lg font-semibold text-gray-900">General Data Quality Assessment</div>
+      <p class="text-sm text-gray-500 mt-1">Click a card to explore its breakdown below</p>
+    </div>
+    <div class="flex items-center gap-2 opacity-40 cursor-not-allowed" title="Coming soon">
+      <i class="ph ph-calendar-blank text-gray-500"></i>
+      <span class="text-sm text-gray-500 border border-gray-300 rounded-md px-3 py-1.5 bg-white select-none">Date range</span>
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ───────────────────────────────────────────────────────── -->
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+    <!-- 1 · Respondent Reliability Score (RRS) — CLICKABLE -->
+    <div
+      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      [ngClass]="activeCard === 'rrs'
+        ? 'bg-emerald-50/40 border-emerald-400 shadow-md ring-1 ring-emerald-300'
+        : 'bg-white border-gray-100 shadow-sm hover:border-emerald-200 hover:shadow'"
+      (click)="setActiveCard('rrs')"
+      title="Click to show RRS breakdown">
+
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-gray-500 leading-snug">
+          Respondent<br>Reliability Score
+        </span>
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
+              [ngClass]="activeCard === 'rrs' ? 'bg-emerald-100' : 'bg-emerald-50'">
+          <i class="ph ph-shield-check text-emerald-500 text-lg"></i>
+        </span>
+      </div>
+
+      <div *ngIf="isRrsLoading" class="h-8 w-20 rounded bg-gray-100 animate-pulse mb-1"></div>
+      <div *ngIf="!isRrsLoading && hasRrsError" class="text-2xl font-bold text-red-300">--</div>
+      <ng-container *ngIf="!isRrsLoading && !hasRrsError">
+        <div class="text-2xl font-bold" [ngClass]="activeCard === 'rrs' ? 'text-emerald-700' : 'text-gray-800'">
+          {{ overallRrs }}
+        </div>
+        <!-- Tier badge — always occupies h-6 so height matches ICS/Duration spacer -->
+        <div class="mt-1 h-6 flex items-center">
+          <span *ngIf="overallRrsTier"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+                [ngClass]="[overallRrsTier.bgClass, overallRrsTier.textClass]">
+            {{ overallRrsTier.label }}
+          </span>
+        </div>
+        <p class="text-xs text-gray-400">Mean RRS across {{ overallRrsCount | number }} records</p>
+      </ng-container>
+
+      <div class="mt-auto pt-2 text-xs font-medium flex items-center gap-1"
+           [class.invisible]="activeCard !== 'rrs'"
+           [ngClass]="activeCard === 'rrs' ? 'text-emerald-500' : ''">
+        <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
+      </div>
+    </div>
+
+    <!-- 2 · Avg Informatic Completeness Score (ICS) — CLICKABLE -->
+    <div
+      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      [ngClass]="activeCard === 'ics'
+        ? 'bg-blue-50/40 border-blue-400 shadow-md ring-1 ring-blue-300'
+        : 'bg-white border-gray-100 shadow-sm hover:border-blue-200 hover:shadow'"
+      (click)="setActiveCard('ics')"
+      title="Click to show ICS breakdown">
+
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-gray-500 leading-snug">
+          Avg Informatic<br>Completeness Score
+        </span>
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
+              [ngClass]="activeCard === 'ics' ? 'bg-blue-100' : 'bg-blue-50'">
+          <i class="ph ph-checks text-blue-500 text-lg"></i>
+        </span>
+      </div>
+
+      <!-- Loading skeleton -->
+      <div *ngIf="isIcsLoading" class="h-8 w-20 rounded bg-gray-100 animate-pulse mb-1"></div>
+      <div *ngIf="!isIcsLoading && hasIcsError" class="text-2xl font-bold text-red-300">--</div>
+      <ng-container *ngIf="!isIcsLoading && !hasIcsError">
+        <div class="text-2xl font-bold" [ngClass]="activeCard === 'ics' ? 'text-blue-700' : 'text-gray-800'">
+          {{ overallIcs }}
+        </div>
+        <!-- Badge-height spacer keeps this card the same height as RRS/ICI which have a tier badge -->
+        <div class="mt-1 h-6"></div>
+        <p class="text-xs text-gray-400">Mean ICS across {{ overallIcsCount | number }} records</p>
+      </ng-container>
+
+      <!-- Arrow always in DOM; invisible when inactive so it never changes card height -->
+      <div class="mt-auto pt-2 text-xs font-medium flex items-center gap-1"
+           [class.invisible]="activeCard !== 'ics'"
+           [ngClass]="activeCard === 'ics' ? 'text-blue-500' : ''">
+        <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
+      </div>
+    </div>
+
+    <!-- 3 · Internal Consistency Index (ICI) — CLICKABLE -->
+    <div
+      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      [ngClass]="activeCard === 'ici'
+        ? 'bg-violet-50/40 border-violet-400 shadow-md ring-1 ring-violet-300'
+        : 'bg-white border-gray-100 shadow-sm hover:border-violet-200 hover:shadow'"
+      (click)="setActiveCard('ici')"
+      title="Click to show ICI breakdown by interviewer">
+
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-gray-500 leading-snug">
+          Internal<br>Consistency Index
+        </span>
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
+              [ngClass]="activeCard === 'ici' ? 'bg-violet-100' : 'bg-violet-50'">
+          <i class="ph ph-arrows-left-right text-violet-500 text-lg"></i>
+        </span>
+      </div>
+
+      <div *ngIf="isIciLoading" class="h-8 w-20 rounded bg-gray-100 animate-pulse mb-1"></div>
+      <div *ngIf="!isIciLoading && hasIciError" class="text-2xl font-bold text-red-300">--</div>
+      <ng-container *ngIf="!isIciLoading && !hasIciError">
+        <div class="text-2xl font-bold" [ngClass]="activeCard === 'ici' ? 'text-violet-700' : 'text-gray-800'">
+          {{ overallIci }}
+        </div>
+        <div class="mt-1 h-6 flex items-center">
+          <span *ngIf="overallIciTier"
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+                [ngClass]="[overallIciTier.bgClass, overallIciTier.textClass]">
+            {{ overallIciTier.label }}
+          </span>
+        </div>
+        <p class="text-xs text-gray-400">{{ overallIciPassed | number }} / {{ overallIciTotal | number }} records pass</p>
+      </ng-container>
+
+      <div class="mt-auto pt-2 text-xs font-medium flex items-center gap-1"
+           [class.invisible]="activeCard !== 'ici'"
+           [ngClass]="activeCard === 'ici' ? 'text-violet-500' : ''">
+        <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
+      </div>
+    </div>
+
+    <!-- 4 · Avg Interview Duration — CLICKABLE -->
+    <div
+      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      [ngClass]="activeCard === 'duration'
+        ? 'bg-amber-50/40 border-amber-400 shadow-md ring-1 ring-amber-300'
+        : 'bg-white border-gray-100 shadow-sm hover:border-amber-200 hover:shadow'"
+      (click)="setActiveCard('duration')"
+      title="Click to show interview duration breakdown">
+
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-medium text-gray-500 leading-snug">
+          Avg Interview<br>Duration
+        </span>
+        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
+              [ngClass]="activeCard === 'duration' ? 'bg-amber-100' : 'bg-amber-50'">
+          <i class="ph ph-timer text-amber-500 text-lg"></i>
+        </span>
+      </div>
+
+      <div *ngIf="isDurationLoading" class="h-8 w-20 rounded bg-gray-100 animate-pulse mb-1"></div>
+      <div *ngIf="!isDurationLoading && hasDurationError" class="text-2xl font-bold text-red-300">--</div>
+      <ng-container *ngIf="!isDurationLoading && !hasDurationError">
+        <div class="text-2xl font-bold" [ngClass]="activeCard === 'duration' ? 'text-amber-700' : 'text-gray-800'">
+          {{ overallDuration }}
+        </div>
+        <!-- Badge-height spacer -->
+        <div class="mt-1 h-6"></div>
+        <p class="text-xs text-gray-400">Mean across {{ overallDurationCount | number }} records</p>
+      </ng-container>
+
+      <div class="mt-auto pt-2 text-xs font-medium flex items-center gap-1"
+           [class.invisible]="activeCard !== 'duration'"
+           [ngClass]="activeCard === 'duration' ? 'text-amber-500' : ''">
+        <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Indicator Breakdown (driven by active card) ──────────────────────── -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+
+    <!-- Table header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div>
+        <div class="flex items-center gap-2">
+          <div class="text-base font-semibold text-gray-900">Indicator Breakdown</div>
+          <!-- Active card pill -->
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                [ngClass]="activeCard === 'ics' ? 'bg-blue-100 text-blue-700' :
+                            activeCard === 'rrs' ? 'bg-emerald-100 text-emerald-700' :
+                            activeCard === 'ici' ? 'bg-violet-100 text-violet-700' :
+                                                   'bg-amber-100 text-amber-700'">
+            <i class="text-xs"
+               [ngClass]="activeCard === 'ics' ? 'ph ph-checks' :
+                          activeCard === 'rrs' ? 'ph ph-shield-check' :
+                          activeCard === 'ici' ? 'ph ph-arrows-left-right' :
+                                                 'ph ph-timer'"></i>
+            {{ activeCardLabel }}
+          </span>
+        </div>
+        <p class="text-xs text-gray-400 mt-0.5">{{ activeCardDescription }}</p>
+      </div>
+      <!-- Distribution legend (hidden for ICI which has its own table) -->
+      <div *ngIf="activeCard !== 'ici'" class="hidden sm:flex items-center gap-4 text-xs text-gray-500">
+        <span class="flex items-center gap-1">
+          <svg width="18" height="10"><line x1="0" y1="5" x2="18" y2="5" stroke="#1d4ed8" stroke-width="2"/></svg>
+          Mean
+        </span>
+        <span class="flex items-center gap-1">
+          <svg width="18" height="10"><line x1="0" y1="5" x2="18" y2="5" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/></svg>
+          Median
+        </span>
+      </div>
+    </div>
+
+    <!-- ── Distribution table: ICS / RRS / Duration ─────────────────────── -->
+    <div *ngIf="activeCard !== 'ici'" class="overflow-x-auto min-h-[280px]">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Indicator</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Category</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Records</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Min</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">{{ activeCardLabel }} ± σ</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Max</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Distribution</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Status</th>
+          </tr>
+        </thead>
+
+        <tbody class="bg-white divide-y divide-gray-100">
+
+          <!-- Loading skeleton -->
+          <ng-container *ngIf="isActiveLoading">
+            <tr *ngFor="let _ of [1,2,3,4,5]">
+              <td class="px-4 py-4"><div class="h-3.5 w-28 rounded bg-gray-100 animate-pulse"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-20 rounded bg-gray-100 animate-pulse"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-16 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse"></div></td>
+              <td class="px-4 py-4"><div class="h-8  w-28 rounded bg-gray-100 animate-pulse"></div></td>
+              <td class="px-4 py-4"><div class="h-5  w-16 rounded-full bg-gray-100 animate-pulse"></div></td>
+            </tr>
+          </ng-container>
+
+          <!-- Live rows -->
+          <ng-container *ngIf="!isActiveLoading && !hasActiveError">
+            <tr *ngFor="let row of activeIndicators" class="hover:bg-gray-50/50">
+
+              <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{{ row.name }}</td>
+              <td class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">{{ row.category }}</td>
+
+              <td class="px-4 py-3 text-sm text-gray-600 text-right whitespace-nowrap">
+                {{ row.stat.count | number }}
+              </td>
+
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="text-sm text-gray-500">{{ fmtActiveValue(row.stat.min_v) }}</span>
+              </td>
+
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="text-sm font-semibold text-gray-800">{{ fmtActiveValue(row.stat.avg) }}</span>
+                <div class="text-xs text-gray-400 mt-0.5">{{ fmtActiveStddev(row.stat.stddev) }}</div>
+              </td>
+
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="text-sm text-gray-500">{{ fmtActiveValue(row.stat.max_v) }}</span>
+              </td>
+
+              <td class="px-4 py-3">
+                <ng-container *ngIf="row.viz; else noViz">
+                  <svg [attr.width]="SVG_W" [attr.height]="SVG_H"
+                       xmlns="http://www.w3.org/2000/svg" class="block">
+                    <path [attr.d]="row.viz.svgPath"
+                          [attr.fill]="row.viz.fillColor"
+                          [attr.stroke]="row.viz.stroke"
+                          stroke-width="1.5" stroke-linejoin="round"/>
+                    <line [attr.x1]="row.viz.meanX"   y1="1"
+                          [attr.x2]="row.viz.meanX"   [attr.y2]="SVG_H"
+                          stroke="#1d4ed8" stroke-width="1.5"/>
+                    <line [attr.x1]="row.viz.medianX" y1="1"
+                          [attr.x2]="row.viz.medianX" [attr.y2]="SVG_H"
+                          stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,2"/>
+                  </svg>
+                  <div class="text-xs mt-0.5 font-medium" [ngClass]="row.viz.skewClass">
+                    {{ row.viz.skewLabel }}
+                  </div>
+                </ng-container>
+                <ng-template #noViz>
+                  <span class="text-xs text-gray-300">insufficient data</span>
+                </ng-template>
+              </td>
+
+              <td class="px-4 py-3 whitespace-nowrap">
+                <ng-container *ngIf="activeCard === 'rrs'">
+                  <ng-container *ngIf="rrsRowTier(row.stat) as tier; else noRrsData">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          [ngClass]="[tier.bgClass, tier.textClass]">{{ tier.label }}</span>
+                  </ng-container>
+                  <ng-template #noRrsData>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No Data</span>
+                  </ng-template>
+                </ng-container>
+                <ng-container *ngIf="activeCard !== 'rrs'">
+                  <span *ngIf="row.stat.count > 0"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">Available</span>
+                  <span *ngIf="row.stat.count === 0"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No Data</span>
+                </ng-container>
+              </td>
+
+            </tr>
+          </ng-container>
+
+          <tr *ngIf="!isActiveLoading && hasActiveError">
+            <td colspan="8" class="px-6 py-8 text-center text-sm text-red-400">
+              <i class="ph ph-warning-circle mr-1"></i>Failed to load indicators. Check backend connectivity.
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── ICI: interviewer consistency table ──────────────────────────── -->
+    <div *ngIf="activeCard === 'ici'" class="overflow-x-auto min-h-[280px]">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase w-10">#</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Interviewer</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Total VAs</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Errors Found</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">ICI Score</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Status</th>
+          </tr>
+        </thead>
+
+        <tbody class="bg-white divide-y divide-gray-100">
+
+          <!-- Loading skeleton -->
+          <ng-container *ngIf="isIciLoading">
+            <tr *ngFor="let _ of [1,2,3]">
+              <td class="px-4 py-4"><div class="h-3.5 w-5  rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-36 rounded bg-gray-100 animate-pulse"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td class="px-4 py-4"><div class="h-3.5 w-14 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td class="px-4 py-4"><div class="h-5  w-20 rounded-full bg-gray-100 animate-pulse"></div></td>
+            </tr>
+          </ng-container>
+
+          <!-- Live rows -->
+          <ng-container *ngIf="!isIciLoading && !hasIciError">
+
+            <!-- Empty state -->
+            <tr *ngIf="iciDisplayItems.length === 0">
+              <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-400">No interviewer data available.</td>
+            </tr>
+
+            <ng-container *ngFor="let item of iciDisplayItems">
+
+              <!-- Separator: N interviewers not shown -->
+              <tr *ngIf="item.isSep" class="bg-gray-50/60">
+                <td colspan="6" class="px-4 py-2 text-center text-xs text-gray-400 tracking-wide">
+                  · · · &nbsp; {{ item.skipped }} interviewer{{ item.skipped !== 1 ? 's' : '' }} not shown &nbsp; · · ·
+                </td>
+              </tr>
+
+              <!-- Data row -->
+              <tr *ngIf="!item.isSep" class="hover:bg-gray-50/50">
+
+                <!-- Rank -->
+                <td class="px-4 py-3 text-sm text-gray-400 text-right whitespace-nowrap font-mono">
+                  {{ item.rank }}
+                </td>
+
+                <!-- Interviewer name -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="flex items-center gap-2">
+                    <!-- Medal chip for top-3 -->
+                    <span *ngIf="item.rank === 1"
+                          class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-600 text-xs font-bold shrink-0">1</span>
+                    <span *ngIf="item.rank === 2"
+                          class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-xs font-bold shrink-0">2</span>
+                    <span *ngIf="item.rank === 3"
+                          class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-50 text-orange-500 text-xs font-bold shrink-0">3</span>
+                    <span class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ item.data?.interviewer }}</span>
+                  </div>
+                </td>
+
+                <!-- Total VAs -->
+                <td class="px-4 py-3 text-sm text-gray-600 text-right whitespace-nowrap">
+                  {{ item.data?.total | number }}
+                </td>
+
+                <!-- Errors found -->
+                <td class="px-4 py-3 text-right whitespace-nowrap">
+                  <span class="text-sm"
+                        [ngClass]="(item.data?.errors ?? 0) === 0 ? 'text-gray-400' : 'text-red-500 font-medium'">
+                    {{ item.data?.errors | number }}
+                  </span>
+                </td>
+
+                <!-- ICI score -->
+                <td class="px-4 py-3 text-right whitespace-nowrap">
+                  <span class="text-sm font-semibold text-gray-800">{{ fmtIciRow(item.data?.ici ?? 0) }}</span>
+                  <div class="text-xs text-gray-400 mt-0.5">{{ item.data?.passed | number }} / {{ item.data?.total | number }} pass</div>
+                </td>
+
+                <!-- Status badge -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <ng-container *ngIf="iciRowTier(item.data) as tier">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          [ngClass]="[tier.bgClass, tier.textClass]">
+                      {{ tier.label }}
+                    </span>
+                  </ng-container>
+                </td>
+
+              </tr>
+            </ng-container>
+          </ng-container>
+
+          <!-- Error state -->
+          <tr *ngIf="!isIciLoading && hasIciError">
+            <td colspan="6" class="px-6 py-8 text-center text-sm text-red-400">
+              <i class="ph ph-warning-circle mr-1"></i>Failed to load ICI data. Check backend connectivity.
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer: ICS / RRS / Duration -->
+    <div *ngIf="activeCard !== 'ici' && !isActiveLoading && !hasActiveError"
+         class="px-6 py-3 border-t border-gray-100 text-xs text-gray-400 flex flex-wrap gap-x-6 gap-y-1">
+      <ng-container *ngIf="activeCard === 'ics'">
+        <span><i class="ph ph-info mr-1"></i>ICS = (yes+no) ÷ (yes + no + dk + ref) per record, then averaged. Blank / unanswered fields are excluded.</span>
+        <span>Only explicit responses are counted. Numeric, narrative, date, and location fields are excluded.</span>
+      </ng-container>
+      <ng-container *ngIf="activeCard === 'duration'">
+        <span><i class="ph ph-info mr-1"></i>Duration = <code>id10481</code> (end) − <code>id10011</code> (start) in minutes.</span>
+      </ng-container>
+      <ng-container *ngIf="activeCard === 'rrs'">
+        <span><i class="ph ph-info mr-1"></i>RRS = Wrel (max 40) + Wprox (max 30) + Wrec (max 20) + Wedu (max 10). Classification: ≥80 High · 50–79 Moderate · &lt;50 Low.</span>
+        <span>Wprox uses <code>id10009</code> (co-residence) as a proxy — the form does not record presence at death separately. Wedu uses <code>id10064</code>/<code>id10063</code> (deceased's literacy) as a household literacy proxy.</span>
+      </ng-container>
+      <span>Skew: |coeff| &lt; 0.5 = symmetric; &gt;0.5 = right tail; &lt;−0.5 = left tail.</span>
+    </div>
+
+    <!-- Footer: ICI -->
+    <div *ngIf="activeCard === 'ici' && !isIciLoading && !hasIciError"
+         class="px-6 py-3 border-t border-gray-100 text-xs text-gray-400 flex flex-wrap gap-x-6 gap-y-1">
+      <span><i class="ph ph-info mr-1"></i>6 checks applied per record: pregnancy in male deceased · coughed blood without cough · symptom duration (fever, cough, diarrhoea, breathlessness) exceeds total illness duration.</span>
+      <span *ngIf="iciInterviewerCount > 1">
+        <i class="ph ph-chart-bar mr-1"></i>High inter-interviewer variance indicates training gaps or fabrication. Low variance indicates a well-standardised field process.
+      </span>
+      <span *ngIf="iciInterviewerCount <= 6 && iciInterviewerCount > 0">Showing all {{ iciInterviewerCount }} interviewers.</span>
+      <span *ngIf="iciInterviewerCount > 6">Showing top 2 · middle · bottom 2 of {{ iciInterviewerCount }} interviewers. Status: ≥90% Excellent · 70–89% Good · &lt;70% Critical.</span>
+    </div>
+  </div>
+
+  <!-- ── Trend Analysis ──────────────────────────────────────────────────── -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <div class="text-base font-semibold text-gray-900">Trend Analysis</div>
+      <p class="text-xs text-gray-400 mt-0.5">Quality score evolution over time</p>
+    </div>
+    <div class="flex items-center justify-center h-48 text-gray-300">
+      <div class="text-center">
+        <i class="ph ph-chart-line text-5xl mb-2 block"></i>
+        <span class="text-sm">Chart will be rendered here</span>
+      </div>
+    </div>
+  </div>
+
+</div>
