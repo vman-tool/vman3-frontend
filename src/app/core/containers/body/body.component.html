@@ -1,25 +1,32 @@
-<div class="grid items-center pb-5 h-[10vh]" style="grid-template-columns: 300px 1fr 1fr;">
-  <div class="flex items-center">
+<div class="flex items-center h-[10vh] px-3 gap-4">
+  <div class="flex items-center gap-2 transition-all duration-300 overflow-hidden flex-shrink-0
+              {{ sidebarHidden ? 'w-16' : 'w-64' }}">
+    <button (click)="Openbar($event)"
+      class="p-2 rounded-md hover:bg-gray-100 text-gray-600 transition-colors flex-shrink-0"
+      [title]="sidebarHidden ? 'Open menu' : 'Close menu'">
+      <i class="ph ph-list text-xl leading-none"></i>
+    </button>
     <img [src]="systemImages.logo" alt="VMan3-icon"
-      class="w-24 ml-5 {{ sidebarHidden ? 'w-0' : '' }}" />
+      class="h-10 object-contain transition-all duration-300 {{ sidebarHidden ? 'opacity-0 w-0' : 'opacity-100' }}" />
   </div>
 
-  <div class="relative">
-    <div class="ps-2 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
-      <span class="text-3xl font-semibold text-black">{{page_title}}</span> <br />
-      <span class="text-xl text-black">{{page_subtitle}}</span>
-    </div>
+  <div class="flex-1 min-w-0">
+    <span class="text-3xl font-semibold text-black">{{page_title}}</span><br />
+    <span class="text-xl text-black">{{page_subtitle}}</span>
   </div>
 
-  <div class="relative flex justify-end pr-5">
+  <div class="flex-shrink-0 pr-5">
     <app-header></app-header>
   </div>
 </div>
 
-<div class="flex mb-5 h-[calc(100vh-7vh)] overflow-hidden bg-white">
-  <app-sidebar class="{{ sidebarHidden ? 'hidden' : 'block' }} w-[250px]  duration-300"></app-sidebar>
+<div class="flex h-[calc(100vh-10vh)] overflow-hidden bg-white">
+  <div class="transition-all duration-300 overflow-hidden flex-shrink-0
+              {{ sidebarHidden ? 'w-16' : 'w-64' }}">
+    <app-sidebar [collapsed]="sidebarHidden" class="block h-full"></app-sidebar>
+  </div>
 
-  <div class="flex-grow {{ sidebarHidden ? 'ml-0 w-full' : ' ml-10 w-[calc(100%-250px)]' }} px-4 overflow-y-auto pb-20">
+  <div class="flex-1 overflow-y-auto px-4 pb-20">
     <router-outlet></router-outlet>
   </div>
 </div>

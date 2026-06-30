@@ -72,18 +72,13 @@
         <span class="text-[12px] text-gray-600 italic">Select Type of user data access limitation</span>
         <div class="data-access-selection-container">
             <div>
-                <label for="location" class="block mb-3 text-sm font-medium text-gray-700">Limit Access By: </label>
-                <select id="location" (change)="onSelectLocationType($event)"
-                    class="mb-3 block w-full px-3 py-2 mt-1 block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    <option value="">No Limit</option>
-                    <ng-container *ngFor="let locationType of locationTypes;">
-                        <option *ngIf="locationType?.value"
-                            [value]="locationType?.value"
-                            [selected]="selectedLocationType?.value === locationType?.value">
-                            {{ locationType?.label }}
-                        </option>
-                    </ng-container>
-                </select>
+                <label class="block mb-2 text-sm font-medium text-gray-700">Limit Access By:</label>
+                <app-custom-dropdown
+                    [options]="locationTypeOptions"
+                    [selectedValue]="selectedLocationTypeValue"
+                    (selectedValueChange)="onLocationTypeValueChange($event)"
+                    widthClass="w-48">
+                </app-custom-dropdown>
             </div>
             <ng-container *ngIf="!assignLabels">
                 <div class="available-items" *ngIf="selectedLocationType && !loadLocations">

@@ -33,10 +33,14 @@
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
                                 Is Active
                             </th>
-                            <!--  <th
+                            <th
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
-                                Phone
-                            </th> -->
+                                Role
+                            </th>
+                            <th
+                                class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
+                                Access Level
+                            </th>
                             <th *ngIf="canAssignRoles && canUpdateUsers && canDeactivateUser"
                                 class="px-5 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase border-b-2 border-gray-200">
                                 Action
@@ -61,10 +65,12 @@
                                             <i class="ph-x text-2xl mr-3 text-red-600" *ngIf="!user?.is_active"></i>
                                         </p>
                                     </td>
-                                    <!--  <td class="px-5 py-3 text-sm border-b border-gray-200">
-                                        <p class="text-gray-900 whitespace-no-wrap">{{ user?.phone ? user?.phone : "-" }}
-                                        </p>
-                                    </td> -->
+                                    <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                        <p class="text-gray-900 whitespace-no-wrap">{{ getRoleNames(user) }}</p>
+                                    </td>
+                                    <td class="px-5 py-3 text-sm border-b border-gray-200">
+                                        <p class="text-gray-900 whitespace-no-wrap">{{ getAccessLevelLabel(user) }}</p>
+                                    </td>
                                     <td class="px-5 py-3 text-sm border-b border-gray-200" *ngIf="canAssignRoles && canUpdateUsers && canDeactivateUser">
                                         <a mat-icon-button [matMenuTriggerFor]="menu"
                                             class="text-gray-900 hover:text-blue-700 hover:cursor-pointer text-2xl bold"><i

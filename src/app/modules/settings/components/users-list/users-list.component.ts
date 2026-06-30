@@ -56,6 +56,9 @@ export class UsersListComponent implements OnInit {
 
   ngOnInit(): void {
     this.current_user = JSON.parse(localStorage.getItem("current_user") || "{}");
+    this.authService.get_user().subscribe({
+      next: (user: any) => { if (user && !user.error) this.current_user = user; }
+    });
     this.runPrivilegesCheck()
     this.loadUsers()
     this.loadSystemConfigurations()
@@ -134,7 +137,8 @@ export class UsersListComponent implements OnInit {
       field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
       canUpdateLimitLabels: this.canUpdateLimitLabels,
-      canAssignRoles: this.canAssignRoles
+      canAssignRoles: this.canAssignRoles,
+      current_user_access_limit: this.current_user?.access_limit
     }
     this.dialog.open(AssignRolesFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
@@ -164,14 +168,15 @@ export class UsersListComponent implements OnInit {
       field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
       canUpdateLimitLabels: this.canUpdateLimitLabels,
-      canAssignRoles: this.canAssignRoles
+      canAssignRoles: this.canAssignRoles,
+      current_user_access_limit: this.current_user?.access_limit
     }
     this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
         if(response) this.loadUsers();
       }})
   }
-  
+
   onEditUser(user: any){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
@@ -184,7 +189,8 @@ export class UsersListComponent implements OnInit {
       field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
       canUpdateLimitLabels: this.canUpdateLimitLabels,
-      canAssignRoles: this.canAssignRoles
+      canAssignRoles: this.canAssignRoles,
+      current_user_access_limit: this.current_user?.access_limit
     }
     this.dialog.open(UserFormComponent, dialogConfig).afterClosed().subscribe({
       next: (response) => {
@@ -213,6 +219,27 @@ export class UsersListComponent implements OnInit {
           }
         });
       }})
+  }
+
+  getRoleNames(user: any): string {
+    return user?.roles?.map((r: any) => r.name).filter(Boolean).join(', ') || '-';
+  }
+
+  getAccessLevelLabel(user: any): string {
+    const accessLimit = user?.access_limit;
+    if (!accessLimit?.field) return '-';
+    const map: Record<string, string | undefined> = {
+      [this.fieldMappingData?.location_level1 || '']: this.systemConfigData?.admin_level1,
+      [this.fieldMappingData?.location_level2 || '']: this.systemConfigData?.admin_level2,
+      [this.fieldMappingData?.location_level3 || '']: this.systemConfigData?.admin_level3,
+      [this.fieldMappingData?.location_level4 || '']: this.systemConfigData?.admin_level4,
+    };
+    const levelName = map[accessLimit.field] || accessLimit.field;
+    const values = (accessLimit.limit_by as any[])
+      ?.map((item: any) => item.label || item.value)
+      .filter(Boolean)
+      .join(', ');
+    return values ? `${levelName} (${values})` : levelName;
   }
 
   onPageChange(event: any) {

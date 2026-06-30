@@ -94,7 +94,7 @@ export class BodyComponent implements OnInit, OnDestroy {
     if(this.systemImages === null || this.systemImages?.logo === null || !this.systemImages?.logo){
       this.systemImages = {
         ...this.systemImages,
-        logo: '../../../../assets/images/vman_logo.png'
+        logo: '../../../../assets/images/vman_logo.svg'
       }
     } else {
       this.systemImages = {
