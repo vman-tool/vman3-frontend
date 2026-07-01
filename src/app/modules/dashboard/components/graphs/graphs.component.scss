@@ -1,0 +1,64 @@
+/* ── Base card ────────────────────────────────────────────────────────────── */
+.card {
+  @apply bg-white rounded-xl border border-gray-100 shadow-sm;
+}
+
+/* ── Card header (title row + optional action) ───────────────────────────── */
+.card-header {
+  @apply flex items-center justify-between mb-3 shrink-0;
+}
+
+/* ── Typography scale ─────────────────────────────────────────────────────── */
+
+/* Primary card title — same size/weight for every card */
+.card-title {
+  @apply text-[13px] font-semibold text-gray-700 tracking-tight leading-snug;
+}
+
+/* UPPERCASE section divider label inside a card */
+.section-label {
+  @apply text-[10px] font-bold uppercase tracking-widest text-gray-400;
+}
+
+/* Section block — provides consistent spacing + bottom border */
+.section-block {
+  @apply pb-2 mb-2 border-b border-gray-100;
+}
+
+/* Key / value pairs */
+.stat-row  { @apply flex items-center justify-between; }
+.stat-key  { @apply text-[11px] text-gray-400; }
+.stat-val  { @apply text-[11px] font-semibold text-gray-700; }
+
+/* ── Download icon button ─────────────────────────────────────────────────── */
+.dl-btn {
+  @apply p-1 rounded-md hover:bg-gray-100 transition-colors shrink-0 ml-2 cursor-pointer;
+}
+
+/* ── DQA KPI card (row 2) ─────────────────────────────────────────────────── */
+.kpi-card {
+  @apply bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex flex-col
+         cursor-pointer transition-shadow hover:shadow-md;
+}
+
+.kpi-label {
+  @apply text-[10px] font-medium text-gray-500 leading-tight;
+}
+
+.kpi-value {
+  @apply text-[15px] font-bold text-gray-800 mt-1;
+}
+
+.kpi-count {
+  @apply text-[10px] text-gray-400 mt-0.5;
+}
+
+/* Dataset Overview — thin unobtrusive scrollbar for the content area */
+.dataset-overview-body {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+}
