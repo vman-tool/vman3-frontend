@@ -146,7 +146,7 @@
       <div class="kpi-value" [class.text-red-300]="hasDqaRrsError">{{ hasDqaRrsError ? '--' : dqaRrs }}</div>
       <div class="flex items-center gap-1.5 mt-0.5">
         <span *ngIf="dqaRrsTier && !hasDqaRrsError"
-              class="inline-flex items-center px-1 py-0 rounded text-[9px] font-semibold"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
               [ngClass]="[dqaRrsTier.bgClass, dqaRrsTier.textClass]">
           {{ dqaRrsTier.label }}
         </span>
@@ -167,7 +167,13 @@
     <div *ngIf="isDqaIcsLoading" class="h-5 w-14 rounded bg-gray-100 animate-pulse mt-1"></div>
     <ng-container *ngIf="!isDqaIcsLoading">
       <div class="kpi-value" [class.text-red-300]="hasDqaIcsError">{{ hasDqaIcsError ? '--' : dqaIcs }}</div>
-      <div class="mt-0.5 h-[14px]"></div>
+      <div class="flex items-center gap-1.5 mt-0.5">
+        <span *ngIf="dqaIcsTier && !hasDqaIcsError"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+              [ngClass]="[dqaIcsTier.bgClass, dqaIcsTier.textClass]">
+          {{ dqaIcsTier.label }}
+        </span>
+      </div>
       <p *ngIf="!hasDqaIcsError" class="kpi-count">N = {{ dqaIcsCount | number }}</p>
     </ng-container>
   </a>
@@ -186,7 +192,7 @@
       <div class="kpi-value" [class.text-red-300]="hasDqaIciError">{{ hasDqaIciError ? '--' : dqaIci }}</div>
       <div class="flex items-center gap-1.5 mt-0.5">
         <span *ngIf="dqaIciTier && !hasDqaIciError"
-              class="inline-flex items-center px-1 py-0 rounded text-[9px] font-semibold"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
               [ngClass]="[dqaIciTier.bgClass, dqaIciTier.textClass]">
           {{ dqaIciTier.label }}
         </span>
@@ -207,7 +213,13 @@
     <div *ngIf="isDqaDurationLoading" class="h-5 w-14 rounded bg-gray-100 animate-pulse mt-1"></div>
     <ng-container *ngIf="!isDqaDurationLoading">
       <div class="kpi-value" [class.text-red-300]="hasDqaDurationError">{{ hasDqaDurationError ? '--' : dqaDuration }}</div>
-      <div class="mt-0.5 h-[14px]"></div>
+      <div class="flex items-center gap-1.5 mt-0.5">
+        <span *ngIf="dqaDurationTier && !hasDqaDurationError"
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+              [ngClass]="[dqaDurationTier.bgClass, dqaDurationTier.textClass]">
+          {{ dqaDurationTier.label }}
+        </span>
+      </div>
       <p *ngIf="!hasDqaDurationError" class="kpi-count">N = {{ dqaDurationCount | number }}</p>
     </ng-container>
   </a>

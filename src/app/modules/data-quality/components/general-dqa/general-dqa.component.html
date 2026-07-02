@@ -43,7 +43,7 @@
         <!-- Tier badge — always occupies h-6 so height matches ICS/Duration spacer -->
         <div class="mt-1 h-6 flex items-center">
           <span *ngIf="overallRrsTier"
-                class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
                 [ngClass]="[overallRrsTier.bgClass, overallRrsTier.textClass]">
             {{ overallRrsTier.label }}
           </span>
@@ -84,8 +84,13 @@
         <div class="text-2xl font-bold" [ngClass]="activeCard === 'ics' ? 'text-blue-700' : 'text-gray-800'">
           {{ overallIcs }}
         </div>
-        <!-- Badge-height spacer keeps this card the same height as RRS/ICI which have a tier badge -->
-        <div class="mt-1 h-6"></div>
+        <div class="mt-1 h-6 flex items-center">
+          <span *ngIf="overallIcsTier"
+                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                [ngClass]="[overallIcsTier.bgClass, overallIcsTier.textClass]">
+            {{ overallIcsTier.label }}
+          </span>
+        </div>
         <p class="text-xs text-gray-400">Mean ICS across {{ overallIcsCount | number }} records</p>
       </ng-container>
 
@@ -124,7 +129,7 @@
         </div>
         <div class="mt-1 h-6 flex items-center">
           <span *ngIf="overallIciTier"
-                class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
                 [ngClass]="[overallIciTier.bgClass, overallIciTier.textClass]">
             {{ overallIciTier.label }}
           </span>
@@ -164,8 +169,13 @@
         <div class="text-2xl font-bold" [ngClass]="activeCard === 'duration' ? 'text-amber-700' : 'text-gray-800'">
           {{ overallDuration }}
         </div>
-        <!-- Badge-height spacer -->
-        <div class="mt-1 h-6"></div>
+        <div class="mt-1 h-6 flex items-center">
+          <span *ngIf="overallDurationTier"
+                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                [ngClass]="[overallDurationTier.bgClass, overallDurationTier.textClass]">
+            {{ overallDurationTier.label }}
+          </span>
+        </div>
         <p class="text-xs text-gray-400">Mean across {{ overallDurationCount | number }} records</p>
       </ng-container>
 
@@ -296,21 +306,32 @@
               </td>
 
               <td class="px-4 py-3 whitespace-nowrap">
-                <ng-container *ngIf="activeCard === 'rrs'">
-                  <ng-container *ngIf="rrsRowTier(row.stat) as tier; else noRrsData">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                          [ngClass]="[tier.bgClass, tier.textClass]">{{ tier.label }}</span>
+                <ng-container [ngSwitch]="activeCard">
+                  <!-- RRS -->
+                  <ng-container *ngSwitchCase="'rrs'">
+                    <ng-container *ngIf="rrsRowTier(row.stat) as tier; else noData">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                            [ngClass]="[tier.bgClass, tier.textClass]">{{ tier.label }}</span>
+                    </ng-container>
                   </ng-container>
-                  <ng-template #noRrsData>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No Data</span>
-                  </ng-template>
+                  <!-- ICS -->
+                  <ng-container *ngSwitchCase="'ics'">
+                    <ng-container *ngIf="icsRowTier(row.stat) as tier; else noData">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                            [ngClass]="[tier.bgClass, tier.textClass]">{{ tier.label }}</span>
+                    </ng-container>
+                  </ng-container>
+                  <!-- Duration -->
+                  <ng-container *ngSwitchCase="'duration'">
+                    <ng-container *ngIf="durationRowTier(row.stat) as tier; else noData">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                            [ngClass]="[tier.bgClass, tier.textClass]">{{ tier.label }}</span>
+                    </ng-container>
+                  </ng-container>
                 </ng-container>
-                <ng-container *ngIf="activeCard !== 'rrs'">
-                  <span *ngIf="row.stat.count > 0"
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">Available</span>
-                  <span *ngIf="row.stat.count === 0"
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No Data</span>
-                </ng-container>
+                <ng-template #noData>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No Data</span>
+                </ng-template>
               </td>
 
             </tr>
@@ -415,7 +436,7 @@
                 <!-- Status badge -->
                 <td class="px-4 py-3 whitespace-nowrap">
                   <ng-container *ngIf="iciRowTier(item.data) as tier">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
                           [ngClass]="[tier.bgClass, tier.textClass]">
                       {{ tier.label }}
                     </span>

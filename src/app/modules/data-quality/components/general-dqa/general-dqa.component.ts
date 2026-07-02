@@ -6,6 +6,7 @@ import {
   IciStats,
   InterviewerIci,
 } from '../../services/general-dqa.service';
+import { DqaThresholdService, StatusBadge as ThresholdBadge } from '../../services/dqa-threshold.service';
 
 // ─── SVG distribution visualisation ────────────────────────────────────────
 
@@ -176,7 +177,10 @@ export class GeneralDqaComponent implements OnInit {
   // Which card drives the breakdown table
   activeCard: ActiveCard = 'rrs';
 
-  constructor(private svc: GeneralDqaService) {}
+  constructor(
+    private svc: GeneralDqaService,
+    private thresholdSvc: DqaThresholdService,
+  ) {}
 
   ngOnInit(): void {
     this.svc.getInterviewDurationStats().subscribe({
@@ -244,18 +248,20 @@ export class GeneralDqaComponent implements OnInit {
 
   get overallDuration(): string      { return this.fmtMin(this.durationStats?.overall?.avg ?? null); }
   get overallDurationCount(): number { return this.durationStats?.overall?.count ?? 0; }
+  get overallDurationTier(): StatusBadge | null { return this.thresholdSvc.classifyAid(this.durationStats?.overall?.avg ?? null); }
 
   get overallIcs(): string      { return this.fmtPct(this.icsStats?.overall?.avg ?? null); }
   get overallIcsCount(): number { return this.icsStats?.overall?.count ?? 0; }
+  get overallIcsTier(): StatusBadge | null { return this.thresholdSvc.classifyIcs(this.icsStats?.overall?.avg ?? null); }
 
   get overallRrs(): string      { return this.fmtRrs(this.rrsStats?.overall?.avg ?? null); }
   get overallRrsCount(): number { return this.rrsStats?.overall?.count ?? 0; }
-  get overallRrsTier(): StatusBadge | null { return rrsClassify(this.rrsStats?.overall?.avg ?? null); }
+  get overallRrsTier(): StatusBadge | null { return this.thresholdSvc.classifyRrs(this.rrsStats?.overall?.avg ?? null); }
 
   get overallIci(): string      { return this.fmtIci(this.iciStats?.overall_ici ?? null); }
   get overallIciTotal(): number { return this.iciStats?.overall_total  ?? 0; }
   get overallIciPassed(): number{ return this.iciStats?.overall_passed ?? 0; }
-  get overallIciTier(): StatusBadge | null { return iciClassify(this.iciStats?.overall_ici ?? null); }
+  get overallIciTier(): StatusBadge | null { return this.thresholdSvc.classifyIci(this.iciStats?.overall_ici ?? null); }
 
   // ICI interviewer rows — full list for reference
   get iciInterviewers(): InterviewerIci[] { return this.iciStats?.interviewers ?? []; }
@@ -315,8 +321,10 @@ export class GeneralDqaComponent implements OnInit {
   }
   fmtIciRow(v: number): string { return `${v.toFixed(1)}%`; }
 
-  rrsRowTier(stat: DistStat): StatusBadge | null { return rrsClassify(stat.avg); }
-  iciRowTier(row: InterviewerIci | null): StatusBadge | null { return row ? iciClassify(row.ici) : null; }
+  rrsRowTier(stat: DistStat):      StatusBadge | null { return this.thresholdSvc.classifyRrs(stat.avg); }
+  icsRowTier(stat: DistStat):      StatusBadge | null { return this.thresholdSvc.classifyIcs(stat.avg); }
+  durationRowTier(stat: DistStat): StatusBadge | null { return this.thresholdSvc.classifyAid(stat.avg); }
+  iciRowTier(row: InterviewerIci | null): StatusBadge | null { return row ? this.thresholdSvc.classifyIci(row.ici) : null; }
 
   readonly SVG_W = SVG_W;
   readonly SVG_H = SVG_H;

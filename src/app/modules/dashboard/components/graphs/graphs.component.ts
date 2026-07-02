@@ -24,24 +24,7 @@ import {
   GroupedStats,
   IciStats,
 } from '../../../data-quality/services/general-dqa.service';
-
-// ── Tier badge (local copy so no cross-module component import) ───────────────
-
-interface TierBadge { label: string; bgClass: string; textClass: string; }
-
-function rrsKpiTier(avg: number | null): TierBadge | null {
-  if (avg === null || avg === undefined) return null;
-  if (avg >= 80) return { label: 'High',     bgClass: 'bg-emerald-50', textClass: 'text-emerald-700' };
-  if (avg >= 50) return { label: 'Moderate', bgClass: 'bg-amber-50',   textClass: 'text-amber-700'   };
-  return           { label: 'Low',       bgClass: 'bg-red-50',     textClass: 'text-red-700'     };
-}
-
-function iciKpiTier(ici: number | null): TierBadge | null {
-  if (ici === null || ici === undefined) return null;
-  if (ici >= 90) return { label: 'Excellent', bgClass: 'bg-emerald-50', textClass: 'text-emerald-700' };
-  if (ici >= 70) return { label: 'Good',      bgClass: 'bg-amber-50',   textClass: 'text-amber-700'   };
-  return           { label: 'Critical',   bgClass: 'bg-red-50',     textClass: 'text-red-700'     };
-}
+import { DqaThresholdService, StatusBadge as TierBadge } from '../../../data-quality/services/dqa-threshold.service';
 
 @Component({
   selector: 'app-graphs',
@@ -144,18 +127,20 @@ export class GraphsComponent implements OnInit {
   // ── DQA derived getters ───────────────────────────────────────────────────
   get dqaRrs():       string       { return this.fmtDqaRrs(this.rrsStats?.overall?.avg ?? null); }
   get dqaRrsCount():  number       { return this.rrsStats?.overall?.count ?? 0; }
-  get dqaRrsTier():   TierBadge | null { return rrsKpiTier(this.rrsStats?.overall?.avg ?? null); }
+  get dqaRrsTier():      TierBadge | null { return this.thresholdSvc.classifyRrs(this.rrsStats?.overall?.avg ?? null); }
 
-  get dqaIcs():       string  { return this.fmtDqaPct(this.icsStats?.overall?.avg ?? null); }
-  get dqaIcsCount():  number  { return this.icsStats?.overall?.count ?? 0; }
+  get dqaIcs():          string  { return this.fmtDqaPct(this.icsStats?.overall?.avg ?? null); }
+  get dqaIcsCount():     number  { return this.icsStats?.overall?.count ?? 0; }
+  get dqaIcsTier():      TierBadge | null { return this.thresholdSvc.classifyIcs(this.icsStats?.overall?.avg ?? null); }
 
-  get dqaIci():       string       { return this.fmtDqaIci(this.iciStats?.overall_ici ?? null); }
-  get dqaIciTotal():  number       { return this.iciStats?.overall_total  ?? 0; }
-  get dqaIciPassed(): number       { return this.iciStats?.overall_passed ?? 0; }
-  get dqaIciTier():   TierBadge | null { return iciKpiTier(this.iciStats?.overall_ici ?? null); }
+  get dqaIci():          string       { return this.fmtDqaIci(this.iciStats?.overall_ici ?? null); }
+  get dqaIciTotal():     number       { return this.iciStats?.overall_total  ?? 0; }
+  get dqaIciPassed():    number       { return this.iciStats?.overall_passed ?? 0; }
+  get dqaIciTier():      TierBadge | null { return this.thresholdSvc.classifyIci(this.iciStats?.overall_ici ?? null); }
 
   get dqaDuration():      string { return this.fmtDqaMin(this.durationStats?.overall?.avg ?? null); }
   get dqaDurationCount(): number { return this.durationStats?.overall?.count ?? 0; }
+  get dqaDurationTier():  TierBadge | null { return this.thresholdSvc.classifyAid(this.durationStats?.overall?.avg ?? null); }
 
   // ── DQA formatters ────────────────────────────────────────────────────────
   fmtDqaMin(v: number | null): string {
@@ -184,6 +169,7 @@ export class GraphsComponent implements OnInit {
     private ccvaService: CcvaService,
     private filterService: FilterService,
     private dqaService: GeneralDqaService,
+    private thresholdSvc: DqaThresholdService,
   ) {
     this.filterService = inject(FilterService);
     this.setupEffect();

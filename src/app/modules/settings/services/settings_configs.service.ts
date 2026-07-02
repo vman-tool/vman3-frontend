@@ -18,7 +18,7 @@ export class SettingConfigService {
 
   // General method to save data
   saveConnectionData(
-    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'field_labels' | 'sync_status',
+    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'field_labels' | 'sync_status' | 'dqa_thresholds',
     data: any
   ): Observable<ResponseMainModel<any>> {
     return this.http
@@ -94,6 +94,7 @@ export class SettingConfigService {
                     last_sync_data_count: 0,
                     total_synced_data: 0
                   },
+                dqa_thresholds: response.data?.dqa_thresholds ?? undefined,
               };
               return config;
             }

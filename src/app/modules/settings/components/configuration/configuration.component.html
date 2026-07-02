@@ -4,98 +4,107 @@
   <div class="border-b border-gray-200 dark:border-gray-700">
     <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
       <li class="me-2" *ngIf="dataAccess?.viewSystemConfigs">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'system-config'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'system-config',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'system-config'
          }">
-          <i class="fas fa-cogs me-2" [ngClass]="{
+          <i class="ph ph-gear text-base me-1.5" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'system-config',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'system-config'
            }"></i>
-          <span class="text-lg font-normal">System Configuration</span>
+          <span class="text-sm font-medium">System Configuration</span>
         </a>
       </li>
       <li class="me-2" *ngIf="dataAccess?.viewODKSettings">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'odk-api'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'odk-api',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'odk-api'
          }">
-          <i class="fas fa-network-wired me-2" [ngClass]="{
+          <i class="ph ph-plugs-connected text-base me-1.5" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'odk-api',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'odk-api'
            }"></i>
-          <span class="text-lg font-normal">ODK Api</span>
+          <span class="text-sm font-medium">ODK Api</span>
         </a>
       </li>
       <li class="me-2" *ngIf="dataAccess?.canSyncODKQuestions">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'questions-sync'; loadQuestionsSyncTab()" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'questions-sync',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'questions-sync'
          }">
-          <i class="fas fa-sync me-2" [ngClass]="{
+          <i class="ph ph-arrows-clockwise text-base me-1.5" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'questions-sync',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'questions-sync'
            }"></i>
-          <span class="text-lg font-normal">Questions Sync</span>
+          <span class="text-sm font-medium">Questions Sync</span>
         </a>
       </li>
       <li class="me-2" *ngIf="dataAccess?.viewFieldMapping">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'field-mapping'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'field-mapping',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'field-mapping'
          }">
-          <i class="fas fa-table me-2" [ngClass]="{
+          <i class="ph ph-map-trifold text-base me-1.5" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'field-mapping',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'field-mapping'
            }"></i>
-
-          <span class="text-lg font-normal">Field Mapping</span>
+          <span class="text-sm font-medium">Field Mapping</span>
         </a>
       </li>
       <li class="me-2" *ngIf="dataAccess?.viewSummaryFields">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'va-summary'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'va-summary',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'va-summary'
          }">
-          <i class="fas fa-table me-2" [ngClass]="{
+          <i class="ph ph-clipboard-text text-base me-1.5" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'va-summary',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'va-summary'
            }"></i>
-
-          <span class="text-lg font-normal">VA-Summary</span>
+          <span class="text-sm font-medium">VA-Summary</span>
         </a>
       </li>
       <li class="me-2" *ngIf="dataAccess?.updateSystemImages">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'system-images'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'system-images',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'system-images'
          }">
-          <i class="fas fa-table me-2" [ngClass]="{
+          <i class="ph ph-images text-base me-1.5" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'system-images',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'system-images'
            }"></i>
-
-          <span class="text-lg font-normal">System Images</span>
+          <span class="text-sm font-medium">System Images</span>
+        </a>
+      </li>
+      <li class="me-2" *ngIf="dataAccess?.viewSystemConfigs">
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'dqa-thresholds'" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'dqa-thresholds',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'dqa-thresholds'
+         }">
+          <i class="ph ph-sliders text-base me-1.5" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'dqa-thresholds',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'dqa-thresholds'
+           }"></i>
+          <span class="text-sm font-medium">DQA Thresholds</span>
         </a>
       </li>
       <li class="me-2" *ngIf="dataAccess?.updateAccessLocationsLabels">
-        <a class="inline-flex items-center justify-center p-4 rounded-t-lg group hover:cursor-pointer"
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'label-access-fields'" [ngClass]="{
            'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'label-access-fields',
            'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'label-access-fields'
          }">
-          <i class="fas fa-table me-2" [ngClass]="{
+          <i class="ph ph-tag text-base me-1.5" [ngClass]="{
              'text-blue-600 dark:text-blue-500': selectedTab === 'label-access-fields',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'label-access-fields'
            }"></i>
-
-          <span class="text-lg font-normal">Re-label Access Fields</span>
+          <span class="text-sm font-medium">Re-label Access Fields</span>
         </a>
       </li>
     </ul>
@@ -388,3 +397,12 @@
           [field_labels]="fieldLabels" (load_settings)="onLoadLabelAccess()"></app-label-access-fields>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="selectedTab === 'dqa-thresholds' && dataAccess?.viewSystemConfigs" id="dqa-thresholds"
+       class="mt-4 tab-content">
+    <div class="my-8">
+      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <app-dqa-thresholds></app-dqa-thresholds>
+    </div>
+  </div>

@@ -67,6 +67,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private progressSub: Subscription | null = null;
   message: string | undefined;
   private messageSubscription: Subscription | undefined;
+  private currentTaskId: string = '';   // set from API response; never hardcoded
   dataSource: 'api' | 'csv' = 'api';
   selectedFile: File | null = null;
   @ViewChild('fileInput') fileInput!: ElementRef;
@@ -123,7 +124,11 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.elapsedTime = null;
 
     await this.loadPreviousProgressFromLocalStorage();
-    this.initializeWebSocket();
+    // Connect to the channel for the task that was running (if any), or skip
+    // until a new sync starts and gives us a real task_id.
+    if (this.currentTaskId) {
+      this.connectWebSocket(this.currentTaskId);
+    }
 
     // Load permissions
     // Load permissions
@@ -565,14 +570,11 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       next: async (response: any) => {
         console.log('Manual sync initiated:', response);
 
-        // Don't update sync status here - wait for completion
-        // The sync status will be updated when WebSocket progress reaches 100%
-
-        if (response.download_status === true) {
+        if (response.download_status === true && response.task_id) {
+          // Connect WebSocket to this specific task's progress channel
+          this.connectWebSocket(response.task_id);
           this.isTaskRunning = true;
           this.showSyncStatusUpdateSuccess('Sync in progress... Monitoring via WebSocket');
-        } else {
-          // this.isTaskRunning = false;
         }
 
         this.isDataSyncing = false;
@@ -647,12 +649,17 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
 
 
-  // WebSocket connection setup and message handling
-  private initializeWebSocket(): void {
+  // WebSocket connection — always keyed to the specific task_id
+  private connectWebSocket(taskId: string): void {
+    this.webSockettService.disconnect();
+    if (this.messageSubscription) {
+      this.messageSubscription.unsubscribe();
+      this.messageSubscription = undefined;
+    }
+    this.currentTaskId = taskId;
     this.webSockettService.connect(
-      `${this.configService.API_URL_WS}/odk_progress/123`
+      `${this.configService.API_URL_WS}/odk_progress/${taskId}`
     );
-
     this.messageSubscription = this.webSockettService.messages.subscribe(
       (data: string) => {
         try {
@@ -752,6 +759,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.localStorageSettingsService.setItemWithTTL(
       'odk_progress',
       {
+        taskId: this.currentTaskId,
         totalRecords: this.totalRecords,
         progress: this.progress,
         elapsedTime: this.elapsedTime,
@@ -767,6 +775,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private async loadPreviousProgressFromLocalStorage(): Promise<void> {
     const odkProgress = this.localStorageSettingsService.getItemWithTTL('odk_progress');
     if (odkProgress) {
+      this.currentTaskId = odkProgress.taskId ?? '';
       this.totalRecords = odkProgress.totalRecords;
       this.progress = odkProgress.progress;
       this.elapsedTime = odkProgress.elapsedTime ?? null;
