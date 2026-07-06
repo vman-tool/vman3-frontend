@@ -7,6 +7,7 @@ import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-i
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-label-access-fields',
   templateUrl: './label-access-fields.component.html',
   styleUrls: ['./label-access-fields.component.scss']

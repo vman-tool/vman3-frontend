@@ -6,6 +6,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 
 @Component({
+  standalone: false,
   selector: 'app-pcva-results',
   templateUrl: './pcva-results.component.html',
   styleUrl: './pcva-results.component.scss'

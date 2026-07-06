@@ -1,4 +1,4 @@
-<div class="mx-auto my-8 ">
+<div class="mx-auto my-8">
   <div class="flex items-center justify-between mb-4">
     <div>
       <span class="text-2xl font-semibold">VA Data</span>
@@ -10,129 +10,125 @@
     </div>
   </div>
 
-  <!-- Table Container -->
   <div class="relative overflow-hidden shadow-md sm:rounded-lg">
+    <div class="overflow-y-auto h-[40vh]">
+      <table class="w-full table-fixed text-sm text-gray-500 dark:text-gray-400">
 
-    <!-- Table Header -->
-    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-        <tr>
+        <colgroup>
+          <col style="width:16%">
+          <col style="width:22%">
+          <col style="width:8%">
+          <col style="width:14%">
+          <col style="width:8%">
+          <col style="width:8%">
+          <col style="width:9%">
+          <col style="width:7%">
+          <col style="width:8%">
+        </colgroup>
 
-          <th scope="col" class="w-2/12 px-6 py-4 cursor-pointer select-none"
-              (click)="onSort('region')">
-            <span class="flex items-center gap-1">
-              {{region??'Region'}} <i [class]="sortIcon('region')"></i>
-            </span>
-          </th>
+        <thead class="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-left overflow-hidden"
+                (click)="onSort('region')">
+              <span class="flex items-center gap-1 min-w-0">
+                <span class="truncate">{{region ?? 'Region'}}</span>
+                <i [class]="sortIcon('region')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-left overflow-hidden"
+                (click)="onSort('district')">
+              <span class="flex items-center gap-1 min-w-0">
+                <span class="truncate">{{district ?? 'District'}}</span>
+                <i [class]="sortIcon('district')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+                (click)="onSort('count')">
+              <span class="flex items-center justify-end gap-1">
+                Count <i [class]="sortIcon('count')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-center overflow-hidden"
+                (click)="onSort('lastSubmission')">
+              <span class="flex items-center justify-center gap-1 min-w-0">
+                <span class="truncate">Last Submission</span>
+                <i [class]="sortIcon('lastSubmission')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+                (click)="onSort('adults')">
+              <span class="flex items-center justify-end gap-1">
+                Adults <i [class]="sortIcon('adults')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+                (click)="onSort('children')">
+              <span class="flex items-center justify-end gap-1">
+                Children <i [class]="sortIcon('children')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+                (click)="onSort('neonates')">
+              <span class="flex items-center justify-end gap-1">
+                Neonates <i [class]="sortIcon('neonates')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+                (click)="onSort('male')">
+              <span class="flex items-center justify-end gap-1">
+                Male <i [class]="sortIcon('male')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+                (click)="onSort('female')">
+              <span class="flex items-center justify-end gap-1">
+                Female <i [class]="sortIcon('female')" class="shrink-0"></i>
+              </span>
+            </th>
+          </tr>
+        </thead>
 
-          <th scope="col" class="w-2/12 px-6 py-4 cursor-pointer select-none"
-              (click)="onSort('district')">
-            <span class="flex items-center gap-1">
-              {{district??'District'}} <i [class]="sortIcon('district')"></i>
-            </span>
-          </th>
-
-          <th scope="col" class="w-1/12 px-6 py-4 cursor-pointer select-none text-right"
-              (click)="onSort('count')">
-            <span class="flex items-center justify-end gap-1">
-              Count <i [class]="sortIcon('count')"></i>
-            </span>
-          </th>
-
-          <th scope="col" class="w-2/12 px-6 py-4 cursor-pointer select-none"
-              (click)="onSort('lastSubmission')">
-            <span class="flex items-center gap-1">
-              Last Submission <i [class]="sortIcon('lastSubmission')"></i>
-            </span>
-          </th>
-
-          <th scope="col" class="w-1/12 px-6 py-4 cursor-pointer select-none text-right"
-              (click)="onSort('adults')">
-            <span class="flex items-center justify-end gap-1">
-              Adults <i [class]="sortIcon('adults')"></i>
-            </span>
-          </th>
-
-          <th scope="col" class="w-1/12 px-6 py-4 cursor-pointer select-none text-right"
-              (click)="onSort('children')">
-            <span class="flex items-center justify-end gap-1">
-              Children <i [class]="sortIcon('children')"></i>
-            </span>
-          </th>
-
-          <th scope="col" class="w-1/12 px-6 py-4 cursor-pointer select-none text-right"
-              (click)="onSort('neonates')">
-            <span class="flex items-center justify-end gap-1">
-              Neonates <i [class]="sortIcon('neonates')"></i>
-            </span>
-          </th>
-
-          <th scope="col" class="w-1/12 px-6 py-4 cursor-pointer select-none text-right"
-              (click)="onSort('male')">
-            <span class="flex items-center justify-end gap-1">
-              Male <i [class]="sortIcon('male')"></i>
-            </span>
-          </th>
-
-          <th scope="col" class="w-1/12 px-6 py-4 cursor-pointer select-none text-right"
-              (click)="onSort('female')">
-            <span class="flex items-center justify-end gap-1">
-              Female <i [class]="sortIcon('female')"></i>
-            </span>
-          </th>
-
-        </tr>
-      </thead>
-    </table>
-
-    <!-- Table Body with Scroll -->
-    <div class="overflow-y-auto h-[35vh]">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <tbody>
-          <!-- No records -->
-          <tr *ngIf="(dataSubmissions?.length === 0 || !dataSubmissions || dataSubmissions === undefined) && !isLoading"
-            class="bg-gray-200">
-            <td colspan="9" class="px-6 py-4 text-center">No record was found</td>
+          <tr *ngIf="(dataSubmissions?.length === 0 || !dataSubmissions) && !isLoading"
+              class="bg-gray-200">
+            <td colspan="9" class="px-4 py-4 text-center">No record was found</td>
           </tr>
-          <!-- Loading -->
           <tr *ngIf="isLoading">
-            <td colspan="9" class="h-full py-6 text-center bg-gray-200 animate-pulse">
-              <div class="flex items-center justify-center h-full"></div>
-            </td>
+            <td colspan="9" class="py-6 text-center bg-gray-200 animate-pulse"></td>
           </tr>
-          <!-- Records -->
           <tr *ngFor="let record of sortedData; let i = index"
-            class="border-b text-gray-600 dark:bg-gray-800 dark:border-gray-700 {{ i % 2 !== 0 ? 'bg-gray-200' : '' }}">
-            <td class="w-2/12 px-6 py-4 text-left">{{ record.region }}</td>
-            <td class="w-2/12 px-6 py-4 text-left">{{ record.district }}</td>
-            <td class="w-1/12 px-6 py-4 text-right">{{ record.count }}</td>
-            <td class="w-2/12 px-6 py-4 text-left">{{ record.lastSubmission }}</td>
-            <td class="w-1/12 px-6 py-4 text-right">{{ record.adults }}</td>
-            <td class="w-1/12 px-6 py-4 text-right">{{ record.children }}</td>
-            <td class="w-1/12 px-6 py-4 text-right">{{ record.neonates }}</td>
-            <td class="w-1/12 px-6 py-4 text-right">{{ record.male }}</td>
-            <td class="w-1/12 px-6 py-4 text-right">{{ record.female }}</td>
+              class="border-b text-gray-600 dark:bg-gray-800 dark:border-gray-700"
+              [class.bg-gray-200]="i % 2 !== 0">
+            <td class="px-4 py-4 text-left max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="record.region">{{ record.region }}</td>
+            <td class="px-4 py-4 text-left max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="record.district">{{ record.district }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ record.count }}</td>
+            <td class="px-4 py-4 text-center max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="record.lastSubmission">{{ record.lastSubmission }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ record.adults }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ record.children }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ record.neonates }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ record.male }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ record.female }}</td>
           </tr>
         </tbody>
+
+        <tfoot class="sticky bottom-0 z-10 text-xs font-semibold text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <td class="px-4 py-4 text-left">Total</td>
+            <td class="px-4 py-4"></td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalCount() }}</td>
+            <td class="px-4 py-4"></td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalAdults() }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalChildren() }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalNeonates() }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalMale() }}</td>
+            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalFemale() }}</td>
+          </tr>
+        </tfoot>
+
       </table>
     </div>
-
-    <!-- Table Footer (totals row — not sortable, alignment mirrors body) -->
-    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-      <tfoot class="text-xs font-semibold text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-        <tr>
-          <td class="w-2/12 px-6 py-4 text-left">Total</td>
-          <td class="w-2/12 px-6 py-4 text-left"></td>
-          <td class="w-1/12 px-6 py-4 text-right">{{ getTotalCount() }}</td>
-          <td class="w-2/12 px-6 py-4 text-left"></td>
-          <td class="w-1/12 px-6 py-4 text-right">{{ getTotalAdults() }}</td>
-          <td class="w-1/12 px-6 py-4 text-right">{{ getTotalChildren() }}</td>
-          <td class="w-1/12 px-6 py-4 text-right">{{ getTotalNeonates() }}</td>
-          <td class="w-1/12 px-6 py-4 text-right">{{ getTotalMale() }}</td>
-          <td class="w-1/12 px-6 py-4 text-right">{{ getTotalFemale() }}</td>
-        </tr>
-      </tfoot>
-    </table>
-
   </div>
 </div>

@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'app/app.service';
 
 @Component({
+  standalone: false,
   selector: 'app-body',
   templateUrl: './body.component.html',
   styleUrl: './body.component.scss',

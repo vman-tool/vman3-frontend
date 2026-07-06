@@ -9,6 +9,7 @@ import { settingsConfigData } from '../../../settings/interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-submissions',
   templateUrl: './submissions.component.html',
   styleUrls: ['./submissions.component.scss'],

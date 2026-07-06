@@ -11,6 +11,7 @@ export interface ErrorItem {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-error-list',
   templateUrl: './error-list.component.html',
 })

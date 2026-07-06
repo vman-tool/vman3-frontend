@@ -18,6 +18,7 @@ interface IndividualError {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',

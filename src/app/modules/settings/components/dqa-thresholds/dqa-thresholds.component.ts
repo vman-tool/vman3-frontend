@@ -5,6 +5,7 @@ import { DqaThresholdService, DEFAULT_DQA_THRESHOLDS } from '../../../data-quali
 import { DqaThresholds } from '../../interface';
 
 @Component({
+  standalone: false,
   selector: 'app-dqa-thresholds',
   templateUrl: './dqa-thresholds.component.html',
 })

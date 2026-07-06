@@ -7,6 +7,7 @@ import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
 import { ResponseMainModel } from 'app/shared/interface/main.interface';
 
 @Component({
+  standalone: false,
   selector: 'app-pcva',
   templateUrl: './pcva.component.html',
   styleUrl: './pcva.component.scss'

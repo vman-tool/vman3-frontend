@@ -6,6 +6,7 @@ import { CsvExportService } from 'app/shared/services/csv-export.service';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'app-add-icd10-codes',
   templateUrl: './add-icd10-codes.component.html',
   styleUrl: './add-icd10-codes.component.scss'

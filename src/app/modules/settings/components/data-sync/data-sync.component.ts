@@ -21,6 +21,7 @@ import { HeaderMappingModalComponent } from '../../dialogs/header-mapping/header
 import { RunCcvaService } from '../../../ccva/services/run-ccva.service';
 import { SettingConfigService } from '../../services/settings_configs.service';
 @Component({
+  standalone: false,
   selector: 'app-data-sync',
   templateUrl: './data-sync.component.html',
   styleUrl: './data-sync.component.scss',

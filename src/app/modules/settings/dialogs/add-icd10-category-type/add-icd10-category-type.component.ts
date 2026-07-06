@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { PcvaSettingsService } from '../../services/pcva-settings.service';
 
 @Component({
+  standalone: false,
   selector: 'app-add-icd10-category-type',
   templateUrl: './add-icd10-category-type.component.html',
   styleUrl: './add-icd10-category-type.component.scss'

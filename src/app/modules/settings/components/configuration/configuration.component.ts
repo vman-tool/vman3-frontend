@@ -18,6 +18,7 @@ import { map } from 'rxjs';
 
 
 @Component({
+  standalone: false,
   selector: 'app-configuration',
   templateUrl: './configuration.component.html',
   styleUrls: ['./configuration.component.scss'],

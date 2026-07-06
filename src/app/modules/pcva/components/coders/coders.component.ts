@@ -6,6 +6,7 @@ import { AssignVaComponent } from '../../dialogs/assign-va/assign-va.component';
 import { UnassignVaComponent } from '../../dialogs/unassign-va/unassign-va.component';
 
 @Component({
+  standalone: false,
   selector: 'app-coders',
   templateUrl: './coders.component.html',
   styleUrl: './coders.component.scss'

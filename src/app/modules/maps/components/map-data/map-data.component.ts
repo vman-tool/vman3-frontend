@@ -11,6 +11,7 @@ import { MapDataService } from '../../services/map-data.service'; // Adjust the 
 import { FilterService } from '../../../../shared/services/filter.service';
 
 @Component({
+  standalone: false,
   selector: 'app-map-data',
   templateUrl: './map-data.component.html',
   styleUrls: ['./map-data.component.scss'],

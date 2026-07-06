@@ -64,6 +64,7 @@ import { finalize } from 'rxjs/operators';
 import { BackupSettings, DataSyncSettingsService, DayOfWeek } from '../../services/data_sync_settings.service';
 
 @Component({
+  standalone: false,
   selector: 'app-settings-configs',
   templateUrl: './settings-configs.component.html',
   styleUrls: ['./settings-configs.component.scss']

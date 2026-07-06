@@ -27,6 +27,7 @@ import {
 import { DqaThresholdService, StatusBadge as TierBadge } from '../../../data-quality/services/dqa-threshold.service';
 
 @Component({
+  standalone: false,
   selector: 'app-graphs',
   templateUrl: './graphs.component.html',
   styleUrls: ['./graphs.component.scss'],

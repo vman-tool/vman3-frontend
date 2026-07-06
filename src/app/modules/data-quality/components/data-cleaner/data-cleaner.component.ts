@@ -5,6 +5,7 @@ import { DataCleanerService } from '../../services/data-cleaner.service';
 import { ErrorItem } from '../error-list/error-list.component';
 
 @Component({
+  standalone: false,
   selector: 'app-data-cleaner',
   templateUrl: './data-cleaner.component.html',
 })

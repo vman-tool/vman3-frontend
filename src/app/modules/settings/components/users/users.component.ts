@@ -4,6 +4,7 @@ import * as privileges  from 'app/shared/constants/privileges.constants';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'app-users',
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',

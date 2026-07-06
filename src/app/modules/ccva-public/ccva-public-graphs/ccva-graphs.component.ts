@@ -19,8 +19,6 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CustomDropdownComponent } from 'app/shared/components/custom-dropdown/custom-dropdown.component';
-import { VaFiltersComponent } from 'app/shared/dialogs/filters/va-filters/va-filters.component';
 import { BaseChartDirective } from 'ng2-charts';
 import { CcvaService } from 'app/modules/ccva/services/ccva.service';
 // import { FilterService } from '../../../../shared/services/filter.service';
@@ -34,10 +32,7 @@ import { CcvaService } from 'app/modules/ccva/services/ccva.service';
     MatProgressSpinnerModule,
     FormsModule,
     MatInputModule,
-    BaseChartDirective,
-    // CcvaRoutingModule,
-    VaFiltersComponent,
-    CustomDropdownComponent,],
+    BaseChartDirective,],
   selector: 'app-ccva-public-graphs', // Import necessary modules
   templateUrl: './ccva-graphs.component.html',
   styleUrls: ['./ccva-graphs.component.scss'],

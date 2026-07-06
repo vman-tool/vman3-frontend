@@ -6,6 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-unassign-va',
   templateUrl: './unassign-va.component.html',
   styleUrl: './unassign-va.component.scss'

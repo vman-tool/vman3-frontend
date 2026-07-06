@@ -11,6 +11,7 @@ import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-i
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-assign-roles-form',
   templateUrl: './assign-roles-form.component.html',
   styleUrl: './assign-roles-form.component.scss'

@@ -5,6 +5,7 @@ import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-user-form',
   templateUrl: './user-form.component.html',
   styleUrl: './user-form.component.scss'

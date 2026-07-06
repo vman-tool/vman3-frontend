@@ -8,6 +8,7 @@ import { CcvaService } from '../../services/ccva.service';
 import { Location } from '@angular/common'; // Import Location service
 
 @Component({
+  standalone: false,
   selector: 'app-view-ccva',
   templateUrl: './view-ccva.component.html',
   styleUrl: './view-ccva.component.scss',

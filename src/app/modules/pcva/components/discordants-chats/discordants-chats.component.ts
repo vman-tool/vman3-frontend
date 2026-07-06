@@ -5,6 +5,7 @@ import { DiscordantsVaService } from '../../services/discordants-va/discordants-
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-discordants-chats',
   templateUrl: './discordants-chats.component.html',
   styleUrl: './discordants-chats.component.scss'

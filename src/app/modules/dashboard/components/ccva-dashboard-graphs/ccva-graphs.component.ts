@@ -5,6 +5,7 @@ import { CcvaService } from '../../../ccva/services/ccva.service';
 import { FilterService } from '../../../../shared/services/filter.service';
 
 @Component({
+  standalone: false,
   selector: 'app-ccva-dashboard-graphs',
   templateUrl: './ccva-graphs.component.html',
   styleUrls: ['./ccva-graphs.component.scss'],

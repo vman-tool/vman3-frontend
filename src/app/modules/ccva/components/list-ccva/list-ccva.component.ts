@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'app-list-ccva',
   templateUrl: './list-ccva.component.html',
   styleUrls: ['./list-ccva.component.scss'],

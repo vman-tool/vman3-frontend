@@ -4,6 +4,7 @@ import { FieldMapping } from 'app/modules/settings/interface';
 import { SelectOption } from 'app/shared/components/searchable-multi-select/searchable-multi-select.component';
 
 @Component({
+  standalone: false,
   selector: 'app-coding-sheet',
   templateUrl: './coding-sheet.component.html',
   styleUrl: './coding-sheet.component.scss',

@@ -16,6 +16,7 @@ type User = {
   }
 
 @Component({
+  standalone: false,
   selector: 'app-account-settings',
   templateUrl: './account-settings.component.html',
   styleUrl: './account-settings.component.scss'

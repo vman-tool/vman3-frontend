@@ -6,12 +6,17 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SearchFieldOption } from 'app/shared/interface/main.interface';
 
 @Component({
+  standalone: true,
   selector: 'app-searchable-select-for-objects',
   templateUrl: './searchable-select-for-objects.component.html',
   styleUrl: './searchable-select-for-objects.component.scss',
+  imports: [CommonModule, FormsModule, MatTooltipModule],
 })
 export class SearchableSelectForObjectsComponent implements OnInit {
   @Input() label: string = '';

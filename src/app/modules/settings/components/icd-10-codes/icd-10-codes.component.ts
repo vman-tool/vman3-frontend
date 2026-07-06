@@ -6,6 +6,7 @@ import { PcvaSettingsService } from '../../services/pcva-settings.service';
 import { AddIcd10CodesComponent } from '../../dialogs/add-icd10-codes/add-icd10-codes.component';
 
 @Component({
+  standalone: false,
   selector: 'app-icd-10-codes',
   templateUrl: './icd-10-codes.component.html',
   styleUrl: './icd-10-codes.component.scss'

@@ -10,6 +10,7 @@ import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constan
 import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',

@@ -16,6 +16,7 @@ import { SettingConfigService } from '../../../settings/services/settings_config
 import { FieldMapping } from '../../../settings/interface';
 
 @Component({
+  standalone: false,
   selector: 'app-run-ccva',
   templateUrl: './run-ccva.component.html',
   styleUrls: ['./run-ccva.component.scss'],

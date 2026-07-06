@@ -33,20 +33,32 @@
     </div>
     <!-- ── End search controls ─────────────────────────────────────────── -->
 
-    <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
+    <table class="w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
+
+      <colgroup>
+        <col style="width:3%">
+        <col style="width:18%">
+        <col style="width:11%">
+        <col style="width:11%">
+        <col style="width:10%">
+        <col style="width:16%">
+        <col style="width:16%">
+        <col style="width:9%">
+        <col style="width:6%">
+      </colgroup>
 
       <thead class="sticky top-0 z-20 text-xs text-gray-700 uppercase bg-gray-50
                     dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="p-4 w-10"></th>
-          <th scope="col" class="px-6 py-3">VA ID</th>
-          <th scope="col" class="px-6 py-3">{{ locationLevel1Label }}</th>
-          <th scope="col" class="px-6 py-3">{{ locationLevel2Label }}</th>
-          <th scope="col" class="px-6 py-3">Interview Day</th>
-          <th scope="col" class="px-6 py-3">Interviewer Name</th>
-          <th scope="col" class="px-6 py-3">Questionnaire Type</th>
-          <th scope="col" class="px-6 py-3">Gender</th>
-          <th scope="col" class="px-6 py-3">View</th>
+          <th scope="col" class="p-4"></th>
+          <th scope="col" class="px-6 py-3 text-left">VA ID</th>
+          <th scope="col" class="px-6 py-3 text-left">{{ locationLevel1Label }}</th>
+          <th scope="col" class="px-6 py-3 text-left">{{ locationLevel2Label }}</th>
+          <th scope="col" class="px-6 py-3 text-left">Interview Day</th>
+          <th scope="col" class="px-6 py-3 text-left">Interviewer Name</th>
+          <th scope="col" class="px-6 py-3 text-left">Questionnaire Type</th>
+          <th scope="col" class="px-6 py-3 text-left">Gender</th>
+          <th scope="col" class="px-6 py-3 text-center">View</th>
         </tr>
       </thead>
 
@@ -73,18 +85,21 @@
           [ngClass]="{ 'bg-white': i % 2 === 0, 'bg-gray-200': i % 2 !== 0 }"
           class="border-b dark:bg-gray-800 dark:border-gray-700
                  hover:bg-gray-50 dark:hover:bg-gray-600">
-          <td class="w-4 p-4"></td>
-          <th scope="row"
-              class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-            {{ row.vaId }}
-          </th>
-          <td class="px-6 py-4">{{ row.region }}</td>
-          <td class="px-6 py-4">{{ row.district }}</td>
-          <td class="px-6 py-4">{{ row.interviewDay }}</td>
-          <td class="px-6 py-4">{{ row.interviewerName }}</td>
-          <td class="px-6 py-4">{{ row.questionnaireType || '—' }}</td>
+          <td class="p-4"></td>
+          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white
+                     max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.vaId">{{ row.vaId }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.region">{{ row.region }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.district">{{ row.district }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">{{ row.interviewDay }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.interviewerName">{{ row.interviewerName }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.questionnaireType">{{ row.questionnaireType || '—' }}</td>
           <td class="px-6 py-4">{{ row.gender || '—' }}</td>
-          <td class="px-6 py-4">
+          <td class="px-6 py-4 text-center">
             <a class="font-medium text-blue-600 dark:text-blue-500
                       hover:underline hover:cursor-pointer"
                (click)="onOpenVA(row)">

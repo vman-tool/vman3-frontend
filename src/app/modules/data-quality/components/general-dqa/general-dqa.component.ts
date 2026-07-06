@@ -148,6 +148,7 @@ function buildIciDisplayItems(rows: InterviewerIci[]): IciDisplayItem[] {
 // ─── Component ─────────────────────────────────────────────────────────────
 
 @Component({
+  standalone: false,
   selector:    'app-general-dqa',
   templateUrl: './general-dqa.component.html',
   styleUrl:    './general-dqa.component.scss',

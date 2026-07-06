@@ -14,6 +14,7 @@ import { assign_coder_chat_name } from '../../helpers/discordants-chats.helpers'
 import { PcvaSettingsService } from 'app/modules/settings/services/pcva-settings.service';
 
 @Component({
+  standalone: false,
   selector: 'app-discordants-va',
   templateUrl: './discordants-va.component.html',
   styleUrl: './discordants-va.component.scss'
