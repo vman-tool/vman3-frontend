@@ -23,6 +23,7 @@ import {
   GeneralDqaService,
   GroupedStats,
   IciStats,
+  DqaSnapshot,
 } from '../../../data-quality/services/general-dqa.service';
 import { DqaThresholdService, StatusBadge as TierBadge } from '../../../data-quality/services/dqa-threshold.service';
 
@@ -125,6 +126,8 @@ export class GraphsComponent implements OnInit {
   hasDqaDurationError = false;
   hasDqaIciError      = false;
 
+  dqaComputedAt: string | null = null;
+
   // ── DQA derived getters ───────────────────────────────────────────────────
   get dqaRrs():       string       { return this.fmtDqaRrs(this.rrsStats?.overall?.avg ?? null); }
   get dqaRrsCount():  number       { return this.rrsStats?.overall?.count ?? 0; }
@@ -189,21 +192,32 @@ export class GraphsComponent implements OnInit {
   }
 
   loadDqaKpis(): void {
-    this.dqaService.getRrsStats().subscribe({
-      next: r => { this.rrsStats = r?.data ?? null; this.isDqaRrsLoading = false; },
-      error: () => { this.hasDqaRrsError = true; this.isDqaRrsLoading = false; },
-    });
-    this.dqaService.getIcsStats().subscribe({
-      next: r => { this.icsStats = r?.data ?? null; this.isDqaIcsLoading = false; },
-      error: () => { this.hasDqaIcsError = true; this.isDqaIcsLoading = false; },
-    });
-    this.dqaService.getIciStats().subscribe({
-      next: r => { this.iciStats = r?.data ?? null; this.isDqaIciLoading = false; },
-      error: () => { this.hasDqaIciError = true; this.isDqaIciLoading = false; },
-    });
-    this.dqaService.getInterviewDurationStats().subscribe({
-      next: r => { this.durationStats = r?.data ?? null; this.isDqaDurationLoading = false; },
-      error: () => { this.hasDqaDurationError = true; this.isDqaDurationLoading = false; },
+    this.dqaService.getAnalyticsSnapshot().subscribe({
+      next: r => {
+        const snap: DqaSnapshot | null = r?.data ?? null;
+        const clearLoading = () => {
+          this.isDqaRrsLoading = this.isDqaIcsLoading = this.isDqaDurationLoading = this.isDqaIciLoading = false;
+        };
+        if (snap?.status === 'completed') {
+          this.rrsStats      = snap.rrs;
+          this.icsStats      = snap.ics;
+          this.iciStats      = snap.ici;
+          this.durationStats = snap.aid;
+          this.dqaComputedAt = snap.computed_at ?? null;
+          clearLoading();
+        } else if (snap?.status === 'running') {
+          // keep spinners — snapshot is still being computed
+        } else if (snap?.status === 'failed') {
+          this.hasDqaRrsError = this.hasDqaIcsError = this.hasDqaDurationError = this.hasDqaIciError = true;
+          clearLoading();
+        } else {
+          clearLoading();
+        }
+      },
+      error: () => {
+        this.hasDqaRrsError = this.hasDqaIcsError = this.hasDqaDurationError = this.hasDqaIciError = true;
+        this.isDqaRrsLoading = this.isDqaIcsLoading = this.isDqaDurationLoading = this.isDqaIciLoading = false;
+      },
     });
   }
 

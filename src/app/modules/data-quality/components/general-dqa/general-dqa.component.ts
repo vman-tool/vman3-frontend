@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   GeneralDqaService,
   DistStat,
   GroupedStats,
   IciStats,
   InterviewerIci,
+  SnapshotStatus,
 } from '../../services/general-dqa.service';
 import { DqaThresholdService, StatusBadge as ThresholdBadge } from '../../services/dqa-threshold.service';
 
@@ -153,27 +154,31 @@ function buildIciDisplayItems(rows: InterviewerIci[]): IciDisplayItem[] {
   templateUrl: './general-dqa.component.html',
   styleUrl:    './general-dqa.component.scss',
 })
-export class GeneralDqaComponent implements OnInit {
+export class GeneralDqaComponent implements OnInit, OnDestroy {
 
-  // Duration state
+  // Individual indicator state (populated from analytics snapshot)
   durationStats: GroupedStats | null = null;
   isDurationLoading = true;
   hasDurationError  = false;
 
-  // ICS (Informatic Completeness Score) state
   icsStats: GroupedStats | null = null;
   isIcsLoading = true;
   hasIcsError  = false;
 
-  // RRS (Respondent Reliability Score) state
   rrsStats: GroupedStats | null = null;
   isRrsLoading = true;
   hasRrsError  = false;
 
-  // ICI (Internal Consistency Index) state
   iciStats: IciStats | null = null;
   isIciLoading = true;
   hasIciError  = false;
+
+  // Analytics snapshot metadata
+  computedAt: string | null = null;
+  analyticsStatus: SnapshotStatus | null = null;
+  isRefreshing = false;
+
+  private pollTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Which card drives the breakdown table
   activeCard: ActiveCard = 'rrs';
@@ -184,21 +189,50 @@ export class GeneralDqaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.svc.getInterviewDurationStats().subscribe({
-      next: r => { this.durationStats = r?.data ?? null; this.isDurationLoading = false; },
-      error: () => { this.hasDurationError = true; this.isDurationLoading = false; },
+    this.loadFromSnapshot();
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollTimer) clearTimeout(this.pollTimer);
+  }
+
+  loadFromSnapshot(): void {
+    this.svc.getAnalyticsSnapshot().subscribe({
+      next: r => {
+        const snap = r?.data;
+        if (snap) {
+          this.rrsStats      = snap.rrs  ?? null;
+          this.icsStats      = snap.ics  ?? null;
+          this.iciStats      = snap.ici  ?? null;
+          this.durationStats = snap.aid  ?? null;
+          this.computedAt    = snap.computed_at ?? null;
+          this.analyticsStatus = snap.status ?? null;
+
+          // Poll while a computation is in progress.
+          if (snap.status === 'running') {
+            this.pollTimer = setTimeout(() => this.loadFromSnapshot(), 5000);
+          }
+        }
+        // Clear loading states regardless — data may be null if snapshot not yet built.
+        this.isDurationLoading = this.isIcsLoading = this.isRrsLoading = this.isIciLoading = false;
+      },
+      error: () => {
+        this.hasDurationError = this.hasIcsError = this.hasRrsError = this.hasIciError = true;
+        this.isDurationLoading = this.isIcsLoading = this.isRrsLoading = this.isIciLoading = false;
+      },
     });
-    this.svc.getIcsStats().subscribe({
-      next: r => { this.icsStats = r?.data ?? null; this.isIcsLoading = false; },
-      error: () => { this.hasIcsError = true; this.isIcsLoading = false; },
-    });
-    this.svc.getRrsStats().subscribe({
-      next: r => { this.rrsStats = r?.data ?? null; this.isRrsLoading = false; },
-      error: () => { this.hasRrsError = true; this.isRrsLoading = false; },
-    });
-    this.svc.getIciStats().subscribe({
-      next: r => { this.iciStats = r?.data ?? null; this.isIciLoading = false; },
-      error: () => { this.hasIciError = true; this.isIciLoading = false; },
+  }
+
+  forceRefresh(): void {
+    if (this.isRefreshing || this.analyticsStatus === 'running') return;
+    this.isRefreshing = true;
+    this.svc.refreshAnalytics().subscribe({
+      next: () => {
+        this.analyticsStatus = 'running';
+        this.isRefreshing = false;
+        this.pollTimer = setTimeout(() => this.loadFromSnapshot(), 3000);
+      },
+      error: () => { this.isRefreshing = false; },
     });
   }
 

@@ -6,6 +6,12 @@ import { ConfigService } from 'app/app.service';
 import { ResponseMainModel } from '../../../shared/interface/main.interface';
 import { settingsConfigData, SystemImages } from '../interface';
 
+export interface BackupSettings {
+  frequency: string;  // 'daily' | 'weekly' | 'monthly'
+  time: string;       // HH:MM
+  location: string;   // 'local' | 'cloud'
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -179,5 +185,23 @@ export class SettingConfigService {
   getUniqueValuesOfField(field: string): Observable<any> {
     console.log(field, 'get-field-unique-value')
     return this.http.get<string[]>(`${this.configService.API_URL}/settings/get-field-unique-value?field=${field}`)
+  }
+
+  getBackupSettings(): Observable<{ data: BackupSettings; message: string }> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/settings/backup`)
+      .pipe(catchError(err => {
+        console.error('backup settings error:', err);
+        return of({ data: { frequency: 'daily', time: '00:00', location: 'local' }, message: 'Failed to fetch' });
+      }));
+  }
+
+  saveBackupSettings(settings: BackupSettings): Observable<{ data: BackupSettings; message: string }> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/backup`, settings)
+      .pipe(catchError(err => {
+        console.error('save backup settings error:', err);
+        throw err;
+      }));
   }
 }

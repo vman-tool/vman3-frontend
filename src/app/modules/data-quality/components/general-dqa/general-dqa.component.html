@@ -12,6 +12,29 @@
     </div>
   </div>
 
+  <!-- ── Analytics cache status bar ───────────────────────────────────────── -->
+  <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-500">
+    <ng-container *ngIf="analyticsStatus === 'running'">
+      <svg class="w-3.5 h-3.5 animate-spin text-amber-500" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      <span class="text-amber-600 font-medium">Analytics computation in progress — refreshing automatically…</span>
+    </ng-container>
+    <ng-container *ngIf="analyticsStatus === 'completed' && computedAt">
+      <i class="ph ph-check-circle text-emerald-500"></i>
+      <span>Last computed: <strong class="text-gray-700">{{ computedAt | date:'EEEE, MMMM d, y · HH:mm':'UTC' }} UTC</strong></span>
+    </ng-container>
+    <ng-container *ngIf="analyticsStatus === 'failed'">
+      <i class="ph ph-warning text-red-500"></i>
+      <span class="text-red-600 font-medium">Last computation failed — administrators can re-run from Settings.</span>
+    </ng-container>
+    <ng-container *ngIf="!analyticsStatus && !isDurationLoading && !isRrsLoading">
+      <i class="ph ph-info text-gray-400"></i>
+      <span class="italic text-gray-400">No analytics snapshot yet — administrators can trigger computation from Settings.</span>
+    </ng-container>
+  </div>
+
   <!-- ── KPI Cards ───────────────────────────────────────────────────────── -->
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 

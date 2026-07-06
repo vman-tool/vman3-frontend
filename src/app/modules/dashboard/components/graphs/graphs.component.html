@@ -224,6 +224,13 @@
     </ng-container>
   </a>
 
+  <!-- Snapshot timestamp -->
+  <div *ngIf="dqaComputedAt" class="col-span-12 flex justify-end">
+    <span class="text-[10px] text-gray-400">
+      Computed: {{ dqaComputedAt | date:'EEEE, MMMM d, y · HH:mm':'UTC' }} UTC
+    </span>
+  </div>
+
 </div>
 </ng-template>
 
