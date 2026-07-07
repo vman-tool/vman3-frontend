@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AuthService } from '../../services/authentication/auth.service';
 import { Router } from '@angular/router';
 import { lastValueFrom, map } from 'rxjs';
@@ -10,11 +10,13 @@ import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constan
 import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent {
+  @Input() collapsed = false;
   menuItems: any;
   selectedItem?: number = 0;
   selectedSubMenu: number = 0;
@@ -209,6 +211,13 @@ export class SidebarComponent {
       ));
     }
   }
+  getCollapsedRoute(menuItem: any): string {
+    if (menuItem.subMenuItems?.length) {
+      return menuItem.route + menuItem.subMenuItems[0].route;
+    }
+    return menuItem.route;
+  }
+
   onSelectMenu(menuIndex: number, subMenuIndex?: number): void {
     this.selectedItem =
       this.selectedItem === menuIndex && !subMenuIndex ? undefined : menuIndex;

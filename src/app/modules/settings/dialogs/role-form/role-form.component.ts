@@ -6,6 +6,7 @@ import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-role-form',
   templateUrl: './role-form.component.html',
   styleUrl: './role-form.component.scss'

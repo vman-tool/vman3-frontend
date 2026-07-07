@@ -4,6 +4,7 @@ import { PcvaSettingsService } from '../../services/pcva-settings.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-pcva-configurations',
   templateUrl: './pcva-configurations.component.html',
   styleUrl: './pcva-configurations.component.scss'

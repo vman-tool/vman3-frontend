@@ -12,6 +12,7 @@ interface PreviewImages {
 
 
 @Component({
+  standalone: false,
   selector: 'app-update-system-images',
   templateUrl: './update-system-images.component.html',
   styleUrl: './update-system-images.component.scss'

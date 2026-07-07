@@ -1,4 +1,4 @@
-import { DataSyncService } from './../../services/data_sync.service';
+import { DataSyncService, ActiveSyncStatus } from './../../services/data_sync.service';
 import {
   Component,
   ElementRef,
@@ -19,8 +19,10 @@ import * as Papa from 'papaparse';
 import { MatDialog } from '@angular/material/dialog';
 import { HeaderMappingModalComponent } from '../../dialogs/header-mapping/header-mapping.component';
 import { RunCcvaService } from '../../../ccva/services/run-ccva.service';
-import { SettingConfigService } from '../../services/settings_configs.service';
+import { SettingConfigService, BackupSettings } from '../../services/settings_configs.service';
+import { GeneralDqaService, DqaAnalyticsConfig, SnapshotStatus } from '../../../data-quality/services/general-dqa.service';
 @Component({
+  standalone: false,
   selector: 'app-data-sync',
   templateUrl: './data-sync.component.html',
   styleUrl: './data-sync.component.scss',
@@ -67,6 +69,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private progressSub: Subscription | null = null;
   message: string | undefined;
   private messageSubscription: Subscription | undefined;
+  private currentTaskId: string = '';   // set from API response; never hardcoded
   dataSource: 'api' | 'csv' = 'api';
   selectedFile: File | null = null;
   @ViewChild('fileInput') fileInput!: ElementRef;
@@ -98,6 +101,25 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   syncHistory: any[] = [];
   isLoadingHistory = false;
 
+  // ── Active sync indicator (Scheduler tab) ────────────────────────────────
+  activeSyncStatus: ActiveSyncStatus = { active: false };
+  private syncActiveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // ── Backup Settings ───────────────────────────────────────────────────────
+  backupSettings: BackupSettings = { frequency: 'daily', time: '00:00', location: 'local' };
+  isBackupLoading = false;
+  isBackupSaving = false;
+
+  // ── DQA Analytics Schedule ────────────────────────────────────────────────
+  dqaConfig: DqaAnalyticsConfig = { run_hour: 2, enabled: true };
+  isDqaConfigLoading = false;
+  isDqaSaving = false;
+  isDqaRefreshing = false;
+  dqaSnapshotStatus: SnapshotStatus | null = null;
+  dqaLastComputedAt: string | null = null;
+  readonly hourOptions = Array.from({ length: 24 }, (_, i) => i);
+  private dqaPollTimer: ReturnType<typeof setTimeout> | null = null;
+
   csvHeaders: string[] = [];
   mismatchedHeaders: string[] = [];
   mismatchedHeadersAdditinal: string[] = [];
@@ -115,7 +137,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private runCcvaService: RunCcvaService,
     private settingConfigService: SettingConfigService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private generalDqaService: GeneralDqaService,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -123,7 +146,11 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.elapsedTime = null;
 
     await this.loadPreviousProgressFromLocalStorage();
-    this.initializeWebSocket();
+    // Connect to the channel for the task that was running (if any), or skip
+    // until a new sync starts and gives us a real task_id.
+    if (this.currentTaskId) {
+      this.connectWebSocket(this.currentTaskId);
+    }
 
     // Load permissions
     // Load permissions
@@ -142,6 +169,10 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
   onTabSelected(tabName: string) {
     console.log(`Tab selected: ${tabName}`);
+    // Stop Scheduler-tab polling when leaving Settings tab
+    if (this.selectedTab === 'settings' && tabName !== 'settings') {
+      this.stopSyncActivePoll();
+    }
     this.selectedTab = tabName;
 
     // Load data specific to the selected tab
@@ -149,9 +180,6 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       case 'data-synchronization':
         this.loadDataSyncTab();
         break;
-      // case 'questions-sync':
-      //   this.loadQuestionsSyncTab();
-      //   break;
       case 'settings':
         this.loadSettingsTab();
         break;
@@ -383,27 +411,21 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   }
 
   formatSyncDate(dateString: string | null | undefined): string {
-    // console.log('formatSyncDate called with:', dateString, 'type:', typeof dateString);
-
-    if (!dateString) {
-      console.log('No date string, returning "Never"');
-      return 'Never';
-    }
-
+    if (!dateString) return 'Never';
     try {
       const date = new Date(dateString);
-      // console.log('Parsed date:', date, 'isValid:', !isNaN(date.getTime()));
-
-      if (isNaN(date.getTime())) {
-        console.log('Invalid date, returning "Invalid Date"');
-        return 'Invalid Date';
-      }
-
-      const formatted = date.toLocaleString();
-      console.log('Formatted date:', formatted);
-      return formatted;
-    } catch (error) {
-      console.error('Error formatting date:', error);
+      if (isNaN(date.getTime())) return 'Invalid Date';
+      return date.toLocaleString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        hour12: false,
+      }) + ' UTC';
+    } catch {
       return 'Invalid Date';
     }
   }
@@ -528,16 +550,146 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
   loadSettingsTab() {
     console.log('Loading Settings tab...');
-    // this.isSettingsTabLoading = true;
-
-    // Load settings configuration
     this.loadSettingsConfig().then(() => {
       this.isSettingsTabLoading = false;
-      console.log('Settings tab loaded');
     }).catch((error) => {
       console.error('Error loading settings tab:', error);
       this.isSettingsTabLoading = false;
     });
+    this.loadDqaConfig();
+    this.loadBackupSettings();
+    this.startSyncActivePoll();
+  }
+
+  private startSyncActivePoll(): void {
+    this.stopSyncActivePoll();
+    this.pollSyncActive();
+  }
+
+  private pollSyncActive(): void {
+    this.dataSyncService.getActiveSyncStatus().subscribe({
+      next: status => {
+        this.activeSyncStatus = status;
+        // Continue polling every 5s while on the Settings tab
+        if (this.selectedTab === 'settings') {
+          this.syncActiveTimer = setTimeout(() => this.pollSyncActive(), 5000);
+        }
+      },
+    });
+  }
+
+  private stopSyncActivePoll(): void {
+    if (this.syncActiveTimer) {
+      clearTimeout(this.syncActiveTimer);
+      this.syncActiveTimer = null;
+    }
+  }
+
+  loadBackupSettings(): void {
+    this.isBackupLoading = true;
+    this.settingConfigService.getBackupSettings().subscribe({
+      next: r => {
+        if (r?.data) this.backupSettings = r.data;
+        this.isBackupLoading = false;
+      },
+      error: () => { this.isBackupLoading = false; },
+    });
+  }
+
+  saveBackupSettings(): void {
+    this.isBackupSaving = true;
+    this.settingConfigService.saveBackupSettings(this.backupSettings).subscribe({
+      next: r => {
+        if (r?.data) this.backupSettings = r.data;
+        this.isBackupSaving = false;
+        this.snackBar.open('Backup settings saved', 'Close', { duration: 2500 });
+      },
+      error: () => {
+        this.isBackupSaving = false;
+        this.snackBar.open('Failed to save backup settings', 'Close', { duration: 3000 });
+      },
+    });
+  }
+
+  loadDqaConfig(): void {
+    this.isDqaConfigLoading = true;
+    this.generalDqaService.getDqaAnalyticsConfig().subscribe({
+      next: r => {
+        if (r?.data) this.dqaConfig = r.data;
+        this.isDqaConfigLoading = false;
+      },
+      error: () => { this.isDqaConfigLoading = false; },
+    });
+    this.generalDqaService.getAnalyticsSnapshot().subscribe({
+      next: r => {
+        this.dqaSnapshotStatus  = r?.data?.status ?? null;
+        this.dqaLastComputedAt  = r?.data?.computed_at ?? null;
+      },
+    });
+  }
+
+  saveDqaSchedule(): void {
+    this.isDqaSaving = true;
+    this.generalDqaService.saveDqaAnalyticsConfig(this.dqaConfig).subscribe({
+      next: r => {
+        if (r?.data) this.dqaConfig = r.data;
+        this.isDqaSaving = false;
+        this.snackBar.open('Schedule saved', 'Close', { duration: 2500 });
+      },
+      error: () => {
+        this.isDqaSaving = false;
+        this.snackBar.open('Failed to save schedule', 'Close', { duration: 3000 });
+      },
+    });
+  }
+
+  recomputeDqaAnalytics(): void {
+    if (this.isDqaRefreshing || this.dqaSnapshotStatus === 'running') return;
+    this.isDqaRefreshing = true;
+    this.generalDqaService.refreshAnalytics().subscribe({
+      next: () => {
+        this.dqaSnapshotStatus = 'running';
+        this.isDqaRefreshing = false;
+        this.snackBar.open('Analytics computation started', 'Close', { duration: 3000 });
+        this.startDqaPoll();
+      },
+      error: () => {
+        this.isDqaRefreshing = false;
+        this.snackBar.open('Failed to start computation', 'Close', { duration: 3000 });
+      },
+    });
+  }
+
+  private startDqaPoll(): void {
+    this.clearDqaPoll();
+    this.dqaPollTimer = setTimeout(() => this.pollDqaStatus(), 4000);
+  }
+
+  private pollDqaStatus(): void {
+    this.generalDqaService.getAnalyticsSnapshot().subscribe({
+      next: r => {
+        const s = r?.data?.status ?? null;
+        this.dqaSnapshotStatus = s;
+        if (r?.data?.computed_at) this.dqaLastComputedAt = r.data.computed_at;
+        if (s === 'running') {
+          this.dqaPollTimer = setTimeout(() => this.pollDqaStatus(), 5000);
+        }
+      },
+    });
+  }
+
+  private clearDqaPoll(): void {
+    if (this.dqaPollTimer) {
+      clearTimeout(this.dqaPollTimer);
+      this.dqaPollTimer = null;
+    }
+  }
+
+  formatHour(h: number): string {
+    if (h === 0)  return '12:00 AM (midnight)';
+    if (h < 12)  return `${h}:00 AM`;
+    if (h === 12) return '12:00 PM (noon)';
+    return `${h - 12}:00 PM`;
   }
 
   async hasAccess(privileges: string[]) {
@@ -565,14 +717,11 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       next: async (response: any) => {
         console.log('Manual sync initiated:', response);
 
-        // Don't update sync status here - wait for completion
-        // The sync status will be updated when WebSocket progress reaches 100%
-
-        if (response.download_status === true) {
+        if (response.download_status === true && response.task_id) {
+          // Connect WebSocket to this specific task's progress channel
+          this.connectWebSocket(response.task_id);
           this.isTaskRunning = true;
           this.showSyncStatusUpdateSuccess('Sync in progress... Monitoring via WebSocket');
-        } else {
-          // this.isTaskRunning = false;
         }
 
         this.isDataSyncing = false;
@@ -647,12 +796,17 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
 
 
-  // WebSocket connection setup and message handling
-  private initializeWebSocket(): void {
+  // WebSocket connection — always keyed to the specific task_id
+  private connectWebSocket(taskId: string): void {
+    this.webSockettService.disconnect();
+    if (this.messageSubscription) {
+      this.messageSubscription.unsubscribe();
+      this.messageSubscription = undefined;
+    }
+    this.currentTaskId = taskId;
     this.webSockettService.connect(
-      `${this.configService.API_URL_WS}/odk_progress/123`
+      `${this.configService.API_URL_WS}/odk_progress/${taskId}`
     );
-
     this.messageSubscription = this.webSockettService.messages.subscribe(
       (data: string) => {
         try {
@@ -752,6 +906,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.localStorageSettingsService.setItemWithTTL(
       'odk_progress',
       {
+        taskId: this.currentTaskId,
         totalRecords: this.totalRecords,
         progress: this.progress,
         elapsedTime: this.elapsedTime,
@@ -767,6 +922,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private async loadPreviousProgressFromLocalStorage(): Promise<void> {
     const odkProgress = this.localStorageSettingsService.getItemWithTTL('odk_progress');
     if (odkProgress) {
+      this.currentTaskId = odkProgress.taskId ?? '';
       this.totalRecords = odkProgress.totalRecords;
       this.progress = odkProgress.progress;
       this.elapsedTime = odkProgress.elapsedTime ?? null;
@@ -793,6 +949,8 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.clearElapsedTicker();
     this.clearWsInactivityTimer();
     this.clearCancelFallbackTimer();
+    this.clearDqaPoll();
+    this.stopSyncActivePoll();
     this.webSockettService.disconnect();
   }
 

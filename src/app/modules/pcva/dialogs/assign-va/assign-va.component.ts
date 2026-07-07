@@ -7,6 +7,7 @@ import { Sort } from '@angular/material/sort';
 import { MatSnackBar, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-assign-va',
   templateUrl: './assign-va.component.html',
   styleUrl: './assign-va.component.scss'

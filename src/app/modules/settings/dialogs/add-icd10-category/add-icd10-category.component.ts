@@ -6,6 +6,7 @@ import { add } from 'lodash';
 import { CsvExportService } from 'app/shared/services/csv-export.service';
 
 @Component({
+  standalone: false,
   selector: 'app-add-icd10-category',
   templateUrl: './add-icd10-category.component.html',
   styleUrl: './add-icd10-category.component.scss'

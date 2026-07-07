@@ -11,6 +11,7 @@ import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-view-va',
   templateUrl: './view-va.component.html',
   styleUrl: './view-va.component.scss',

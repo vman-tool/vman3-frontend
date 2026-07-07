@@ -16,6 +16,7 @@ import { SettingConfigService } from '../../../settings/services/settings_config
 import { FieldMapping } from '../../../settings/interface';
 
 @Component({
+  standalone: false,
   selector: 'app-run-ccva',
   templateUrl: './run-ccva.component.html',
   styleUrls: ['./run-ccva.component.scss'],
@@ -30,6 +31,8 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   malariaStatus: string = 'h'; // Default value
   ccvaAlgorithm: string = 'InterVA5'; // Default value
   hivStatus: string = 'h'; // Default value
+  dkThreshold: number = 1.0;
+  oodThreshold: number = 0.05;
   charts = {};
   data?: any;
   progress: number = 0;
@@ -198,7 +201,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.ngOnInit();
 
     // Prepare filter object based on the selected options
-    const filter = {
+    const filter: any = {
       start_date: this.dateRangeOption === 'custom' ? this.filter_startDate : null,
       end_date: this.dateRangeOption === 'custom' ? this.filter_endDate : null,
       top: this.dateRangeOption === '200' ? 200 : null,
@@ -207,6 +210,10 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       hiv_status: this.hivStatus,
       date_type: this.selectedDateType,
     };
+    if (this.ccvaAlgorithm === 'VManML10') {
+      filter['dk_threshold'] = this.dkThreshold;
+      filter['ood_threshold'] = this.oodThreshold;
+    }
 
     if (this.dataSource === 'csv') {
       this.uploadCSVAndRunCCVA(filter);

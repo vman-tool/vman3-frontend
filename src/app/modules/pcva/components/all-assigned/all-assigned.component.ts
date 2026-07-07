@@ -12,6 +12,7 @@ import { OBJECTSTORE_ICD10 } from 'app/shared/constants/indexedDB.constants';
 import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-all-assigned',
   templateUrl: './all-assigned.component.html',
   styleUrl: './all-assigned.component.scss'

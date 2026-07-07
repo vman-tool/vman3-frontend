@@ -5,6 +5,7 @@ import { AccountSettingsComponent } from 'app/core/dialogs/account-settings/acco
 import { AuthService } from 'app/core/services/authentication/auth.service';
 
 @Component({
+  standalone: false,
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'

@@ -19,8 +19,16 @@ import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-fil
 import { MatDialog } from '@angular/material/dialog';
 import { FilterService } from '../../../../shared/services/filter.service';
 import { CcvaService } from '../../../ccva/services/ccva.service';
+import {
+  GeneralDqaService,
+  GroupedStats,
+  IciStats,
+  DqaSnapshot,
+} from '../../../data-quality/services/general-dqa.service';
+import { DqaThresholdService, StatusBadge as TierBadge } from '../../../data-quality/services/dqa-threshold.service';
 
 @Component({
+  standalone: false,
   selector: 'app-graphs',
   templateUrl: './graphs.component.html',
   styleUrls: ['./graphs.component.scss'],
@@ -102,11 +110,70 @@ export class GraphsComponent implements OnInit {
   public errorMessage: string = '';
   public isLoading: boolean = true;
 
+  // ── DQA KPI state ─────────────────────────────────────────────────────────
+  rrsStats:      GroupedStats | null = null;
+  icsStats:      GroupedStats | null = null;
+  durationStats: GroupedStats | null = null;
+  iciStats:      IciStats     | null = null;
+
+  isDqaRrsLoading      = true;
+  isDqaIcsLoading      = true;
+  isDqaDurationLoading = true;
+  isDqaIciLoading      = true;
+
+  hasDqaRrsError      = false;
+  hasDqaIcsError      = false;
+  hasDqaDurationError = false;
+  hasDqaIciError      = false;
+
+  dqaComputedAt: string | null = null;
+
+  // ── DQA derived getters ───────────────────────────────────────────────────
+  get dqaRrs():       string       { return this.fmtDqaRrs(this.rrsStats?.overall?.avg ?? null); }
+  get dqaRrsCount():  number       { return this.rrsStats?.overall?.count ?? 0; }
+  get dqaRrsTier():      TierBadge | null { return this.thresholdSvc.classifyRrs(this.rrsStats?.overall?.avg ?? null); }
+
+  get dqaIcs():          string  { return this.fmtDqaPct(this.icsStats?.overall?.avg ?? null); }
+  get dqaIcsCount():     number  { return this.icsStats?.overall?.count ?? 0; }
+  get dqaIcsTier():      TierBadge | null { return this.thresholdSvc.classifyIcs(this.icsStats?.overall?.avg ?? null); }
+
+  get dqaIci():          string       { return this.fmtDqaIci(this.iciStats?.overall_ici ?? null); }
+  get dqaIciTotal():     number       { return this.iciStats?.overall_total  ?? 0; }
+  get dqaIciPassed():    number       { return this.iciStats?.overall_passed ?? 0; }
+  get dqaIciTier():      TierBadge | null { return this.thresholdSvc.classifyIci(this.iciStats?.overall_ici ?? null); }
+
+  get dqaDuration():      string { return this.fmtDqaMin(this.durationStats?.overall?.avg ?? null); }
+  get dqaDurationCount(): number { return this.durationStats?.overall?.count ?? 0; }
+  get dqaDurationTier():  TierBadge | null { return this.thresholdSvc.classifyAid(this.durationStats?.overall?.avg ?? null); }
+
+  // ── DQA formatters ────────────────────────────────────────────────────────
+  fmtDqaMin(v: number | null): string {
+    if (v === null || v === undefined) return '--';
+    const m = Math.round(v);
+    if (m < 60) return `${m} min`;
+    const h = Math.floor(m / 60), r = m % 60;
+    return r === 0 ? `${h}h` : `${h}h ${r}m`;
+  }
+  fmtDqaPct(v: number | null): string {
+    if (v === null || v === undefined) return '--';
+    return `${(v * 100).toFixed(1)}%`;
+  }
+  fmtDqaRrs(v: number | null): string {
+    if (v === null || v === undefined) return '--';
+    return `${v.toFixed(1)} / 100`;
+  }
+  fmtDqaIci(v: number | null): string {
+    if (v === null || v === undefined) return '--';
+    return `${v.toFixed(1)}%`;
+  }
+
   constructor(
     public chartsService: ChartsService,
     private cdr: ChangeDetectorRef,
     private ccvaService: CcvaService,
-    private filterService: FilterService
+    private filterService: FilterService,
+    private dqaService: GeneralDqaService,
+    private thresholdSvc: DqaThresholdService,
   ) {
     this.filterService = inject(FilterService);
     this.setupEffect();
@@ -120,7 +187,39 @@ export class GraphsComponent implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  ngOnInit(): void {
+    this.loadDqaKpis();
+  }
+
+  loadDqaKpis(): void {
+    this.dqaService.getAnalyticsSnapshot().subscribe({
+      next: r => {
+        const snap: DqaSnapshot | null = r?.data ?? null;
+        const clearLoading = () => {
+          this.isDqaRrsLoading = this.isDqaIcsLoading = this.isDqaDurationLoading = this.isDqaIciLoading = false;
+        };
+        if (snap?.status === 'completed') {
+          this.rrsStats      = snap.rrs;
+          this.icsStats      = snap.ics;
+          this.iciStats      = snap.ici;
+          this.durationStats = snap.aid;
+          this.dqaComputedAt = snap.computed_at ?? null;
+          clearLoading();
+        } else if (snap?.status === 'running') {
+          // keep spinners — snapshot is still being computed
+        } else if (snap?.status === 'failed') {
+          this.hasDqaRrsError = this.hasDqaIcsError = this.hasDqaDurationError = this.hasDqaIciError = true;
+          clearLoading();
+        } else {
+          clearLoading();
+        }
+      },
+      error: () => {
+        this.hasDqaRrsError = this.hasDqaIcsError = this.hasDqaDurationError = this.hasDqaIciError = true;
+        this.isDqaRrsLoading = this.isDqaIcsLoading = this.isDqaDurationLoading = this.isDqaIciLoading = false;
+      },
+    });
+  }
 
   public barChartOptions: ChartOptions = {
     responsive: true,

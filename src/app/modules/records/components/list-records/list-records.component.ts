@@ -12,6 +12,7 @@ import { FilterService } from '../../../../shared/services/filter.service';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 @Component({
+  standalone: false,
   selector: 'app-list-records',
   templateUrl: './list-records.component.html',
   styleUrls: ['./list-records.component.scss'],

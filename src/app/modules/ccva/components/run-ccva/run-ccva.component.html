@@ -68,9 +68,27 @@
             <label for="ccvaAlgorithm" class="block mb-1 text-sm font-medium text-gray-700">CCVA Algorithm</label>
             <app-custom-dropdown id="ccvaAlgorithm" [options]="[
             { value: 'InterVA5', label: 'InterVA5' },
-            { value: 'InsilicoVA', label: 'InsilicoVA' }
+            { value: 'VManML10', label: 'VMan ML 1.0' }
           ]" [(selectedValue)]="ccvaAlgorithm"></app-custom-dropdown>
           </div>
+
+          <!-- VMan ML 1.0 threshold parameters (shown only when VManML10 is selected) -->
+          <ng-container *ngIf="ccvaAlgorithm === 'VManML10'">
+            <div class="">
+              <label for="dkThreshold" class="block mb-1 text-sm font-medium text-gray-700">DK Threshold
+                <span class="text-xs text-gray-400 font-normal ml-1">(--dk-threshold)</span>
+              </label>
+              <input id="dkThreshold" type="number" [(ngModel)]="dkThreshold" min="0" max="1" step="0.05"
+                class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <div class="">
+              <label for="oodThreshold" class="block mb-1 text-sm font-medium text-gray-700">OOD Threshold
+                <span class="text-xs text-gray-400 font-normal ml-1">(--ood-threshold)</span>
+              </label>
+              <input id="oodThreshold" type="number" [(ngModel)]="oodThreshold" min="0" max="1" step="0.01"
+                class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+          </ng-container>
         </div>
 
         <!-- Run CCVA Button -->

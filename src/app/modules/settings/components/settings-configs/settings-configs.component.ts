@@ -59,16 +59,20 @@
 // }
 
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
+import { ActiveSyncStatus, LastScheduleFired } from '../../services/data_sync.service';
 import { BackupSettings, DataSyncSettingsService, DayOfWeek } from '../../services/data_sync_settings.service';
 
 @Component({
+  standalone: false,
   selector: 'app-settings-configs',
   templateUrl: './settings-configs.component.html',
   styleUrls: ['./settings-configs.component.scss']
 })
 export class SettingsConfigsComponent implements OnInit, OnDestroy {
+  @Input() activeSyncStatus: ActiveSyncStatus = { active: false };
+
   // Settings for API cron calls
   daysOfWeek: DayOfWeek[] = [
     { name: 'Monday', value: 'monday', checked: false },
@@ -133,6 +137,15 @@ export class SettingsConfigsComponent implements OnInit, OnDestroy {
       },
       error: () => { /* silently skip if server-time endpoint unavailable */ }
     });
+  }
+
+  get lastScheduleFiredDisplay(): string | null {
+    const f: LastScheduleFired | null | undefined = this.activeSyncStatus?.last_schedule_fired;
+    if (!f) return null;
+    // fired_at is "YYYY-MM-DDTHH:MM:SSZ" — extract HH:MM UTC
+    const t = f.fired_at?.slice(11, 16) ?? f.time;
+    const day = f.day ? f.day.charAt(0).toUpperCase() + f.day.slice(1) : '';
+    return `${day} ${t} UTC`;
   }
 
   get serverTimeDisplay(): string {

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CcvaGraphsComponent } from './ccva-graphs.component';
+import { CcvaGraphsPublicComponent } from './ccva-graphs.component';
 
-describe('CcvaGraphsComponent', () => {
-  let component: CcvaGraphsComponent;
-  let fixture: ComponentFixture<CcvaGraphsComponent>;
+describe('CcvaGraphsPublicComponent', () => {
+  let component: CcvaGraphsPublicComponent;
+  let fixture: ComponentFixture<CcvaGraphsPublicComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CcvaGraphsComponent]
+      imports: [CcvaGraphsPublicComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CcvaGraphsComponent);
+    fixture = TestBed.createComponent(CcvaGraphsPublicComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

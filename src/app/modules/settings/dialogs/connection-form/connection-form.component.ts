@@ -7,9 +7,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-connection-form',
-  // standalone: true,
-  // imports: [FormsModule, MatProgressSpinnerModule],
   templateUrl: './connection-form.component.html',
   styleUrl: './connection-form.component.scss',
 })

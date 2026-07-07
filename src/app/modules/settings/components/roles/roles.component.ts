@@ -10,6 +10,7 @@ import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges  from 'app/shared/constants/privileges.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-roles',
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss'

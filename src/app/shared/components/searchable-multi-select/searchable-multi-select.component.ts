@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, Directive, HostListener, ElementRef, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 export interface SelectOption {
   value: any;
@@ -6,10 +8,12 @@ export interface SelectOption {
 }
 
 @Component({
+  standalone: true,
   selector: 'app-searchable-multi-select',
   templateUrl: './searchable-multi-select.component.html',
   styleUrls: ['./searchable-multi-select.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, FormsModule],
 })
 export class SearchableMultiSelectComponent implements OnInit {
   @Input() options: SelectOption[] = [];

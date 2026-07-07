@@ -6,6 +6,7 @@ import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
+  standalone: false,
   selector: 'app-view-user',
   templateUrl: './view-user.component.html',
   styleUrl: './view-user.component.scss'

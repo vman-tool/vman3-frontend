@@ -11,6 +11,7 @@ import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-i
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-assign-roles-form',
   templateUrl: './assign-roles-form.component.html',
   styleUrl: './assign-roles-form.component.scss'
@@ -42,9 +43,11 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   system_config: any;
   field_mapping: any; 
   field_labels?: FieldLabel[];
-  canAssignRoles: any; 
+  canAssignRoles: any;
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
+  canSelectNoLimit: boolean = true;
+  selectedLocationTypeValue: string = '';
   user: any;
 
 
@@ -75,15 +78,35 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.getAllRoles();
   }
 
-  getLocationFields() {
-    this.locationTypes = [
-      { label: this.data?.system_config?.admin_level1, value:  this.data?.field_mapping?.location_level1},
-      { label: this.data?.system_config?.admin_level2, value:  this.data?.field_mapping?.location_level2},
-      { label: this.data?.system_config?.admin_level3, value:  this.data?.field_mapping?.location_level3},
-      { label: this.data?.system_config?.admin_level4, value:  this.data?.field_mapping?.location_level4}
-    ]
+  get locationTypeOptions(): { value: string; label: string }[] {
+    const opts: { value: string; label: string }[] = [];
+    if (this.canSelectNoLimit) opts.push({ value: '', label: 'No Limit' });
+    for (const lt of this.locationTypes) {
+      if (lt?.value) opts.push({ value: lt.value, label: lt.label });
+    }
+    return opts;
+  }
 
-    this.field_labels = this.data?.field_labels
+  getLocationFields() {
+    const allLevels = [
+      { label: this.data?.system_config?.admin_level1, value: this.data?.field_mapping?.location_level1, level: 1 },
+      { label: this.data?.system_config?.admin_level2, value: this.data?.field_mapping?.location_level2, level: 2 },
+      { label: this.data?.system_config?.admin_level3, value: this.data?.field_mapping?.location_level3, level: 3 },
+      { label: this.data?.system_config?.admin_level4, value: this.data?.field_mapping?.location_level4, level: 4 }
+    ];
+
+    const creatorField: string = this.data?.current_user_access_limit?.field ?? '';
+    const creatorLevel = creatorField
+      ? (allLevels.find(l => l.value === creatorField)?.level ?? 0)
+      : 0;
+
+    this.canSelectNoLimit = creatorLevel === 0;
+
+    this.locationTypes = allLevels
+      .filter(l => l.label && l.value)
+      .filter(l => creatorLevel === 0 || l.level >= creatorLevel);
+
+    this.field_labels = this.data?.field_labels;
   }
   
 
@@ -99,6 +122,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     }
     this.availableRoles = this.allRoles.filter((role: any) => !this.selectedRoles.some(selectedRole => selectedRole?.uuid === role?.uuid));
     this.selectedLocationType = this.locationTypes.filter((locationType: any) => locationType?.value === this.access_limit?.field)[0];
+    this.selectedLocationTypeValue = this.selectedLocationType?.value ?? '';
     if(this.selectedLocationType && this.access_limit){
       this.setLocations()
     }
@@ -173,8 +197,13 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     return document.querySelector(".peer") as HTMLInputElement
   }
 
+  onLocationTypeValueChange(value: string) {
+    this.selectedLocationTypeValue = value;
+    this.onSelectLocationType({ target: { value } });
+  }
+
   async onSelectLocationType(e: any){
-    e?.stopPropagation();
+    e?.stopPropagation?.();
     this.loadLocations = true;
     this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
     

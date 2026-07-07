@@ -1,7 +1,22 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+export interface LastScheduleFired {
+  day: string;
+  time: string;
+  fired_at: string;
+}
+
+export interface ActiveSyncStatus {
+  active: boolean;
+  user_name?: string;
+  records_saved?: number;
+  total_data_count?: number;
+  method?: string;
+  last_schedule_fired?: LastScheduleFired | null;
+}
 import { ConfigService } from 'app/app.service';
 
 @Injectable({
@@ -96,5 +111,10 @@ export class DataSyncService {
       `${this.configService.API_URL}/records/export-token`,
       {}
     );
+  }
+
+  getActiveSyncStatus(): Observable<ActiveSyncStatus> {
+    return this.http.get<ActiveSyncStatus>(`${this.configService.API_URL}/odk/active-sync`)
+      .pipe(catchError(() => of({ active: false })));
   }
 }

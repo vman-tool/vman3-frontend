@@ -8,6 +8,7 @@ import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-i
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-code-va',
   templateUrl: './code-va.component.html',
   styleUrls: ['./code-va.component.scss']

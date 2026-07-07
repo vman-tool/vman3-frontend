@@ -15,6 +15,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FilterService } from '../../../../shared/services/filter.service';
 
 @Component({
+  standalone: false,
   selector: 'app-ccva-graphs', // Import necessary modules
   templateUrl: './ccva-graphs.component.html',
   styleUrls: ['./ccva-graphs.component.scss'],

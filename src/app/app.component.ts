@@ -6,6 +6,7 @@ import { ConfigService } from './app.service';
 import { Title } from '@angular/platform-browser';
 
 @Component({
+  standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

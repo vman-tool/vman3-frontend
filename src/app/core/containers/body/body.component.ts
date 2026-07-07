@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'app/app.service';
 
 @Component({
+  standalone: false,
   selector: 'app-body',
   templateUrl: './body.component.html',
   styleUrl: './body.component.scss',
@@ -94,7 +95,7 @@ export class BodyComponent implements OnInit, OnDestroy {
     if(this.systemImages === null || this.systemImages?.logo === null || !this.systemImages?.logo){
       this.systemImages = {
         ...this.systemImages,
-        logo: '../../../../assets/images/vman_logo.png'
+        logo: '../../../../assets/images/vman_logo.svg'
       }
     } else {
       this.systemImages = {

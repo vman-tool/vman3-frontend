@@ -3,6 +3,7 @@ import { ConfigService } from 'app/app.service';
 import { VersionService } from 'app/shared/services/version.service';
 
 @Component({
+  standalone: false,
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss'

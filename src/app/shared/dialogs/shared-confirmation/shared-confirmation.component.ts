@@ -2,6 +2,7 @@ import { AfterViewInit, Component, Inject, OnInit } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 
 @Component({
+  standalone: false,
   selector: "app-shared-confirmation",
   templateUrl: "./shared-confirmation.component.html",
   styleUrls: ["./shared-confirmation.component.scss"],

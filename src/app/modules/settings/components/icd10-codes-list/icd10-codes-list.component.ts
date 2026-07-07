@@ -7,6 +7,7 @@ import { AddIcd10CodesComponent } from '../../dialogs/add-icd10-codes/add-icd10-
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges  from 'app/shared/constants/privileges.constants';
 @Component({
+  standalone: false,
   selector: 'app-icd10-codes-list',
   templateUrl: './icd10-codes-list.component.html',
   styleUrl: './icd10-codes-list.component.scss'

@@ -24,13 +24,12 @@ export interface IciStats {
 
 // ── Distribution stat shape ─────────────────────────────────────────────────
 
-// Shared distribution stat shape — `avg` field differs per metric type
 export interface DistStat {
-  avg:    number | null;   // avg_minutes (duration) or avg_ics (proportion 0-1)
+  avg:    number | null;
   min_v:  number | null;
   max_v:  number | null;
   stddev: number | null;
-  p50:    number | null;   // median
+  p50:    number | null;
   count:  number;
 }
 
@@ -47,9 +46,71 @@ export interface GroupedStats {
   };
 }
 
+// ── Analytics snapshot ──────────────────────────────────────────────────────
+
+export type SnapshotStatus = 'completed' | 'running' | 'failed';
+
+export interface DqaSnapshot {
+  rrs:         GroupedStats | null;
+  ics:         GroupedStats | null;
+  ici:         IciStats     | null;
+  aid:         GroupedStats | null;
+  computed_at: string       | null;
+  status:      SnapshotStatus | null;
+  error?:      string;
+}
+
+export interface DqaAnalyticsConfig {
+  run_hour:             number;
+  enabled:              boolean;
+  last_triggered_date?: string;
+}
+
+// ── Service ─────────────────────────────────────────────────────────────────
+
 @Injectable({ providedIn: 'root' })
 export class GeneralDqaService {
   constructor(private http: HttpClient, private configService: ConfigService) {}
+
+  // ── Cached analytics snapshot (used on page load) ──────────────────────
+
+  getAnalyticsSnapshot(): Observable<{ data: DqaSnapshot | null; message: string }> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/data-quality/analytics`)
+      .pipe(catchError(err => {
+        console.error('analytics snapshot error:', err);
+        return of({ data: null, message: 'Failed to fetch analytics' });
+      }));
+  }
+
+  refreshAnalytics(): Observable<{ message: string; status: string }> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/data-quality/analytics/refresh`, {})
+      .pipe(catchError(err => {
+        console.error('analytics refresh error:', err);
+        return of({ message: 'Failed to start computation', status: 'error' });
+      }));
+  }
+
+  getDqaAnalyticsConfig(): Observable<{ data: DqaAnalyticsConfig; message: string }> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/data-quality/analytics/config`)
+      .pipe(catchError(err => {
+        console.error('analytics config error:', err);
+        return of({ data: { run_hour: 2, enabled: true }, message: 'Failed to fetch config' });
+      }));
+  }
+
+  saveDqaAnalyticsConfig(config: DqaAnalyticsConfig): Observable<{ data: DqaAnalyticsConfig; message: string }> {
+    return this.http
+      .put<any>(`${this.configService.API_URL}/data-quality/analytics/config`, config)
+      .pipe(catchError(err => {
+        console.error('save analytics config error:', err);
+        return of({ data: config, message: 'Failed to save config' });
+      }));
+  }
+
+  // ── Live endpoints (kept for force-refresh fallback / debugging) ────────
 
   getInterviewDurationStats(): Observable<{ data: GroupedStats | null; message: string }> {
     return this.http

@@ -8,6 +8,7 @@ import * as privileges  from 'app/shared/constants/privileges.constants';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 
 @Component({
+  standalone: false,
   selector: 'app-icd10-category-type',
   templateUrl: './icd10-category-type.component.html',
   styleUrl: './icd10-category-type.component.scss'

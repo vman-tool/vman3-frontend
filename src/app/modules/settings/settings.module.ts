@@ -34,6 +34,7 @@ import { Icd10CodesListComponent } from './components/icd10-codes-list/icd10-cod
 import { AddIcd10CategoryComponent } from './dialogs/add-icd10-category/add-icd10-category.component';
 import { AddIcd10CategoryTypeComponent } from './dialogs/add-icd10-category-type/add-icd10-category-type.component';
 import { DataExportComponent } from './components/data-export/data-export.component';
+import { DqaThresholdsComponent } from './components/dqa-thresholds/dqa-thresholds.component';
 
 @NgModule({
   declarations: [
@@ -63,6 +64,7 @@ import { DataExportComponent } from './components/data-export/data-export.compon
     AddIcd10CategoryComponent,
     AddIcd10CategoryTypeComponent,
     DataExportComponent,
+    DqaThresholdsComponent,
   ],
   imports: [
     CommonModule,

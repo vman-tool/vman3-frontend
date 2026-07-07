@@ -57,6 +57,7 @@ export interface settingsConfigData {
   va_summary: string[];
   field_labels?: FieldLabel[];
   sync_status?: SyncStatus;
+  dqa_thresholds?: DqaThresholds;
 }
 
 export interface SystemImages {
@@ -76,4 +77,36 @@ export interface SyncStatus {
   last_sync_date?: string;
   last_sync_data_count?: number;
   total_synced_data?: number;
+}
+
+// ── DQA Threshold types ────────────────────────────────────────────────────
+
+export type TierColor = 'green' | 'amber' | 'red' | 'none';
+
+export interface TierConfig {
+  label: string;
+  color: TierColor;
+}
+
+export interface IndicatorThresholds {
+  threshold_high: number;
+  threshold_mid:  number;
+  tier1: TierConfig;
+  tier2: TierConfig;
+  tier3: TierConfig;
+}
+
+export interface AidThresholds {
+  min_normal:  number;
+  max_normal:  number;
+  tier_short:  TierConfig;
+  tier_normal: TierConfig;
+  tier_long:   TierConfig;
+}
+
+export interface DqaThresholds {
+  ics: IndicatorThresholds;
+  rrs: IndicatorThresholds;
+  ici: IndicatorThresholds;
+  aid: AidThresholds;
 }

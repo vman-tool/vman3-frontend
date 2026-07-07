@@ -11,12 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SearchableSelectForObjectsComponent } from './components/searchable-select-for-objects/searchable-select-for-objects.component';
 import { SearchableMultiSelectComponent } from './components/searchable-multi-select/searchable-multi-select.component';
-import { CustomDropdownComponent } from './components/custom-dropdown/custom-dropdown.component';
 @NgModule({
-  declarations: [
-    SearchableSelectForObjectsComponent,
-    SearchableMultiSelectComponent,
-  ],
+  declarations: [],
   imports: [
     CommonModule,
     FormsModule,
@@ -26,10 +22,12 @@ import { CustomDropdownComponent } from './components/custom-dropdown/custom-dro
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatOptionModule, // Add MatOptionModule here
+    MatOptionModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressSpinnerModule,
+    SearchableSelectForObjectsComponent,
+    SearchableMultiSelectComponent,
   ],
   providers: [DatePipe],
   exports: [

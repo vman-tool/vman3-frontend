@@ -7,16 +7,20 @@ import {
   inject,
 } from '@angular/core';
 import * as L from 'leaflet';
-import { MapDataService } from '../../services/map-data.service'; // Adjust the path as needed
+import 'leaflet.markercluster';
+import { MapDataService } from '../../services/map-data.service';
 import { FilterService } from '../../../../shared/services/filter.service';
 
 @Component({
+  standalone: false,
   selector: 'app-map-data',
   templateUrl: './map-data.component.html',
   styleUrls: ['./map-data.component.scss'],
 })
 export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
-  private map: any;
+  private map!: L.Map;
+  private clusterGroup!: L.MarkerClusterGroup;
+  private statsControl?: L.Control;
   isLoading = true;
   locations: any[] = [];
   filterData: {
@@ -32,12 +36,41 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
     date_type: undefined,
     ccva_graph_db_source: true,
   };
-  private customIcon = L.icon({
-    iconUrl: 'assets/icons/marker.svg', // Path to your custom marker icon
-    iconSize: [10, 10], // Smaller size of the icon
-    iconAnchor: [5, 10], // Adjust the anchor point based on new icon size
-    popupAnchor: [0, -10], // Adjust popup anchor accordingly
+
+  private readonly streetLayer = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }
+  );
+
+  private readonly satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+      attribution:
+        'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 18,
+    }
+  );
+
+  private readonly topoLayer = L.tileLayer(
+    'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    {
+      attribution:
+        'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
+      maxZoom: 17,
+    }
+  );
+
+  private readonly customIcon = L.divIcon({
+    className: '',
+    html: '<div style="width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid rgba(255,255,255,0.9);box-shadow:0 1px 6px rgba(0,0,0,0.45)"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -12],
   });
+
   title: string = 'VA Data Map';
 
   constructor(
@@ -66,22 +99,15 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
         this.filterData.locations,
         this.filterData.date_type
       )
-      .subscribe(
-        async (data) => {
+      .subscribe({
+        next: async (data) => {
           this.locations = data.data;
-          // console.log('Fetched locations:', this.locations); // Log locations data
           await this.addMarkers();
-          // await for 1 second to ensure the map is loaded before setting isLoading to false
-          setTimeout(() => {
-            // this.isLoading = false;
-          }, 1000);
-          // this.isLoading = false;
         },
-        (error) => {
-          // console.error('Error fetching locations:', error);
-          // this.isLoading =
-        }
-      );
+        error: () => {
+          this.isLoading = false;
+        },
+      });
   }
 
   ngAfterViewInit(): void {
@@ -94,80 +120,111 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  private createClusterIcon(count: number): L.DivIcon {
+    const sz = Math.round(Math.min(64, Math.max(34, 28 + Math.log2(count) * 7)));
+    const fs = sz < 42 ? 12 : sz < 54 ? 13 : 14;
+    const bg = count < 10 ? '#3b82f6' : count < 50 ? '#f59e0b' : '#ef4444';
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:${bg};border:3px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.3);color:#fff;font:700 ${fs}px/1 sans-serif;cursor:pointer">${count}</div>`,
+      iconSize: [sz, sz],
+      iconAnchor: [sz / 2, sz / 2],
+    });
+  }
+
   private initMap(): void {
-    this.map = L.map('map').setView([0, 0], 3); // Initialize map centered at [0, 0] with zoom level 2
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(this.map);
+    this.map = L.map('map', { zoomControl: true }).setView([0, 0], 3);
+    this.streetLayer.addTo(this.map);
+
+    L.control
+      .layers(
+        {
+          'Street': this.streetLayer,
+          'Satellite': this.satelliteLayer,
+          'Topographic': this.topoLayer,
+        },
+        {},
+        { position: 'topright', collapsed: false }
+      )
+      .addTo(this.map);
+
+    this.clusterGroup = (L as any).markerClusterGroup({
+      chunkedLoading: true,
+      maxClusterRadius: 60,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      iconCreateFunction: (cluster: any) =>
+        this.createClusterIcon(cluster.getChildCount()),
+    });
+    this.map.addLayer(this.clusterGroup);
   }
 
   private async addMarkers(): Promise<void> {
-    const bounds = L.latLngBounds([]);
-    const uniqueMarkers = new Set<string>();
+    if (!this.map) return;
+    this.clusterGroup.clearLayers();
 
-    if (this.locations.length > 0) {
-      this.locations.forEach((location, index) => {
-        const [longitude, latitude] = location.coordinates;
-        const markerKey = `${latitude},${longitude}`;
-
-        if (!uniqueMarkers.has(markerKey)) {
-          uniqueMarkers.add(markerKey);
-
-          // Prepare popup content
-          const popupContent = `
-          <div class="p-4 bg-transparent rounded-lg  w-96">
-            <div class="mb-2 text-lg font-bold flex items-center">
-              <img src="assets/icons/marker.svg" class="h-6 w-6 mr-2" />
-              Marker Details
-            </div>
-            <div class="grid grid-cols-2 gap-4 text-gray-600">
-              <div class="col-span-2">
-                <span class="font-semibold">Region:</span> ${location.location}
-              </div>
-              <div class="col-span-2">
-                <span class="font-semibold">District:</span> ${
-                  location.district
-                }
-              </div>
-              <div class="col-span-2">
-                <span class="font-semibold">Date:</span> ${new Date(
-                  location.date
-                ).toLocaleDateString()}
-              </div>
-              <div class="col-span-2">
-                <span class="font-semibold">Interviewer:</span> ${
-                  location.interviewer
-                }
-              </div>
-              <div class="col-span-2">
-                <span class="font-semibold">Device ID:</span> ${
-                  location.deviceid
-                }
-              </div>
-            </div>
-          </div>
-        `;
-
-          // Create and add marker
-          const marker = L.marker([latitude, longitude], {
-            icon: this.customIcon,
-          })
-            .bindPopup(popupContent)
-            .addTo(this.map);
-
-          // Extend bounds to include the marker's location
-          bounds.extend(marker.getLatLng());
-        } else {
-          console.warn(
-            `Duplicate marker for ${markerKey} found at index ${index + 1}`
-          );
-        }
-      });
-
-      this.map.fitBounds(bounds, {
-        padding: [20, 20], // Adds padding around the bounds to prevent tight fit
-      });
-      this.isLoading = false;
+    const siteMap = new Map<string, any[]>();
+    for (const loc of this.locations) {
+      if (!loc.coordinates || loc.coordinates.length < 2) continue;
+      const [lng, lat] = loc.coordinates;
+      const key = `${lat},${lng}`;
+      if (!siteMap.has(key)) siteMap.set(key, []);
+      siteMap.get(key)!.push(loc);
     }
+
+    siteMap.forEach((records, key) => {
+      const [lat, lng] = key.split(',').map(Number);
+      const first = records[0];
+      const count = records.length;
+
+      const extraNote =
+        count > 1
+          ? `<div style="margin-top:6px;padding:4px 8px;background:#f3f4f6;border-radius:4px;font-size:11px;color:#6b7280">${count} interviews at this site</div>`
+          : '';
+
+      const popupContent = `
+        <div style="min-width:210px;font-family:sans-serif;font-size:13px;line-height:1.6">
+          <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:#111827">VA Interview Site</div>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Region</td><td style="font-weight:500">${first.location ?? '—'}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">District</td><td style="font-weight:500">${first.district ?? '—'}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Interviewer</td><td style="font-weight:500">${first.interviewer ?? '—'}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Date</td><td style="font-weight:500">${first.date ? new Date(first.date).toLocaleDateString() : '—'}</td></tr>
+          </table>
+          ${extraNote}
+        </div>
+      `;
+
+      const marker = L.marker([lat, lng], { icon: this.customIcon }).bindPopup(
+        popupContent,
+        { maxWidth: 260 }
+      );
+      this.clusterGroup.addLayer(marker);
+    });
+
+    if (siteMap.size > 0) {
+      this.map.fitBounds(this.clusterGroup.getBounds(), { padding: [30, 30] });
+    }
+
+    this.updateStatsControl(this.locations.length, siteMap.size);
+    this.isLoading = false;
+  }
+
+  private updateStatsControl(total: number, sites: number): void {
+    if (this.statsControl) {
+      this.statsControl.remove();
+    }
+    const StatsControl = L.Control.extend({
+      onAdd(_map: L.Map) {
+        const el = L.DomUtil.create('div');
+        el.style.cssText =
+          'background:rgba(255,255,255,.92);padding:5px 12px;border-radius:5px;' +
+          'box-shadow:0 1px 5px rgba(0,0,0,.25);font-size:12px;color:#374151;line-height:1.6';
+        el.innerHTML = `<b>${total.toLocaleString()}</b> VA records &nbsp;&bull;&nbsp; <b>${sites.toLocaleString()}</b> sites`;
+        return el;
+      },
+    });
+    this.statsControl = new (StatsControl as any)({ position: 'bottomleft' });
+    this.statsControl!.addTo(this.map);
   }
 }

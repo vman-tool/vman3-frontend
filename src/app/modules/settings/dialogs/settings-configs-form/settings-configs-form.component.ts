@@ -19,6 +19,7 @@ import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-i
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 
 @Component({
+  standalone: false,
   selector: 'app-settings-configs-form',
   templateUrl: './settings-configs-form.component.html',
   styleUrls: ['./settings-configs-form.component.scss'],

@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-records',
-  // standalone: true,
-  // imports: [],
   templateUrl: './records.component.html',
   styleUrl: './records.component.scss',
 })

@@ -16,6 +16,7 @@ import { VersionService } from "app/shared/services/version.service";
 import { UserActivityService } from "app/core/services/user-activity/user-activity.service";
 
 @Component({
+  standalone: false,
   selector: "app-login",
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
@@ -100,39 +101,39 @@ export class LoginComponent implements OnInit, AfterViewInit {
                 panelClass: 'snack-success',
                 duration: 3 * 1000,
               })
-            }
-            if (!response?.ok && response?.status) {
-              this.snackBar.open("Invalid username/password", "close",{
+            } else {
+              this.snackBar.open("Login failed. Please try again.", "close", {
                 horizontalPosition: this.horizontalPosition,
                 verticalPosition: this.verticalPosition,
-                duration: 3 * 1000,
-              })
-            }
-
-            if(!response?.status && !response?.ok && !response?.access_token){
-              this.snackBar.open("Kindly check your connection, then retry.", "close", {
-                horizontalPosition: this.horizontalPosition,
-                verticalPosition: this.verticalPosition,
-                duration: 3 * 1000,
+                duration: 4 * 1000,
               })
             }
           },
           error: (error: any) => {
               failed = false
               this.isLoading = false
-              this.snackBar.open("Invalid username/password", "close",{
+              let message: string;
+              if (error?.status === 0) {
+                message = "Unable to reach the server. Check your connection and retry.";
+              } else if (error?.status >= 500) {
+                message = "Server error. Please try again later.";
+              } else {
+                // 400 / 401 — use the backend's detail message if available
+                message = error?.error?.detail || "Invalid email or password.";
+              }
+              this.snackBar.open(message, "close", {
                 horizontalPosition: this.horizontalPosition,
                 verticalPosition: this.verticalPosition,
-                duration: 3 * 1000,
+                duration: 5 * 1000,
               })
             },
             complete: () => {
               this.isLoading = false
               if(failed){
-                this.snackBar.open("Invalid username/password", "close", {
+                this.snackBar.open("Login failed. Please try again.", "close", {
                   horizontalPosition: this.horizontalPosition,
                   verticalPosition: this.verticalPosition,
-                  duration: 3 * 1000,
+                  duration: 4 * 1000,
                 })
               }
             }

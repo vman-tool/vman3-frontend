@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   GeneralDqaService,
   DistStat,
   GroupedStats,
   IciStats,
   InterviewerIci,
+  SnapshotStatus,
 } from '../../services/general-dqa.service';
+import { DqaThresholdService, StatusBadge as ThresholdBadge } from '../../services/dqa-threshold.service';
 
 // ─── SVG distribution visualisation ────────────────────────────────────────
 
@@ -147,53 +149,90 @@ function buildIciDisplayItems(rows: InterviewerIci[]): IciDisplayItem[] {
 // ─── Component ─────────────────────────────────────────────────────────────
 
 @Component({
+  standalone: false,
   selector:    'app-general-dqa',
   templateUrl: './general-dqa.component.html',
   styleUrl:    './general-dqa.component.scss',
 })
-export class GeneralDqaComponent implements OnInit {
+export class GeneralDqaComponent implements OnInit, OnDestroy {
 
-  // Duration state
+  // Individual indicator state (populated from analytics snapshot)
   durationStats: GroupedStats | null = null;
   isDurationLoading = true;
   hasDurationError  = false;
 
-  // ICS (Informatic Completeness Score) state
   icsStats: GroupedStats | null = null;
   isIcsLoading = true;
   hasIcsError  = false;
 
-  // RRS (Respondent Reliability Score) state
   rrsStats: GroupedStats | null = null;
   isRrsLoading = true;
   hasRrsError  = false;
 
-  // ICI (Internal Consistency Index) state
   iciStats: IciStats | null = null;
   isIciLoading = true;
   hasIciError  = false;
 
+  // Analytics snapshot metadata
+  computedAt: string | null = null;
+  analyticsStatus: SnapshotStatus | null = null;
+  isRefreshing = false;
+
+  private pollTimer: ReturnType<typeof setTimeout> | null = null;
+
   // Which card drives the breakdown table
   activeCard: ActiveCard = 'rrs';
 
-  constructor(private svc: GeneralDqaService) {}
+  constructor(
+    private svc: GeneralDqaService,
+    private thresholdSvc: DqaThresholdService,
+  ) {}
 
   ngOnInit(): void {
-    this.svc.getInterviewDurationStats().subscribe({
-      next: r => { this.durationStats = r?.data ?? null; this.isDurationLoading = false; },
-      error: () => { this.hasDurationError = true; this.isDurationLoading = false; },
+    this.loadFromSnapshot();
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollTimer) clearTimeout(this.pollTimer);
+  }
+
+  loadFromSnapshot(): void {
+    this.svc.getAnalyticsSnapshot().subscribe({
+      next: r => {
+        const snap = r?.data;
+        if (snap) {
+          this.rrsStats      = snap.rrs  ?? null;
+          this.icsStats      = snap.ics  ?? null;
+          this.iciStats      = snap.ici  ?? null;
+          this.durationStats = snap.aid  ?? null;
+          this.computedAt    = snap.computed_at ?? null;
+          this.analyticsStatus = snap.status ?? null;
+
+          // Poll while a computation is in progress.
+          if (snap.status === 'running') {
+            this.pollTimer = setTimeout(() => this.loadFromSnapshot(), 5000);
+          }
+        }
+        // Clear loading states regardless — data may be null if snapshot not yet built.
+        this.isDurationLoading = this.isIcsLoading = this.isRrsLoading = this.isIciLoading = false;
+      },
+      error: () => {
+        this.hasDurationError = this.hasIcsError = this.hasRrsError = this.hasIciError = true;
+        this.isDurationLoading = this.isIcsLoading = this.isRrsLoading = this.isIciLoading = false;
+      },
     });
-    this.svc.getIcsStats().subscribe({
-      next: r => { this.icsStats = r?.data ?? null; this.isIcsLoading = false; },
-      error: () => { this.hasIcsError = true; this.isIcsLoading = false; },
-    });
-    this.svc.getRrsStats().subscribe({
-      next: r => { this.rrsStats = r?.data ?? null; this.isRrsLoading = false; },
-      error: () => { this.hasRrsError = true; this.isRrsLoading = false; },
-    });
-    this.svc.getIciStats().subscribe({
-      next: r => { this.iciStats = r?.data ?? null; this.isIciLoading = false; },
-      error: () => { this.hasIciError = true; this.isIciLoading = false; },
+  }
+
+  forceRefresh(): void {
+    if (this.isRefreshing || this.analyticsStatus === 'running') return;
+    this.isRefreshing = true;
+    this.svc.refreshAnalytics().subscribe({
+      next: () => {
+        this.analyticsStatus = 'running';
+        this.isRefreshing = false;
+        this.pollTimer = setTimeout(() => this.loadFromSnapshot(), 3000);
+      },
+      error: () => { this.isRefreshing = false; },
     });
   }
 
@@ -244,18 +283,20 @@ export class GeneralDqaComponent implements OnInit {
 
   get overallDuration(): string      { return this.fmtMin(this.durationStats?.overall?.avg ?? null); }
   get overallDurationCount(): number { return this.durationStats?.overall?.count ?? 0; }
+  get overallDurationTier(): StatusBadge | null { return this.thresholdSvc.classifyAid(this.durationStats?.overall?.avg ?? null); }
 
   get overallIcs(): string      { return this.fmtPct(this.icsStats?.overall?.avg ?? null); }
   get overallIcsCount(): number { return this.icsStats?.overall?.count ?? 0; }
+  get overallIcsTier(): StatusBadge | null { return this.thresholdSvc.classifyIcs(this.icsStats?.overall?.avg ?? null); }
 
   get overallRrs(): string      { return this.fmtRrs(this.rrsStats?.overall?.avg ?? null); }
   get overallRrsCount(): number { return this.rrsStats?.overall?.count ?? 0; }
-  get overallRrsTier(): StatusBadge | null { return rrsClassify(this.rrsStats?.overall?.avg ?? null); }
+  get overallRrsTier(): StatusBadge | null { return this.thresholdSvc.classifyRrs(this.rrsStats?.overall?.avg ?? null); }
 
   get overallIci(): string      { return this.fmtIci(this.iciStats?.overall_ici ?? null); }
   get overallIciTotal(): number { return this.iciStats?.overall_total  ?? 0; }
   get overallIciPassed(): number{ return this.iciStats?.overall_passed ?? 0; }
-  get overallIciTier(): StatusBadge | null { return iciClassify(this.iciStats?.overall_ici ?? null); }
+  get overallIciTier(): StatusBadge | null { return this.thresholdSvc.classifyIci(this.iciStats?.overall_ici ?? null); }
 
   // ICI interviewer rows — full list for reference
   get iciInterviewers(): InterviewerIci[] { return this.iciStats?.interviewers ?? []; }
@@ -315,8 +356,10 @@ export class GeneralDqaComponent implements OnInit {
   }
   fmtIciRow(v: number): string { return `${v.toFixed(1)}%`; }
 
-  rrsRowTier(stat: DistStat): StatusBadge | null { return rrsClassify(stat.avg); }
-  iciRowTier(row: InterviewerIci | null): StatusBadge | null { return row ? iciClassify(row.ici) : null; }
+  rrsRowTier(stat: DistStat):      StatusBadge | null { return this.thresholdSvc.classifyRrs(stat.avg); }
+  icsRowTier(stat: DistStat):      StatusBadge | null { return this.thresholdSvc.classifyIcs(stat.avg); }
+  durationRowTier(stat: DistStat): StatusBadge | null { return this.thresholdSvc.classifyAid(stat.avg); }
+  iciRowTier(row: InterviewerIci | null): StatusBadge | null { return row ? this.thresholdSvc.classifyIci(row.ici) : null; }
 
   readonly SVG_W = SVG_W;
   readonly SVG_H = SVG_H;

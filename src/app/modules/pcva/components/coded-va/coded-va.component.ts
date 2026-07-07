@@ -11,6 +11,7 @@ import { settingsConfigData } from 'app/modules/settings/interface';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 
 @Component({
+  standalone: false,
   selector: 'app-coded-va',
   templateUrl: './coded-va.component.html',
   styleUrl: './coded-va.component.scss'
