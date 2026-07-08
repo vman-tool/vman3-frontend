@@ -160,7 +160,7 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async addMarkers(): Promise<void> {
-    if (!this.map) return;
+    if (!this.map || !this.clusterGroup) return;
     this.clusterGroup.clearLayers();
 
     const siteMap = new Map<string, any[]>();

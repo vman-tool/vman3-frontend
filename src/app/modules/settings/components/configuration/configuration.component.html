@@ -94,6 +94,19 @@
           <span class="text-sm font-medium">DQA Thresholds</span>
         </a>
       </li>
+      <li class="me-2" *ngIf="dataAccess?.viewSystemConfigs">
+        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
+          (click)="selectedTab = 'vman-ml'; loadMlModelInfo()" [ngClass]="{
+           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'vman-ml',
+           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'vman-ml'
+         }">
+          <i class="ph ph-brain text-base me-1.5" [ngClass]="{
+             'text-blue-600 dark:text-blue-500': selectedTab === 'vman-ml',
+             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'vman-ml'
+           }"></i>
+          <span class="text-sm font-medium">VMan ML Model</span>
+        </a>
+      </li>
       <li class="me-2" *ngIf="dataAccess?.updateAccessLocationsLabels">
         <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
           (click)="selectedTab = 'label-access-fields'" [ngClass]="{
@@ -404,5 +417,172 @@
     <div class="my-8">
       <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
       <app-dqa-thresholds></app-dqa-thresholds>
+    </div>
+  </div>
+
+  <!-- ── VMan ML Model tab ──────────────────────────────────────────────────── -->
+  <div *ngIf="selectedTab === 'vman-ml' && dataAccess?.viewSystemConfigs" id="vman-ml" class="mt-4 tab-content">
+    <div class="my-8 space-y-6">
+      <hr class="h-px bg-gray-200 border-0 dark:bg-gray-700">
+
+      <!-- Loading -->
+      <div *ngIf="mlModelLoading" class="flex justify-center items-center py-10">
+        <div class="w-8 h-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="mlModelError && !mlModelLoading" class="px-4 py-3 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
+        {{ mlModelError }}
+      </div>
+
+      <!-- Model Info -->
+      <ng-container *ngIf="mlModelInfo && !mlModelLoading">
+
+        <!-- Header row -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base font-semibold text-gray-800">
+              Deployed Model
+              <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                v{{ mlModelInfo.version }}
+              </span>
+            </h3>
+            <p class="mt-0.5 text-xs text-gray-400">
+              {{ mlModelInfo.algorithm }} &nbsp;·&nbsp;
+              Trained {{ mlModelInfo.trained_at | date:'MMMM d, y':'UTC' }}
+            </p>
+          </div>
+          <span class="px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full">
+            Active
+          </span>
+        </div>
+
+        <!-- Notes -->
+        <p *ngIf="mlModelInfo.notes" class="text-sm text-gray-500 italic">{{ mlModelInfo.notes }}</p>
+
+        <!-- Metrics grid -->
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4" *ngIf="mlModelInfo.metrics">
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 text-center">
+            <div class="text-2xl font-bold text-gray-800">{{ fmtPct(mlModelInfo.metrics.accuracy) }}</div>
+            <div class="mt-1 text-xs text-gray-400">Accuracy</div>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 text-center">
+            <div class="text-2xl font-bold text-gray-800">{{ fmtPct(mlModelInfo.metrics.f1_macro) }}</div>
+            <div class="mt-1 text-xs text-gray-400">F1 Macro</div>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 text-center">
+            <div class="text-2xl font-bold text-gray-800">{{ fmtPct(mlModelInfo.metrics.f1_weighted) }}</div>
+            <div class="mt-1 text-xs text-gray-400">F1 Weighted</div>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 text-center">
+            <div class="text-2xl font-bold text-gray-800">{{ fmtPct(mlModelInfo.metrics.cv_f1_macro) }}</div>
+            <div class="mt-1 text-xs text-gray-400">CV F1 Macro</div>
+          </div>
+        </div>
+
+        <!-- Sample counts -->
+        <div class="flex gap-6 text-xs text-gray-500" *ngIf="mlModelInfo.metrics">
+          <span><strong class="text-gray-700">{{ mlModelInfo.metrics.n_training_samples | number }}</strong> training samples</span>
+          <span><strong class="text-gray-700">{{ mlModelInfo.metrics.n_test_samples | number }}</strong> hold-out test samples</span>
+          <span><strong class="text-gray-700">{{ mlModelInfo.source_file }}</strong></span>
+        </div>
+
+        <!-- Version history -->
+        <div *ngIf="mlModelInfo.history?.length" class="mt-2">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Previous Versions</h4>
+          <div class="divide-y divide-gray-100 rounded-lg border border-gray-100 overflow-hidden text-xs">
+            <div *ngFor="let h of mlModelInfo.history" class="flex items-center justify-between px-4 py-2.5 bg-white text-gray-500">
+              <span class="font-medium text-gray-700">v{{ h.version }}</span>
+              <span>{{ h.algorithm }}</span>
+              <span>Trained {{ h.trained_at }}</span>
+              <span class="text-gray-400">Replaced {{ h.replaced_at | date:'MMM d, y':'UTC' }}</span>
+              <span class="font-mono text-gray-400">{{ h.archive }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Upload section (admin only) -->
+      <div *ngIf="dataAccess?.updateSystemConfigs" class="pt-4 border-t border-gray-100">
+        <h4 class="mb-3 text-sm font-semibold text-gray-700">
+          <i class="ph ph-upload-simple mr-1.5 text-blue-500"></i>
+          Upload New Model
+        </h4>
+
+        <!-- Success / error banners -->
+        <div *ngIf="mlUploadSuccess" class="mb-3 px-4 py-2.5 text-sm text-emerald-700 bg-emerald-50 rounded-lg border border-emerald-200">
+          {{ mlUploadSuccess }}
+        </div>
+        <div *ngIf="mlUploadError" class="mb-3 px-4 py-2.5 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
+          {{ mlUploadError }}
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <!-- File picker -->
+          <div class="sm:col-span-2">
+            <label class="block mb-1 text-xs font-medium text-gray-600">Model file (.pkl)</label>
+            <input type="file" accept=".pkl" (change)="onMlFileSelect($event)"
+              class="block w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+            <p *ngIf="mlUploadFile" class="mt-1 text-xs text-gray-400">{{ mlUploadFile.name }}</p>
+          </div>
+
+          <!-- Version -->
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">Version <span class="text-red-500">*</span></label>
+            <input type="text" [(ngModel)]="mlUploadVersion" placeholder="e.g. 1.1.0"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">Notes</label>
+            <input type="text" [(ngModel)]="mlUploadNotes" placeholder="What changed in this version?"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+
+          <!-- Metrics -->
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">Accuracy (0–1) <span class="text-red-500">*</span></label>
+            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadAccuracy"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">F1 Macro (0–1) <span class="text-red-500">*</span></label>
+            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadF1Macro"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">F1 Weighted (0–1) <span class="text-red-500">*</span></label>
+            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadF1Weighted"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">CV F1 Macro (optional)</label>
+            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadCvF1Macro"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">Training samples <span class="text-red-500">*</span></label>
+            <input type="number" min="0" [(ngModel)]="mlUploadNTraining"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">Test samples <span class="text-red-500">*</span></label>
+            <input type="number" min="0" [(ngModel)]="mlUploadNTest"
+              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+        </div>
+
+        <button (click)="uploadMlModel()" [disabled]="mlUploading || !mlUploadFile"
+          class="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <svg *ngIf="mlUploading" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <i *ngIf="!mlUploading" class="ph ph-upload-simple"></i>
+          {{ mlUploading ? 'Uploading…' : 'Upload Model' }}
+        </button>
+      </div>
+
     </div>
   </div>

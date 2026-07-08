@@ -126,14 +126,18 @@ export class VaFiltersComponent implements OnInit {
   }
 
   async getUserAccessLimit() {
-    this.loadSystemConfigurations();
+    await this.loadSystemConfigurations();
     this.current_user = JSON.parse(localStorage.getItem("current_user") || "{}");
     const user_roles_data: any = await lastValueFrom(this.usersService.getUserRoles(this.current_user?.uuid));
     const access_limit = user_roles_data?.data?.access_limit;
 
+    const locationField = access_limit?.field || this.fieldMappingData?.location_level1;
+    if (locationField) {
+      this.selectedLocationType = { value: locationField };
+    }
+    if (!this.selectedLocationType?.value) return;
 
     const savedFieldLabel = this.fieldLabels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
-    console.log(this.selectedLocationType, 'his.selectedLocationType')
     const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
     let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value])
 
