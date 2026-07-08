@@ -20,6 +20,9 @@ export class SettingConfigService {
   private lastFetchTime: number = 0;
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+  private systemImagesCache: any = null;
+  private systemImagesFetchTime: number = 0;
+
   constructor(private http: HttpClient, private configService: ConfigService) { }
 
   // General method to save data
@@ -139,11 +142,21 @@ export class SettingConfigService {
     );
   }
 
-  getSystemImages(): Observable<any> {
+  getSystemImages(cached: boolean = true): Observable<any> {
+    const now = Date.now();
+    if (cached && this.systemImagesCache && (now - this.systemImagesFetchTime) < this.CACHE_DURATION) {
+      return of(this.systemImagesCache);
+    }
     return this.http.get<any>(`${this.configService.API_URL}/settings/system_images/`).pipe(
+      tap((data: any) => {
+        if (data) {
+          this.systemImagesCache = data;
+          this.systemImagesFetchTime = Date.now();
+        }
+      }),
       catchError((error: any) => {
         console.error('Error fetching system images:', error);
-        return of([]); // Return an empty array on error
+        return of([]);
       })
     );
   }
@@ -180,6 +193,8 @@ export class SettingConfigService {
   clearCache(): void {
     this.configCache = null;
     this.lastFetchTime = 0;
+    this.systemImagesCache = null;
+    this.systemImagesFetchTime = 0;
   }
 
   getUniqueValuesOfField(field: string): Observable<any> {
@@ -201,6 +216,24 @@ export class SettingConfigService {
       .post<any>(`${this.configService.API_URL}/settings/backup`, settings)
       .pipe(catchError(err => {
         console.error('save backup settings error:', err);
+        throw err;
+      }));
+  }
+
+  getMlModelInfo(): Observable<any> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/settings/ml-model`)
+      .pipe(catchError(err => {
+        console.error('ml model info error:', err);
+        throw err;
+      }));
+  }
+
+  uploadMlModel(formData: FormData): Observable<any> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/ml-model/upload`, formData)
+      .pipe(catchError(err => {
+        console.error('ml model upload error:', err);
         throw err;
       }));
   }

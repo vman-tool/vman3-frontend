@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { UserActivityService } from './services/user-activity/user-activity.service';
 
 @Component({
@@ -7,14 +7,16 @@ import { UserActivityService } from './services/user-activity/user-activity.serv
   templateUrl: './core.component.html',
   styleUrl: './core.component.scss'
 })
-export class CoreComponent {
+export class CoreComponent implements OnDestroy {
   constructor(
     private userActivityService: UserActivityService
-  ){
-
-  }
+  ){}
 
   ngOnInit(){
     this.userActivityService.startIdleTimer();
+  }
+
+  ngOnDestroy(){
+    this.userActivityService.stopIdleTimer();
   }
 }

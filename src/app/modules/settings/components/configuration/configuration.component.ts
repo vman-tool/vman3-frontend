@@ -43,6 +43,23 @@ export class ConfigurationComponent {
   isQuestionsSyncing: boolean = false;
   isQuestionsSyncTabLoading: boolean = false;
 
+  // VMan ML Model Properties
+  mlModelInfo: any = null;
+  mlModelLoading = false;
+  mlModelError = '';
+  mlUploadFile: File | null = null;
+  mlUploadVersion = '';
+  mlUploadNotes = '';
+  mlUploadAccuracy: number | null = null;
+  mlUploadF1Macro: number | null = null;
+  mlUploadF1Weighted: number | null = null;
+  mlUploadCvF1Macro: number | null = null;
+  mlUploadNTraining: number | null = null;
+  mlUploadNTest: number | null = null;
+  mlUploading = false;
+  mlUploadSuccess = '';
+  mlUploadError = '';
+
   // Cache state to prevent unnecessary reloads
   private dataLoaded = false;
 
@@ -326,5 +343,81 @@ export class ConfigurationComponent {
 
   onForceCheck(event: any, isChecked: boolean) {
     this.forceChecked = event.target.checked;
+  }
+
+  // ── VMan ML Model methods ──────────────────────────────────────────────────
+
+  loadMlModelInfo(): void {
+    this.mlModelLoading = true;
+    this.mlModelError = '';
+    this.settingConfigService.getMlModelInfo().subscribe({
+      next: (res: any) => {
+        this.mlModelInfo = res?.data ?? null;
+        this.mlModelLoading = false;
+      },
+      error: () => {
+        this.mlModelError = 'Failed to load model information.';
+        this.mlModelLoading = false;
+      },
+    });
+  }
+
+  onMlFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.mlUploadFile = input.files?.[0] ?? null;
+    this.mlUploadSuccess = '';
+    this.mlUploadError = '';
+  }
+
+  uploadMlModel(): void {
+    if (!this.mlUploadFile) { this.mlUploadError = 'Please select a .pkl file.'; return; }
+    if (!this.mlUploadVersion.trim()) { this.mlUploadError = 'Version is required.'; return; }
+    if (this.mlUploadAccuracy === null || this.mlUploadF1Macro === null ||
+        this.mlUploadF1Weighted === null || this.mlUploadNTraining === null || this.mlUploadNTest === null) {
+      this.mlUploadError = 'All metric fields are required.'; return;
+    }
+
+    const form = new FormData();
+    form.append('file', this.mlUploadFile);
+    form.append('version', this.mlUploadVersion.trim());
+    form.append('notes', this.mlUploadNotes.trim());
+    form.append('accuracy', String(this.mlUploadAccuracy));
+    form.append('f1_macro', String(this.mlUploadF1Macro));
+    form.append('f1_weighted', String(this.mlUploadF1Weighted));
+    form.append('n_training_samples', String(this.mlUploadNTraining));
+    form.append('n_test_samples', String(this.mlUploadNTest));
+    if (this.mlUploadCvF1Macro !== null) {
+      form.append('cv_f1_macro', String(this.mlUploadCvF1Macro));
+    }
+
+    this.mlUploading = true;
+    this.mlUploadSuccess = '';
+    this.mlUploadError = '';
+
+    this.settingConfigService.uploadMlModel(form).subscribe({
+      next: (res: any) => {
+        this.mlModelInfo = res?.data ?? this.mlModelInfo;
+        this.mlUploadSuccess = `Model v${this.mlUploadVersion} uploaded successfully.`;
+        this.mlUploadFile = null;
+        this.mlUploadVersion = '';
+        this.mlUploadNotes = '';
+        this.mlUploadAccuracy = null;
+        this.mlUploadF1Macro = null;
+        this.mlUploadF1Weighted = null;
+        this.mlUploadCvF1Macro = null;
+        this.mlUploadNTraining = null;
+        this.mlUploadNTest = null;
+        this.mlUploading = false;
+      },
+      error: (err: any) => {
+        this.mlUploadError = err?.error?.detail ?? 'Upload failed. Please try again.';
+        this.mlUploading = false;
+      },
+    });
+  }
+
+  fmtPct(v: number | null | undefined): string {
+    if (v == null) return '—';
+    return (v * 100).toFixed(1) + '%';
   }
 }
