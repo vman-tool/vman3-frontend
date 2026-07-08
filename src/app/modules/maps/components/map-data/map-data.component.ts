@@ -6,8 +6,15 @@ import {
   effect,
   inject,
 } from '@angular/core';
-import * as L from 'leaflet';
-import 'leaflet.markercluster';
+// L is loaded as a global script (angular.json scripts[]) so that
+// leaflet.markercluster can augment window.L before the app bundle runs.
+// esbuild's ESM/CJS module interop creates separate instances, so the
+// side-effect import 'leaflet.markercluster' does NOT augment the ESM L.
+// The type-only import below triggers @types/leaflet.markercluster's
+// `declare module "leaflet"` augmentation without emitting any runtime code.
+import type { MarkerClusterGroup } from 'leaflet';
+import type {} from 'leaflet.markercluster';
+declare const L: typeof import('leaflet');
 import { MapDataService } from '../../services/map-data.service';
 import { FilterService } from '../../../../shared/services/filter.service';
 
@@ -19,7 +26,7 @@ import { FilterService } from '../../../../shared/services/filter.service';
 })
 export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
   private map!: L.Map;
-  private clusterGroup!: L.MarkerClusterGroup;
+  private clusterGroup!: MarkerClusterGroup;
   private statsControl?: L.Control;
   isLoading = true;
   locations: any[] = [];
@@ -148,7 +155,7 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
       )
       .addTo(this.map);
 
-    this.clusterGroup = (L as any).markerClusterGroup({
+    this.clusterGroup = L.markerClusterGroup({
       chunkedLoading: true,
       maxClusterRadius: 60,
       spiderfyOnMaxZoom: true,
