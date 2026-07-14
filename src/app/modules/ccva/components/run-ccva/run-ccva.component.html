@@ -144,7 +144,7 @@
   <div class="overflow-y-auto max-h-[calc(100vh-200px)]">
     <!-- <span class="text-xl font-bold text-gray-700">CCVA Background Analysis</span> -->
 
-    <div *ngIf="isResultsPanelVisible" class="p-6 mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div *ngIf="isResultsPanelVisible" @expandFade class="p-6 mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
       <div class="flex justify-between mb-4">
         <span class="text-lg font-semibold text-gray-800">Analysis Progress</span>
         <button (click)="closeResultsPanel()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -161,8 +161,15 @@
             <p class="text-xl font-bold text-gray-900">{{ totalRecords }}</p>
           </div>
           <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p class="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase">Progress</p>
-            <p class="text-xl font-bold text-blue-600">{{ progress }}%</p>
+            <p class="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase">Progress</p>
+            <div class="flex items-center gap-2">
+              <div class="flex-1 overflow-hidden h-2 bg-gray-200 rounded-full">
+                <div [style.width.%]="progress"
+                  class="h-full bg-blue-500 rounded-full transition-all duration-300">
+                </div>
+              </div>
+              <span class="text-sm font-bold text-blue-600 tabular-nums min-w-[2.5rem] text-right">{{ progress }}%</span>
+            </div>
           </div>
           <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
             <p class="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase">Status</p>
@@ -179,14 +186,6 @@
           Cancel
         </button>
       </div>
-      <div class="relative pt-2">
-        <div class="flex overflow-hidden h-4 text-xs bg-gray-200 rounded-full shadow-inner">
-          <div [style.width.%]="progress"
-            class="flex flex-col justify-center text-center text-white whitespace-nowrap bg-blue-500 shadow-none transition-all duration-300">
-          </div>
-        </div>
-      </div>
-
       <!-- Logs Section -->
       <div class="mt-6">
         <button (click)="isLogsExpanded = !isLogsExpanded"
