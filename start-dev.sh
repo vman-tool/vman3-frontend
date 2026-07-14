@@ -16,6 +16,14 @@ echo "[1/3] Starting Docker containers..."
 echo "Docker containers running."
 echo ""
 
+# Verify .venv exists
+VENV_ACTIVATE="$BACKEND_DIR/.venv/bin/activate"
+if [ ! -f "$VENV_ACTIVATE" ]; then
+    echo "ERROR: No .venv found at $BACKEND_DIR/.venv"
+    echo "Create it with: cd $BACKEND_DIR && python -m venv .venv && pip install -r requirements.txt"
+    exit 1
+fi
+
 # 2. Kill any stale process on port 8080 before starting
 echo "[2/3] Checking port 8080..."
 STALE_PIDS=$(lsof -ti :8080 2>/dev/null)
@@ -28,7 +36,7 @@ fi
 
 # Start uvicorn backend in background
 echo "Starting backend (uvicorn on :8080)..."
-(cd "$BACKEND_DIR" && uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload) &
+(cd "$BACKEND_DIR" && source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload) &
 UVICORN_PID=$!
 echo "Backend PID: $UVICORN_PID — waiting for it to initialize..."
 sleep 3
@@ -51,4 +59,4 @@ echo "[3/3] Starting Angular dev server on :4200..."
 echo "Open http://localhost:4200 in your browser."
 echo "Press Ctrl+C to stop all services."
 echo ""
-cd "$FRONTEND_DIR" && ng serve
+cd "$FRONTEND_DIR" && npm start

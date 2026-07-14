@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { trigger, transition, style, animate, group } from '@angular/animations';
 import { RunCcvaService } from '../../services/run-ccva.service';
 import { ConfigService } from 'app/app.service';
 import { WebSockettService } from '../../../settings/services/web-socket.service';
@@ -20,6 +21,23 @@ import { FieldMapping } from '../../../settings/interface';
   selector: 'app-run-ccva',
   templateUrl: './run-ccva.component.html',
   styleUrls: ['./run-ccva.component.scss'],
+  animations: [
+    trigger('expandFade', [
+      transition(':enter', [
+        style({ opacity: 0, maxHeight: '0px', overflow: 'hidden', marginBottom: '0' }),
+        group([
+          animate('320ms ease-out', style({ maxHeight: '900px', marginBottom: '*' })),
+          animate('240ms 60ms ease-out', style({ opacity: 1 }))
+        ])
+      ]),
+      transition(':leave', [
+        style({ overflow: 'hidden' }),
+        group([
+          animate('220ms ease-in', style({ maxHeight: '0px', opacity: 0, marginBottom: '0' }))
+        ])
+      ])
+    ])
+  ]
 })
 export class RunCcvaComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef | undefined;

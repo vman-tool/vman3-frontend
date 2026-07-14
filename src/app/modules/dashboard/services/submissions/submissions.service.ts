@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, catchError, of } from 'rxjs';
 import { ErrorEmitters } from '../../../../core/emitters/error.emitters';
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 import * as FileSaver from 'file-saver';
 import { SubmissionsDataModel } from '../../interface';
 import { ConfigService } from 'app/app.service';
