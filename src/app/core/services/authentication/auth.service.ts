@@ -57,8 +57,7 @@ export class AuthService {
         return response
       }),
       catchError((error: any) => {
-        console.log("Error: ", error)
-        return of(error);
+        return throwError(() => error);
       })
     )
   }
