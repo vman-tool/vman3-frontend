@@ -92,28 +92,26 @@ export class VaFiltersComponent implements OnInit {
       this.systemConfigData = data.system_configs;
       this.fieldMappingData = data.field_mapping;
       this.fieldLabels = data.field_labels;
+      this.computeDateTypeOptions();
     }
   }
 
-  get dateTypeOptions(): { value: string; label: string }[] {
+  dateTypeOptions: { value: string; label: string }[] = [
+    { value: 'submission_date', label: 'Submission Date' },
+    { value: 'interview_date', label: 'Interview Date' },
+    { value: 'death_date', label: 'Date of Death' },
+  ];
+
+  private computeDateTypeOptions(): void {
     const fm = this.fieldMappingData;
+    if (!fm) return;
     const opts: { value: string; label: string }[] = [];
-    if (!fm) {
-      return [
-        { value: 'submission_date', label: 'Submission Date' },
-        { value: 'interview_date', label: 'Interview Date' },
-        { value: 'death_date', label: 'Date of Death' },
-      ];
-    }
     if (fm.submitted_date) opts.push({ value: 'submission_date', label: 'Submission Date' });
     if (fm.interview_date) opts.push({ value: 'interview_date', label: 'Interview Date' });
     if (fm.death_date) opts.push({ value: 'death_date', label: 'Date of Death' });
-    return opts.length ? opts : [
-      { value: 'submission_date', label: 'Submission Date' },
-      { value: 'interview_date', label: 'Interview Date' },
-      { value: 'death_date', label: 'Date of Death' },
-    ];
+    if (opts.length) this.dateTypeOptions = opts;
   }
+
   resetFilterData() {
     // Notify filterService of the reset
     this.filterService.setFilterData({
