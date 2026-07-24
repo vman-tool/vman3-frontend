@@ -14,6 +14,22 @@ body {
   border-radius: 10px !important;
 }
 
+// Full-screen dialog — used by the Data Cleaner popup
+.full-screen-dialog {
+  .mat-mdc-dialog-container,
+  .mat-mdc-dialog-container .mdc-dialog__surface,
+  .mat-mdc-dialog-container .mdc-dialog__container,
+  .mat-mdc-dialog-container .mdc-dialog__content {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
 input {
   outline: none !important;
 

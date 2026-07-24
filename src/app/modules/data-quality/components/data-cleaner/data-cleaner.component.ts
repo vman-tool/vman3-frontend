@@ -1,8 +1,19 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DataCleanerService } from '../../services/data-cleaner.service';
 import { ErrorItem } from '../error-list/error-list.component';
+
+export interface AuditChange {
+  field: string;
+  old_value: any;
+  new_value: any;
+}
+
+export interface AuditEntry {
+  changed_at: string;
+  changed_by: { name: string; email: string };
+  changes: AuditChange[];
+}
 
 @Component({
   standalone: false,
@@ -15,15 +26,16 @@ export class DataCleanerComponent implements OnInit {
   keyDefinitions: any = {};
   isLoading: boolean = true;
   isFormDataLoading: boolean = true;
-  isSaving: boolean = false; // Added: Track saving state
+  isSaving: boolean = false;
   searchTerm: string = '';
   filteredFormData: { [key: string]: any } = {};
   changedFormData: { [key: string]: any } = {};
-  saveMessage: string = ''; // Added: Message for save status
-  saveMessageType: 'success' | 'error' | '' = ''; // Added: Type of save message
+  saveMessage: string = '';
+  saveMessageType: 'success' | 'error' | '' = '';
+  auditTrail: AuditEntry[] = [];
+  expandedAuditIndex: number | null = null;
 
   constructor(
-    private route: ActivatedRoute,
     private dataCleanerService: DataCleanerService,
     private dialogRef: MatDialogRef<DataCleanerComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ErrorItem
@@ -43,22 +55,26 @@ export class DataCleanerComponent implements OnInit {
 
   loadErrorDetails(id: string) {
     this.isLoading = true;
-    return this.dataCleanerService.getErrorDetails(id).subscribe(
-      (errorResponse) => {
-        this.error = errorResponse.data['error'];
-        if (this.error && this.error.uuid) {
-          this.formData = errorResponse.data['form_data'];
-          this.filteredFormData = { ...this.formData };
+    return this.dataCleanerService.getErrorDetails(id).subscribe({
+      next: (errorResponse) => {
+        const d = errorResponse?.data;
+        if (d) {
+          this.error = d['error'];
+          if (this.error && this.error.uuid) {
+            this.formData = d['form_data'] ?? {};
+            this.filteredFormData = { ...this.formData };
+          }
+          this.auditTrail = d['audit_trail'] ?? [];
         }
         this.isLoading = false;
         this.isFormDataLoading = false;
       },
-      (error) => {
-        console.error('Error fetching error details:', error);
+      error: (err) => {
+        console.error('Error fetching error details:', err);
         this.isLoading = false;
         this.isFormDataLoading = false;
-      }
-    );
+      },
+    });
   }
 
   getDefinition(key: string): string {
@@ -70,7 +86,6 @@ export class DataCleanerComponent implements OnInit {
   }
 
   saveChanges(): void {
-    console.log(this.changedFormData, this.formData);
     if (
       this.error &&
       this.error.uuid &&
@@ -81,22 +96,22 @@ export class DataCleanerComponent implements OnInit {
       this.saveMessageType = '';
       this.dataCleanerService
         .saveCleanedData(this.error.uuid, this.changedFormData)
-        .subscribe(
-          (response) => {
-            console.log('Data saved successfully:', response);
+        .subscribe({
+          next: () => {
             Object.assign(this.formData, this.changedFormData);
             this.changedFormData = {};
             this.saveMessage = 'Changes saved successfully!';
             this.saveMessageType = 'success';
             this.isSaving = false;
+            this.loadErrorDetails(this.error!.uuid);
           },
-          (error) => {
-            console.error('Error saving data:', error);
+          error: (err) => {
+            console.error('Error saving data:', err);
             this.saveMessage = 'Failed to save changes. Please try again.';
             this.saveMessageType = 'error';
             this.isSaving = false;
-          }
-        );
+          },
+        });
     } else {
       this.saveMessage = 'No changes to save.';
       this.saveMessageType = 'error';
@@ -119,14 +134,25 @@ export class DataCleanerComponent implements OnInit {
   }
 
   onFieldChange(key: string, value: any): void {
-    console.log('Field change:', key, value);
     this.formData[key] = value;
     this.changedFormData[key] = value;
-    // if (this.formData[key] !== value) {
-    //   this.changedFormData[key] = value;
-    // } else {
-    //   // delete this.changedFormData[key];
-    // }
-    console.log('Field change:', this.changedFormData);
+  }
+
+  toggleAuditEntry(index: number): void {
+    this.expandedAuditIndex = this.expandedAuditIndex === index ? null : index;
+  }
+
+  formatDate(iso: string): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString();
+  }
+
+  isChanged(key: string): boolean {
+    return key in this.changedFormData;
+  }
+
+  get hasChanges(): boolean {
+    return Object.keys(this.changedFormData).length > 0;
   }
 }

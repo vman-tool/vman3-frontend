@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
@@ -57,7 +57,7 @@ export class DataCleanerService {
 
   saveCleanedData(formId: string, cleanedData: any): Observable<any> {
     return this.http
-      .put<any>(`${this.configService.API_URL}/forms-/${formId}`, cleanedData)
+      .put<any>(`${this.configService.API_URL}/data-quality/form-data/${formId}`, cleanedData)
       .pipe(
         map((response: any) => response),
         catchError((error: any) => {
