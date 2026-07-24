@@ -128,23 +128,23 @@ export class GraphsComponent implements OnInit {
 
   dqaComputedAt: string | null = null;
 
-  // ── DQA derived getters ───────────────────────────────────────────────────
-  get dqaRrs():       string       { return this.fmtDqaRrs(this.rrsStats?.overall?.avg ?? null); }
-  get dqaRrsCount():  number       { return this.rrsStats?.overall?.count ?? 0; }
-  get dqaRrsTier():      TierBadge | null { return this.thresholdSvc.classifyRrs(this.rrsStats?.overall?.avg ?? null); }
+  // ── DQA derived values (stable properties, set once in loadDqaKpis) ────────
+  dqaRrs:          string       = '--';
+  dqaRrsCount:     number       = 0;
+  dqaRrsTier:      TierBadge | null = null;
 
-  get dqaIcs():          string  { return this.fmtDqaPct(this.icsStats?.overall?.avg ?? null); }
-  get dqaIcsCount():     number  { return this.icsStats?.overall?.count ?? 0; }
-  get dqaIcsTier():      TierBadge | null { return this.thresholdSvc.classifyIcs(this.icsStats?.overall?.avg ?? null); }
+  dqaIcs:          string       = '--';
+  dqaIcsCount:     number       = 0;
+  dqaIcsTier:      TierBadge | null = null;
 
-  get dqaIci():          string       { return this.fmtDqaIci(this.iciStats?.overall_ici ?? null); }
-  get dqaIciTotal():     number       { return this.iciStats?.overall_total  ?? 0; }
-  get dqaIciPassed():    number       { return this.iciStats?.overall_passed ?? 0; }
-  get dqaIciTier():      TierBadge | null { return this.thresholdSvc.classifyIci(this.iciStats?.overall_ici ?? null); }
+  dqaIci:          string       = '--';
+  dqaIciTotal:     number       = 0;
+  dqaIciPassed:    number       = 0;
+  dqaIciTier:      TierBadge | null = null;
 
-  get dqaDuration():      string { return this.fmtDqaMin(this.durationStats?.overall?.avg ?? null); }
-  get dqaDurationCount(): number { return this.durationStats?.overall?.count ?? 0; }
-  get dqaDurationTier():  TierBadge | null { return this.thresholdSvc.classifyAid(this.durationStats?.overall?.avg ?? null); }
+  dqaDuration:     string       = '--';
+  dqaDurationCount: number      = 0;
+  dqaDurationTier: TierBadge | null = null;
 
   // ── DQA formatters ────────────────────────────────────────────────────────
   fmtDqaMin(v: number | null): string {
@@ -204,6 +204,24 @@ export class GraphsComponent implements OnInit {
           this.iciStats      = snap.ici;
           this.durationStats = snap.aid;
           this.dqaComputedAt = snap.computed_at ?? null;
+
+          this.dqaRrs          = this.fmtDqaRrs(snap.rrs?.overall?.avg ?? null);
+          this.dqaRrsCount     = snap.rrs?.overall?.count ?? 0;
+          this.dqaRrsTier      = this.thresholdSvc.classifyRrs(snap.rrs?.overall?.avg ?? null);
+
+          this.dqaIcs          = this.fmtDqaPct(snap.ics?.overall?.avg ?? null);
+          this.dqaIcsCount     = snap.ics?.overall?.count ?? 0;
+          this.dqaIcsTier      = this.thresholdSvc.classifyIcs(snap.ics?.overall?.avg ?? null);
+
+          this.dqaIci          = this.fmtDqaIci(snap.ici?.overall_ici ?? null);
+          this.dqaIciTotal     = snap.ici?.overall_total  ?? 0;
+          this.dqaIciPassed    = snap.ici?.overall_passed ?? 0;
+          this.dqaIciTier      = this.thresholdSvc.classifyIci(snap.ici?.overall_ici ?? null);
+
+          this.dqaDuration     = this.fmtDqaMin(snap.aid?.overall?.avg ?? null);
+          this.dqaDurationCount = snap.aid?.overall?.count ?? 0;
+          this.dqaDurationTier  = this.thresholdSvc.classifyAid(snap.aid?.overall?.avg ?? null);
+
           clearLoading();
         } else if (snap?.status === 'running') {
           // keep spinners — snapshot is still being computed

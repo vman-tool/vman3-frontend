@@ -72,6 +72,11 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   logs: string[] = []; // Array to store log messages
   isLogsExpanded: boolean = true;
   fieldMappingData?: FieldMapping;
+  dateTypeOptions: { value: string; label: string }[] = [
+    { value: 'submission_date', label: 'Submission Date' },
+    { value: 'death_date', label: 'Date of Death' },
+    { value: 'interview_date', label: 'Interview Date' },
+  ];
   @ViewChild('logsContainer') private logsContainer: ElementRef | undefined; // Reference to logs container for auto-scrolling
   constructor(
     private configService: ConfigService,
@@ -82,24 +87,14 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     private settingConfigService: SettingConfigService
   ) { }
 
-  get dateTypeOptions(): { value: string; label: string }[] {
+  private computeDateTypeOptions(): void {
     const fm = this.fieldMappingData;
+    if (!fm) return;
     const opts: { value: string; label: string }[] = [];
-    if (!fm) {
-      return [
-        { value: 'submission_date', label: 'Submission Date' },
-        { value: 'death_date', label: 'Date of Death' },
-        { value: 'interview_date', label: 'Interview Date' },
-      ];
-    }
     if (fm.submitted_date) opts.push({ value: 'submission_date', label: 'Submission Date' });
     if (fm.death_date) opts.push({ value: 'death_date', label: 'Date of Death' });
     if (fm.interview_date) opts.push({ value: 'interview_date', label: 'Interview Date' });
-    return opts.length ? opts : [
-      { value: 'submission_date', label: 'Submission Date' },
-      { value: 'death_date', label: 'Date of Death' },
-      { value: 'interview_date', label: 'Interview Date' },
-    ];
+    if (opts.length) this.dateTypeOptions = opts;
   }
 
   ngOnDestroy(): void {
@@ -116,7 +111,12 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.settingConfigService.getSettingsConfig(true).subscribe({
-      next: (data) => { if (data) this.fieldMappingData = data.field_mapping; },
+      next: (data) => {
+        if (data) {
+          this.fieldMappingData = data.field_mapping;
+          this.computeDateTypeOptions();
+        }
+      },
       error: () => { /* use fallback options */ }
     });
 
@@ -216,7 +216,6 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
     clearInterval(this.countdownInterval);
     this.clearLocalStorage();
-    this.ngOnInit();
 
     // Prepare filter object based on the selected options
     const filter: any = {

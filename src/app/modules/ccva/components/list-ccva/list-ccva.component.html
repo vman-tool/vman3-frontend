@@ -62,8 +62,8 @@
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.created_at | date:'MMM d, y' }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.total_records }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.elapsed_time }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.start.split('T')[0]|| row.start }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.end.split('T')[0]||row.end }}</td>
+          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.start ? row.start.split('T')[0] : '' }}</td>
+          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.end ? row.end.split('T')[0] : '' }}</td>
           <td (click)="onRowClick(row.id)" class="px-6 py-4 font-bold text-sky-600">
             {{ row.isDefault ? 'Default' : '' }}
           </td>

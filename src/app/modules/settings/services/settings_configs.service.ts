@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, shareReplay, tap } from 'rxjs/operators';
 import { ConfigService } from 'app/app.service';
 import { ResponseMainModel } from '../../../shared/interface/main.interface';
 import { settingsConfigData, SystemImages } from '../interface';
@@ -22,6 +22,7 @@ export class SettingConfigService {
 
   private systemImagesCache: any = null;
   private systemImagesFetchTime: number = 0;
+  private systemImagesInFlight$: Observable<any> | null = null;
 
   constructor(private http: HttpClient, private configService: ConfigService) { }
 
@@ -147,18 +148,27 @@ export class SettingConfigService {
     if (cached && this.systemImagesCache && (now - this.systemImagesFetchTime) < this.CACHE_DURATION) {
       return of(this.systemImagesCache);
     }
-    return this.http.get<any>(`${this.configService.API_URL}/settings/system_images/`).pipe(
+    // Return the in-flight request if one is already pending, so concurrent
+    // callers (AppComponent + LoginComponent) share one HTTP request.
+    if (this.systemImagesInFlight$) {
+      return this.systemImagesInFlight$;
+    }
+    this.systemImagesInFlight$ = this.http.get<any>(`${this.configService.API_URL}/settings/system_images/`).pipe(
       tap((data: any) => {
         if (data) {
           this.systemImagesCache = data;
           this.systemImagesFetchTime = Date.now();
         }
+        this.systemImagesInFlight$ = null;
       }),
       catchError((error: any) => {
         console.error('Error fetching system images:', error);
+        this.systemImagesInFlight$ = null;
         return of([]);
-      })
+      }),
+      shareReplay(1)
     );
+    return this.systemImagesInFlight$;
   }
 
   saveSystemImages(images: SystemImages) {

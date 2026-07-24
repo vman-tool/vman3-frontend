@@ -28,6 +28,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   horizontalPosition: MatSnackBarHorizontalPosition = 'end';
   verticalPosition: MatSnackBarVerticalPosition = 'top';
   systemImages?: SystemImages;
+  backgroundImageStyle: string = "url('../../../../../assets/images/auth-bg.png')";
   isLoading: boolean = false;
   SOFTWARE_VERSION: string = '';
   constructor(
@@ -191,10 +192,11 @@ export class LoginComponent implements OnInit, AfterViewInit {
     } else {
       this.systemImages = {
         ...this.systemImages,
-        home_image:this.configService.BASE_URL+ this.systemImages?.home_image
+        home_image: this.configService.BASE_URL + this.systemImages?.home_image
       }
     }
 
+    this.backgroundImageStyle = `url('${this.systemImages?.home_image}')`;
   }
 
 }
