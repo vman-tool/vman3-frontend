@@ -1,95 +1,199 @@
-<div class="container relative max-w-4xl px-4 py-8 mx-auto">
-  <!-- Close Button -->
-  <button
-    class="absolute px-3 py-1 text-white bg-red-500 rounded-full top-4 right-4 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-    (click)="closeDialog()">
-    ✕
-  </button>
+<!-- Full-screen dialog shell: fixed height, no outer scroll -->
+<div class="flex flex-col h-full bg-gray-50">
 
-  <span class="mb-6 text-2xl font-bold text-gray-800">Data Cleaner</span>
-
-  <!-- Error Details -->
-  <div class="p-6 mb-6 bg-white rounded-lg shadow-md">
-    <span class="mb-4 text-xl font-semibold text-gray-700">Error Details</span>
-    <div class="space-y-2" *ngIf="!isLoading; else errorShimmer">
-      <p class="text-gray-700"><span class="font-semibold">Type:</span> {{ error?.error_types }}</p>
-      <p class="text-gray-700"><span class="font-semibold">Group:</span> {{ error?.group }}</p>
-      <ol class="text-gray-700 list-decimal list-inside">
-        <p class="text-gray-700"><span class="font-semibold">Message:</span> </p>
-        <li *ngFor="let message of error?.error_messages">
-          <span class="font-semibold"></span> {{ message }}
-        </li>
-      </ol>
+  <!-- ── Header bar ─────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between flex-shrink-0 px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div>
+      <h1 class="text-lg font-semibold text-gray-800">Data Cleaner</h1>
+      <p class="text-xs text-gray-400 font-mono">{{ data.uuid }}</p>
     </div>
-    <ng-template #errorShimmer>
-      <div class="space-y-2">
-        <div class="h-6 bg-gray-200 rounded animate-pulse"></div>
-        <div class="h-6 bg-gray-200 rounded animate-pulse"></div>
-        <div class="h-6 bg-gray-200 rounded animate-pulse"></div>
-      </div>
-    </ng-template>
+    <button
+      (click)="closeDialog()"
+      class="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400">
+      ✕ Close
+    </button>
   </div>
 
-  <!-- Form Data -->
-  <div class="p-6 bg-white rounded-lg shadow-md">
-    <div class="flex items-center justify-between mb-6">
-      <span class="text-xl font-semibold text-gray-700">Form Data</span>
-      <button type="submit"
-        class="px-4 py-2 font-bold text-white transition duration-200 bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50"
-        (click)="saveChanges()" [disabled]="isFormDataLoading || isSaving">
-        <span *ngIf="!isSaving">Save Changes</span>
-        <span *ngIf="isSaving" class="flex items-center">
-          <svg class="w-5 h-5 mr-3 -ml-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-          </svg>
-          Saving...
-        </span>
-      </button>
-    </div>
+  <!-- ── Two-column body ────────────────────────────────────────────── -->
+  <div class="flex flex-1 min-h-0 gap-4 p-4">
 
-    <!-- Save Message -->
-    <div *ngIf="saveMessage" class="p-4 mb-4 rounded-md" [ngClass]="{
-      'bg-green-100 text-green-700': saveMessageType === 'success',
-      'bg-red-100 text-red-700': saveMessageType === 'error'
-    }">
-      {{ saveMessage }}
-    </div>
+    <!-- ── LEFT PANEL ─────────────────────────────────────────────── -->
+    <div class="flex flex-col w-80 flex-shrink-0 gap-4">
 
-    <!-- Search Input -->
-    <div class="mb-6">
-      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" placeholder="Search form fields..."
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
+      <!-- Error Details -->
+      <div class="flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-4 py-2.5 bg-red-50 border-b border-red-100">
+          <span class="text-sm font-semibold text-red-700 uppercase tracking-wide">Error Details</span>
+        </div>
+        <div class="p-4 space-y-2 overflow-y-auto" style="max-height: 240px">
+          <ng-container *ngIf="!isLoading; else errorShimmer">
+            <div class="text-sm">
+              <span class="font-medium text-gray-500">Type:</span>
+              <span class="ml-1 text-gray-800">{{ error?.error_types }}</span>
+            </div>
+            <div class="text-sm">
+              <span class="font-medium text-gray-500">Group:</span>
+              <span class="ml-1 text-gray-800">{{ error?.group }}</span>
+            </div>
+            <div class="text-sm">
+              <span class="font-medium text-gray-500">Messages:</span>
+              <ul class="mt-1 space-y-1 list-disc list-inside">
+                <li *ngFor="let msg of error?.error_messages" class="text-gray-700 text-xs">{{ msg }}</li>
+              </ul>
+            </div>
+          </ng-container>
+          <ng-template #errorShimmer>
+            <div class="space-y-2">
+              <div class="h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+              <div class="h-4 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </ng-template>
+        </div>
+      </div>
 
-    <form (ngSubmit)="saveChanges()">
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-2" *ngIf="!isFormDataLoading; else formDataShimmer">
-        <div *ngFor="let item of filteredFormData | keyvalue" class="space-y-2">
-          <label [for]="item.key" class="block text-sm font-medium text-gray-700">
-            {{ getDefinition(item.key) }}
-          </label>
-          <ng-container [ngSwitch]="isLongText(item.value)">
-            <textarea *ngSwitchCase="true" [id]="item.key" [(ngModel)]="formData[item.key]"
-              (ngModelChange)="onFieldChange(item.key, $event)" [name]="item.key"
-              class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="3"></textarea>
-            <input *ngSwitchDefault [id]="item.key" [(ngModel)]="formData[item.key]"
-              (ngModelChange)="onFieldChange(item.key, $event)" [name]="item.key"
-              class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <!-- Audit Trail -->
+      <div class="flex flex-col flex-1 min-h-0 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-4 py-2.5 bg-amber-50 border-b border-amber-100 flex items-center justify-between flex-shrink-0">
+          <span class="text-sm font-semibold text-amber-700 uppercase tracking-wide">Audit Trail</span>
+          <span class="text-xs text-amber-600 bg-amber-100 rounded-full px-2 py-0.5">{{ auditTrail.length }}</span>
+        </div>
+
+        <div class="flex-1 overflow-y-auto divide-y divide-gray-100">
+          <ng-container *ngIf="!isLoading">
+            <p *ngIf="auditTrail.length === 0" class="p-4 text-sm text-gray-400 italic">No changes recorded yet.</p>
+
+            <div *ngFor="let entry of auditTrail; let i = index"
+              class="p-3 cursor-pointer hover:bg-amber-50 transition-colors"
+              (click)="toggleAuditEntry(i)">
+              <!-- Entry header -->
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="text-xs font-medium text-gray-700 truncate">{{ entry.changed_by?.name || entry.changed_by?.email }}</p>
+                  <p class="text-xs text-gray-400">{{ formatDate(entry.changed_at) }}</p>
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <span class="text-xs text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">{{ entry.changes?.length }} field{{ entry.changes?.length !== 1 ? 's' : '' }}</span>
+                  <span class="text-gray-400 text-xs">{{ expandedAuditIndex === i ? '▲' : '▼' }}</span>
+                </div>
+              </div>
+
+              <!-- Expanded changes -->
+              <div *ngIf="expandedAuditIndex === i" class="mt-2 space-y-1.5" (click)="$event.stopPropagation()">
+                <div *ngFor="let change of entry.changes"
+                  class="rounded bg-gray-50 border border-gray-200 px-2 py-1.5 text-xs">
+                  <p class="font-mono font-semibold text-gray-600 mb-1">{{ change.field }}</p>
+                  <div class="flex items-center gap-1.5">
+                    <span class="line-through text-red-500 truncate max-w-[80px]" [title]="change.old_value">{{ change.old_value ?? '—' }}</span>
+                    <span class="text-gray-400">→</span>
+                    <span class="text-green-600 truncate max-w-[80px]" [title]="change.new_value">{{ change.new_value ?? '—' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="isLoading">
+            <div class="p-3 space-y-2">
+              <div class="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
+              <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+            </div>
           </ng-container>
         </div>
       </div>
-      <ng-template #formDataShimmer>
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div *ngFor="let i of [1,2,3,4,5,6]" class="space-y-2">
-            <div class="w-3/4 h-4 bg-gray-200 rounded animate-pulse"></div>
-            <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+
+    <!-- ── RIGHT PANEL: Form Data ─────────────────────────────────── -->
+    <div class="flex flex-col flex-1 min-w-0 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+
+      <!-- Sticky form header -->
+      <div class="flex-shrink-0 border-b border-gray-200 px-5 py-3 space-y-3 bg-white">
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Form Data</span>
+
+          <div class="flex items-center gap-2">
+            <!-- Save status badge -->
+            <span *ngIf="saveMessage" class="text-xs px-2 py-1 rounded-full font-medium" [ngClass]="{
+              'bg-green-100 text-green-700': saveMessageType === 'success',
+              'bg-red-100 text-red-700': saveMessageType === 'error'
+            }">{{ saveMessage }}</span>
+
+            <!-- Changed count badge -->
+            <span *ngIf="hasChanges" class="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">
+              {{ (changedFormData | keyvalue).length }} unsaved
+            </span>
+
+            <button
+              type="button"
+              (click)="saveChanges()"
+              [disabled]="isFormDataLoading || isSaving || !hasChanges"
+              class="flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <ng-container *ngIf="!isSaving">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z"/>
+                </svg>
+                Save Changes
+              </ng-container>
+              <ng-container *ngIf="isSaving">
+                <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving…
+              </ng-container>
+            </button>
           </div>
         </div>
-      </ng-template>
-    </form>
+
+        <!-- Search -->
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Search fields…"
+          class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <!-- Scrollable field grid -->
+      <form (ngSubmit)="saveChanges()" class="flex-1 overflow-y-auto p-5">
+        <ng-container *ngIf="!isFormDataLoading; else formDataShimmer">
+          <div class="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div *ngFor="let item of filteredFormData | keyvalue"
+              class="flex flex-col gap-1"
+              [ngClass]="{'ring-2 ring-blue-400 ring-offset-1 rounded-md': isChanged(item.key)}">
+              <label [for]="item.key" class="text-xs font-medium text-gray-500 truncate" [title]="item.key">
+                {{ getDefinition(item.key) }}
+                <span *ngIf="isChanged(item.key)" class="ml-1 text-blue-500">●</span>
+              </label>
+              <ng-container [ngSwitch]="isLongText(item.value)">
+                <textarea *ngSwitchCase="true"
+                  [id]="item.key"
+                  [(ngModel)]="formData[item.key]"
+                  (ngModelChange)="onFieldChange(item.key, $event)"
+                  [name]="item.key"
+                  rows="3"
+                  class="w-full px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <input *ngSwitchDefault
+                  [id]="item.key"
+                  [(ngModel)]="formData[item.key]"
+                  (ngModelChange)="onFieldChange(item.key, $event)"
+                  [name]="item.key"
+                  class="w-full px-2.5 py-1.5 text-sm text-gray-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </ng-container>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #formDataShimmer>
+          <div class="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div *ngFor="let i of [1,2,3,4,5,6,7,8,9]" class="space-y-1">
+              <div class="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
+              <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </ng-template>
+      </form>
+    </div>
+
   </div>
 </div>
