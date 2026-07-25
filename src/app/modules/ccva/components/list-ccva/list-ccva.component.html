@@ -50,8 +50,8 @@
               <!-- <label for="checkbox-table-search-{{ row.created_at }}" class="sr-only">checkbox</label> -->
             </div>
           </td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.run_by_name }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">
+          <td class="px-6 py-4">{{ row.run_by_name }}</td>
+          <td class="px-6 py-4">
             <span [ngClass]="{
               'bg-blue-100 text-blue-800': row.algorithm === 'InterVA5',
               'bg-purple-100 text-purple-800': row.algorithm === 'VManML10'
@@ -59,12 +59,12 @@
               {{ row.algorithm === 'VManML10' ? 'VMan ML 1.0' : 'InterVA5' }}
             </span>
           </td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.created_at | date:'MMM d, y' }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.total_records }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.elapsed_time }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.start ? row.start.split('T')[0] : '' }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.end ? row.end.split('T')[0] : '' }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4 font-bold text-sky-600">
+          <td class="px-6 py-4">{{ row.created_at | date:'MMM d, y' }}</td>
+          <td class="px-6 py-4">{{ row.total_records }}</td>
+          <td class="px-6 py-4">{{ row.elapsed_time }}</td>
+          <td class="px-6 py-4">{{ row.start ? row.start.split('T')[0] : '' }}</td>
+          <td class="px-6 py-4">{{ row.end ? row.end.split('T')[0] : '' }}</td>
+          <td class="px-6 py-4 font-bold text-sky-600">
             {{ row.isDefault ? 'Default' : '' }}
           </td>
           <td class="px-6 py-4">
@@ -74,13 +74,16 @@
               </button>
               <div *ngIf="dropdownOpen === i"
                 class="absolute right-0 z-10 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl">
-                <a (click)="setDefault(row)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a (click)="onRowClick(row.id); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                  Display CSMF
+                </a>
+                <a (click)="setDefault(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                   Set Default
                 </a>
-                <a (click)="downloadDefault(row)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a (click)="downloadDefault(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                   Download Data
                 </a>
-                <a (click)="deleteRow(row)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a (click)="deleteRow(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                   Delete
                 </a>
               </div>
