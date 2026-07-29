@@ -5,6 +5,7 @@ import { CcvaComponent } from './ccva.component';
 import { RunCcvaComponent } from './components/run-ccva/run-ccva.component';
 import { ListCcvaComponent } from './components/list-ccva/list-ccva.component';
 import { ViewCcvaComponent } from './components/view-ccva/view-ccva.component';
+import { CompareCcvaComponent } from './components/compare-ccva/compare-ccva.component';
 
 const routes: Routes = [
   {
@@ -12,18 +13,10 @@ const routes: Routes = [
     canActivate: [authGuard],
     component: CcvaComponent,
     children: [
-      {
-        path: 'view',
-        component: RunCcvaComponent,
-      },
-      {
-        path: '',
-        component: ListCcvaComponent,
-      },
-      {
-        path: 'view/:id', // Route with the dynamic 'id' parameter
-        component: ViewCcvaComponent,
-      },
+      { path: 'view',           component: RunCcvaComponent },
+      { path: 'view/:id',       component: ViewCcvaComponent },
+      { path: 'compare/:id1/:id2', component: CompareCcvaComponent },
+      { path: '',               component: ListCcvaComponent },
     ],
   },
 ];

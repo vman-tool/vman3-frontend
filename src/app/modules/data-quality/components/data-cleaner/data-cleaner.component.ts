@@ -11,7 +11,7 @@ export interface AuditChange {
 
 export interface AuditEntry {
   changed_at: string;
-  changed_by: { name: string; email: string };
+  changed_by: { name: string; email: string } | null;
   changes: AuditChange[];
 }
 

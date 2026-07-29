@@ -18,7 +18,7 @@ export class ListCcvaComponent implements OnInit {
 
   // Pagination variables
   pageNumber: number = 1;
-  limit: number = 10; // Number of rows per page
+  limit: number = 10;
   totalRecords: number = 0;
 
   // Loading state
@@ -26,6 +26,9 @@ export class ListCcvaComponent implements OnInit {
 
   // Dropdown state for actions
   dropdownOpen: number | null = null;
+
+  // Row selection — max 2, FIFO queue
+  selectedRows: any[] = [];
 
   constructor(
     private ccvaService: CcvaService,
@@ -148,6 +151,39 @@ export class ListCcvaComponent implements OnInit {
         );
       }
     });
+  }
+
+  // Row selection — max 2 rows, FIFO
+  toggleRowSelection(row: any): void {
+    const idx = this.selectedRows.findIndex(r => r.id === row.id);
+    if (idx > -1) {
+      this.selectedRows.splice(idx, 1);
+    } else {
+      if (this.selectedRows.length >= 2) {
+        this.selectedRows.shift(); // drop oldest selection
+      }
+      this.selectedRows.push(row);
+    }
+  }
+
+  isRowSelected(row: any): boolean {
+    return this.selectedRows.some(r => r.id === row.id);
+  }
+
+  compareCSMF(): void {
+    this.dropdownOpen = null;
+    if (this.selectedRows.length !== 2) {
+      this.snackBar.open('Select exactly 2 runs using the checkboxes to compare.', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3500,
+      });
+      return;
+    }
+    this.router.navigate(
+      ['/ccva/compare', this.selectedRows[0].id, this.selectedRows[1].id],
+      { queryParams: { algo1: this.selectedRows[0].algorithm, algo2: this.selectedRows[1].algorithm } }
+    );
   }
 
   // Toggle dropdown for actions

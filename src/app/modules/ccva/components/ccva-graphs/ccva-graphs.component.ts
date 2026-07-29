@@ -78,6 +78,47 @@ export class CcvaGraphsComponent implements OnInit {
     this.isDropdownOpen = false;
   }
 
+  // GBD disease group colors (Global Burden of Disease classification)
+  readonly GBD_COLORS = {
+    communicable: 'rgba(178, 24, 43, 0.85)',   // Group I  – Communicable, Maternal, Neonatal
+    ncd:          'rgba(33, 102, 172, 0.85)',   // Group II – Non-communicable diseases
+    injury:       'rgba(35, 139, 69, 0.85)',    // Group III – Injuries
+    undetermined: 'rgba(160, 160, 160, 0.75)', // Undetermined / unknown
+  };
+
+  private classifyGbd(label: string): keyof typeof this.GBD_COLORS {
+    const l = label.toLowerCase();
+    if (l.includes('undetermined') || l.includes('unknown')) return 'undetermined';
+
+    // Group III – Injuries
+    if (
+      l.includes('external cause') || l.includes('injur') || l.includes('accident') ||
+      l.includes('assault') || l.includes('self-harm') || l.includes('drowning') ||
+      l.includes('poisoning') || l.includes('burn') || l.includes('venomous') ||
+      l.includes('traffic') || l.includes('violence') || l.includes('fall')
+    ) return 'injury';
+
+    // Group I – Communicable, Maternal, Perinatal, Nutritional
+    if (
+      l.includes('malaria') || l.includes('measles') || l.includes('tuberc') ||
+      l.includes('hiv') || l.includes('aids') || l.includes('sepsis') ||
+      l.includes('infectious') || l.includes('parasitic') || l.includes('neonatal') ||
+      l.includes('stillbirth') || l.includes('pregnancy') || l.includes('childbirth') ||
+      l.includes('maternal') || l.includes('perinatal') || l.includes('pneumonia') ||
+      l.includes('diarrh') || l.includes('meningit') || l.includes('hepatitis') ||
+      l.includes('nutritional') || l.includes('covid') || l.includes('pertussis') ||
+      l.includes('tetanus') || l.includes('dengue') || l.includes('typhoid') ||
+      l.includes('cholera') || l.includes('encephalit') || l.includes('haemorrhagic')
+    ) return 'communicable';
+
+    // Default: Group II – NCD
+    return 'ncd';
+  }
+
+  getBarColors(labels: string[]): string[] {
+    return labels.map(l => this.GBD_COLORS[this.classifyGbd(l)]);
+  }
+
   public chartOptions: ChartOptions = {
     responsive: true,
     indexAxis: 'y',
@@ -100,13 +141,7 @@ export class CcvaGraphsComponent implements OnInit {
     },
     plugins: {
       legend: {
-        display: true,
-        position: 'top',
-        labels: {
-          font: {
-            size: 12,
-          },
-        },
+        display: false,
       },
       tooltip: {
         enabled: true,
@@ -213,7 +248,7 @@ export class CcvaGraphsComponent implements OnInit {
         {
           label: 'csmf',
           data: graphs[key].values,
-          backgroundColor: this.getChartColor(key),
+          backgroundColor: this.getBarColors(chartLabels),
           borderWidth: 1,
         },
       ];
@@ -248,7 +283,7 @@ export class CcvaGraphsComponent implements OnInit {
           {
             label: 'csmf',
             data: filteredData,
-            backgroundColor: this.getChartColor(key),
+            backgroundColor: this.getBarColors(filteredLabels),
             borderWidth: 1,
           },
         ];
