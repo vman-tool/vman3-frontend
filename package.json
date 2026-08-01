@@ -38,7 +38,16 @@
     "zone.js": "~0.15.0"
   },
   "overrides": {
-    "uuid": "^11.1.1"
+    "uuid": "^11.1.1",
+    "@angular-devkit/build-angular": {
+      "postcss": "^8.5.18",
+      "webpack-dev-server": "^5.2.6"
+    },
+    "@angular/cli": {
+      "@modelcontextprotocol/sdk": {
+        "@hono/node-server": "^2.0.12"
+      }
+    }
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^20.3.31",
@@ -55,7 +64,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "postcss": "^8.4.40",
+    "postcss": "^8.5.18",
     "tailwindcss": "^3.4.7",
     "typescript": "~5.8.3"
   }

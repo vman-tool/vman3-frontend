@@ -1,6 +1,6 @@
 # Vman3 Frontend
 
-This project uses Angular v18.
+This project uses Angular v20.
 
 
 ## Development server
@@ -11,7 +11,7 @@ Run 'cd vman3-frontend ' to change to the project directory,
 
 Run 'npm install' to install dependencies then,
 
-To install angular cli if not available 'npm install -g @angular/cli@18'
+To install angular cli if not available 'npm install -g @angular/cli@20'
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
