@@ -394,6 +394,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     if (parsedData.status === 'completed') {
       this.data = parsedData;
       this.progress = 100;
+      this.message = 'Analysis complete.';
       this.start_date = parsedData.start_date;
       this.elapsedTime = parsedData.elapsed_time;
       this.totalRecords = parsedData.total_records || 0;

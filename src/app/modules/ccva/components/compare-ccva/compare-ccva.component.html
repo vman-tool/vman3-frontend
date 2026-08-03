@@ -1,0 +1,144 @@
+<div class="mx-auto pb-24">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between my-4">
+    <button (click)="location.back()"
+      class="px-4 py-2 font-bold text-gray-800 bg-gray-200 rounded hover:bg-gray-400">
+      ← Back
+    </button>
+    <h1 class="text-xl font-bold text-gray-700">CSMF Comparison</h1>
+    <div class="w-24"></div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="flex items-center justify-center h-64">
+    <mat-spinner diameter="40" color="accent"></mat-spinner>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!isLoading && error" class="text-center text-red-500 mt-20 text-lg font-semibold">
+    Failed to load comparison data. Please go back and try again.
+  </div>
+
+  <ng-container *ngIf="!isLoading && !error">
+
+    <!-- Run metadata cards -->
+    <div class="grid grid-cols-2 gap-4 mb-5">
+      <!-- Run 1 -->
+      <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-xs font-bold uppercase tracking-wider text-blue-500 mb-2">Run 1</p>
+        <p class="text-sm font-semibold text-gray-800">
+          {{ meta1?.algorithm ? algoLabel(meta1!.algorithm) : 'Unknown Algorithm' }}
+        </p>
+        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+          <span>{{ meta1?.created_at | date:'MMM d, y, h:mm a' }}</span>
+          <span>{{ meta1?.total_records | number }} records</span>
+          <span>{{ meta1?.elapsed_time }}</span>
+        </div>
+      </div>
+      <!-- Run 2 -->
+      <div class="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <p class="text-xs font-bold uppercase tracking-wider text-purple-500 mb-2">Run 2</p>
+        <p class="text-sm font-semibold text-gray-800">
+          {{ meta2?.algorithm ? algoLabel(meta2!.algorithm) : 'Unknown Algorithm' }}
+        </p>
+        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+          <span>{{ meta2?.created_at | date:'MMM d, y, h:mm a' }}</span>
+          <span>{{ meta2?.total_records | number }} records</span>
+          <span>{{ meta2?.elapsed_time }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GBD Color Legend -->
+    <div class="flex flex-wrap gap-x-5 gap-y-2 mb-5 px-1">
+      <div class="flex items-center gap-1.5">
+        <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
+          style="background:rgba(178,24,43,0.85)"></span>
+        <span class="text-xs text-gray-600">Group I – Communicable, Maternal & Neonatal</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
+          style="background:rgba(33,102,172,0.85)"></span>
+        <span class="text-xs text-gray-600">Group II – Non-Communicable (NCD)</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
+          style="background:rgba(35,139,69,0.85)"></span>
+        <span class="text-xs text-gray-600">Group III – Injuries</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
+          style="background:rgba(160,160,160,0.75)"></span>
+        <span class="text-xs text-gray-600">Undetermined</span>
+      </div>
+    </div>
+
+    <!-- Column headers (sticky) -->
+    <div class="grid grid-cols-2 gap-4 mb-2 sticky top-0 z-10 bg-white py-2 border-b border-gray-200">
+      <div class="text-center text-sm font-bold text-blue-600 bg-blue-50 rounded py-1">
+        Run 1 — {{ meta1?.algorithm ? algoLabel(meta1!.algorithm) : '' }}
+      </div>
+      <div class="text-center text-sm font-bold text-purple-600 bg-purple-50 rounded py-1">
+        Run 2 — {{ meta2?.algorithm ? algoLabel(meta2!.algorithm) : '' }}
+      </div>
+    </div>
+
+    <!-- Side-by-side charts per population group -->
+    <div *ngFor="let group of activeGroups" class="mb-8">
+      <!-- Section title -->
+      <h2 class="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
+        <span class="inline-block w-1 h-5 bg-gray-400 rounded"></span>
+        {{ GROUP_TITLES[group] }}
+      </h2>
+
+      <div class="grid grid-cols-2 gap-4">
+
+        <!-- Run 1 chart -->
+        <div class="p-3 bg-white border border-blue-100 rounded-lg shadow-sm">
+          <ng-container *ngIf="charts1[group]; else noData1">
+            <div [style.height.px]="charts1[group].labels.length * 28 + 20" style="min-height:120px; max-height:480px;">
+              <canvas baseChart
+                [datasets]="charts1[group].datasets"
+                [labels]="charts1[group].labels"
+                [options]="chartOptions"
+                [type]="'bar'">
+              </canvas>
+            </div>
+          </ng-container>
+          <ng-template #noData1>
+            <div class="flex items-center justify-center h-24 text-sm text-gray-400 italic">
+              No data for this group
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Run 2 chart -->
+        <div class="p-3 bg-white border border-purple-100 rounded-lg shadow-sm">
+          <ng-container *ngIf="charts2[group]; else noData2">
+            <div [style.height.px]="charts2[group].labels.length * 28 + 20" style="min-height:120px; max-height:480px;">
+              <canvas baseChart
+                [datasets]="charts2[group].datasets"
+                [labels]="charts2[group].labels"
+                [options]="chartOptions"
+                [type]="'bar'">
+              </canvas>
+            </div>
+          </ng-container>
+          <ng-template #noData2>
+            <div class="flex items-center justify-center h-24 text-sm text-gray-400 italic">
+              No data for this group
+            </div>
+          </ng-template>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- No groups at all -->
+    <div *ngIf="activeGroups.length === 0" class="text-center text-gray-400 mt-20 text-lg font-semibold">
+      No chart data available for either run.
+    </div>
+
+  </ng-container>
+</div>

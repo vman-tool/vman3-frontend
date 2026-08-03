@@ -5,13 +5,10 @@
     <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="p-4">
-            <div class="flex items-center">
-              <!-- <input id="checkbox-all-search" type="checkbox"
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-             -->
-              <label for="checkbox-all-search" class="sr-only">checkbox</label>
-            </div>
+          <th scope="col" class="px-4 py-3 text-xs text-gray-700 uppercase">
+            Select
+            <span *ngIf="selectedRows.length > 0"
+              class="ml-1 text-blue-600 font-normal normal-case">({{ selectedRows.length }}/2)</span>
           </th>
           <th scope="col" class="px-6 py-3">Run By</th>
           <th scope="col" class="px-6 py-3">Algorithm</th>
@@ -42,16 +39,15 @@
         <!-- Data rows -->
         <tr *ngFor="let row of data; let i = index" [ngClass]="{'bg-white': i % 2 === 0, 'bg-gray-200': i % 2 !== 0}"
           class="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-          <td class="w-4 p-4">
-            <div class="flex items-center">
-              <!-- <input id="checkbox-table-search-{{ row.created_at }}" type="checkbox"
-                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              -->
-              <!-- <label for="checkbox-table-search-{{ row.created_at }}" class="sr-only">checkbox</label> -->
-            </div>
+          <td class="px-4 py-4">
+            <input type="checkbox"
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded cursor-pointer
+                     focus:ring-blue-500 focus:ring-2"
+              [checked]="isRowSelected(row)"
+              (change)="toggleRowSelection(row)" />
           </td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.run_by_name }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">
+          <td class="px-6 py-4">{{ row.run_by_name }}</td>
+          <td class="px-6 py-4">
             <span [ngClass]="{
               'bg-blue-100 text-blue-800': row.algorithm === 'InterVA5',
               'bg-purple-100 text-purple-800': row.algorithm === 'VManML10'
@@ -59,12 +55,12 @@
               {{ row.algorithm === 'VManML10' ? 'VMan ML 1.0' : 'InterVA5' }}
             </span>
           </td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.created_at | date:'MMM d, y' }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.total_records }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.elapsed_time }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.start ? row.start.split('T')[0] : '' }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4">{{ row.end ? row.end.split('T')[0] : '' }}</td>
-          <td (click)="onRowClick(row.id)" class="px-6 py-4 font-bold text-sky-600">
+          <td class="px-6 py-4">{{ row.created_at | date:'MMM d, y' }}</td>
+          <td class="px-6 py-4">{{ row.total_records }}</td>
+          <td class="px-6 py-4">{{ row.elapsed_time }}</td>
+          <td class="px-6 py-4">{{ row.start ? row.start.split('T')[0] : '' }}</td>
+          <td class="px-6 py-4">{{ row.end ? row.end.split('T')[0] : '' }}</td>
+          <td class="px-6 py-4 font-bold text-sky-600">
             {{ row.isDefault ? 'Default' : '' }}
           </td>
           <td class="px-6 py-4">
@@ -74,13 +70,23 @@
               </button>
               <div *ngIf="dropdownOpen === i"
                 class="absolute right-0 z-10 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl">
-                <a (click)="setDefault(row)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a (click)="onRowClick(row.id); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                  Display CSMF
+                </a>
+                <a (click)="compareCSMF()" class="block px-4 py-2 text-sm cursor-pointer"
+                  [ngClass]="selectedRows.length === 2
+                    ? 'text-blue-700 hover:bg-blue-50 font-medium'
+                    : 'text-gray-400 hover:bg-gray-50'">
+                  Compare CSMF
+                  <span *ngIf="selectedRows.length !== 2" class="text-xs font-normal ml-1">(select 2)</span>
+                </a>
+                <a (click)="setDefault(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                   Set Default
                 </a>
-                <a (click)="downloadDefault(row)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a (click)="downloadDefault(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                   Download Data
                 </a>
-                <a (click)="deleteRow(row)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <a (click)="deleteRow(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
                   Delete
                 </a>
               </div>

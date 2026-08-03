@@ -173,7 +173,16 @@
           </div>
           <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
             <p class="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase">Status</p>
-            <p class="text-sm font-medium truncate text-gray-700">{{ message || 'Processing...' }}</p>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="shrink-0 w-2 h-2 rounded-full"
+                [class.bg-blue-400]="progress > 0 && progress < 100"
+                [class.bg-green-500]="progress === 100"
+                [class.bg-gray-300]="progress === 0"
+                [class.animate-pulse]="progress > 0 && progress < 100"></span>
+              <p class="text-sm font-medium text-gray-700 leading-tight" style="overflow-wrap:break-word;word-break:break-word;">
+                {{ message || (progress === 0 ? 'Starting...' : 'Processing...') }}
+              </p>
+            </div>
           </div>
           <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
             <p class="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase">Elapsed Time</p>

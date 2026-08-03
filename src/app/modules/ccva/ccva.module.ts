@@ -14,8 +14,9 @@ import { ListCcvaComponent } from './components/list-ccva/list-ccva.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-filters.component';
 import { ViewCcvaComponent } from './components/view-ccva/view-ccva.component';
+import { CompareCcvaComponent } from './components/compare-ccva/compare-ccva.component';
 import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
-//
+
 @NgModule({
   declarations: [
     RunCcvaComponent,
@@ -23,6 +24,7 @@ import { CustomDropdownComponent } from '../../shared/components/custom-dropdown
     ListCcvaComponent,
     CcvaGraphsComponent,
     ViewCcvaComponent,
+    CompareCcvaComponent,
   ],
   imports: [
     CommonModule,
