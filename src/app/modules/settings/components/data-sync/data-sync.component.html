@@ -8,7 +8,7 @@
              'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'data-synchronization',
              'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'data-synchronization'
            }">
-          <i class="fas fa-cogs me-2" [ngClass]="{
+          <i class="ph ph-gear-six me-2" [ngClass]="{
                'text-blue-600 dark:text-blue-500': selectedTab === 'data-synchronization',
                'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'data-synchronization'
              }"></i>
@@ -23,7 +23,7 @@
             'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'settings',
             'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'settings'
           }">
-          <i class="fas fa-network-wired me-2" [ngClass]="{
+          <i class="ph ph-share-network me-2" [ngClass]="{
                'text-blue-600 dark:text-blue-500': selectedTab === 'settings',
                'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'settings'
              }"></i>
@@ -59,13 +59,13 @@
       <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold text-gray-800">
-            <i class="mr-2 text-blue-600 fas fa-database"></i>
+            <i class="mr-2 text-blue-600 ph ph-database"></i>
             Data Synchronization Status
           </h3>
           <button (click)="refreshAllStatus()"
             class="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-lg transition-colors hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             title="Refresh sync status">
-            <i class="mr-1 fas fa-sync-alt"></i>
+            <i class="mr-1 ph ph-arrows-clockwise"></i>
             Refresh
           </button>
         </div>
@@ -90,7 +90,7 @@
         <div *ngIf="formSubmissionStatus?.earliest_date || formSubmissionStatus?.latest_date"
           class="p-4 mt-6 bg-gray-50 rounded-lg border border-gray-200">
           <h4 class="mb-3 text-sm font-semibold text-gray-700">
-            <i class="mr-2 fas fa-calendar-alt"></i>
+            <i class="mr-2 ph ph-calendar-blank"></i>
             Data Coverage Details
           </h4>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -109,7 +109,7 @@
       <!-- Synchronization Actions Card -->
       <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
         <h3 class="mb-4 text-lg font-semibold text-gray-800">
-          <i class="mr-2 text-blue-600 fas fa-sync-alt"></i>
+          <i class="mr-2 text-blue-600 ph ph-arrows-clockwise"></i>
           Start Data Synchronization
         </h3>
 
@@ -124,7 +124,7 @@
                 <div *ngIf="dataSource === 'api'" class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full"></div>
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-900"><i class="mr-2 fas fa-cloud-download-alt"></i>API Synchronization</div>
+                <div class="text-sm font-medium text-gray-900"><i class="mr-2 ph ph-cloud-arrow-down"></i>API Synchronization</div>
                 <div class="text-xs text-gray-500">Sync data from ODK Central server</div>
               </div>
             </label>
@@ -135,7 +135,7 @@
                 <div *ngIf="dataSource === 'csv'" class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full"></div>
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-900"><i class="mr-2 fas fa-file-csv"></i>CSV Upload</div>
+                <div class="text-sm font-medium text-gray-900"><i class="mr-2 ph ph-file-csv"></i>CSV Upload</div>
                 <div class="text-xs text-gray-500">Upload data from CSV file</div>
               </div>
             </label>
@@ -149,7 +149,7 @@
             <button (click)="fileInput.click()"
               class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg border border-blue-300 transition-colors hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               [disabled]="isDataSyncing">
-              <i class="mr-2 fas fa-upload"></i>
+              <i class="mr-2 ph ph-upload-simple"></i>
               <span *ngIf="!isDataSyncing">Choose CSV File</span>
               <span *ngIf="isDataSyncing" class="flex items-center">
                 <svg class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
@@ -161,7 +161,7 @@
               </span>
             </button>
             <div *ngIf="selectedFile" class="flex items-center text-sm text-gray-600">
-              <i class="mr-2 text-green-500 fas fa-file-csv"></i>
+              <i class="mr-2 text-green-500 ph ph-file-csv"></i>
               <span>{{ selectedFile.name }}</span>
             </div>
           </div>
@@ -170,7 +170,7 @@
         <!-- Error Messages -->
         <div *ngIf="fileErrors" class="p-3 mb-4 bg-red-50 rounded-lg border border-red-200">
           <div class="flex items-center">
-            <i class="mr-2 text-red-500 fas fa-exclamation-triangle"></i>
+            <i class="mr-2 text-red-500 ph ph-warning"></i>
             <span class="text-sm font-medium text-red-700">{{ fileErrors }}</span>
           </div>
         </div>
@@ -178,7 +178,7 @@
         <!-- Action Buttons (hidden while syncing) -->
         <div *ngIf="!isTaskRunning" class="flex justify-between items-center pt-4 border-t border-gray-200">
           <div class="text-sm text-gray-500">
-            <i class="mr-1 fas fa-info-circle"></i>
+            <i class="mr-1 ph ph-info"></i>
             {{ dataSource === 'api' ? 'Sync will fetch latest data from ODK Central' : 'CSV file will be processed and uploaded' }}
           </div>
           @if(this.dataSyncAccess?.canSyncODKData){
@@ -190,7 +190,7 @@
               <path class="opacity-75" fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <i *ngIf="!isSyncButtonLoading" class="mr-2 fas fa-sync-alt"></i>
+            <i *ngIf="!isSyncButtonLoading" class="mr-2 ph ph-arrows-clockwise"></i>
             <span *ngIf="!isSyncButtonLoading">Start Data Synchronization</span>
             <span *ngIf="isSyncButtonLoading">Initiating Sync...</span>
           </button>
@@ -215,7 +215,7 @@
 
             <!-- Context line: incremental sync explanation -->
             <div class="mb-4 flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-700">
-              <i class="fas fa-info-circle mt-0.5 shrink-0"></i>
+              <i class="ph ph-info mt-0.5 shrink-0"></i>
               <span>
                 Downloading <strong>{{ (totalRecords || 0) | number }} new records</strong>
                 <ng-container *ngIf="serverTotal > 0">
@@ -250,7 +250,7 @@
             <!-- 3 stat cards: Download rate | New records | Time elapsed -->
             <div class="mb-5 grid grid-cols-3 gap-3">
               <div class="flex items-center gap-2 rounded-lg bg-white border border-gray-100 px-4 py-3 shadow-sm">
-                <i class="fas fa-tachometer-alt text-blue-500 shrink-0"></i>
+                <i class="ph ph-gauge text-blue-500 shrink-0"></i>
                 <div class="min-w-0">
                   <p class="text-xs text-gray-500">Download rate</p>
                   <p class="text-sm font-semibold text-gray-800 tabular-nums truncate">
@@ -259,14 +259,14 @@
                 </div>
               </div>
               <div class="flex items-center gap-2 rounded-lg bg-white border border-gray-100 px-4 py-3 shadow-sm">
-                <i class="fas fa-database text-indigo-500 shrink-0"></i>
+                <i class="ph ph-database text-indigo-500 shrink-0"></i>
                 <div class="min-w-0">
                   <p class="text-xs text-gray-500">New records</p>
                   <p class="text-sm font-semibold text-gray-800 tabular-nums truncate">{{ (totalRecords || 0) | number }}</p>
                 </div>
               </div>
               <div class="flex items-center gap-2 rounded-lg bg-white border border-gray-100 px-4 py-3 shadow-sm">
-                <i class="fas fa-clock text-purple-500 shrink-0"></i>
+                <i class="ph ph-clock text-purple-500 shrink-0"></i>
                 <div class="min-w-0">
                   <p class="text-xs text-gray-500">Time elapsed</p>
                   <p class="text-sm font-semibold text-purple-700 tabular-nums truncate">{{ fmtDuration(displayElapsedSec) }}</p>
@@ -277,12 +277,12 @@
             <!-- Cancel button -->
             <div class="flex items-center justify-end gap-3">
               <span *ngIf="isCancelling" class="text-xs text-amber-600">
-                <i class="fas fa-spinner animate-spin mr-1"></i>
+                <i class="ph ph-spinner animate-spin mr-1"></i>
                 Stopping after current page…
               </span>
               <button (click)="onCancel()" [disabled]="isCancelling"
                 class="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-5 py-2 text-sm font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fas fa-times-circle"></i>
+                <i class="ph ph-x-circle"></i>
                 {{ isCancelling ? 'Cancelling…' : 'Cancel Sync' }}
               </button>
             </div>
@@ -294,12 +294,12 @@
       <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-gray-800">
-            <i class="mr-2 text-gray-500 fas fa-history"></i>
+            <i class="mr-2 text-gray-500 ph ph-clock-counter-clockwise"></i>
             Data Synchronization History
           </h3>
           <button (click)="loadSyncHistory()"
             class="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 rounded-lg transition-colors hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <i class="mr-1 fas fa-sync-alt" [class.animate-spin]="isLoadingHistory"></i>
+            <i class="mr-1 ph ph-arrows-clockwise" [class.animate-spin]="isLoadingHistory"></i>
             Refresh
           </button>
         </div>
@@ -315,7 +315,7 @@
 
         <!-- Empty state -->
         <div *ngIf="!isLoadingHistory && syncHistory.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-400">
-          <i class="fas fa-inbox text-3xl mb-2"></i>
+          <i class="ph ph-tray text-3xl mb-2"></i>
           <p class="text-sm">No synchronization history yet.</p>
         </div>
 
@@ -411,7 +411,7 @@
           <div class="flex justify-between items-start">
             <div>
               <h3 class="text-lg font-semibold text-gray-800">
-                <i class="mr-2 text-emerald-600 fas fa-database"></i>
+                <i class="mr-2 text-emerald-600 ph ph-database"></i>
                 Backup Settings
               </h3>
               <p class="text-sm text-gray-500 mt-0.5">
@@ -420,7 +420,7 @@
             </div>
             <button (click)="loadBackupSettings()" title="Refresh"
               class="p-1.5 text-gray-400 hover:text-emerald-600 transition-colors">
-              <i class="fas fa-sync-alt text-sm" [class.animate-spin]="isBackupLoading"></i>
+              <i class="ph ph-arrows-clockwise text-sm" [class.animate-spin]="isBackupLoading"></i>
             </button>
           </div>
 
@@ -469,7 +469,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
-              <i *ngIf="!isBackupSaving" class="fas fa-save"></i>
+              <i *ngIf="!isBackupSaving" class="ph ph-floppy-disk"></i>
               {{ isBackupSaving ? 'Saving…' : 'Save Backup Settings' }}
             </button>
           </div>
@@ -482,7 +482,7 @@
           <div class="flex justify-between items-start">
             <div>
               <h3 class="text-lg font-semibold text-gray-800">
-                <i class="mr-2 text-indigo-600 fas fa-chart-bar"></i>
+                <i class="mr-2 text-indigo-600 ph ph-chart-bar"></i>
                 Analytics Table
               </h3>
               <p class="text-sm text-gray-500 mt-0.5">
@@ -492,7 +492,7 @@
             </div>
             <button (click)="loadDqaConfig()" title="Refresh status"
               class="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors">
-              <i class="fas fa-sync-alt text-sm" [class.animate-spin]="isDqaConfigLoading"></i>
+              <i class="ph ph-arrows-clockwise text-sm" [class.animate-spin]="isDqaConfigLoading"></i>
             </button>
           </div>
 
@@ -506,7 +506,7 @@
             }">
             <ng-container [ngSwitch]="dqaSnapshotStatus">
               <ng-container *ngSwitchCase="'completed'">
-                <i class="fas fa-check-circle shrink-0"></i>
+                <i class="ph ph-check-circle shrink-0"></i>
                 <span>Last computed: <strong>{{ dqaLastComputedAt | date:'EEEE, MMMM d, y · HH:mm':'UTC' }} UTC</strong></span>
               </ng-container>
               <ng-container *ngSwitchCase="'running'">
@@ -517,11 +517,11 @@
                 <span>Computation in progress…</span>
               </ng-container>
               <ng-container *ngSwitchCase="'failed'">
-                <i class="fas fa-exclamation-triangle shrink-0"></i>
+                <i class="ph ph-warning shrink-0"></i>
                 <span>Last computation failed</span>
               </ng-container>
               <ng-container *ngSwitchDefault>
-                <i class="fas fa-info-circle shrink-0"></i>
+                <i class="ph ph-info shrink-0"></i>
                 <span>No analytics snapshot yet</span>
               </ng-container>
             </ng-container>
@@ -568,7 +568,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
-              <i *ngIf="!isDqaSaving" class="fas fa-save"></i>
+              <i *ngIf="!isDqaSaving" class="ph ph-floppy-disk"></i>
               {{ isDqaSaving ? 'Saving…' : 'Save Schedule' }}
             </button>
 
@@ -582,7 +582,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
-              <i *ngIf="!isDqaRefreshing && dqaSnapshotStatus !== 'running'" class="fas fa-redo-alt"></i>
+              <i *ngIf="!isDqaRefreshing && dqaSnapshotStatus !== 'running'" class="ph ph-arrow-clockwise"></i>
               {{ isDqaRefreshing ? 'Starting…' : dqaSnapshotStatus === 'running' ? 'Computing…' : 'Re-compute Now' }}
             </button>
           </div>
