@@ -18,6 +18,8 @@ import { UnassignVaComponent } from './dialogs/unassign-va/unassign-va.component
 import { DiscordantsChatsComponent } from './components/discordants-chats/discordants-chats.component';
 import { OtherCodingWorkComponent } from './components/other-coding-work/other-coding-work.component';
 import { JoinIcdCodesPipe } from './pipes/join-icd-codes.pipe';
+import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 
@@ -43,7 +45,9 @@ import { JoinIcdCodesPipe } from './pipes/join-icd-codes.pipe';
     MaterialModule,
     FormsModule,
     OtherCodingWorkComponent,
-    JoinIcdCodesPipe
+    JoinIcdCodesPipe,
+    CustomDropdownComponent,
+    MatProgressSpinnerModule
   ],
   exports: [
     PcvaComponent
