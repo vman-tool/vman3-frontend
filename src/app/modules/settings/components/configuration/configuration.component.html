@@ -39,7 +39,7 @@
              'text-blue-600 dark:text-blue-500': selectedTab === 'questions-sync',
              'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'questions-sync'
            }"></i>
-          <span class="text-sm font-medium">Questions Sync</span>
+          <span class="text-sm font-medium">Data Dictionary</span>
         </a>
       </li>
       <li class="me-2" *ngIf="dataAccess?.viewFieldMapping">
@@ -205,8 +205,118 @@
   <div *ngIf="selectedTab === 'questions-sync' && dataAccess?.canSyncODKQuestions" id="questions-sync"
     class="mt-4 tab-content">
     <div class="my-8">
-      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <!-- Data Dictionary sub-tabs (the strip's own border-b is the divider;
+           an extra <hr> here rendered as a second, redundant line) -->
+      <div class="mb-6 border-b border-gray-200">
+        <ul class="flex flex-wrap -mb-px text-sm font-medium">
+          <li class="mr-2">
+            <button type="button" (click)="dictionaryTab = 'xform'"
+              class="inline-block px-4 py-2.5 border-b-2 rounded-t-lg transition-colors"
+              [ngClass]="dictionaryTab === 'xform'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'">
+              <i class="mr-2 ph ph-file-arrow-up"></i>xForm Upload
+            </button>
+          </li>
+          <li class="mr-2">
+            <button type="button" (click)="dictionaryTab = 'server'"
+              class="inline-block px-4 py-2.5 border-b-2 rounded-t-lg transition-colors"
+              [ngClass]="dictionaryTab === 'server'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'">
+              <i class="mr-2 ph ph-arrows-clockwise"></i>Server Synchronization
+            </button>
+          </li>
+        </ul>
+      </div>
 
+      <!-- ── Tab 1: xForm Upload ─────────────────────────────────────────
+           Both panels carry the same min-height so the Data Dictionary table
+           below does not jump when switching tabs. -->
+      <div *ngIf="dictionaryTab === 'xform'" class="min-h-[19rem]">
+        <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <span class="block mb-2 text-lg font-semibold text-gray-800">Upload WHO VA Data Dictionary</span>
+          <p class="mb-5 text-sm text-gray-600">
+            Upload the WHO VA questionnaire structure file (xForm) used to deploy the instrument —
+            an XLSForm workbook (<code class="text-xs">.xlsx</code>) with
+            <code class="text-xs">survey</code> and <code class="text-xs">choices</code> sheets.
+            It adds question labels, types and choice lists, including any additional languages.
+          </p>
+
+          <div *ngIf="xformUploadSuccess"
+            class="mb-3 px-4 py-2.5 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200">
+            {{ xformUploadSuccess }}
+          </div>
+          <div *ngIf="xformUploadError"
+            class="mb-3 px-4 py-2.5 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
+            {{ xformUploadError }}
+          </div>
+
+          <!-- File picker, override toggle and button share one row so this
+               panel matches the height of the Server Synchronization tab and
+               the Data Dictionary below does not shift when switching. -->
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex-1 min-w-[16rem]">
+              <label class="block mb-1 text-xs font-medium text-gray-600">xForm file (.xlsx)</label>
+              <input type="file" accept=".xlsx,.xls" (change)="onXformFileSelect($event)"
+                class="block w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+            </div>
+
+            <div class="flex items-center gap-4">
+              <!-- Override existing labels (default: off) -->
+              <label class="inline-flex items-center hover:cursor-pointer"
+                title="Off: only missing labels and new languages are added. On: this workbook's text replaces what is stored for the languages it contains.">
+                <input type="checkbox" class="hidden peer" [(ngModel)]="xformOverrideLabels">
+                <div class="flex justify-center items-center w-5 h-5 rounded border border-gray-400 transition-colors"
+                  [ngClass]="xformOverrideLabels
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'hover:border-blue-400'">
+                  <i class="text-xs ph ph-check" *ngIf="xformOverrideLabels"></i>
+                </div>
+                <span class="ml-2 text-sm text-gray-700">Override existing labels</span>
+              </label>
+
+              <button type="button" [disabled]="!xformFile || xformUploading" (click)="uploadXform()"
+                class="px-6 py-2.5 font-semibold text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span *ngIf="!xformUploading"><i class="mr-2 ph ph-upload-simple"></i>Upload xForm</span>
+                <span *ngIf="xformUploading" class="flex items-center">
+                  <svg class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                  Uploading...
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Selected-file line is absolutely positioned in flow but reserves
+               its height always, so picking a file does not grow the panel. -->
+          <div class="flex items-center gap-3 mt-3 h-5 text-sm">
+            <ng-container *ngIf="xformFile">
+              <i class="text-green-600 ph ph-microsoft-excel-logo"></i>
+              <span class="text-gray-700">{{ xformFile.name }}</span>
+              <span class="text-xs text-gray-400">({{ (xformFile.size / 1024) | number:'1.0-0' }} KB)</span>
+              <button type="button" (click)="clearXformFile()"
+                class="text-xs text-gray-400 hover:text-red-600">Remove</button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab 2: Server Synchronization ───────────────────────────────── -->
+      <div *ngIf="dictionaryTab === 'server'" class="min-h-[19rem]">
+        <div class="p-4 mb-4 text-sm bg-gray-50 rounded-lg border border-gray-200">
+          <span class="block mb-1 font-semibold text-gray-800">About Server Synchronization</span>
+          <p class="text-gray-600">
+            Fetches the question list directly from ODK Central for the configured form. This
+            establishes <em>which</em> variables exist and is the authoritative source for that.
+            Labels and choice lists it returns can be sparse — upload an xForm to fill those in.
+            Either source can be used first; whichever runs second only adds what is missing.
+          </p>
+        </div>
       <!-- Loading State -->
       <div *ngIf="isQuestionsSyncTabLoading" class="space-y-6">
         <div class="flex justify-center items-center p-8 bg-gray-50 rounded-lg border">
@@ -255,14 +365,14 @@
               <span class="mb-2 text-lg font-semibold text-gray-800">ODK Questions Synchronization</span>
               <div *ngIf="syncedQuestions && syncedQuestions.length > 0" class="mb-4">
                 <p class="font-medium text-green-600">
-                  <i class="mr-2 fas fa-check-circle"></i>
+                  <i class="mr-2 ph ph-check-circle"></i>
                   {{ syncedQuestions.length }} questions synchronized
                 </p>
                 <p class="text-sm text-gray-500">Questions are ready for data processing</p>
               </div>
               <div *ngIf="!syncedQuestions || syncedQuestions.length === 0" class="mb-4">
                 <p class="font-medium text-orange-600">
-                  <i class="mr-2 fas fa-exclamation-triangle"></i>
+                  <i class="mr-2 ph ph-warning"></i>
                   No questions found
                 </p>
                 <p class="text-sm text-gray-500">Click "Sync ODK Questions" to fetch questions from ODK Central</p>
@@ -281,9 +391,22 @@
                     'bg-green-600 border-green-600 text-white': forceChecked,
                     'hover:border-green-400': !forceChecked
                   }">
-                  <i class="text-xs fas fa-check" *ngIf="forceChecked"></i>
+                  <i class="text-xs ph ph-check" *ngIf="forceChecked"></i>
                 </div>
                 <span class="ml-2 text-sm text-gray-700">Force refresh</span>
+              </label>
+
+              <!-- Override existing labels (default: off) -->
+              <label class="inline-flex items-center hover:cursor-pointer"
+                title="Off: labels contributed by an uploaded xForm are preserved. On: ODK's values replace them.">
+                <input type="checkbox" class="hidden peer" [(ngModel)]="syncOverrideLabels">
+                <div class="flex justify-center items-center w-5 h-5 rounded border border-gray-400 transition-colors"
+                  [ngClass]="syncOverrideLabels
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'hover:border-blue-400'">
+                  <i class="text-xs ph ph-check" *ngIf="syncOverrideLabels"></i>
+                </div>
+                <span class="ml-2 text-sm text-gray-700">Override existing labels</span>
               </label>
 
               <!-- Sync Button -->
@@ -291,7 +414,7 @@
                 class="px-6 py-3 font-semibold text-white bg-green-600 rounded-lg transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 (click)="onSyncQuestions()">
                 <span *ngIf="!isQuestionsSyncing">
-                  <i class="mr-2 fas fa-download"></i>
+                  <i class="mr-2 ph ph-download-simple"></i>
                   Sync ODK Questions
                 </span>
                 <span *ngIf="isQuestionsSyncing" class="flex items-center">
@@ -303,6 +426,176 @@
                   </svg>
                   Syncing...
                 </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- One editable label cell. Shared by the primary and the selectable
+           language column so both behave identically. -->
+      <ng-template #labelCell let-row="row" let-lang="lang">
+        <!-- editing -->
+        <div *ngIf="isEditing(row.name, lang); else readOnlyLabel">
+          <textarea [(ngModel)]="editingText" rows="2" autofocus
+            (keydown.escape)="cancelEditLabel()"
+            (keydown.control.enter)="saveEditLabel(row, lang)"
+            class="block w-full px-2 py-1 text-sm rounded border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+          <div class="flex items-center gap-2 mt-1">
+            <button type="button" (click)="saveEditLabel(row, lang)" [disabled]="editingSaving"
+              class="px-2 py-0.5 text-xs text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50">
+              {{ editingSaving ? 'Saving…' : 'Save' }}
+            </button>
+            <button type="button" (click)="cancelEditLabel()"
+              class="px-2 py-0.5 text-xs text-gray-600 rounded border border-gray-300 hover:bg-gray-100">
+              Cancel
+            </button>
+            <span class="text-xs text-gray-400">Esc to cancel</span>
+          </div>
+          <p *ngIf="editingError" class="mt-1 text-xs text-red-600">{{ editingError }}</p>
+        </div>
+
+        <!-- read-only, with a pencil that appears on hover -->
+        <ng-template #readOnlyLabel>
+          <div class="flex items-start gap-1">
+            <span class="flex-1" [ngClass]="{ 'text-gray-300': !(row.labels && row.labels[lang]) }">
+              {{ (row.labels && row.labels[lang]) || '—' }}
+            </span>
+            <button type="button" (click)="startEditLabel(row, lang)"
+              [attr.aria-label]="'Edit the ' + lang + ' label for ' + row.name"
+              [title]="'Edit the ' + lang + ' label'"
+              class="opacity-0 transition-opacity group-hover/cell:opacity-100 focus:opacity-100 shrink-0 px-1 text-gray-400 hover:text-blue-600">
+              <i class="text-sm ph ph-pencil-simple"></i>
+            </button>
+          </div>
+        </ng-template>
+      </ng-template>
+
+      <!-- ── Stored data dictionary (shared by both tabs) ────────────────── -->
+      <div class="mt-4">
+        <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
+          <div>
+            <span class="block text-lg font-semibold text-gray-800">Data Dictionary</span>
+            <p class="text-sm text-gray-500">
+              Variables currently stored, built from ODK synchronization and any uploaded xForms.
+              <span *ngIf="dictionaryLanguages.length">
+                Languages: <span class="font-medium text-gray-700">{{ dictionaryLanguages.join(', ') }}</span>.
+              </span>
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" [(ngModel)]="dictionarySearch" (ngModelChange)="onDictionarySearchChange()"
+              placeholder="Search name or label…"
+              class="px-3 py-1.5 w-64 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <!-- Re-reads the stored dictionary from the server. Labelled, and
+                 using Phosphor: Font Awesome is not loaded in this project. -->
+            <button type="button" (click)="loadDataDictionary()" [disabled]="dictionaryLoading"
+              title="Reload the dictionary from the server" aria-label="Reload the dictionary"
+              class="inline-flex items-center justify-center px-2.5 py-1.5 text-sm text-gray-600 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+              <i class="ph ph-arrows-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="dictionaryError" class="px-4 py-2.5 mb-3 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
+          {{ dictionaryError }}
+        </div>
+
+        <div *ngIf="dictionaryLoading" class="p-6 text-center text-gray-400 rounded-lg border border-gray-200">
+          Loading dictionary…
+        </div>
+
+        <div *ngIf="!dictionaryLoading && !dictionaryError"
+          class="overflow-x-auto rounded-lg border border-gray-200">
+          <!-- table-fixed + explicit widths: column widths come from the
+               header alone, so switching language never reflows the table. -->
+          <table class="w-full text-sm text-left text-gray-600 table-fixed">
+            <thead class="text-xs font-medium tracking-wide text-gray-500 uppercase border-b border-gray-200">
+              <tr>
+                <th scope="col" class="w-48 px-4 py-2.5 font-medium">Variable</th>
+                <th scope="col" class="w-32 px-4 py-2.5 font-medium">Type</th>
+
+                <!-- Fixed primary language (English when present) -->
+                <th *ngIf="dictionaryPrimaryLanguage" scope="col" class="px-4 py-2.5 font-medium">
+                  {{ dictionaryPrimaryLanguage }}
+                </th>
+
+                <!-- One selectable column instead of one column per language,
+                     so adding a language via xForm never widens the table. -->
+                <th *ngIf="dictionaryOtherLanguages.length" scope="col" class="px-4 py-1.5 font-medium">
+                  <app-custom-dropdown widthClass="w-36"
+                    [options]="dictionaryLanguageOptions"
+                    [(selectedValue)]="dictionarySecondLanguage"></app-custom-dropdown>
+                </th>
+
+                <th *ngIf="!dictionaryLanguages.length" scope="col" class="px-4 py-2.5 font-medium">Label</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!pagedDictionary.length">
+                <td [attr.colspan]="dictionaryColumnCount"
+                  class="px-4 py-8 text-center text-gray-400">
+                  {{ dictionarySearch ? 'No variable matches that search.' : 'The dictionary is empty. Upload an xForm or run Server Synchronization.' }}
+                </td>
+              </tr>
+              <tr *ngFor="let row of pagedDictionary"
+                class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                <td class="px-4 py-2 font-mono text-xs text-gray-900 truncate" [title]="row.name">{{ row.name }}</td>
+                <td class="px-4 py-2 text-xs text-gray-500 truncate" [title]="row.type">
+                  {{ row.type }}
+                  <span *ngIf="row.options_count" class="ml-1 text-gray-400">({{ row.options_count }})</span>
+                </td>
+                <!-- primary language (editable) -->
+                <td *ngIf="dictionaryPrimaryLanguage" class="px-4 py-2 align-top break-words group/cell">
+                  <ng-container
+                    *ngTemplateOutlet="labelCell; context: { row: row, lang: dictionaryPrimaryLanguage }">
+                  </ng-container>
+                </td>
+
+                <!-- whichever language the header dropdown has selected (editable) -->
+                <td *ngIf="dictionaryOtherLanguages.length" class="px-4 py-2 align-top break-words group/cell">
+                  <ng-container
+                    *ngTemplateOutlet="labelCell; context: { row: row, lang: dictionarySecondLanguage }">
+                  </ng-container>
+                </td>
+
+                <td *ngIf="!dictionaryLanguages.length" class="px-4 py-2">{{ row.label }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="!dictionaryLoading && !dictionaryError"
+          class="flex flex-wrap items-center justify-between gap-3 px-1 py-3 text-xs text-gray-500">
+          <div class="flex items-center gap-3">
+            <span>
+              Showing <span class="font-medium text-gray-700">{{ dictRangeStart }}-{{ dictRangeEnd }}</span>
+              of <span class="font-medium text-gray-700">{{ dictionaryTotal }}</span>
+              <span *ngIf="dictionarySearch"> matching</span> variables
+            </span>
+            <label class="flex items-center gap-1.5">
+              <span>Rows</span>
+              <select [ngModel]="dictionaryPageSize" (ngModelChange)="onDictionaryPageSizeChange($event)"
+                class="py-1 pl-2 pr-6 text-xs rounded border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <option *ngFor="let size of dictionaryPageSizes" [value]="size">{{ size }}</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span>Page <span class="font-medium text-gray-700">{{ dictionaryPage }}</span>
+              of <span class="font-medium text-gray-700">{{ dictionaryTotalPages }}</span></span>
+            <div class="inline-flex -space-x-px">
+              <button type="button" (click)="dictPrevPage()" [disabled]="!hasDictPrev"
+                class="px-3 py-1 rounded-s border border-gray-200"
+                [ngClass]="hasDictPrev ? 'text-gray-600 bg-white hover:bg-gray-100' : 'text-gray-300 bg-gray-50 cursor-not-allowed'">
+                Previous
+              </button>
+              <button type="button" (click)="dictNextPage()" [disabled]="!hasDictNext"
+                class="px-3 py-1 rounded-e border border-gray-200"
+                [ngClass]="hasDictNext ? 'text-gray-600 bg-white hover:bg-gray-100' : 'text-gray-300 bg-gray-50 cursor-not-allowed'">
+                Next
               </button>
             </div>
           </div>

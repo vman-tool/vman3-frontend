@@ -43,6 +43,150 @@ export class ConfigurationComponent {
   isQuestionsSyncing: boolean = false;
   isQuestionsSyncTabLoading: boolean = false;
 
+  // Data Dictionary sub-tabs: 'xform' (upload) | 'server' (ODK sync)
+  dictionaryTab: 'xform' | 'server' = 'xform';
+
+  // "Override existing labels" - one per tab, both default off (No).
+  // Off: only missing labels/languages are filled. On: incoming values replace
+  // what is stored for the languages they carry.
+  xformOverrideLabels = false;
+  syncOverrideLabels = false;
+
+  // xForm upload
+  xformFile: File | null = null;
+  xformUploading = false;
+  xformUploadSuccess = '';
+  xformUploadError = '';
+
+  // Data dictionary table
+  dictionaryRows: any[] = [];
+  dictionaryLanguages: string[] = [];
+  dictionaryLoading = false;
+  dictionaryError = '';
+  dictionarySearch = '';
+  dictionaryPage = 1;
+  dictionaryPageSize = 10;
+  readonly dictionaryPageSizes = [10, 25, 50, 100];
+
+  /** Language shown in the fixed third column. English when available. */
+  get dictionaryPrimaryLanguage(): string {
+    if (!this.dictionaryLanguages.length) return '';
+    return this.dictionaryLanguages.includes('English') ? 'English' : this.dictionaryLanguages[0];
+  }
+
+  /** Everything the fourth (selectable) column can show. */
+  get dictionaryOtherLanguages(): string[] {
+    return this.dictionaryLanguages.filter(l => l !== this.dictionaryPrimaryLanguage);
+  }
+
+  /** Currently chosen language for the fourth column. */
+  dictionarySecondLanguage = '';
+
+  /** Shape the language list for <app-custom-dropdown>. */
+  get dictionaryLanguageOptions(): { value: string; label: string }[] {
+    return this.dictionaryOtherLanguages.map(l => ({ value: l, label: l }));
+  }
+
+  // ── Inline label editing ───────────────────────────────────────────────────
+  // Identified by "<question name>|<language>" so the same question can be
+  // edited in either language column without ambiguity.
+  editingCell: string | null = null;
+  editingText = '';
+  editingSaving = false;
+  editingError = '';
+
+  private cellKey(name: string, language: string): string { return `${name}|${language}`; }
+
+  isEditing(name: string, language: string): boolean {
+    return this.editingCell === this.cellKey(name, language);
+  }
+
+  startEditLabel(row: any, language: string): void {
+    this.editingCell = this.cellKey(row.name, language);
+    this.editingText = (row.labels && row.labels[language]) || '';
+    this.editingError = '';
+  }
+
+  cancelEditLabel(): void {
+    this.editingCell = null;
+    this.editingText = '';
+    this.editingError = '';
+  }
+
+  saveEditLabel(row: any, language: string): void {
+    const text = (this.editingText || '').trim();
+    if (!text) { this.editingError = 'The label cannot be empty.'; return; }
+
+    // Nothing changed - close without a round trip
+    if (text === ((row.labels && row.labels[language]) || '')) { this.cancelEditLabel(); return; }
+
+    this.editingSaving = true;
+    this.settingConfigService.updateDictionaryLabel(row.name, language, text).subscribe({
+      next: (res: any) => {
+        // Patch the row in place so the table does not have to reload
+        row.labels = res?.data?.labels ?? { ...(row.labels || {}), [language]: text };
+        if (language === this.dictionaryPrimaryLanguage) row.label = text;
+        this.editingSaving = false;
+        this.cancelEditLabel();
+      },
+      error: (err: any) => {
+        this.editingError = err?.error?.detail ?? 'Could not save the label.';
+        this.editingSaving = false;
+      },
+    });
+  }
+
+  /** Columns rendered: Variable, Type, primary, and the selectable one if any. */
+  get dictionaryColumnCount(): number {
+    return this.dictionaryLanguages.length
+      ? 3 + (this.dictionaryOtherLanguages.length ? 1 : 0)
+      : 3;
+  }
+
+  /** Name or any label matches the search box. */
+  get filteredDictionary(): any[] {
+    const term = this.dictionarySearch.trim().toLowerCase();
+    if (!term) return this.dictionaryRows;
+    return this.dictionaryRows.filter(r =>
+      (r.name ?? '').toLowerCase().includes(term) ||
+      Object.values(r.labels ?? {}).some((v: any) => String(v).toLowerCase().includes(term)) ||
+      (r.label ?? '').toLowerCase().includes(term)
+    );
+  }
+
+  get dictionaryTotal(): number { return this.filteredDictionary.length; }
+
+  get dictionaryTotalPages(): number {
+    return Math.max(1, Math.ceil(this.dictionaryTotal / this.dictionaryPageSize));
+  }
+
+  get pagedDictionary(): any[] {
+    const start = (this.dictionaryPage - 1) * this.dictionaryPageSize;
+    return this.filteredDictionary.slice(start, start + this.dictionaryPageSize);
+  }
+
+  get dictRangeStart(): number {
+    return this.dictionaryTotal === 0 ? 0 : (this.dictionaryPage - 1) * this.dictionaryPageSize + 1;
+  }
+
+  get dictRangeEnd(): number {
+    return Math.min(this.dictionaryPage * this.dictionaryPageSize, this.dictionaryTotal);
+  }
+
+  get hasDictPrev(): boolean { return this.dictionaryPage > 1; }
+  get hasDictNext(): boolean { return this.dictionaryPage < this.dictionaryTotalPages; }
+
+  dictPrevPage(): void { if (this.hasDictPrev) this.dictionaryPage--; }
+  dictNextPage(): void { if (this.hasDictNext) this.dictionaryPage++; }
+
+  /** Searching or resizing must return to page 1, or the view can land out of range. */
+  onDictionarySearchChange(): void { this.dictionaryPage = 1; }
+
+  onDictionaryPageSizeChange(size: any): void {
+    this.dictionaryPageSize = Number(size) || 10;
+    this.dictionaryPage = 1;
+  }
+
   // VMan ML Model Properties
   mlModelInfo: any = null;
   mlModelLoading = false;
@@ -201,6 +345,7 @@ export class ConfigurationComponent {
   loadQuestionsSyncTab() {
     console.log('Loading Questions Synchronization tab...');
     this.isQuestionsSyncTabLoading = true;
+    this.loadDataDictionary();
 
     // Load questions data
     this.loadQuestions().then(() => {
@@ -310,7 +455,7 @@ export class ConfigurationComponent {
 
     if (!this.syncedQuestions) {
       this.syncedQuestions = await lastValueFrom(
-        this.dataSyncService.syncQuestions().pipe(
+        this.dataSyncService.syncQuestions(this.syncOverrideLabels).pipe(
           map(async (response: any) => {
             // await this.indexedDBService.addQuestions(response?.data);
             // this.forceChecked = !this.forceChecked;
@@ -358,6 +503,85 @@ export class ConfigurationComponent {
       error: () => {
         this.mlModelError = 'Failed to load model information.';
         this.mlModelLoading = false;
+      },
+    });
+  }
+
+  onXformFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.xformUploadSuccess = '';
+    this.xformUploadError = '';
+
+    if (file && !/\.(xlsx|xls)$/i.test(file.name)) {
+      this.xformFile = null;
+      this.xformUploadError = 'An xForm must be an XLSForm workbook (.xlsx or .xls).';
+      input.value = '';
+      return;
+    }
+    this.xformFile = file;
+  }
+
+  clearXformFile(): void {
+    this.xformFile = null;
+    this.xformUploadSuccess = '';
+    this.xformUploadError = '';
+  }
+
+  loadDataDictionary(): void {
+    this.dictionaryLoading = true;
+    this.dictionaryError = '';
+    this.settingConfigService.getDataDictionary().subscribe({
+      next: (res: any) => {
+        this.dictionaryRows = res?.data?.questions ?? [];
+        this.dictionaryLanguages = res?.data?.languages ?? [];
+        // Keep the chosen second language if it still exists after a refresh,
+        // otherwise fall back to the first available one.
+        const others = this.dictionaryOtherLanguages;
+        if (!others.includes(this.dictionarySecondLanguage)) {
+          this.dictionarySecondLanguage = others[0] ?? '';
+        }
+        this.dictionaryLoading = false;
+      },
+      error: () => {
+        this.dictionaryError = 'Could not load the data dictionary.';
+        this.dictionaryLoading = false;
+      },
+    });
+  }
+
+  uploadXform(): void {
+    if (!this.xformFile) {
+      this.xformUploadError = 'Please select an xForm workbook first.';
+      return;
+    }
+
+    const form = new FormData();
+    form.append('file', this.xformFile);
+    form.append('override_labels', String(this.xformOverrideLabels));
+
+    this.xformUploading = true;
+    this.xformUploadSuccess = '';
+    this.xformUploadError = '';
+
+    this.settingConfigService.uploadXform(form).subscribe({
+      next: (res: any) => {
+        const d = res?.data ?? {};
+        this.xformUploadSuccess = res?.message ?? 'xForm uploaded successfully.';
+        if (d.unmatched_count) {
+          this.xformUploadSuccess +=
+            ` ${d.unmatched_count} question(s) in the xForm are not in the dictionary and were skipped.`;
+        }
+        this.xformUploading = false;
+        this.xformFile = null;
+        // Refresh so the enriched labels/languages are visible immediately
+        this.loadQuestionsSyncTab();
+        this.loadDataDictionary();
+      },
+      error: (err: any) => {
+        this.xformUploadError =
+          err?.error?.detail ?? err?.error?.message ?? 'Upload failed. Please check the file and try again.';
+        this.xformUploading = false;
       },
     });
   }
