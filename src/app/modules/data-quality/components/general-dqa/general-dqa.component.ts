@@ -179,6 +179,13 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
   isRefreshing = false;
 
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * Bound on how long this page will keep polling a run that says it is
+   * running. The backend now reports an abandoned run as failed after thirty
+   * minutes, but a browser left open should give up on its own too rather than
+   * poll a dead job until the tab is closed. 5s x 240 = 20 minutes.
+   */
+  private pollsRemaining = 240;
 
   // Which card drives the breakdown table
   activeCard: ActiveCard = 'rrs';
@@ -208,9 +215,13 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
           this.computedAt    = snap.computed_at ?? null;
           this.analyticsStatus = snap.status ?? null;
 
-          // Poll while a computation is in progress.
-          if (snap.status === 'running') {
+          // Poll while a computation is in progress, but not indefinitely.
+          if (snap.status === 'running' && this.pollsRemaining > 0) {
+            this.pollsRemaining -= 1;
             this.pollTimer = setTimeout(() => this.loadFromSnapshot(), 5000);
+          } else if (snap.status === 'running') {
+            // Give up and let the user start a fresh run.
+            this.analyticsStatus = 'failed';
           }
         }
         // Clear loading states regardless — data may be null if snapshot not yet built.
@@ -226,6 +237,7 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
   forceRefresh(): void {
     if (this.isRefreshing || this.analyticsStatus === 'running') return;
     this.isRefreshing = true;
+    this.pollsRemaining = 240;   // a new run gets a fresh budget
     this.svc.refreshAnalytics().subscribe({
       next: () => {
         this.analyticsStatus = 'running';
