@@ -4,6 +4,7 @@ import { VaRecordsService } from '../../services/va-records/va-records.service';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject, takeUntil } from 'rxjs';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PcvaSettingsService } from 'app/modules/settings/services/pcva-settings.service';
 import {
   DEFAULT_VA_LANGUAGE,
   VaDictionary,
@@ -37,6 +38,16 @@ export class CodeVaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   searchText = '';
 
+  /**
+   * Whether the ML panel is offered, from PCVA Configuration.
+   *
+   * Read here rather than expected from each caller: every route into the
+   * coding window opens this dialog, so one fetch covers them all. The
+   * neighbouring showOtherCodersWork flag is passed in by callers instead, and
+   * only one of the four actually passes it.
+   */
+  enableMLIntegration = false;
+
   private dictionary?: VaDictionary;
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -46,6 +57,7 @@ export class CodeVaComponent implements OnInit, AfterViewInit, OnDestroy {
     private matDialogRef: MatDialogRef<CodeVaComponent>,
     private vaRecordsService: VaRecordsService,
     private vaDictionaryService: VaDictionaryService,
+    private pcvaSettingsService: PcvaSettingsService,
     private snackBar: MatSnackBar
   ) {
     // The PCVA tables pass the id as a bare string; accept a row object too, so
@@ -63,6 +75,17 @@ export class CodeVaComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.setupSearch();
     this.load();
+    this.loadMlFlag();
+  }
+
+  private async loadMlFlag(): Promise<void> {
+    try {
+      const response: any = await firstValueFrom(this.pcvaSettingsService.getPCVAConfigurations());
+      this.enableMLIntegration = !!response?.data?.enableMLIntegration;
+    } catch {
+      // Absent or unreadable configuration means the panel stays hidden.
+      this.enableMLIntegration = false;
+    }
   }
 
   /**

@@ -8,6 +8,7 @@ import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-i
 import { OBJECTSTORE_ICD10 } from 'app/shared/constants/indexedDB.constants';
 import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
 import { settingsConfigData } from 'app/modules/settings/interface';
+import { PcvaSettingsService } from 'app/modules/settings/services/pcva-settings.service';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 
 @Component({
@@ -20,7 +21,25 @@ export class CodedVaComponent implements OnInit {
   current_user: any;
   codedVas$?: Observable<any>;
   loadingData: boolean = false;
-  headers?: string[];
+  /**
+   * Fixed columns, replacing Object.keys() of the first record.
+   *
+   * instanceid is dropped: it and vaId are read from the same source field and
+   * were always identical, so the table carried the same UUID twice.
+   *
+   * The ML column only appears when PCVA Configuration enables ML integration,
+   * matching the coding window - a deployment that does not use ML should not
+   * see an empty column asking to be explained.
+   */
+  columns: { key: string; label: string; truncate?: boolean; emphasise?: boolean }[] = [];
+  private readonly baseColumns = [
+    { key: 'vaId', label: 'VA ID', truncate: true },
+    { key: 'region', label: 'Region' },
+    { key: 'district', label: 'District' },
+    { key: 'interviewDay', label: 'Interview Day' },
+    { key: 'underlyingCause', label: 'Underlying CoD (coder)', emphasise: true },
+  ];
+  enableMLIntegration = false;
   
   pageNumber?: number = 0;
   pageSizeOptions = [10, 20, 50, 100]
@@ -29,6 +48,7 @@ export class CodedVaComponent implements OnInit {
   icdCodes: any;
 
   constructor(
+    private pcvaSettingsService: PcvaSettingsService,
     private codedVaService: CodedVaService,
     public dialog: MatDialog,
     private genericIndexedDbService: GenericIndexedDbService,
@@ -37,8 +57,10 @@ export class CodedVaComponent implements OnInit {
   
   ngOnInit() {
     this.current_user = JSON.parse(localStorage.getItem('current_user') || "")
+    this.buildColumns()
     this.loadCodedVAs()
     this.loadSettings()
+    this.loadMlFlag()
   }
 
   async loadSettings(){
@@ -50,10 +72,34 @@ export class CodedVaComponent implements OnInit {
     this.fieldsMapping ? this.fieldsMapping : this.settingConfigService.getSettingsConfig().subscribe({
       next: (response: settingsConfigData | null) => {
         if (response != null) {
-          this.fieldsMapping = response.field_mapping
+          this.fieldsMapping = response.field_mapping;
+          const level1 = (response as any)?.system_configs?.admin_level1;
+          const level2 = (response as any)?.system_configs?.admin_level2;
+          this.baseColumns.forEach(c => {
+            if (c.key === 'region' && level1) { c.label = level1; }
+            if (c.key === 'district' && level2) { c.label = level2; }
+          });
+          this.buildColumns();
         }
       },
       error: (error: any) => console.error('Error fetching settings config:', error)
+    });
+  }
+
+  /** Append the ML column only when the deployment has ML integration on. */
+  private buildColumns(): void {
+    this.columns = this.enableMLIntegration
+      ? [...this.baseColumns, { key: 'mlCause', label: 'ML Underlying CoD', truncate: true }]
+      : [...this.baseColumns];
+  }
+
+  private loadMlFlag(): void {
+    this.pcvaSettingsService.getPCVAConfigurations().subscribe({
+      next: (response: any) => {
+        this.enableMLIntegration = !!response?.data?.enableMLIntegration;
+        this.buildColumns();
+      },
+      error: () => this.buildColumns(),
     });
   }
 
@@ -69,12 +115,6 @@ export class CodedVaComponent implements OnInit {
         this.current_user?.uuid
       ).pipe(
         map((response: any) => {
-          if(!this.headers){
-            this.headers = response?.data[0]?.vaId ? Object.keys(response?.data[0])?.filter((column: string) => column.toLowerCase() !== 'id' && column.toLowerCase() !== 'assignments') : []
-          }
-  
-          // TODO: Add total records for pagination to work 
-          
           this.loadingData = false
          return response;
         }),

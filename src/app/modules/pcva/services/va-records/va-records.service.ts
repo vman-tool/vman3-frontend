@@ -73,6 +73,15 @@ export class VaRecordsService {
     return this.http.get(`${this.configService.API_URL}/pcva/form-questions${params}`);
   }
 
+  /**
+   * Ask the VMan ML model for a probable cause of death for one VA record.
+   * Takes roughly 20 seconds: the embedding and prediction dominate, so the
+   * caller must show progress rather than a brief spinner.
+   */
+  analyseVaWithMl(va_id: string) {
+    return this.http.post(`${this.configService.API_URL}/pcva/ml-analysis`, { va_id });
+  }
+
   codeAssignedVA(va_data: any) {
     return this.http.post(`${this.configService.API_URL}/pcva/code-assigned-va`, va_data);
   }

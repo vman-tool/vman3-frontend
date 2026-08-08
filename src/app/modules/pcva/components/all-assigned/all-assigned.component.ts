@@ -20,10 +20,27 @@ import { OBJECTKEY_ICD10_INDEXDB } from 'app/shared/constants/pcva.constants';
 export class AllAssignedComponent implements OnInit {
   assignedVas$?: Observable<any>
   loadingData: boolean = false;
-  headers: any;
   current_user?: any;
-  
-  pageNumber?: number = 0;
+
+  /**
+   * Fixed columns, replacing Object.keys() of the first record.
+   *
+   * "Assignments" and "Coders" are deliberately absent: this table shows a
+   * coder their own workload, and how many other people hold the same record
+   * is neither their business nor useful to them. Dropping them also removes
+   * the two widest columns, which is what let the rest fit without scrolling.
+   *
+   * The two location labels follow the deployment's configured admin levels.
+   */
+  columns: { key: string; label: string; truncate?: boolean }[] = [
+    { key: 'vaId', label: 'VA ID', truncate: true },
+    { key: 'region', label: 'Region' },
+    { key: 'district', label: 'District' },
+    { key: 'interviewDay', label: 'Interview Day' },
+    { key: 'interviewerName', label: 'Interviewer', truncate: true },
+  ];
+
+  pageNumber: number = 0;
   pageSizeOptions = [10, 20, 50, 100]
   limit?: number;
   paging?: boolean;
@@ -56,6 +73,10 @@ export class AllAssignedComponent implements OnInit {
         const response = await lastValueFrom(this.settingConfigService.getSettingsConfig());
         if (response != null) {
           this.fieldsMapping = response.field_mapping;
+          const level1 = (response as any)?.system_configs?.admin_level1;
+          const level2 = (response as any)?.system_configs?.admin_level2;
+          if (level1) { this.columns = this.columns.map(c => c.key === 'region' ? { ...c, label: level1 } : c); }
+          if (level2) { this.columns = this.columns.map(c => c.key === 'district' ? { ...c, label: level2 } : c); }
         }
       } catch (error: any) {
         console.error('Error fetching settings config:', error);
@@ -68,7 +89,7 @@ export class AllAssignedComponent implements OnInit {
     this.assignedVas$ = this.allAssignedService.getAssignedVARecords(
       {
         paging: true,
-        page_number: this.pageNumber,
+        page_number: this.pageNumber + 1,
         limit: this.limit,
       },
       "false",
@@ -76,14 +97,8 @@ export class AllAssignedComponent implements OnInit {
       this.current_user?.uuid
     ).pipe(
       map((response: any) => {
-        if(!this.headers){
-          this.headers = response?.data[0]?.vaId ? Object.keys(response?.data[0])?.filter((column: string) => column.toLowerCase() !== 'id') : []
-        }
-
-        // TODO: Add total records for pagination to work 
-        
         this.loadingData = false
-       return response;
+        return response;
       }),
       catchError((error: any) => {
         this.loadingData = false
@@ -93,9 +108,8 @@ export class AllAssignedComponent implements OnInit {
   }
 
   onPageChange(event: any) {
-    this.pageNumber = this.pageNumber == 0 && this.pageNumber < event.pageIndex ? event.pageIndex + 1 : this.pageNumber !== 0 && this.pageNumber! > event.pageIndex ? event.pageIndex - 1 : event.pageIndex;
-    this.pageNumber = this.pageNumber! < 0 ? 0 : this.pageNumber;
-    this.limit = Number(event?.pageSize);
+    this.pageNumber = event?.pageIndex ?? 0;
+    this.limit = Number(event?.pageSize ?? this.limit);
     this.loadAssignedVas();
   }
 

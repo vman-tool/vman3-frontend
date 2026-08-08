@@ -13,7 +13,7 @@ const routes: Routes = [
   {
     path: '',
 
-    component: SettingsComponent,
+        component: SettingsComponent,
     canActivate: [authGuard, PrivilegeGuard],
     data: { requiredPrivilege: [privileges.SETTINGS_MODULE_VIEW]},
     children: [
@@ -26,31 +26,31 @@ const routes: Routes = [
         path: 'configurations',
         component: ConfigurationComponent,
         canActivate: [PrivilegeGuard],
-        data: { requiredPrivilege: [privileges.SETTINGS_CONFIGS_VIEW]},
+        data: { title: 'Configurations', requiredPrivilege: [privileges.SETTINGS_CONFIGS_VIEW]},
       },
       {
         path: 'sync',
         component: DataSyncComponent,
         canActivate: [PrivilegeGuard],
-        data: { requiredPrivilege: [privileges.ODK_MODULE_VIEW]},
+        data: { title: 'Synchronization', requiredPrivilege: [privileges.ODK_MODULE_VIEW]},
       },
       {
         path: 'users',
         component: UsersComponent,
         canActivate: [PrivilegeGuard],
-        data: { requiredPrivilege: [privileges.USERS_MODULE_VIEW]}
+        data: { title: 'Users', requiredPrivilege: [privileges.USERS_MODULE_VIEW]}
       },
       {
         path: 'pcva-configuration',
         component: PcvaSettingsComponent,
         canActivate: [PrivilegeGuard],
-        data: { requiredPrivilege: []}
+        data: { title: 'PCVA Configuration', requiredPrivilege: []}
       },
       {
         path: 'data-export',
         component: DataExportComponent,
         canActivate: [PrivilegeGuard],
-        data: { requiredPrivilege: [privileges.SETTINGS_DATA_EXPORT] }
+        data: { title: 'Data Export', requiredPrivilege: [privileges.SETTINGS_DATA_EXPORT] }
       },
     ],
   },

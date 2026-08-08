@@ -1,0 +1,69 @@
+<div *ngIf="{ concordantVas: concordantVas$ | async } as params">
+
+  <!-- The threshold is configurable, so the list says which one produced it
+       rather than leaving the reader to guess why a VA is here. -->
+  <p class="mb-3 text-sm text-gray-500" *ngIf="concordanceLevel">
+    <i class="mr-1 ph ph-info"></i>
+    Showing VA records where at least
+    <span class="font-medium text-gray-700">{{ concordanceLevel }}</span>
+    {{ concordanceLevel === 1 ? 'physician has' : 'physicians have' }} coded the same
+    underlying cause<span *ngIf="assignmentLimit">, out of {{ assignmentLimit }} assigned per record</span>.
+  </p>
+
+  <div *ngIf="!params?.concordantVas && loadingData" class="mb-2">
+    <mat-progress-bar color="'blue'" [mode]="'indeterminate'"></mat-progress-bar>
+  </div>
+
+  <div class="overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm table-fixed">
+        <thead class="sticky top-0 z-10 bg-gray-50">
+          <tr class="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+            <th *ngFor="let column of columns" class="px-4 py-3 text-left border-b border-gray-200">
+              {{ column.label }}
+            </th>
+            <th class="px-4 py-3 w-32 text-center border-b border-gray-200">Agreement</th>
+            <th class="px-4 py-3 w-20 text-center border-b border-gray-200">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let va of params?.concordantVas?.data" class="border-b border-gray-100 hover:bg-gray-50">
+            <td *ngFor="let column of columns" class="px-4 py-2.5 text-gray-800">
+              <span *ngIf="column.truncate; else plainCell" class="block truncate"
+                [title]="va[column.key]">{{ va[column.key] ?? '—' }}</span>
+              <ng-template #plainCell>
+                <span [ngClass]="column.emphasise ? 'font-medium text-gray-900' : ''">
+                  {{ va[column.key] ?? '—' }}
+                </span>
+              </ng-template>
+            </td>
+
+            <td class="px-4 py-2.5 text-center whitespace-nowrap">
+              <span class="px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full">
+                {{ va.agreeingCoders }} of {{ va.totalCoders }}
+              </span>
+            </td>
+
+            <td class="px-4 py-2.5 text-center">
+              <a class="text-blue-600 cursor-pointer hover:text-blue-800" title="View VA record"
+                (click)="onOpenVA(va?.vaId)"><i class="ph ph-eye"></i></a>
+            </td>
+          </tr>
+
+          <tr *ngIf="!params?.concordantVas?.data?.length && !loadingData">
+            <td [attr.colspan]="columns.length + 2" class="px-4 py-12 text-center text-gray-500">
+              No VA record has reached the concordance threshold yet.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="px-4 py-2 bg-white border-t border-gray-200" *ngIf="params?.concordantVas?.total > 0">
+      <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions"
+        [length]="params?.concordantVas?.total" [pageIndex]="pageNumber" [pageSize]="limit"
+        (page)="onPageChange($event)"></mat-paginator>
+    </div>
+  </div>
+</div>
