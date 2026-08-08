@@ -1,4 +1,4 @@
-<div class="p-4 mx-auto">
+<div>
   <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
     <div class="flex justify-between items-center mb-6">
       <div>
@@ -20,7 +20,7 @@
             <div class="flex flex-col sm:flex-row items-center sm:space-x-2 space-y-2 sm:space-y-0">
               <div class="relative w-full">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-calendar text-gray-400"></i>
+                  <i class="ph ph-calendar text-gray-400"></i>
                 </div>
                 <input id="exportStartDate" type="date" [(ngModel)]="filter_startDate"
                   (change)="onDateInputChange($event)"
@@ -29,7 +29,7 @@
               <span class="hidden sm:inline text-gray-500 font-medium">to</span>
               <div class="relative w-full">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-calendar text-gray-400"></i>
+                  <i class="ph ph-calendar text-gray-400"></i>
                 </div>
                 <input id="exportEndDate" type="date" [(ngModel)]="filter_endDate"
                   (change)="onDateInputChange($event)"
@@ -84,7 +84,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
             </path>
           </svg>
-          <i *ngIf="!isExporting" class="mr-2 fas fa-download"></i>
+          <i *ngIf="!isExporting" class="mr-2 ph ph-download-simple"></i>
           <span *ngIf="!isExporting">Export to Excel</span>
           <span *ngIf="isExporting">Generating Export...</span>
         </button>

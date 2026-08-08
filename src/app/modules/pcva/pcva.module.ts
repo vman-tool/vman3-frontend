@@ -18,8 +18,13 @@ import { UnassignVaComponent } from './dialogs/unassign-va/unassign-va.component
 import { DiscordantsChatsComponent } from './components/discordants-chats/discordants-chats.component';
 import { OtherCodingWorkComponent } from './components/other-coding-work/other-coding-work.component';
 import { JoinIcdCodesPipe } from './pipes/join-icd-codes.pipe';
+import { ConcordantVaComponent } from './components/concordant-va/concordant-va.component';
+import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
+
+import { ModuleHeaderComponent } from 'app/shared/components/module-header/module-header.component';
 
 @NgModule({
   declarations: [
@@ -32,18 +37,22 @@ import { JoinIcdCodesPipe } from './pipes/join-icd-codes.pipe';
     ViewVaComponent,
     CodeVaComponent,
     CodingSheetComponent,
+    ConcordantVaComponent,
     PcvaResultsComponent,
     UnassignVaComponent,
     DiscordantsChatsComponent
   ],
   imports: [
+    ModuleHeaderComponent,
     CommonModule,
     PcvaRoutingModule,
     SharedModule,
     MaterialModule,
     FormsModule,
     OtherCodingWorkComponent,
-    JoinIcdCodesPipe
+    JoinIcdCodesPipe,
+    CustomDropdownComponent,
+    MatProgressSpinnerModule
   ],
   exports: [
     PcvaComponent

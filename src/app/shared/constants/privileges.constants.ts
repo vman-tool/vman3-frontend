@@ -39,6 +39,7 @@ export const USERS_UPDATE_ACCESS_LIMIT_LABELS: string =
 
 // ODK
 export const ODK_MODULE_VIEW: string = 'ODK_MODULE_VIEW';
+export const PCVA_VIEW_CONCORDANT_VA: string = 'PCVA_VIEW_CONCORDANT_VA';
 export const ODK_DATA_SYNC: string = 'ODK_DATA_SYNC';
 export const ODK_QUESTIONS_SYNC: string = 'ODK_QUESTIONS_SYNC';
 

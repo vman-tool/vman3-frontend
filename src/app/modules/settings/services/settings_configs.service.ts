@@ -247,4 +247,75 @@ export class SettingConfigService {
         throw err;
       }));
   }
+
+  /**
+   * Read the stored VA data dictionary. Does not contact ODK Central.
+   *
+   * @param includeOptions also return each question's choice list with its
+   *   per-language answer text. Off by default because the settings table only
+   *   needs the option count; the VA record viewer asks for them so it can
+   *   translate answers as well as questions.
+   */
+  getDataDictionary(includeOptions: boolean = false): Observable<any> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/settings/dictionary`, {
+        params: { include_options: includeOptions }
+      })
+      .pipe(catchError(err => {
+        console.error('data dictionary fetch error:', err);
+        throw err;
+      }));
+  }
+
+  /** Edit one question's label for one language. */
+  updateDictionaryLabel(name: string, language: string, label: string): Observable<any> {
+    return this.http
+      .patch<any>(
+        `${this.configService.API_URL}/settings/dictionary/${encodeURIComponent(name)}/label`,
+        { language, label }
+      )
+      .pipe(catchError(err => {
+        console.error('dictionary label update error:', err);
+        throw err;
+      }));
+  }
+
+  /**
+   * Report what a data reset would delete. Read-only - deletes nothing.
+   * @param sources any of 'odk_api', 'uploaded_csv'
+   */
+  previewDataReset(sources: string[]): Observable<any> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/settings/reset-data/preview`, {
+        params: { sources: sources.join(',') }
+      })
+      .pipe(catchError(err => {
+        console.error('reset preview error:', err);
+        throw err;
+      }));
+  }
+
+  /**
+   * Permanently delete VA records of the given sources and everything derived
+   * from them. `confirm` must be the literal word DELETE; the backend checks
+   * it too, since this endpoint is reachable without the dialog.
+   */
+  resetData(sources: string[], confirm: string): Observable<any> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/reset-data`, { sources, confirm })
+      .pipe(catchError(err => {
+        console.error('data reset error:', err);
+        throw err;
+      }));
+  }
+
+  /** Enrich the VA question dictionary from an uploaded XLSForm (xForm). */
+  uploadXform(formData: FormData): Observable<any> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/xform/upload`, formData)
+      .pipe(catchError(err => {
+        console.error('xform upload error:', err);
+        throw err;
+      }));
+  }
 }

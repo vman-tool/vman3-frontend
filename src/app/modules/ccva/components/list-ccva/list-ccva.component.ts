@@ -58,8 +58,16 @@ export class ListCcvaComponent implements OnInit {
         //   start_range: item.start_range.split('T')[0] ?? item.start_range,
         //   end_range: item.end_range.split('T')[0] ?? item.end_range,
         // })); 
-        this.data = response.data; // Assuming the API response has a 'data' field
-        this.totalRecords = response.totalRecords; // Assuming the API response has a 'totalRecords' field
+        this.data = response.data ?? [];
+        // The API returns { data, message, error, total, pager } - there is no
+        // 'totalRecords' key, which is why the footer count rendered blank.
+        // 'total' exists but the backend leaves it null, so fall back to the
+        // array length; this endpoint returns the full set unpaginated.
+        this.totalRecords = response.total ?? this.data.length;
+        // Guard against sitting on a page that no longer exists after a refresh
+        if ((this.pageNumber - 1) * this.limit >= this.totalRecords) {
+          this.pageNumber = 1;
+        }
         this.isLoading = false; // Stop loading spinner
       },
       (error) => {
@@ -153,6 +161,24 @@ export class ListCcvaComponent implements OnInit {
     });
   }
 
+  // The list endpoint is unpaginated, so slice client-side. Without this the
+  // Previous/Next buttons changed pageNumber while the rows stayed identical.
+  get pagedData(): any[] {
+    const start = (this.pageNumber - 1) * this.limit;
+    return this.data.slice(start, start + this.limit);
+  }
+
+  get rangeStart(): number {
+    return this.totalRecords === 0 ? 0 : (this.pageNumber - 1) * this.limit + 1;
+  }
+
+  get rangeEnd(): number {
+    return Math.min(this.pageNumber * this.limit, this.totalRecords);
+  }
+
+  get hasPrevious(): boolean { return this.pageNumber > 1; }
+  get hasNext(): boolean { return this.pageNumber * this.limit < this.totalRecords; }
+
   // Row selection — max 2 rows, FIFO
   toggleRowSelection(row: any): void {
     const idx = this.selectedRows.findIndex(r => r.id === row.id);
@@ -195,19 +221,19 @@ export class ListCcvaComponent implements OnInit {
     }
   }
 
-  // Pagination: Go to the previous page
+  // Paging is client-side (see pagedData), so these only move the window -
+  // refetching would just pull the same unpaginated payload again.
   goToPreviousPage(): void {
-    if (this.pageNumber > 1) {
+    if (this.hasPrevious) {
       this.pageNumber--;
-      this.fetchData(); // Fetch new data for the previous page
+      this.dropdownOpen = null;
     }
   }
 
-  // Pagination: Go to the next page
   goToNextPage(): void {
-    if (this.pageNumber * this.limit < this.totalRecords) {
+    if (this.hasNext) {
       this.pageNumber++;
-      this.fetchData(); // Fetch new data for the next page
+      this.dropdownOpen = null;
     }
   }
 

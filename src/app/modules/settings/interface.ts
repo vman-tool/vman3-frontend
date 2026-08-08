@@ -71,6 +71,7 @@ export interface PCVAConfigurations {
   vaAssignmentLimit: number;
   concordanceLevel: number;
   showOtherCodersWork: boolean;
+  enableMLIntegration?: boolean;
 }
 
 export interface SyncStatus {

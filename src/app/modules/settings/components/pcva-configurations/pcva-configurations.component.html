@@ -1,101 +1,118 @@
-<div class="mt-5">
-    <div class="grid grid-cols-12">
-        <!-- Uncomment this section after ICD !! support has been added -->
-        <!-- <div class="col-span-4 mb-4">
-            <span class="text-sm font-medium text-gray-900 relative top-[20px] dark:text-gray-300">
-                Use ICD 11 to code
-            </span>
-        </div>
-        <div class="col-span-8 mb-4">
-            <div class="flex items-center space-x-4 mt-5">
-                <label class="inline-flex items-center cursor-pointer">
-                    <input type="checkbox" class="sr-only peer" [ngModel]="config().useICD11" (ngModelChange)="updateConfig('useICD11', $event)">
-                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
-                    </div>
-                </label>
-            </div>
-        </div> -->
-        <div class="col-span-4 mb-5">
-            <span class="text-sm font-medium text-gray-900 relative top-[20px] dark:text-gray-300">
-                Number of coders per single VA record :
-            </span>
-        </div>
-        <div class="col-span-6 mb-5">
-            <input type="number"
-                class="mb-3 block px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                placeholder="2" [ngModel]="config().vaAssignmentLimit" (ngModelChange)="updateConfig('vaAssignmentLimit', $event)">
-        </div>
-        <div class="col-span-4 mb-5">
-            <span class="text-sm font-medium text-gray-900 relative top-[20px] dark:text-gray-300">
-                Concordance reached results:
-            </span>
-        </div>
-        <div class="col-span-6 mb-5">
-            <input type="number"
-                class="mb-3 block px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                placeholder="2" [ngModel]="config().concordanceLevel" (ngModelChange)="updateConfig('concordanceLevel', $event)">
-        </div>
-        <div class="col-span-4 mb-4">
-            <span class="text-sm font-medium text-gray-900 relative top-[20px] dark:text-gray-300">
-                Show Other's Coding Work
-            </span>
-        </div>
-        <div class="col-span-8 mb-4">
-            <div class="flex items-center space-x-4 mt-5">
-                <label class="inline-flex items-center cursor-pointer">
-                    <input type="checkbox" class="sr-only peer" [ngModel]="config().showOtherCodersWork" (ngModelChange)="updateConfig('showOtherCodersWork', $event)">
-                    <div
-                        class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
-                    </div>
-                </label>
-            </div>
-        </div>
+<!--
+  Each setting is one row: label and description on the left, control on the
+  right, vertically centred by the grid.
 
-        <div class="col-span-4 mb-4">
-            <span class="text-sm font-medium text-gray-900 relative top-[20px] dark:text-gray-300">
-                Upload Manual PCVA Data
-            </span>
-        </div>
-        <div class="col-span-8 mb-4">
-            <div class="flex items-center space-x-4 mt-5">
-                <label class="inline-flex items-center cursor-pointer">
-                    <input type="checkbox" class="sr-only peer" id="uploadPCVAData" [(ngModel)]="upLoadPCVAData">
-                    <div
-                        class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
-                    </div>
-                </label>
-            </div>
-        </div>
+  The previous layout faked that alignment with `relative top-[20px]` on every
+  label and `mt-5` on every control. Relative positioning shifts a element
+  visually without moving what surrounds it, so the moment a label gained a
+  description line the two overlapped. Centring the row does the same job
+  honestly, and dropping the stacked margins removes enough height that the
+  page no longer scrolls.
+-->
+<div class="divide-y divide-gray-100">
 
-        <!-- File browser + dropdown shown when checkbox enabled: offset by 4 cols -->
-        <div class="col-span-4 mb-4"></div>
-        <div class="col-span-8 mb-4" *ngIf="upLoadPCVAData">
-            <div class="flex items-center space-x-4 mt-2">
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Select File</label>
-                    <input type="file" (change)="onFileSelected($event)" class="block w-full text-sm text-gray-900 bg-gray-50 rounded border border-gray-300 p-2" />
-                </div>
-
-                <div class="w-48">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Dictionary</label>
-                    <select [(ngModel)]="selectedFileType" class="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
-                        <option *ngFor="let dict of pcvaDictionaries" [value]="dict.value">{{dict.label}}</option>
-                    </select>
-                </div>
-
-                <div class="w-24">
-                    <label class="block text-sm font-medium text-transparent mb-1">action</label>
-                    <button (click)="uploadFile()" class="px-3 py-2 bg-blue-600 text-white rounded-md">Upload</button>
-                </div>
-            </div>
-            <div class="mt-2 text-sm text-gray-600" *ngIf="fileToUpload">Selected: {{ fileToUpload.name }}</div>
-        </div>
-
-        <div class="col-span-12 mb-5">
-                <button (click)="saveConfigurations()"
-                    class="px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-blue-600 hover:bg-blue-700 hover:cursor-pointer">
-                    Save
-                </button>
-        </div>
+  <!-- Uncomment once ICD-11 coding is supported
+  <div class="grid grid-cols-12 gap-4 items-center py-3">
+    <div class="col-span-5">
+      <span class="text-sm font-medium text-gray-900 dark:text-gray-300">Use ICD 11 to code</span>
     </div>
+    <div class="col-span-7">
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer" [ngModel]="config().useICD11" (ngModelChange)="updateConfig('useICD11', $event)">
+        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+  </div> -->
+
+  <div class="grid grid-cols-12 gap-4 items-center py-3">
+    <div class="col-span-5">
+      <span class="text-sm font-medium text-gray-900 dark:text-gray-300">
+        Number of coders per single VA record
+      </span>
+    </div>
+    <div class="col-span-7">
+      <input type="number" placeholder="2"
+        class="block px-3 py-2 w-28 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        [ngModel]="config().vaAssignmentLimit" (ngModelChange)="updateConfig('vaAssignmentLimit', $event)">
+    </div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4 items-center py-3">
+    <div class="col-span-5">
+      <span class="text-sm font-medium text-gray-900 dark:text-gray-300">
+        Concordance reached results
+      </span>
+    </div>
+    <div class="col-span-7">
+      <input type="number" placeholder="2"
+        class="block px-3 py-2 w-28 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        [ngModel]="config().concordanceLevel" (ngModelChange)="updateConfig('concordanceLevel', $event)">
+    </div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4 items-center py-3">
+    <div class="col-span-5">
+      <span class="text-sm font-medium text-gray-900 dark:text-gray-300">Show Other's Coding Work</span>
+    </div>
+    <div class="col-span-7">
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer" [ngModel]="config().showOtherCodersWork" (ngModelChange)="updateConfig('showOtherCodersWork', $event)">
+        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4 items-center py-3">
+    <div class="col-span-5">
+      <span class="text-sm font-medium text-gray-900 dark:text-gray-300">Enable ML Integration</span>
+      <p class="mt-0.5 text-xs text-gray-500">
+        Adds a Machine Learning panel to the coding window, where a coder can
+        ask the model for a probable cause of death.
+      </p>
+    </div>
+    <div class="col-span-7">
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer" [ngModel]="config().enableMLIntegration" (ngModelChange)="updateConfig('enableMLIntegration', $event)">
+        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4 items-center py-3">
+    <div class="col-span-5">
+      <span class="text-sm font-medium text-gray-900 dark:text-gray-300">Upload Manual PCVA Data</span>
+    </div>
+    <div class="col-span-7">
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="checkbox" class="sr-only peer" id="uploadPCVAData" [(ngModel)]="upLoadPCVAData">
+        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- Only present once the toggle above is on -->
+  <div class="py-3" *ngIf="upLoadPCVAData">
+    <div class="flex gap-4 items-end">
+      <div class="flex-1">
+        <label class="block mb-1 text-sm font-medium text-gray-700">Select File</label>
+        <input type="file" (change)="onFileSelected($event)"
+          class="block p-2 w-full text-sm text-gray-900 bg-gray-50 rounded border border-gray-300" />
+      </div>
+      <div class="w-48">
+        <label class="block mb-1 text-sm font-medium text-gray-700">Data Dictionary</label>
+        <select [(ngModel)]="selectedFileType" class="block px-3 py-2 w-full bg-white rounded-md border border-gray-300">
+          <option *ngFor="let dict of pcvaDictionaries" [value]="dict.value">{{dict.label}}</option>
+        </select>
+      </div>
+      <button (click)="uploadFile()" class="px-3 py-2 text-white bg-blue-600 rounded-md">Upload</button>
+    </div>
+    <div class="mt-2 text-sm text-gray-600" *ngIf="fileToUpload">Selected: {{ fileToUpload.name }}</div>
+  </div>
+
+  <div class="pt-4">
+    <button (click)="saveConfigurations()"
+      class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+      Save
+    </button>
+  </div>
 </div>

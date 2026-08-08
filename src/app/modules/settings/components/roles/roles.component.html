@@ -3,7 +3,7 @@
 } as params">
     <div class="py-8">
         <div class="flex items-center justify-between mb-4">
-            <span class="px-2 text-2xl text-start">Roles</span>
+            <span class="page-title">Roles</span>
             <button class="px-6 py-2 text-white bg-blue-500 rounded hover:bg-blue-700" *ngIf="canAddRoles" (click)="onAddRole()">Add Role</button>
         </div>
         <div class="m-2" *ngIf="!params?.rolesData && loadingData">

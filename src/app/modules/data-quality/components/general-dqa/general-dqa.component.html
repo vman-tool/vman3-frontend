@@ -1,10 +1,10 @@
-<div class="container p-6 mx-auto space-y-6">
+<div class="space-y-6">
 
   <!-- ── Header ──────────────────────────────────────────────────────────── -->
-  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+  <div class="page-header">
     <div>
-      <div class="text-lg font-semibold text-gray-900">General Data Quality Assessment</div>
-      <p class="text-sm text-gray-500 mt-1">Click a card to explore its breakdown below</p>
+      <div class="page-title">General Data Quality Assessment</div>
+      <p class="page-subtitle">Click a card to explore its breakdown below</p>
     </div>
     <div class="flex items-center gap-2 opacity-40 cursor-not-allowed" title="Coming soon">
       <i class="ph ph-calendar-blank text-gray-500"></i>
@@ -81,7 +81,7 @@
       </div>
     </div>
 
-    <!-- 2 · Avg Informatic Completeness Score (ICS) — CLICKABLE -->
+    <!-- 2 · Avg Informative Completeness Score (ICS) — CLICKABLE -->
     <div
       class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
       [ngClass]="activeCard === 'ics'
@@ -92,7 +92,7 @@
 
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-medium text-gray-500 leading-snug">
-          Avg Informatic<br>Completeness Score
+          Informative<br>Completeness Score
         </span>
         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
               [ngClass]="activeCard === 'ics' ? 'bg-blue-100' : 'bg-blue-50'">

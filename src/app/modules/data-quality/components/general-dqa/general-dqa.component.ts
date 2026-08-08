@@ -332,13 +332,15 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
     return `± ${Math.round(v)} min`;
   }
 
+  // ICS already arrives as a percentage (0-100) from compute_ics, like ICI
+  // and RRS. Multiplying by 100 here rendered 98.5% as 9854.2%.
   fmtPct(v: number | null): string {
     if (v === null || v === undefined) return '--';
-    return `${(v * 100).toFixed(1)}%`;
+    return `${v.toFixed(1)}%`;
   }
   fmtPctStd(v: number | null): string {
     if (!v || v === 0) return '';
-    return `± ${(v * 100).toFixed(1)}%`;
+    return `± ${v.toFixed(1)}%`;
   }
 
   fmtRrs(v: number | null): string {

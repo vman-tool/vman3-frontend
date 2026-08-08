@@ -89,7 +89,7 @@ export class SidebarComponent {
             hasAccess: true,
           },
           {
-            displayText: 'All Assigned',
+            displayText: 'Assigned VA',
             icon: 'flaticon-stethoscope',
             icon_asset: '',
             route: '/all-assigned',
@@ -103,11 +103,22 @@ export class SidebarComponent {
             hasAccess: true,
           },
           {
-            displayText: 'Discordants',
+            displayText: 'Discordant VA',
             icon: 'flaticon-stethoscope',
             icon_asset: '',
             route: '/discordants',
             hasAccess: true,
+          },
+          {
+            // Gated on the privilege, unlike its siblings which are open to
+            // anyone with PCVA access. Admin roles receive every privilege, so
+            // they see this; the built-in coder role has an explicit privilege
+            // list that does not include it, so coders do not.
+            displayText: 'Concordant VA',
+            icon: 'ph-handshake',
+            icon_asset: '',
+            route: '/concordant-va',
+            hasAccess: await this.hasAccess([privileges.PCVA_VIEW_CONCORDANT_VA]),
           },
           {
             displayText: 'Data Export',
@@ -143,13 +154,6 @@ export class SidebarComponent {
             icon_asset: '',
             route: '/sync',
             hasAccess: await this.hasAccess([privileges.ODK_MODULE_VIEW]),
-          },
-          {
-            displayText: 'Data Dictionary',
-            icon: 'ph ph-books',
-            icon_asset: '',
-            route: '/data-dictionary',
-            hasAccess: await this.hasAccess([privileges.USERS_MODULE_VIEW])
           },
           {
             displayText: 'Data Export',

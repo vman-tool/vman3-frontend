@@ -1,14 +1,16 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../../modules/pcva/services/va-records/va-records.service';
-import { debounceTime, distinctUntilChanged, lastValueFrom, map, Observable, Subject, takeUntil } from 'rxjs';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
+import { debounceTime, distinctUntilChanged, firstValueFrom, Subject, takeUntil } from 'rxjs';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
 import { settingsConfigData } from 'app/modules/settings/interface';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
-import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
-import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
-import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
+import {
+  DEFAULT_VA_LANGUAGE,
+  VaDictionary,
+  VaDictionaryService,
+  VaField,
+} from 'app/shared/services/va-dictionary/va-dictionary.service';
 
 @Component({
   standalone: false,
@@ -16,91 +18,200 @@ import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constan
   templateUrl: './view-va.component.html',
   styleUrl: './view-va.component.scss',
 })
-export class ViewVaComponent implements OnInit, AfterViewInit{
-  vaRecord$?: Observable<any>;
-  odkQuestions?: any[];
-  displayQuestions?: any[];
-  questionsIds?: string[];
-  summaryInfo?: any;
+export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
+  /** The submission this dialog was opened for. */
+  vaId = '';
 
-  searchText: string = '';
-  
+  /** The row the records table was showing, for the header strip. */
+  context: any;
+  contextItems: { label: string; value: any }[] = [];
+
+  loading = true;
+  loadError = '';
+  questionsMissing = false;
+
+  languageOptions: { value: string; label: string }[] = [];
+  hasLanguageChoice = false;
+  selectedLanguage = DEFAULT_VA_LANGUAGE;
+
+  fields: VaField[] = [];
+  displayFields: VaField[] = [];
+  summaryFields: VaField[] = [];
+
+  searchText = '';
+
+  private record: any = null;
+  private dictionary?: VaDictionary;
+  private summaryKeys: string[] = [];
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
-  searchTerm: string = '';
 
   constructor(
     private dialogRef: MatDialogRef<ViewVaComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService,
-    private genericIndexedDbService: GenericIndexedDbService,
+    private vaDictionaryService: VaDictionaryService,
     private settingConfigService: SettingConfigService
-  ) {}
-   
+  ) {
+    // Callers disagree about what they hand over: the VA Records table passes
+    // the whole row, while the PCVA tables pass just the id string. Accept
+    // either, and only show the context strip when a row was supplied.
+    const va = data?.va;
+    this.context = va && typeof va === 'object' ? va : {};
+    this.vaId = ViewVaComponent.resolveVaId(va);
+
+    this.contextItems = [
+      { label: 'Interview day', value: this.context?.interviewDay },
+      { label: 'Interviewer', value: this.context?.interviewerName },
+      { label: 'Questionnaire', value: this.context?.questionnaireType },
+      { label: 'Gender', value: this.context?.gender },
+    ].filter(item => !!item.value);
+  }
+
+  private static resolveVaId(va: any): string {
+    if (!va) { return ''; }
+    if (typeof va === 'string') { return va; }
+    return va.instanceid || va.vaId || va.instanceId || '';
+  }
+
+  trackByName(_index: number, field: VaField): string {
+    return field.name;
+  }
+
   ngOnInit(): void {
-    this.getVaRecord();
-    this.getQuestions();
     this.setupSearch();
+    this.load();
   }
 
-  private setupSearch(): void {
-    this.searchSubject.pipe(
-      debounceTime(500),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe((searchTerm: string) => {
-      
-      this.displayQuestions = this.odkQuestions?.filter((question: any) => question?.key?.toLowerCase().includes(searchTerm.toLowerCase()) ||  question?.value?.label?.toLowerCase().includes(searchTerm.toLowerCase()));
-    });
-  }
-
-  async getSummaryConfigurations(){
-    this.summaryInfo = await lastValueFrom(this.settingConfigService.getSettingsConfig()?.pipe(
-      map(async (response: settingsConfigData| null) => {
-        return response !== null 
-        // ? await this.indexedDBService.getQuestionsByKeys(response?.va_summary) 
-        ? await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, response?.va_summary) 
-        : null
-      })
-    ))
-  }
-
-  getVaRecord(): any {
-    this.vaRecord$ = this.vaRecordsService.getVARecords(undefined, undefined, undefined, undefined, false, this.data?.va?.instanceid).pipe(
-      map((response: any) => {
-          response['data'] = filter_keys_without_data(response.data)
-          return response
-        })
-      )
-  }
-
-  async getQuestions(): Promise<any> {
-    // this.odkQuestions = await this.indexedDBService.getQuestions()
-    this.odkQuestions = await this.genericIndexedDbService.getData(OBJECTSTORE_VA_QUESTIONS)
-    this.displayQuestions = this.odkQuestions;
-    this.getSummaryConfigurations();
-  }
-
-  ngAfterViewInit() {
-    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
-    if (dialogElement) {
-      (dialogElement as HTMLElement).style.maxWidth = '100vw';
-      (dialogElement as HTMLElement).style.minWidth = '0';
+  /**
+   * Material caps a dialog panel at 80vw, which would override the 95vw the
+   * records table asks for. Relax it once the panel exists.
+   */
+  ngAfterViewInit(): void {
+    const panel = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
+    if (panel) {
+      (panel as HTMLElement).style.maxWidth = '100vw';
+      (panel as HTMLElement).style.minWidth = '0';
     }
-  }
-
-  onSearch(): void {
-    this.searchSubject.next(this.searchText);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
 
-  onClose(){
-    this.dialogRef.close()
+  // ---------------------------------------------------------------- loading
+
+  private async load(): Promise<void> {
+    this.loading = true;
+    this.loadError = '';
+
+    // Without an id getVARecords asks for every submission, unpaged - the
+    // request that made this dialog appear to hang forever when opened from
+    // PCVA. Fail fast instead.
+    if (!this.vaId) {
+      this.loadError = 'This VA record could not be identified, so nothing was loaded.';
+      this.loading = false;
+      return;
+    }
+
+    try {
+      const [submission, dictionary] = await Promise.all([
+        this.fetchRecord(),
+        this.vaDictionaryService.load(),
+      ]);
+
+      if (!submission) {
+        this.loadError = `No submission was found for ${this.vaId}.`;
+        return;
+      }
+
+      this.record = submission;
+      this.dictionary = dictionary;
+      this.questionsMissing = dictionary.isEmpty;
+      this.languageOptions = dictionary.languageOptions;
+      this.hasLanguageChoice = dictionary.hasLanguageChoice;
+      this.selectedLanguage = dictionary.resolveLanguage(this.selectedLanguage);
+
+      await this.loadSummaryKeys();
+
+      this.applyLanguage();
+    } catch (error: any) {
+      console.error('Failed to load the VA record:', error);
+      this.loadError = 'This VA record could not be loaded. Please try again.';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private async fetchRecord(): Promise<any> {
+    const response: any = await firstValueFrom(
+      this.vaRecordsService.getVARecords(
+        undefined, undefined, undefined, undefined, false, this.vaId
+      )
+    );
+    return filter_keys_without_data(response?.data ?? [])?.[0] ?? null;
+  }
+
+  private async loadSummaryKeys(): Promise<void> {
+    try {
+      const config: settingsConfigData | null = await firstValueFrom(
+        this.settingConfigService.getSettingsConfig()
+      );
+      this.summaryKeys = config?.va_summary ?? [];
+    } catch {
+      this.summaryKeys = [];
+    }
+  }
+
+  // --------------------------------------------------------------- language
+
+  onLanguageChange(language: string): void {
+    if (!language || language === this.selectedLanguage) { return; }
+    this.selectedLanguage = language;
+    this.applyLanguage();
+  }
+
+  /** Rebuild every rendered string for the selected language. */
+  private applyLanguage(): void {
+    this.fields = this.dictionary?.buildFields(this.record, this.selectedLanguage) ?? [];
+
+    const byName = new Map(this.fields.map(field => [field.name, field]));
+    this.summaryFields = this.summaryKeys
+      .map(key => byName.get(key))
+      .filter((field): field is VaField => !!field);
+
+    this.applySearch(this.searchText);
+  }
+
+  // ---------------------------------------------------------------- search
+
+  private setupSearch(): void {
+    this.searchSubject.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(term => this.applySearch(term));
+  }
+
+  onSearch(): void {
+    this.searchSubject.next(this.searchText);
+  }
+
+  clearSearch(): void {
+    this.searchText = '';
+    this.applySearch('');
+  }
+
+  private applySearch(term: string): void {
+    const needle = (term || '').trim().toLowerCase();
+    this.displayFields = needle
+      ? this.fields.filter(field => field.searchKey.includes(needle))
+      : this.fields;
+  }
+
+  onClose(): void {
+    this.dialogRef.close();
   }
 }

@@ -154,9 +154,11 @@ export class GraphsComponent implements OnInit {
     const h = Math.floor(m / 60), r = m % 60;
     return r === 0 ? `${h}h` : `${h}h ${r}m`;
   }
+  // ICS already arrives as a percentage (0-100) from compute_ics, like ICI and
+  // RRS below. Multiplying by 100 here rendered 98.5% as 9854.2%.
   fmtDqaPct(v: number | null): string {
     if (v === null || v === undefined) return '--';
-    return `${(v * 100).toFixed(1)}%`;
+    return `${v.toFixed(1)}%`;
   }
   fmtDqaRrs(v: number | null): string {
     if (v === null || v === undefined) return '--';

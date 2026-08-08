@@ -500,6 +500,141 @@
 
     </mat-expansion-panel>
 
+    <!-- ── Panel: Machine Learning Analysis ──────────────────────────────── -->
+    <!-- Hidden entirely unless PCVA Configuration enables ML integration. -->
+    @if(enableMLIntegration) {
+      <mat-expansion-panel
+        [expanded]="panelMlOpenState()"
+        (opened)="panelMlOpenState.set(true)"
+        (closed)="panelMlOpenState.set(false)"
+        hideToggle>
+        <mat-expansion-panel-header class="mat-expansion-panel-header-colored">
+          <mat-panel-title>
+            {{ panelMlOpenState() ? '▼' : '▶' }} Machine Learning (ML) Analysis
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="mt-2">
+          <!-- Idle -->
+          <div *ngIf="!mlRunning() && !mlResult()" class="flex flex-wrap gap-3 items-center">
+            <button type="button" (click)="runMlAnalysis()"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+              <i class="mr-2 ph ph-brain"></i>
+              Analyze with VMan ML
+            </button>
+            <span class="text-xs text-gray-500">Takes about 20 seconds.</span>
+          </div>
+
+          <!-- Running: elapsed time and a status line, no invented percentage -->
+          <div *ngIf="mlRunning()" class="space-y-2">
+            <mat-progress-bar color="'blue'" [mode]="'indeterminate'"></mat-progress-bar>
+            <div class="flex justify-between items-center text-sm text-gray-600">
+              <span>{{ mlStatus() }}</span>
+              <span class="tabular-nums">{{ mlElapsed() }}s</span>
+            </div>
+          </div>
+
+          <div *ngIf="mlError()" class="p-3 mt-2 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
+            {{ mlError() }}
+          </div>
+
+          <!-- Result -->
+          <div *ngIf="mlResult() as ml" class="space-y-4">
+            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div class="text-xs font-medium tracking-wide text-blue-700 uppercase">
+                Probable cause of death
+              </div>
+              <div class="mt-1 text-lg font-semibold text-gray-900">{{ ml.cause }}</div>
+              <div class="mt-1 text-sm text-gray-600">
+                {{ ml.summary?.confidence_band }} confidence
+                &middot; {{ asPercent(ml.probability) }} probability
+              </div>
+              <div *ngIf="mlStored()" class="mt-2 text-xs text-gray-500">
+                <i class="mr-1 ph ph-clock-counter-clockwise"></i>
+                Recorded when this VA was coded<span *ngIf="ml.analysed_by_name">
+                  by {{ ml.analysed_by_name }}</span>. Run again for a fresh analysis.
+              </div>
+            </div>
+
+            <!-- How it got there: every line below is a figure the model
+                 reported, not an inference about which answers mattered. -->
+            <div>
+              <div class="mb-2 text-sm font-semibold text-gray-900">How the model reached this</div>
+              <ul class="ml-4 space-y-1 text-sm text-gray-700 list-disc">
+                <li *ngFor="let point of ml.summary?.points">{{ point }}</li>
+              </ul>
+
+              <div class="grid grid-cols-2 gap-3 mt-3 sm:grid-cols-4">
+                <div class="p-2 bg-gray-50 rounded border border-gray-200">
+                  <div class="text-[11px] tracking-wide text-gray-500 uppercase">Probability</div>
+                  <div class="text-sm font-semibold text-gray-900">{{ asPercent(ml.probability) }}</div>
+                </div>
+                <div class="p-2 bg-gray-50 rounded border border-gray-200">
+                  <div class="text-[11px] tracking-wide text-gray-500 uppercase">95% interval</div>
+                  <div class="text-sm font-semibold text-gray-900">
+                    {{ asPercent(ml.confidence_lower) }}–{{ asPercent(ml.confidence_upper) }}
+                  </div>
+                </div>
+                <div class="p-2 bg-gray-50 rounded border border-gray-200">
+                  <div class="text-[11px] tracking-wide text-gray-500 uppercase">Lead over next</div>
+                  <div class="text-sm font-semibold text-gray-900">{{ asPercent(ml.margin) }}</div>
+                </div>
+                <div class="p-2 bg-gray-50 rounded border border-gray-200">
+                  <div class="text-[11px] tracking-wide text-gray-500 uppercase">Runner-up</div>
+                  <div class="text-sm font-semibold text-gray-900 truncate" [title]="ml.second_cause">
+                    {{ ml.second_cause || '—' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Feature attribution, from XGBoost's own TreeSHAP. Bars are
+                   scaled against the strongest contributor in this record, so
+                   they compare within one explanation and not across records. -->
+              <div *ngIf="ml.contributions?.length" class="mt-4">
+                <div class="text-sm font-semibold text-gray-900">
+                  What moved the model most
+                </div>
+                <!-- Without this the two colours are a guess. Amber rather than
+                     grey for the opposing side: grey reads as "inactive" when
+                     the point is that the input actively pulled the other way. -->
+                <p class="mt-0.5 mb-2 text-xs text-gray-500">
+                  Each input is scored for how far it pushed the model
+                  <span class="font-medium text-blue-700">towards</span> this cause or
+                  <span class="font-medium text-amber-700">away from</span> it. Longer
+                  bars moved it further. Bars compare within this record only.
+                </p>
+                <div class="space-y-1.5">
+                  <div *ngFor="let c of ml.contributions" class="flex gap-3 items-center">
+                    <span class="flex-1 text-sm text-gray-700 truncate" [title]="c.variable + ' — ' + c.label">
+                      {{ c.label }}
+                    </span>
+                    <span class="w-24 text-xs text-right"
+                      [ngClass]="c.weight > 0 ? 'text-blue-700' : 'text-amber-700'">
+                      {{ c.direction }}
+                    </span>
+                    <div class="w-24 h-2 bg-gray-100 rounded overflow-hidden shrink-0">
+                      <div class="h-full rounded"
+                        [ngClass]="c.weight > 0 ? 'bg-blue-500' : 'bg-amber-500'"
+                        [style.width.%]="contributionWidth(c, ml.contributions)"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="mt-3 text-xs italic text-gray-500">{{ ml.summary?.caveat }}</p>
+              <p class="mt-1 text-xs text-gray-400">Model: {{ ml.model }}</p>
+            </div>
+
+            <button type="button" (click)="runMlAnalysis()"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-white rounded-md border border-blue-300 hover:bg-blue-50">
+              <i class="mr-1.5 ph ph-arrows-clockwise"></i>
+              Run again
+            </button>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    }
+
     <!-- ── Panel: Other Coders' Work ─────────────────────────────────────── -->
     @if(showOtherCodersWork) {
       <mat-expansion-panel

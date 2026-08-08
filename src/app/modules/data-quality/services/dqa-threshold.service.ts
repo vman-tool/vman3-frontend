@@ -101,8 +101,11 @@ export class DqaThresholdService {
   }
 
   classifyIcs(value: number | null): StatusBadge | null {
-    // raw value is 0–1; thresholds are in % (0–100)
-    return this.classifyIndicator(value !== null && value !== undefined ? value * 100 : null, this.current.ics);
+    // ICS arrives as a percentage (0-100) from compute_ics, same as ICI and
+    // RRS, and the thresholds are in % too - so it is compared directly.
+    // The previous *100 pushed every value past the top threshold, so the
+    // tier badge always read "best" no matter the actual score.
+    return this.classifyIndicator(value, this.current.ics);
   }
 
   classifyIci(value: number | null): StatusBadge | null {

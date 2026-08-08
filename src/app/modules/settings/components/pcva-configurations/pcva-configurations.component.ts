@@ -16,6 +16,7 @@ export class PcvaConfigurationsComponent {
     vaAssignmentLimit : 2,
     concordanceLevel : 2,
     showOtherCodersWork: true,
+    enableMLIntegration: false,
   })
 
   constructor(private pcvaSettingsService: PcvaSettingsService, private snackBar: MatSnackBar){}

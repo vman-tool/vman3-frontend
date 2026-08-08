@@ -1,11 +1,8 @@
-<div class="container" *ngIf="{
+<div *ngIf="{
   discordantsVAs: discordantsVAs$ | async
 } as params">
 
-  <div class="py-8">
-    <div>
-      <span class="px-2 text-2xl text-start">DISCORDANTS </span>
-    </div>
+  <div>
     <div class="m-2" *ngIf="!params?.discordantsVAs && loadingData">
       <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
       </mat-progress-bar>

@@ -1,0 +1,83 @@
+<div class="w-full max-w-lg">
+
+  <!-- Header -->
+  <div class="flex gap-3 items-start px-6 py-5 border-b border-gray-200">
+    <div class="flex justify-center items-center w-10 h-10 bg-red-100 rounded-full shrink-0">
+      <i class="text-xl text-red-600 ph ph-warning"></i>
+    </div>
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900">Delete VA data permanently</h2>
+      <p class="mt-0.5 text-sm text-gray-500">
+        {{ sourceLabels }} &middot; this cannot be undone
+      </p>
+    </div>
+  </div>
+
+  <div class="px-6 py-5 space-y-4">
+
+    <!-- Scope -->
+    <div *ngIf="loadingScope" class="flex gap-2 items-center text-sm text-gray-500">
+      <mat-spinner diameter="20" color="accent"></mat-spinner>
+      Working out what would be deleted…
+    </div>
+
+    <div *ngIf="!loadingScope && scopeError"
+      class="p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
+      {{ scopeError }}
+    </div>
+
+    <ng-container *ngIf="!loadingScope && !scopeError">
+      <div *ngIf="submissionCount === 0"
+        class="p-3 text-sm text-gray-600 bg-gray-50 rounded-md border border-gray-200">
+        There is no data from this source to delete.
+      </div>
+
+      <div *ngIf="submissionCount > 0">
+        <p class="mb-2 text-sm text-gray-700">
+          The following records will be <strong>permanently deleted</strong>:
+        </p>
+        <div class="overflow-hidden rounded-md border border-gray-200">
+          <div *ngFor="let line of scopeLines"
+            class="flex justify-between items-center px-4 py-2 text-sm border-b border-gray-100 last:border-b-0">
+            <span class="text-gray-700">{{ line.label }}</span>
+            <span class="font-semibold text-gray-900 tabular-nums">{{ line.count | number }}</span>
+          </div>
+        </div>
+        <p class="mt-2 text-xs text-gray-500">
+          Related records are removed together with the VA records they belong
+          to, so nothing is left pointing at data that no longer exists.
+        </p>
+      </div>
+    </ng-container>
+
+    <!-- Typed confirmation -->
+    <div *ngIf="!loadingScope && !scopeError && submissionCount > 0">
+      <label class="block mb-1 text-sm font-medium text-gray-700">
+        Type <span class="font-mono font-semibold text-red-600">{{ confirmationWord }}</span> to confirm
+      </label>
+      <input type="text" [(ngModel)]="typedConfirmation" [disabled]="isDeleting"
+        autocomplete="off" spellcheck="false" [placeholder]="confirmationWord"
+        class="px-3 py-2 w-full font-mono text-sm rounded-md border"
+        [ngClass]="typedConfirmation && !isConfirmed ? 'border-red-300' : 'border-gray-300'">
+    </div>
+
+    <div *ngIf="deleteError"
+      class="p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
+      {{ deleteError }}
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-3 justify-end px-6 py-4 bg-gray-50 border-t border-gray-200">
+    <button type="button" (click)="onCancel()" [disabled]="isDeleting"
+      class="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+      Cancel
+    </button>
+    <button type="button" (click)="onDelete()" [disabled]="!canDelete"
+      class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+      <mat-spinner *ngIf="isDeleting" diameter="16" class="mr-2"></mat-spinner>
+      <i *ngIf="!isDeleting" class="mr-2 ph ph-trash"></i>
+      {{ isDeleting ? 'Deleting…' : 'Delete permanently' }}
+    </button>
+  </div>
+</div>

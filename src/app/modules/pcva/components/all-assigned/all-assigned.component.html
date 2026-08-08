@@ -1,56 +1,55 @@
-<div class="container" *ngIf="{
+<div *ngIf="{
   assignedVas: assignedVas$ | async
 } as params">
 
-  <div class="py-8">
-    <div>
-      <span class="px-2 text-2xl text-start">ALL ASSIGNED </span>
+  <div *ngIf="!params?.assignedVas && loadingData" class="mb-2">
+    <mat-progress-bar color="'blue'" [mode]="'indeterminate'"></mat-progress-bar>
+  </div>
+
+  <div class="overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm table-fixed">
+        <thead class="sticky top-0 z-10 bg-gray-50">
+          <tr class="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+            <th *ngFor="let column of columns" class="px-4 py-3 text-left border-b border-gray-200">
+              {{ column.label }}
+            </th>
+            <th class="px-4 py-3 w-24 text-center border-b border-gray-200">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let va of params?.assignedVas?.data"
+            class="border-b border-gray-100 hover:bg-gray-50">
+            <td *ngFor="let column of columns" class="px-4 py-2.5 text-gray-800">
+              <!-- A VA ID is far too long for its column; clip it and put the
+                   whole value in the tooltip, as the assign dialogs do. -->
+              <span *ngIf="column.truncate; else plainCell"
+                class="block truncate" [title]="va[column.key]">{{ va[column.key] ?? '—' }}</span>
+              <ng-template #plainCell>{{ va[column.key] ?? '—' }}</ng-template>
+            </td>
+
+            <td class="px-4 py-2.5 text-center whitespace-nowrap">
+              <a class="text-blue-600 cursor-pointer hover:text-blue-800" title="View VA record"
+                (click)="onOpenVA(va?.vaId)"><i class="ph ph-eye"></i></a>
+              <a class="ml-3 text-blue-600 cursor-pointer hover:text-blue-800" title="Code this VA"
+                (click)="onCodeVA(va?.vaId)"><i class="flaticon-stethoscope"></i></a>
+            </td>
+          </tr>
+
+          <tr *ngIf="!params?.assignedVas?.data?.length && !loadingData">
+            <td [attr.colspan]="columns.length + 1" class="px-4 py-12 text-center text-gray-500">
+              No VA record has been assigned to you yet.
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="m-2" *ngIf="!params?.assignedVas && loadingData">
-      <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
-      </mat-progress-bar>
-    </div>
-    <div class="overflow-x-none">
-      <div class="w-full overflow-hidden">
-        <div class="relative w-full overflow-x-auto shadow-md sm:rounded-lg">
-          <table class="w-full divide-y divide-gray-200 table-auto">
-            <thead *ngIf="params?.assignedVas?.data?.length && headers?.length">
-              <tr class="bg-white sticky top-0 z-10">
-                <th *ngFor="let header of headers;"
-                  class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  {{ header }}
-                </th>
-                <th
-                  class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngIf="params?.assignedVas?.data?.length">
-                <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }" *ngFor="let va of params?.assignedVas?.data; let i = index">
-                  <td class="px-5 py-3 border-b border-gray-200 text-sm" *ngFor="let header of headers;">
-                    <p class="text-gray-900 whitespace-no-wrap">{{ va[header] }}</p>
-                  </td>
-                  <td class="px-5 py-3 border-b border-gray-200 text-sm">
-                    <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer" (click)="onOpenVA(va?.vaId)"><i class="ph-eye"></i></a>
-                    <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer ml-2" (click)="onCodeVA(va?.vaId)"><i class="flaticon-stethoscope"></i></a>
-                  </td>
-                </tr>
-              </ng-container>
-              <ng-container *ngIf="!params?.assignedVas?.data?.length && !loadingData">
-                <tr class="bg-gray-200">
-                  <td colspan="5" class="px-5 py-3 text-center text-gray-900">No va record was found</td>
-                </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
-        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="params?.assignedVas?.total > 0">
-          <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="params?.assignedVas?.total"
-            [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
-        </div>
-      </div>
+
+    <div class="px-4 py-2 bg-white border-t border-gray-200" *ngIf="params?.assignedVas?.total > 0">
+      <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions"
+        [length]="params?.assignedVas?.total" [pageIndex]="pageNumber" [pageSize]="limit"
+        (page)="onPageChange($event)"></mat-paginator>
     </div>
   </div>
 </div>

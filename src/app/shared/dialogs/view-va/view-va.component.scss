@@ -1,0 +1,11 @@
+/**
+ * The dialog is opened with an explicit height (90vh), and the layout inside is
+ * a flex column whose panes scroll independently. That only works if the height
+ * actually reaches this component - by default the host is an inline element,
+ * so the percentage chain from the dialog surface breaks here and `h-full` on
+ * the root div resolves to auto.
+ */
+:host {
+  display: block;
+  height: 100%;
+}

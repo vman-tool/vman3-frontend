@@ -50,10 +50,16 @@ export class DataSyncService {
 
   // formsubmission_status method removed - data now included in getSyncStatus()
 
-  syncQuestions() {
+  /**
+   * Sync questions from ODK Central.
+   * @param overrideLabels false (default) preserves labels contributed by an
+   *        uploaded xForm; true lets ODK's values replace them.
+   */
+  syncQuestions(overrideLabels: boolean = false) {
     return this.http.post<any>(
       `${this.configService.API_URL}/odk/fetch_form_questions`,
-      {}
+      {},
+      { params: { override_labels: overrideLabels } }
     );
   }
 

@@ -1,79 +1,159 @@
-<div class="overflow-hidden">
-    <h2 mat-dialog-title class="text-center">Assign VA to {{coder?.name | titlecase }}</h2>
-    <mat-dialog-content class="overflow-hidden" *ngIf="{ vaRecords: vaRecords$ | async } as params">
-        <div>
-            <div class="m-2" *ngIf="!params?.vaRecords && loadingData">
-                <mat-progress-bar class=".mat-progress-bar-buffer" color="'blue'" [mode]="'indeterminate'">
-                </mat-progress-bar>
-            </div>
-            <div class="overflow-y-auto max-h-96"> <!-- Limit the height and make the table scrollable -->
-                <table class="w-full divide-y divide-gray-200 table-auto">
-                    <thead *ngIf="params?.vaRecords?.data?.length">
-                        <tr class="bg-white sticky top-0 z-10">
-                            <th
-                                class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <input id="customCheckLogin" (click)="onSelectVA($event, params?.vaRecords?.data)"
-                                    type="checkbox" class="form-checkbox border-0 rounded text-gray-800 ml-1 w-4 h-4"
-                                    style="transition: all 0.15s ease 0s;"
-                                    [checked]="selectedVAs.length === params?.vaRecords?.data?.length" />
-                            </th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Coders
-                            </th>
-                            <th *ngFor="let header of headers;"
-                                class="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                {{ header }}
-                            </th>
-                            <th
-                                class="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                Action
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <ng-container *ngIf="params?.vaRecords?.data?.length">
-                            <tr [ngClass]="{ 'bg-gray-200': i % 2 !== 0 }"
-                                *ngFor="let va of params?.vaRecords?.data; let i = index">
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm">
-                                    <input (click)="onSelectVA($event, va?.instanceid)" id="customCheckLogin"
-                                        type="checkbox" class="form-checkbox border-0 rounded text-gray-800 ml-1 w-4 h-4"
-                                        style="transition: all 0.15s ease 0s;"
-                                        [checked]="selectedVAs.includes(va?.instanceid) || this.assignments[va?.instanceid]?.coder === coder?.uuid" />
-                                </td>
-                                <td>
-                                    @if(va['coders']?.length){
+<div class="flex flex-col max-h-[86vh]" *ngIf="{ vaRecords: vaRecords$ | async } as params">
 
-                                        @for (coder of va['coders']; track $index) {
-                                            <p class="text-gray-900 text-center whitespace-no-wrap">{{ coder?.name }}</p>
-                                        }
-                                    } @else {
-                                        <p class="text-gray-900 text-center whitespace-no-wrap">-</p>
-                                    }
-                                </td>
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm" *ngFor="let header of headers;">
-                                    <p class="text-gray-900 text-center whitespace-no-wrap">{{ va[header] }}</p>
-                                </td>
-                                <td class="px-5 py-3 border-b border-gray-200 text-sm">
-                                    <a class="text-blue-500 hover:text-blue-700 hover:cursor-pointer"><i
-                                            class="ph-user-plus-bold"></i></a>
-                                </td>
-                            </tr>
-                        </ng-container>
-                        <ng-container *ngIf="!params?.vaRecords?.data?.length && !loadingData">
-                            <tr class="bg-gray-200">
-                                <td colspan="5" class="px-5 py-3 text-center text-gray-900">No va record was found</td>
-                            </tr>
-                        </ng-container>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="px-5 py-2 bg-white border-t flex flex-col xs:flex-row" *ngIf="(params?.vaRecords?.total ?? 0) > 0">
-            <mat-paginator [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [length]="params?.vaRecords?.total ?? 0" [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
-        </div>
-    </mat-dialog-content>
-    <mat-dialog-actions>
-        <button mat-button (click)="onClose()">Close</button>
-        <button mat-button (click)="onAssignVA($event)">Assign Selected</button>
-    </mat-dialog-actions>
+  <!-- ── Header ───────────────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-200">
+    <div class="min-w-0">
+      <h2 class="text-lg font-semibold text-gray-900">
+        Assign VA to {{ coder?.name | titlecase }}
+      </h2>
+      <p class="mt-0.5 text-sm text-gray-500">
+        {{ params?.vaRecords?.total ?? 0 | number }} record(s) available
+        <span *ngIf="hasActiveFilters"> after filtering</span>
+        <span *ngIf="selectedVAs.length"> &middot; {{ selectedVAs.length }} selected</span>
+      </p>
+    </div>
+    <button type="button" (click)="onClose()" aria-label="Close"
+      class="p-2 text-gray-400 rounded-md hover:text-gray-700 hover:bg-gray-100">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- ── Filters ──────────────────────────────────────────────────────────── -->
+  <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
+    <div class="flex flex-wrap gap-4 items-end">
+      <div>
+        <label class="block mb-1 text-xs font-medium text-gray-600">{{ locationLabel }}</label>
+        <app-custom-dropdown [options]="locationOptions" [(selectedValue)]="filterLocation"
+          widthClass="w-48"></app-custom-dropdown>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-xs font-medium text-gray-600">Data set</label>
+        <app-custom-dropdown [options]="dataSourceOptions" [(selectedValue)]="filterDataSource"
+          widthClass="w-44"></app-custom-dropdown>
+      </div>
+
+      <!-- Reassignment: take one coder's batch and hand it to this one. The
+           server drops anything this coder already holds, so a VA can reach a
+           second reviewer but never the same coder twice. -->
+      <div>
+        <label class="block mb-1 text-xs font-medium text-gray-600">Assigned to</label>
+        <app-custom-dropdown [options]="coderOptions" [(selectedValue)]="filterAssignedTo"
+          widthClass="w-44"></app-custom-dropdown>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-xs font-medium text-gray-600">From</label>
+        <input type="date" [(ngModel)]="filterStartDate"
+          class="block px-3 py-2 w-40 text-sm rounded-md border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <div>
+        <label class="block mb-1 text-xs font-medium text-gray-600">To</label>
+        <input type="date" [(ngModel)]="filterEndDate"
+          class="block px-3 py-2 w-40 text-sm rounded-md border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <div class="flex gap-2 items-center ml-auto">
+        <button type="button" (click)="clearFilters()" *ngIf="hasActiveFilters"
+          class="px-3 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-100">
+          Clear
+        </button>
+        <button type="button" (click)="applyFilters()"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+          <i class="mr-2 ph ph-funnel"></i>
+          Apply filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loadingData" class="px-6">
+    <mat-progress-bar color="'blue'" [mode]="'indeterminate'"></mat-progress-bar>
+  </div>
+
+  <!-- ── Records ──────────────────────────────────────────────────────────── -->
+  <div class="overflow-y-auto flex-1 min-h-0">
+    <table class="w-full text-sm table-fixed">
+      <thead class="sticky top-0 z-10 bg-gray-50">
+        <tr class="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+          <th *ngFor="let column of columns"
+            [ngClass]="column.align === 'center' ? 'text-center' : 'text-left'"
+            class="px-4 py-3 border-b border-gray-200">
+            {{ column.label }}
+          </th>
+          <th class="px-4 py-3 w-40 text-left border-b border-gray-200">Coders</th>
+          <!-- Select sits last, nearest the action buttons in the footer -->
+          <th class="px-4 py-3 w-14 text-center border-b border-gray-200">
+            <input type="checkbox" (change)="toggleAll(params?.vaRecords?.data)"
+              [checked]="allSelected(params?.vaRecords?.data)"
+              class="w-4 h-4 rounded border-gray-300 cursor-pointer accent-blue-600" />
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let va of params?.vaRecords?.data"
+          (click)="toggleVA(va)"
+          [ngClass]="isSelected(va) ? 'bg-blue-50' : 'hover:bg-gray-50'"
+          class="border-b border-gray-100 cursor-pointer select-none">
+
+          <td *ngFor="let column of columns"
+            [ngClass]="column.align === 'center' ? 'text-center' : 'text-left'"
+            class="px-4 py-2.5 text-gray-800">
+            <!-- Long identifiers are clipped to the column and shown in full
+                 on hover, which is what removed the horizontal scrollbar -->
+            <span *ngIf="column.truncate; else plainCell"
+              class="block truncate" [title]="va[column.key]">{{ va[column.key] }}</span>
+            <ng-template #plainCell>{{ va[column.key] ?? '—' }}</ng-template>
+          </td>
+
+          <td class="px-4 py-2.5 text-gray-600">
+            <span *ngIf="va?.coders?.length; else noCoders" class="block truncate">
+              <span *ngFor="let c of va.coders; let last = last">{{ c?.name }}{{ last ? '' : ', ' }}</span>
+            </span>
+            <ng-template #noCoders>—</ng-template>
+          </td>
+
+          <!-- A tick rather than a checkbox: the whole row is the control, so a
+               second clickable widget on every line was just noise. Toggled by
+               opacity, never by *ngIf, so the cell height cannot shift. -->
+          <td class="px-4 py-2.5 text-center">
+            <i class="text-base ph ph-check transition-opacity"
+              [ngClass]="isAssignedToCoder(va) ? 'text-gray-400' : 'text-blue-600'"
+              [class.opacity-0]="!isSelected(va)"
+              [title]="isAssignedToCoder(va) ? 'Already assigned to this coder' : ''"></i>
+          </td>
+        </tr>
+
+        <tr *ngIf="!params?.vaRecords?.data?.length && !loadingData">
+          <td [attr.colspan]="columns.length + 2" class="px-4 py-12 text-center text-gray-500">
+            <ng-container *ngIf="hasActiveFilters; else noneAtAll">
+              No VA record matches these filters.
+            </ng-container>
+            <ng-template #noneAtAll>No VA record was found.</ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Footer ───────────────────────────────────────────────────────────── -->
+  <div class="flex flex-wrap gap-3 justify-between items-center px-6 py-3 bg-white border-t border-gray-200">
+    <mat-paginator *ngIf="(params?.vaRecords?.total ?? 0) > 0" [showFirstLastButtons]="true"
+      [pageSizeOptions]="pageSizeOptions" [length]="params?.vaRecords?.total ?? 0"
+      [pageIndex]="pageNumber" [pageSize]="limit" (page)="onPageChange($event)"></mat-paginator>
+
+    <div class="flex gap-3 items-center ml-auto">
+      <button type="button" (click)="onClose()"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-100">
+        Close
+      </button>
+      <button type="button" (click)="onAssignVA()" [disabled]="!selectedVAs.length || isAssigning"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="mr-2 ph ph-user-plus"></i>
+        {{ isAssigning ? 'Assigning…' : 'Assign Selected' + (selectedVAs.length ? ' (' + selectedVAs.length + ')' : '') }}
+      </button>
+    </div>
+  </div>
 </div>
