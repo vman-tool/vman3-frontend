@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConfigService } from 'app/app.service';
 
@@ -23,16 +23,29 @@ export class VaRecordsService {
     return this.http.get(`${this.configService.API_URL}/pcva${params}`);
   }
 
-  getUnassignedVARecords(pager?: {paging?: boolean, page_number?: number, limit?: number}, coder?: any) {
-    let params = pager?.paging ? `?paging=${pager?.paging}`: '';
+  /**
+   * @param filters optional narrowing before assignment - `location` is a value
+   *   of the configured level-1 location field, the dates are inclusive ISO
+   *   dates, and `data_source` is 'odk_api' or 'uploaded_csv'. Omitted keys
+   *   are simply not sent, so the default remains "everything".
+   */
+  getUnassignedVARecords(
+    pager?: {paging?: boolean, page_number?: number, limit?: number},
+    coder?: any,
+    filters?: {location?: string, start_date?: string, end_date?: string, data_source?: string, assigned_to?: string}
+  ) {
+    let params = new HttpParams();
 
-    params = params?.length && pager?.page_number ? params+`&page_number=${pager?.page_number}` : pager?.page_number ? params+`?page_number=${pager?.page_number}` : params;
-    params = params?.length && pager?.limit ? params+`&limit=${pager?.limit}` : pager?.limit ? params+`?limit=${pager?.limit}` : params;
-    
-    params = params?.length && coder ? params+`&coder=${coder}` : coder ? params+`?coder=${coder}` : params
+    if (pager?.paging) { params = params.set('paging', pager.paging); }
+    if (pager?.page_number) { params = params.set('page_number', pager.page_number); }
+    if (pager?.limit) { params = params.set('limit', pager.limit); }
+    if (coder) { params = params.set('coder', coder); }
 
-    
-    return this.http.get(`${this.configService.API_URL}/pcva/get-unassigned-va${params}`);
+    for (const [key, value] of Object.entries(filters ?? {})) {
+      if (value) { params = params.set(key, value); }
+    }
+
+    return this.http.get(`${this.configService.API_URL}/pcva/get-unassigned-va`, { params });
   }
   
   getUncodedAssignedVARecords(pager?: {paging?: boolean, page_number?: number, limit?: number}, coder?: any) {

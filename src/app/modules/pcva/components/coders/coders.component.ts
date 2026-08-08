@@ -47,7 +47,12 @@ export class CodersComponent implements OnInit {
   onAssignCoder(e: Event, coder: any){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "80vw";
+    // Wider than the other dialogs: this one carries a filter bar above a
+    // seven-column table, and the point of the rework was to fit it without a
+    // horizontal scrollbar.
+    dialogConfig.width = "92vw";
+    dialogConfig.maxWidth = "92vw";
+    dialogConfig.maxHeight = "90vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       coder: coder
@@ -62,7 +67,10 @@ export class CodersComponent implements OnInit {
   onUnassignCoder(e: Event, coder: any){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "80vw";
+    // Matches the assign dialog: same table, so the same room for it.
+    dialogConfig.width = "92vw";
+    dialogConfig.maxWidth = "92vw";
+    dialogConfig.maxHeight = "90vh";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       coder: coder
