@@ -522,16 +522,24 @@
               <i class="mr-2 ph ph-brain"></i>
               Analyze with VMan ML
             </button>
-            <span class="text-xs text-gray-500">Takes about 20 seconds.</span>
+            <span class="text-xs text-gray-500">Runs on the analysis worker; takes a few minutes.</span>
           </div>
 
           <!-- Running: elapsed time and a status line, no invented percentage -->
           <div *ngIf="mlRunning()" class="space-y-2">
-            <mat-progress-bar color="'blue'" [mode]="'indeterminate'"></mat-progress-bar>
+            <!-- Determinate once the worker reports a milestone; the value is
+                 the model's own progress, not a clock dressed up as one. -->
+            <mat-progress-bar color="'blue'"
+              [mode]="mlProgress() > 0 ? 'determinate' : 'indeterminate'"
+              [value]="mlProgress()"></mat-progress-bar>
             <div class="flex justify-between items-center text-sm text-gray-600">
               <span>{{ mlStatus() }}</span>
               <span class="tabular-nums">{{ mlElapsed() }}s</span>
             </div>
+            <p class="text-xs text-gray-500">
+              This runs on the analysis worker and can take a few minutes. You can
+              keep coding; the result appears here when it is ready.
+            </p>
           </div>
 
           <div *ngIf="mlError()" class="p-3 mt-2 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">

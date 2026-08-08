@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, signal, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, signal, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FieldMapping } from 'app/modules/settings/interface';
 import { SelectOption } from 'app/shared/components/searchable-multi-select/searchable-multi-select.component';
@@ -11,7 +11,7 @@ import { VaRecordsService } from '../../services/va-records/va-records.service';
   styleUrl: './coding-sheet.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CodingSheetComponent implements OnInit {
+export class CodingSheetComponent implements OnInit, OnDestroy {
   @ViewChild('chatContainer') private chatContainer?: ElementRef;
   @Input() icdCodes?: any[]; 
   @Input() settings: FieldMapping = {} as FieldMapping; 
@@ -50,7 +50,9 @@ export class CodingSheetComponent implements OnInit {
   readonly mlError = signal('');
   /** True when the shown result was loaded from a saved coding, not just run. */
   readonly mlStored = signal(false);
+  readonly mlProgress = signal(0);
   private mlTimer: ReturnType<typeof setInterval> | null = null;
+  private mlPoll: ReturnType<typeof setInterval> | null = null;
   
   gender: string = "";
   birthDate: string = "";
@@ -154,34 +156,71 @@ export class CodingSheetComponent implements OnInit {
     this.mlError.set('');
     this.mlResult.set(null);
     this.mlElapsed.set(0);
-    this.mlStatus.set('Preparing the record...');
+    this.mlProgress.set(0);
+    this.mlStatus.set('Queueing the analysis...');
 
-    this.mlTimer = setInterval(() => {
-      const seconds = this.mlElapsed() + 1;
-      this.mlElapsed.set(seconds);
-      if (seconds === 3) { this.mlStatus.set('Running the model...'); }
-      if (seconds === 12) { this.mlStatus.set('Still working - this usually takes about 20 seconds.'); }
-      if (seconds === 40) { this.mlStatus.set('Taking longer than usual. The model may be loading for the first time.'); }
-    }, 1000);
+    // Elapsed time is ours to count; the percentage comes from the worker.
+    this.mlTimer = setInterval(() => this.mlElapsed.set(this.mlElapsed() + 1), 1000);
 
     this.vaRecordsService.analyseVaWithMl(vaId).subscribe({
       next: (response: any) => {
-        this.stopMlTimer();
-        this.mlResult.set(response?.data ?? null);
-        this.mlRunning.set(false);
+        const taskId = response?.data?.task_id;
+        if (!taskId) {
+          this.failMlAnalysis('The analysis could not be started.');
+          return;
+        }
+        this.pollMlAnalysis(taskId);
       },
-      error: (error: any) => {
-        this.stopMlTimer();
-        this.mlRunning.set(false);
-        this.mlError.set(
-          error?.error?.detail || 'The analysis failed. Please try again.'
-        );
-      },
+      error: (error: any) => this.failMlAnalysis(
+        error?.error?.detail || 'The analysis could not be started.'),
     });
+  }
+
+  /**
+   * Poll the queued analysis until it finishes.
+   *
+   * Every two seconds: long enough not to hammer the API over a job that runs
+   * for minutes, short enough that the bar still moves. The worker reports
+   * real milestones, so the percentage shown is the model's own progress
+   * rather than a clock pretending to be one.
+   */
+  private pollMlAnalysis(taskId: string): void {
+    this.mlPoll = setInterval(() => {
+      this.vaRecordsService.getMlAnalysisStatus(taskId).subscribe({
+        next: (response: any) => {
+          const data = response?.data ?? {};
+          if (data.message) { this.mlStatus.set(data.message); }
+          if (data.progress != null) { this.mlProgress.set(data.progress); }
+
+          if (data.status === 'completed') {
+            this.stopMlTimer();
+            this.mlResult.set(data.result ?? null);
+            this.mlRunning.set(false);
+          } else if (data.status === 'failed') {
+            this.failMlAnalysis(data.error || data.message || 'The analysis failed.');
+          }
+        },
+        // A single failed poll is not a failed analysis - the job is still
+        // running server-side, so keep polling and let the next one report.
+        error: () => {},
+      });
+    }, 2000);
+  }
+
+  private failMlAnalysis(message: string): void {
+    this.stopMlTimer();
+    this.mlRunning.set(false);
+    this.mlError.set(message);
   }
 
   private stopMlTimer(): void {
     if (this.mlTimer) { clearInterval(this.mlTimer); this.mlTimer = null; }
+    if (this.mlPoll) { clearInterval(this.mlPoll); this.mlPoll = null; }
+  }
+
+  ngOnDestroy(): void {
+    // Closing the dialog mid-analysis must not leave a timer polling forever.
+    this.stopMlTimer();
   }
 
   /**
