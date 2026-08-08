@@ -45,3 +45,45 @@ input {
   background-color: #f44336 !important;
   color: white !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Page typography and spacing
+
+   One definition for every routed page, because they had drifted apart: some
+   roots used `container p-6 mx-auto`, others `container px-4 py-8 max-w-7xl`,
+   others no wrapper at all. Two pages therefore started at different left
+   edges and different heights, which is what made a heading look nudged down
+   and to the right when switching menu items.
+
+   Headings sit on one scale, so a page title is never the same size as the
+   section heading beneath it:
+
+     .page-title     20px semibold   one per page, the menu item you clicked
+     .page-subtitle  14px grey       optional line under it
+     .section-title  16px semibold   a card or block within the page
+     .section-subtitle 13px grey     optional line under that
+
+   Page padding and max width come from the wrapper around <router-outlet>
+   in body.component.html - a routed page must not add its own, or it drifts
+   out of line with the others again. Use .page-header for the title block.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.page-header {
+  @apply flex flex-col gap-2 mb-5 sm:flex-row sm:items-center sm:justify-between;
+}
+
+.page-title {
+  @apply text-xl font-semibold tracking-tight text-gray-900;
+}
+
+.page-subtitle {
+  @apply mt-1 text-sm text-gray-500;
+}
+
+.section-title {
+  @apply text-base font-semibold text-gray-900;
+}
+
+.section-subtitle {
+  @apply mt-0.5 text-[13px] text-gray-500;
+}

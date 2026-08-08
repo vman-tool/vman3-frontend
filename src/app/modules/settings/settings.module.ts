@@ -37,6 +37,8 @@ import { AddIcd10CategoryTypeComponent } from './dialogs/add-icd10-category-type
 import { DataExportComponent } from './components/data-export/data-export.component';
 import { DqaThresholdsComponent } from './components/dqa-thresholds/dqa-thresholds.component';
 
+import { ModuleHeaderComponent } from 'app/shared/components/module-header/module-header.component';
+
 @NgModule({
   declarations: [
     SettingsComponent,
@@ -69,6 +71,7 @@ import { DqaThresholdsComponent } from './components/dqa-thresholds/dqa-threshol
     DqaThresholdsComponent,
   ],
   imports: [
+    ModuleHeaderComponent,
     CommonModule,
     SharedModule,
     SettingsRoutingModule,

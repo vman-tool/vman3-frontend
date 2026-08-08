@@ -21,8 +21,11 @@
 </div>
 
 <!-- Expanded: full sidebar -->
-<div *ngIf="!collapsed" class="h-full p-2 w-64 text-center bg-white overflow-y-auto">
-  <div class="text-xl text-black">
+<!-- Flex column so Logout can sit at the bottom. The scroll moved from this
+     container to the menu region below it, so a long menu scrolls while Logout
+     stays in place instead of scrolling away with it. -->
+<div *ngIf="!collapsed" class="flex flex-col h-full p-2 w-64 text-center bg-white">
+  <div class="text-xl text-black flex-1 min-h-0 overflow-y-auto">
     <div>
       <ng-container *ngIf="menuItems">
         <div *ngFor="let menuItem of menuItems; let i = index">
@@ -56,12 +59,17 @@
           </ng-container>
         </div>
       </ng-container>
-      <div
-        class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer mt-[100px] hover:bg-gray-400"
-        (click)="onLogout()">
-        <img src="../../../../assets/icons/logout.svg" alt="logout-icon" class="h-5" />
-        <span class="text-[15px] ml-4 text-back">Logout</span>
-      </div>
     </div>
+  </div>
+
+  <!-- Outside the scrolling menu region, so it is pinned to the bottom of the
+       sidebar however long the menu is. It used to sit inside that region with
+       a fixed `mt-[100px]`, which pushed it below the sidebar and under the
+       footer once the menu grew - Settings being the case that showed it. -->
+  <div
+    class="flex flex-shrink-0 items-center px-4 mt-2 border-t border-gray-100 pt-3 duration-300 cursor-pointer p-2.5 rounded-md hover:bg-gray-200"
+    (click)="onLogout()">
+    <img src="../../../../assets/icons/logout.svg" alt="logout-icon" class="h-5" />
+    <span class="ml-4 text-[15px] text-black">Logout</span>
   </div>
 </div>

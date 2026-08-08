@@ -1,4 +1,13 @@
-<div class="flex items-center h-[10vh] px-3 gap-4">
+<!--
+  A bottom border to match the footer's top border: the two frame the content
+  area, so the page reads as header rule, content, footer rule.
+
+  No gap between the logo column and the title. The logo column is exactly the
+  sidebar's width, so with no gap the title begins where the content area
+  begins and lines up with the page headings below it; the gap that used to be
+  here pushed it 16px right of everything it sits above.
+-->
+<div class="flex items-center h-[10vh] px-6 bg-white border-b border-gray-200">
   <div class="flex items-center gap-2 transition-all duration-300 overflow-hidden flex-shrink-0
               {{ sidebarHidden ? 'w-16' : 'w-64' }}">
     <button (click)="Openbar($event)"
@@ -10,9 +19,17 @@
       class="h-10 object-contain transition-all duration-300 {{ sidebarHidden ? 'opacity-0 w-0' : 'opacity-100' }}" />
   </div>
 
+  <!--
+    One step above .page-title (20px), which in turn sits above .section-title
+    (16px): application name, then the page, then a block within it. At text-xl
+    the application name was the same size as the page heading beneath it, so
+    nothing marked it as the outer level.
+  -->
   <div class="flex-1 min-w-0">
-    <span class="text-3xl font-semibold text-black">{{page_title}}</span><br />
-    <span class="text-xl text-black">{{page_subtitle}}</span>
+    <div class="text-2xl font-semibold tracking-tight text-gray-900 truncate" [title]="page_title">
+      {{ page_title }}
+    </div>
+    <div class="text-sm text-gray-500 truncate" [title]="page_subtitle">{{ page_subtitle }}</div>
   </div>
 
   <div class="flex-shrink-0 pr-5">
@@ -34,8 +51,14 @@
     <app-sidebar [collapsed]="sidebarHidden" class="block h-full"></app-sidebar>
   </div>
 
-  <div class="flex-1 overflow-y-auto px-4 pb-6">
-    <router-outlet></router-outlet>
+  <!-- Page padding and width live here, so every routed page starts at the
+       same left edge and the same top offset whichever menu item was clicked,
+       and none of them needs to supply its own. The scroll container stays
+       full width so the scrollbar sits at the window edge. -->
+  <div class="overflow-y-auto flex-1">
+    <div class="px-6 py-5 mx-auto w-full max-w-[1600px]">
+      <router-outlet></router-outlet>
+    </div>
   </div>
 </div>
 
