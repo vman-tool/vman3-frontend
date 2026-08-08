@@ -2,3 +2,30 @@
   0%   { transform: translateX(0%); }
   100% { transform: translateX(300%); }
 }
+
+/**
+ * Visually hidden, still focusable, and — unlike Tailwind's `sr-only` — sitting
+ * fully inside its label.
+ *
+ * `sr-only` applies `margin: -1px`, which puts the input one pixel outside the
+ * label that wraps it. Clicking the label moves focus to that input, and the
+ * browser scrolls a newly focused element into view; one pixel beyond the
+ * bottom of the scroll container is enough to make it do so. That showed up as
+ * the page jumping on the *first* click of a radio or checkbox, but only when
+ * scrolled right to the bottom — after focus lands it never moves again, and
+ * anywhere else on the page there is slack to absorb the adjustment.
+ *
+ * No negative margin, so there is nothing to scroll to.
+ */
+.hidden-control {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}

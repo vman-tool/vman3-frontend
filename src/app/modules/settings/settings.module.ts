@@ -5,6 +5,7 @@ import { UsersComponent } from './components/users/users.component';
 import { MaterialModule } from '../../material/material.module';
 import { SharedModule } from '../../shared/shared.module';
 import { SettingsRoutingModule } from './settings-routing.module';
+import { ConfirmResetComponent } from './dialogs/confirm-reset/confirm-reset.component';
 import { SettingsComponent } from './settings.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataSyncComponent } from './components/data-sync/data-sync.component';
@@ -39,6 +40,7 @@ import { DqaThresholdsComponent } from './components/dqa-thresholds/dqa-threshol
 @NgModule({
   declarations: [
     SettingsComponent,
+    ConfirmResetComponent,
     DataSyncComponent,
     ConfigurationComponent,
     SettingsConfigsFormComponent,

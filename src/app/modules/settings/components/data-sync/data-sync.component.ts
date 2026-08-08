@@ -18,6 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import * as Papa from 'papaparse';
 import { MatDialog } from '@angular/material/dialog';
 import { HeaderMappingModalComponent } from '../../dialogs/header-mapping/header-mapping.component';
+import { ConfirmResetComponent } from '../../dialogs/confirm-reset/confirm-reset.component';
 import { RunCcvaService } from '../../../ccva/services/run-ccva.service';
 import { SettingConfigService, BackupSettings } from '../../services/settings_configs.service';
 import { GeneralDqaService, DqaAnalyticsConfig, SnapshotStatus } from '../../../data-quality/services/general-dqa.service';
@@ -72,6 +73,10 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   private currentTaskId: string = '';   // set from API response; never hardcoded
   dataSource: 'api' | 'csv' = 'api';
   selectedFile: File | null = null;
+  /** Row count and size of the chosen file, shown before anything is sent. */
+  selectedFileRows = 0;
+  selectedFileSize = '';
+  isParsingFile = false;
   @ViewChild('fileInput') fileInput!: ElementRef;
   requiredHeadersAdditions = ['instanceid'];
 
@@ -124,6 +129,23 @@ export class DataSyncComponent implements OnInit, OnDestroy {
   mismatchedHeaders: string[] = [];
   mismatchedHeadersAdditinal: string[] = [];
   showMappingModal = false;
+
+  // ── Danger zone ───────────────────────────────────────────────────────────
+  // The values match the backend's `vman_data_source` markers, so a record's
+  // origin and the thing being deleted are the same concept end to end.
+  readonly resetSourceOptions = [
+    {
+      value: 'odk_api',
+      label: 'API Synchronization',
+      description: 'Records pulled from ODK Central',
+    },
+    {
+      value: 'uploaded_csv',
+      label: 'File Upload',
+      description: 'Records imported from a CSV file',
+    },
+  ];
+  resetSources: { [source: string]: boolean } = { odk_api: false, uploaded_csv: false };
   constructor(
     private dataSyncService: DataSyncService,
     private localStorageSettingsService: LocalStorageSettingsService,
@@ -156,6 +178,12 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     // Load permissions
     this.dataSyncAccess = {
       canSyncODKData: await this.hasAccess([privileges.ODK_DATA_SYNC]),
+      // Deleting data is gated harder than syncing it: the backend requires
+      // both privileges, so the button is hidden unless the user has both.
+      canResetData: await this.hasAccess([
+        privileges.ODK_DATA_SYNC,
+        privileges.SETTINGS_CREATE_SYSTEM_CONFIGS,
+      ]),
       // canSyncODKQuestions: await this.hasAccess([
       //   privileges.ODK_QUESTIONS_SYNC,
       // ]),
@@ -430,34 +458,63 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Read the chosen file and describe it. Nothing is sent to the server here -
+   * the upload only starts when the user presses the action button, so closing
+   * the file browser is never itself a commitment to upload.
+   */
   onFileSelected(event: Event): void {
     this.fileErrors = '';
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      if (file.type === 'text/csv') {
-        this.selectedFile = file;
-        this.parseCSV(this.selectedFile);
-      } else {
-        this.showError('Please select a CSV file.');
-        this.isDataSyncing = false;
-        this.resetFileInput();
-      }
+    if (!input.files?.length) { return; }
+
+    const file = input.files[0];
+    // Checking the extension as well as the MIME type is deliberate: macOS
+    // reports CSVs exported from Excel as application/vnd.ms-excel, which the
+    // old type-only test rejected.
+    const isCsv = file.type === 'text/csv' || /\.csv$/i.test(file.name);
+    if (!isCsv) {
+      this.showError('Please select a CSV file.');
+      this.resetFileInput();
+      return;
     }
+
+    this.selectedFile = file;
+    this.selectedFileSize = this.formatFileSize(file.size);
+    this.parseCSV(file);
   }
 
   parseCSV(file: File): void {
-    this.isDataSyncing = true;
+    this.isParsingFile = true;
+    this.selectedFileRows = 0;
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       complete: (result: any) => {
         this.csvHeaders = result.meta.fields || [];
+        // Keep the rows: updateCsvHeaders() rewrites the file from them, and
+        // without this they were never captured - header mapping produced an
+        // empty CSV.
+        this.csvData = result.data || [];
+        this.selectedFileRows = this.csvData.length;
+        this.isParsingFile = false;
         this.checkHeaders();
+      },
+      error: () => {
+        this.isParsingFile = false;
+        this.fileErrors = 'This file could not be read as CSV.';
+        this.showError(this.fileErrors);
+        this.resetFileInput();
       },
     });
   }
 
+  /**
+   * Validate the headers of the chosen file.
+   *
+   * Validation happens at selection time so problems surface immediately, but
+   * it no longer triggers the upload - that is the action button's job.
+   */
   checkHeaders(): void {
     this.mismatchedHeaders = this.requiredHeaders.filter(
       (header) =>
@@ -478,20 +535,90 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         ', '
       )}`;
       this.showError(this.fileErrors);
-      this.isDataSyncing = false;
       this.resetFileInput();
-    } else {
-      if (this.mismatchedHeadersAdditinal.length > 0) {
-        this.openHeaderMap();
-      } else {
-        this.uploadFile();
-      }
     }
   }
 
+  private formatFileSize(bytes: number): string {
+    if (bytes < 1024) { return `${bytes} B`; }
+    if (bytes < 1024 * 1024) { return `${(bytes / 1024).toFixed(1)} KB`; }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   resetFileInput(): void {
-    this.fileInput.nativeElement.value = '';
+    if (this.fileInput?.nativeElement) {
+      this.fileInput.nativeElement.value = '';
+    }
     this.selectedFile = null;
+    this.selectedFileRows = 0;
+    this.selectedFileSize = '';
+    this.csvData = [];
+    this.csvHeaders = [];
+  }
+
+  /** Discard the chosen file without touching any error already shown. */
+  clearSelectedFile(): void {
+    this.resetFileInput();
+    this.fileErrors = '';
+  }
+
+  // ── Action button ────────────────────────────────────────────────────────
+
+  get syncButtonLabel(): string {
+    return this.dataSource === 'csv'
+      ? 'Start Data Upload'
+      : 'Start Data Synchronization';
+  }
+
+  get syncButtonBusyLabel(): string {
+    return this.dataSource === 'csv' ? 'Uploading...' : 'Initiating Sync...';
+  }
+
+  get isSyncButtonBusy(): boolean {
+    return this.isSyncButtonLoading || this.isDataSyncing || this.isParsingFile;
+  }
+
+  /** A CSV run needs a readable file with no outstanding header errors. */
+  get canStartSync(): boolean {
+    if (this.isSyncButtonBusy) { return false; }
+    if (this.dataSource === 'csv') {
+      return !!this.selectedFile && !this.fileErrors;
+    }
+    return !this.fileErrors;
+  }
+
+  /**
+   * Single entry point for both methods, so the button can validate before it
+   * commits to anything.
+   */
+  startSync(): void {
+    if (!this.dataSource) {
+      this.showError('Please choose a synchronization method.');
+      return;
+    }
+
+    if (this.dataSource === 'api') {
+      this.manualSync();
+      return;
+    }
+
+    if (!this.selectedFile) {
+      this.showError('Please choose a CSV file before starting the upload.');
+      return;
+    }
+    if (this.fileErrors) {
+      this.showError(this.fileErrors);
+      return;
+    }
+
+    // Optional headers that are missing get mapped first; the dialog rewrites
+    // the file and then uploads it.
+    if (this.mismatchedHeadersAdditinal.length > 0) {
+      this.openHeaderMap();
+      return;
+    }
+
+    this.uploadFile();
   }
 
   showError(message: string): void {
@@ -519,11 +646,17 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     this.dataSyncService.csvDataUpload(formData).subscribe({
       next: async (response: any) => {
         if (response?.data) {
-          console.log('Upload successful:', response.data);
-
-          // Sync status will be updated automatically by backend - no manual update needed
-
-          this.showSuccess('File uploaded successfully');
+          // The backend reports how many rows actually landed, which is not the
+          // same as the number of rows in the file: records whose instanceid is
+          // already stored are skipped. Reporting the file's row count made a
+          // re-upload look like a full import while the totals did not move.
+          const message = response.message
+            || `Uploaded ${response.data.inserted ?? 0} record(s).`;
+          if (response.data.inserted === 0) {
+            this.showWarning(message);
+          } else {
+            this.showSuccess(message);
+          }
         }
       },
       error: (error) => {
@@ -531,21 +664,84 @@ export class DataSyncComponent implements OnInit, OnDestroy {
         this.resetFileInput();
         this.isDataSyncing = false;
         this.showError(
-          error.error.detail || error.error.message || 'Failed to upload CSV'
+          error?.error?.detail || error?.error?.message || 'Failed to upload CSV'
         );
+        // The backend records failed uploads too, so the history is worth
+        // refreshing even when the upload did not succeed.
+        this.loadSyncHistory();
       },
       complete: () => {
         this.resetFileInput();
         this.loadSyncStatusFromSettings(); // Refresh sync status (includes form submission data)
+        this.loadSyncHistory();            // File uploads appear in the history
         this.isDataSyncing = false; // Hide loading state
       },
     });
   }
 
   showSuccess(message: string): void {
-    // Implement your success handling logic here
-    console.log(message);
-    alert(message); // Or use a more sophisticated success display mechanism
+    this.snackBar.open(message, 'Close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 5000,
+    });
+  }
+
+  /** An upload that completed but changed nothing is not a success. */
+  showWarning(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      duration: 8000,
+    });
+  }
+
+  // ── Danger zone ───────────────────────────────────────────────────────────
+
+  onResetSourceChange(source: string, checked: boolean): void {
+    this.resetSources = { ...this.resetSources, [source]: checked };
+  }
+
+  get selectedResetSources(): string[] {
+    return Object.keys(this.resetSources).filter(key => this.resetSources[key]);
+  }
+
+  get hasResetSelection(): boolean {
+    return this.selectedResetSources.length > 0;
+  }
+
+  /**
+   * Open the confirmation dialog. Nothing is deleted here - the dialog fetches
+   * the exact counts, requires the word DELETE to be typed, and performs the
+   * delete itself, so this method never holds the ability to destroy data.
+   */
+  onResetData(): void {
+    const sources = this.selectedResetSources;
+    if (!sources.length) { return; }
+
+    const labels = this.resetSourceOptions
+      .filter(option => sources.includes(option.value))
+      .map(option => option.label)
+      .join(' and ');
+
+    this.dialog
+      .open(ConfirmResetComponent, {
+        width: '32rem',
+        maxWidth: '95vw',
+        disableClose: true,   // an accidental backdrop click should not dismiss this
+        data: { sources, labels },
+      })
+      .afterClosed()
+      .subscribe((result: any) => {
+        if (!result?.deleted) { return; }
+
+        this.showSuccess(result.response?.message || 'Data deleted.');
+        this.resetSources = { odk_api: false, uploaded_csv: false };
+
+        // Every figure on this page is now out of date.
+        this.loadSyncStatusFromSettings();
+        this.loadSyncHistory();
+      });
   }
 
   loadSettingsTab() {

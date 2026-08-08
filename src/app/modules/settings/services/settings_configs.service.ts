@@ -280,6 +280,35 @@ export class SettingConfigService {
       }));
   }
 
+  /**
+   * Report what a data reset would delete. Read-only - deletes nothing.
+   * @param sources any of 'odk_api', 'uploaded_csv'
+   */
+  previewDataReset(sources: string[]): Observable<any> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/settings/reset-data/preview`, {
+        params: { sources: sources.join(',') }
+      })
+      .pipe(catchError(err => {
+        console.error('reset preview error:', err);
+        throw err;
+      }));
+  }
+
+  /**
+   * Permanently delete VA records of the given sources and everything derived
+   * from them. `confirm` must be the literal word DELETE; the backend checks
+   * it too, since this endpoint is reachable without the dialog.
+   */
+  resetData(sources: string[], confirm: string): Observable<any> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/reset-data`, { sources, confirm })
+      .pipe(catchError(err => {
+        console.error('data reset error:', err);
+        throw err;
+      }));
+  }
+
   /** Enrich the VA question dictionary from an uploaded XLSForm (xForm). */
   uploadXform(formData: FormData): Observable<any> {
     return this.http

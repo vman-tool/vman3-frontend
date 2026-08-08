@@ -117,53 +117,56 @@
         <div *ngIf="!isTaskRunning" class="mb-6">
           <label class="block mb-3 text-sm font-medium text-gray-700">Choose synchronization method:</label>
           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="flex relative items-center p-4 bg-gray-50 rounded-lg border border-gray-200 transition-colors cursor-pointer hover:bg-blue-50 hover:border-blue-300">
-              <input type="radio" class="sr-only" name="dataSource" value="api" [(ngModel)]="dataSource">
-              <div [class]="dataSource === 'api' ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'"
-                class="flex-shrink-0 mr-3 w-4 h-4 rounded-full border-2 transition-colors">
-                <div *ngIf="dataSource === 'api'" class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full"></div>
+            <label [ngClass]="dataSource === 'api' ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'"
+              class="flex relative items-start p-4 rounded-lg border transition-colors cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+              <input type="radio" class="hidden-control" name="dataSource" value="api" [(ngModel)]="dataSource">
+              <div [ngClass]="dataSource === 'api' ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'"
+                class="flex-shrink-0 mt-0.5 mr-3 w-4 h-4 rounded-full border-2 transition-colors">
+                <div class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full transition-opacity"
+                  [class.opacity-0]="dataSource !== 'api'"></div>
               </div>
               <div>
                 <div class="text-sm font-medium text-gray-900"><i class="mr-2 ph ph-cloud-arrow-down"></i>API Synchronization</div>
                 <div class="text-xs text-gray-500">Sync data from ODK Central server</div>
               </div>
             </label>
-            <label class="flex relative items-center p-4 bg-gray-50 rounded-lg border border-gray-200 transition-colors cursor-pointer hover:bg-blue-50 hover:border-blue-300">
-              <input type="radio" class="sr-only" name="dataSource" value="csv" [(ngModel)]="dataSource">
-              <div [class]="dataSource === 'csv' ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'"
-                class="flex-shrink-0 mr-3 w-4 h-4 rounded-full border-2 transition-colors">
-                <div *ngIf="dataSource === 'csv'" class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full"></div>
+            <!-- The file control sits to the right of the card's text rather
+                 than below it. The button is shorter than the two lines of
+                 text beside it, so showing it changes nothing about the card's
+                 height and nothing below this row moves. The chosen file is
+                 described in the action row, not here, for the same reason. -->
+            <label [ngClass]="dataSource === 'csv' ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'"
+              class="flex relative items-start p-4 rounded-lg border transition-colors cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+              <input type="radio" class="hidden-control" name="dataSource" value="csv" [(ngModel)]="dataSource">
+              <div [ngClass]="dataSource === 'csv' ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'"
+                class="flex-shrink-0 mt-0.5 mr-3 w-4 h-4 rounded-full border-2 transition-colors">
+                <div class="mx-auto mt-0.5 w-2 h-2 bg-white rounded-full transition-opacity"
+                  [class.opacity-0]="dataSource !== 'csv'"></div>
               </div>
-              <div>
-                <div class="text-sm font-medium text-gray-900"><i class="mr-2 ph ph-file-csv"></i>CSV Upload</div>
-                <div class="text-xs text-gray-500">Upload data from CSV file</div>
+
+              <div class="flex gap-3 justify-between items-center min-w-0 flex-1">
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-gray-900"><i class="mr-2 ph ph-file-csv"></i>CSV Upload</div>
+                  <div class="text-xs text-gray-500">Upload data from CSV file</div>
+                </div>
+
+                <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" class="hidden" />
+
+                <div *ngIf="dataSource === 'csv'" class="flex gap-1 items-center flex-shrink-0">
+                  <button type="button" (click)="fileInput.click()" [disabled]="isSyncButtonBusy"
+                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-white rounded-md border border-blue-300 transition-colors hover:bg-blue-100 disabled:opacity-50">
+                    <i class="mr-1.5" [ngClass]="selectedFile ? 'ph ph-check-circle' : 'ph ph-folder-open'"></i>
+                    {{ isParsingFile ? 'Reading…' : (selectedFile ? 'Change file' : 'Browse') }}
+                  </button>
+
+                  <button *ngIf="selectedFile && !isParsingFile" type="button"
+                    (click)="clearSelectedFile()" aria-label="Remove file"
+                    class="p-1 text-gray-400 hover:text-gray-600">
+                    <i class="ph ph-x"></i>
+                  </button>
+                </div>
               </div>
             </label>
-          </div>
-        </div>
-
-        <!-- CSV Upload Section -->
-        <div *ngIf="!isTaskRunning && dataSource === 'csv'" class="p-4 mb-6 bg-blue-50 rounded-lg border border-blue-200">
-          <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" class="hidden" />
-          <div class="flex flex-col space-y-3">
-            <button (click)="fileInput.click()"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg border border-blue-300 transition-colors hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [disabled]="isDataSyncing">
-              <i class="mr-2 ph ph-upload-simple"></i>
-              <span *ngIf="!isDataSyncing">Choose CSV File</span>
-              <span *ngIf="isDataSyncing" class="flex items-center">
-                <svg class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Uploading...
-              </span>
-            </button>
-            <div *ngIf="selectedFile" class="flex items-center text-sm text-gray-600">
-              <i class="mr-2 text-green-500 ph ph-file-csv"></i>
-              <span>{{ selectedFile.name }}</span>
-            </div>
           </div>
         </div>
 
@@ -176,23 +179,51 @@
         </div>
 
         <!-- Action Buttons (hidden while syncing) -->
-        <div *ngIf="!isTaskRunning" class="flex justify-between items-center pt-4 border-t border-gray-200">
-          <div class="text-sm text-gray-500">
-            <i class="mr-1 ph ph-info"></i>
-            {{ dataSource === 'api' ? 'Sync will fetch latest data from ODK Central' : 'CSV file will be processed and uploaded' }}
+        <div *ngIf="!isTaskRunning"
+          class="flex flex-col gap-3 justify-between items-start pt-4 border-t border-gray-200 sm:flex-row sm:items-center">
+
+          <!-- What is about to happen: for a CSV, the file that was chosen. -->
+          <div class="min-w-0 text-sm text-gray-500">
+            <ng-container *ngIf="dataSource === 'csv' && selectedFile; else sourceHint">
+              <div class="flex items-center font-medium text-gray-700">
+                <i class="mr-2 text-green-600 ph ph-file-csv"></i>
+                <span class="truncate" [title]="selectedFile.name">{{ selectedFile.name }}</span>
+              </div>
+              <div class="mt-0.5 text-xs text-gray-500">
+                {{ selectedFileRows }} row{{ selectedFileRows === 1 ? '' : 's' }}
+                &middot; {{ csvHeaders.length }} columns
+                &middot; {{ selectedFileSize }}
+              </div>
+              <div class="mt-0.5 text-xs" [ngClass]="fileErrors ? 'text-red-600' : 'text-green-700'">
+                <i class="mr-1" [ngClass]="fileErrors ? 'ph ph-warning-circle' : 'ph ph-check-circle'"></i>
+                <span *ngIf="!fileErrors">
+                  Required headers present. Nothing is uploaded until you press the button.
+                </span>
+                <span *ngIf="fileErrors">Cannot upload &mdash; see the error above.</span>
+              </div>
+            </ng-container>
+
+            <ng-template #sourceHint>
+              <i class="mr-1 ph ph-info"></i>
+              {{ dataSource === 'api'
+                  ? 'Sync will fetch latest data from ODK Central'
+                  : 'Choose a CSV file to upload' }}
+            </ng-template>
           </div>
+
           @if(this.dataSyncAccess?.canSyncODKData){
-          <button *ngIf="dataSource === 'api' && !fileErrors"
-            class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            [disabled]="isSyncButtonLoading" (click)="manualSync()">
-            <svg *ngIf="isSyncButtonLoading" class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
+          <button type="button"
+            class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="!canStartSync" (click)="startSync()">
+            <svg *ngIf="isSyncButtonBusy" class="mr-2 w-4 h-4 animate-spin" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <i *ngIf="!isSyncButtonLoading" class="mr-2 ph ph-arrows-clockwise"></i>
-            <span *ngIf="!isSyncButtonLoading">Start Data Synchronization</span>
-            <span *ngIf="isSyncButtonLoading">Initiating Sync...</span>
+            <i *ngIf="!isSyncButtonBusy"
+              [ngClass]="dataSource === 'csv' ? 'ph ph-upload-simple' : 'ph ph-arrows-clockwise'"
+              class="mr-2"></i>
+            <span>{{ isSyncButtonBusy ? syncButtonBusyLabel : syncButtonLabel }}</span>
           </button>
           }
         </div>
@@ -323,29 +354,41 @@
         <div *ngIf="!isLoadingHistory && syncHistory.length > 0" class="overflow-x-auto">
           <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">
+              <!-- Every cell here is near-constant width, so the columns are
+                   sized to their content (w-px + nowrap shrinks to fit) and
+                   User takes the slack. Left to itself the browser gave the
+                   date column a third of the table. -->
               <tr>
-                <th class="px-5 py-3">Date</th>
-                <th class="px-5 py-3 text-right">Records Synchronized</th>
-                <th class="px-5 py-3">User</th>
-                <th class="px-5 py-3 text-right">Time Taken</th>
-                <th class="px-5 py-3">Method</th>
-                <th class="px-5 py-3">Status</th>
+                <th class="px-5 py-3 w-px whitespace-nowrap">Date</th>
+                <th class="px-5 py-3 w-px text-right whitespace-nowrap">Records</th>
+                <th class="px-5 py-3 w-full">User</th>
+                <th class="px-5 py-3 w-px text-right whitespace-nowrap">Time Taken</th>
+                <th class="px-5 py-3 w-px whitespace-nowrap">Method</th>
+                <th class="px-5 py-3 w-px whitespace-nowrap">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr *ngFor="let entry of syncHistory" class="hover:bg-gray-50 transition-colors">
                 <td class="px-5 py-3 text-gray-700 whitespace-nowrap">{{ formatSyncDate(entry.date) }}</td>
-                <td class="px-5 py-3 text-right font-medium text-gray-800 tabular-nums">{{ entry.records_synced | number }}</td>
+                <td class="px-5 py-3 text-right font-medium text-gray-800 whitespace-nowrap tabular-nums">
+                  {{ entry.records_synced | number }}
+                  <!-- A file upload skips rows that are already stored, so the
+                       row count of the file is worth showing beside what landed. -->
+                  <span *ngIf="entry.method === 'csv' && entry.total_records > entry.records_synced"
+                    class="ml-1 text-xs font-normal text-gray-400">
+                    of {{ entry.total_records | number }}
+                  </span>
+                </td>
                 <td class="px-5 py-3 text-gray-700">{{ entry.user_name || 'System' }}</td>
-                <td class="px-5 py-3 text-right tabular-nums text-gray-700">{{ fmtHistoryDuration(entry.duration_seconds) }}</td>
-                <td class="px-5 py-3">
+                <td class="px-5 py-3 text-right whitespace-nowrap tabular-nums text-gray-700">{{ fmtHistoryDuration(entry.duration_seconds) }}</td>
+                <td class="px-5 py-3 whitespace-nowrap">
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
                     [class.bg-blue-100]="entry.method === 'api'"
                     [class.text-blue-700]="entry.method === 'api'"
                     [class.bg-green-100]="entry.method === 'csv'"
                     [class.text-green-700]="entry.method === 'csv'">
-                    <i [class.fa-cloud-download-alt]="entry.method === 'api'" [class.fa-file-csv]="entry.method === 'csv'" class="fas"></i>
-                    {{ entry.method === 'api' ? 'API' : 'CSV' }}
+                    <i [class]="entry.method === 'api' ? 'ph ph-cloud-arrow-down' : 'ph ph-file-csv'"></i>
+                    {{ entry.method === 'api' ? 'API' : 'File Upload' }}
                   </span>
                 </td>
                 <td class="px-5 py-3">
@@ -358,17 +401,71 @@
                     [class.text-yellow-700]="entry.status === 'running'"
                     [class.bg-amber-100]="entry.status === 'cancelled'"
                     [class.text-amber-700]="entry.status === 'cancelled'">
-                    <i class="fas"
-                      [class.fa-check-circle]="entry.status === 'completed'"
-                      [class.fa-times-circle]="entry.status === 'failed'"
-                      [class.fa-spinner]="entry.status === 'running'"
-                      [class.fa-ban]="entry.status === 'cancelled'"></i>
+                    <i class="ph"
+                      [class.ph-check-circle]="entry.status === 'completed'"
+                      [class.ph-x-circle]="entry.status === 'failed'"
+                      [class.ph-spinner]="entry.status === 'running'"
+                      [class.ph-prohibit]="entry.status === 'cancelled'"></i>
                     {{ entry.status | titlecase }}
                   </span>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- ── Danger Zone ─────────────────────────────────────────────────── -->
+      <div *ngIf="dataSyncAccess?.canResetData"
+        class="bg-white rounded-lg border-2 border-red-200 shadow-sm">
+        <div class="flex gap-3 items-start px-6 py-4 bg-red-50 rounded-t-lg border-b border-red-200">
+          <i class="mt-0.5 text-xl text-red-600 ph ph-warning-octagon"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-red-800">Danger Zone</h3>
+            <p class="text-sm text-red-700">
+              Permanently delete VA data. Useful for resetting the system after
+              a training session. This cannot be undone.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <label class="block mb-3 text-sm font-medium text-gray-700">
+            Choose which data to delete:
+          </label>
+
+          <div class="grid grid-cols-1 gap-3 mb-4 md:grid-cols-2">
+            <label *ngFor="let option of resetSourceOptions"
+              [ngClass]="resetSources[option.value] ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'"
+              class="flex relative items-start p-4 rounded-lg border transition-colors cursor-pointer hover:bg-red-50 hover:border-red-300">
+              <input type="checkbox" class="hidden-control"
+                [ngModel]="resetSources[option.value]"
+                (ngModelChange)="onResetSourceChange(option.value, $event)"
+                [name]="'reset_' + option.value">
+              <div [ngClass]="resetSources[option.value] ? 'bg-red-600 border-red-600' : 'bg-white border-gray-300'"
+                class="flex justify-center items-center mt-0.5 mr-3 w-4 h-4 rounded border-2 transition-colors shrink-0">
+                <i class="text-[10px] text-white ph ph-check transition-opacity"
+                  [class.opacity-0]="!resetSources[option.value]"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-sm font-medium text-gray-900">{{ option.label }}</div>
+                <div class="text-xs text-gray-500">{{ option.description }}</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="flex flex-col gap-3 justify-between items-start pt-4 border-t border-gray-200 sm:flex-row sm:items-center">
+            <p class="text-sm text-gray-500">
+              <i class="mr-1 ph ph-info"></i>
+              Related PCVA assignments, coding results and CCVA results are
+              deleted along with the records they belong to.
+            </p>
+            <button type="button" (click)="onResetData()" [disabled]="!hasResetSelection"
+              class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg shadow-sm transition-colors hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="mr-2 ph ph-trash"></i>
+              Reset (Delete) Data
+            </button>
+          </div>
         </div>
       </div>
 
