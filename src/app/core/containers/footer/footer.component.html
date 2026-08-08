@@ -1,9 +1,11 @@
-<footer class="bg-white py-4">
-    <hr class="bg-danger border-1 border-top border-danger mb-4" >
-    <div class="container mx-auto flex justify-center items-center">
-        <img src="../../../../assets/icons/favicon.ico" alt="Logo" class="h-5 w-5 mr-4">
-        <div class="text-gray-600 text-sm">
-            © {{copyrightYear}} VMan <span *ngIf="SOFTWARE_VERSION">({{SOFTWARE_VERSION}})</span> Development
-        </div>
+<!--
+  Definite height (h-16 = 4rem). The body layout subtracts exactly this from
+  the content area, so the footer never overlaps what is above it. If this
+  height changes, change the calc() in body.component.html to match.
+-->
+<footer class="flex gap-3 justify-center items-center h-16 bg-white border-t border-gray-200">
+    <img src="../../../../assets/icons/favicon.ico" alt="Logo" class="w-5 h-5">
+    <div class="text-sm text-gray-600">
+        © {{copyrightYear}} VMan <span *ngIf="SOFTWARE_VERSION">({{SOFTWARE_VERSION}})</span> Development
     </div>
 </footer>
