@@ -138,9 +138,9 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
       location_level3: [''],
       location_level4: [''],
       deceased_gender: [''],
-      is_adult: [''],
-      is_child: [''],
-      is_neonate: [''],
+      is_adult: ['', Validators.required],
+      is_child: ['', Validators.required],
+      is_neonate: ['', Validators.required],
       birth_date: [''],
       death_date: [''],
       interview_date: [''],
@@ -233,6 +233,22 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Labels for the fields required across CCVA/PCVA/DQA - kept in sync with
+  // the backend's REQUIRED_FIELD_MAPPING_LABELS in odk_configs.py, which is
+  // the real source of truth (this list only drives the client-side message;
+  // the backend still validates on save regardless of what the form sends).
+  private static readonly REQUIRED_FIELD_LABELS: Record<string, string> = {
+    table_name: 'Table Name',
+    instance_id: 'Instance ID',
+    va_id: 'VA ID',
+    date: 'Date',
+    location_level1: 'Location Level 1',
+    interviewer_name: 'Interviewer Name',
+    is_adult: 'Is Adult',
+    is_child: 'Is Child',
+    is_neonate: 'Is Neonate',
+  };
+
   onFieldMappingSubmit(): void {
     console.log(this.fieldMappingForm.value);
     if (this.fieldMappingForm.valid) {
@@ -246,14 +262,28 @@ export class SettingsConfigsFormComponent implements OnInit, AfterViewInit {
             this.dialogRef.close(true);
           },
           (error) => {
-            this.snackBar.open('Failed to save field mapping', 'Close', {
-              duration: 3000,
+            const errorMessage =
+              error?.error?.detail ??
+              error?.error?.message ??
+              error?.message ??
+              'Failed to save field mapping';
+            this.snackBar.open(errorMessage, 'Close', {
+              duration: 6000,
+              panelClass: ['error-snackbar'],
             });
           }
         );
     } else {
-      this.snackBar.open('Field mapping form is invalid', 'Close', {
-        duration: 3000,
+      this.fieldMappingForm.markAllAsTouched();
+      const missingLabels = Object.entries(SettingsConfigsFormComponent.REQUIRED_FIELD_LABELS)
+        .filter(([key]) => this.fieldMappingForm.get(key)?.invalid)
+        .map(([, label]) => label);
+      const message = missingLabels.length
+        ? `Please map the following required fields: ${missingLabels.join(', ')}`
+        : 'Field mapping form is invalid';
+      this.snackBar.open(message, 'Close', {
+        duration: 6000,
+        panelClass: ['error-snackbar'],
       });
     }
   }
