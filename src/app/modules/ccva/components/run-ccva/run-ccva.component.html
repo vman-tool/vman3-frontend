@@ -1,6 +1,10 @@
+<ng-container *ngIf="(runState$ | async) as runState">
 <div>
-  <!-- Header Section with Labels for Date Range, Malaria Status, CCVA Algorithm, HIV Status, and Run Button -->
-  <div class="mx-auto mb-10" *ngIf="!isTaskRunning">
+  <!-- Header Section with Labels for Date Range, Malaria Status, CCVA Algorithm, HIV Status, and Run Button.
+       Stays visible while a run is in progress (rather than being hidden) -
+       only the Run button itself disables, so the user can still see the
+       settings that are about to apply to their next run. -->
+  <div class="mx-auto mb-6">
     <span class="mb-6 text-lg font-semibold text-gray-700">CCVA Analysis</span>
 
     <div class="mt-3 space-y-6">
@@ -92,24 +96,27 @@
         </div>
 
         <!-- Run CCVA Button -->
-        <div class="flex items-end">
-          <button *ngIf="!isCCvaRunning"
-            class="px-6 py-2 font-bold text-white transition duration-300 bg-blue-500 rounded hover:bg-blue-700"
-            (click)="onRunCCVA()">
-            Run CCVA
-          </button>
-          <button *ngIf="isCCvaRunning"
-            class="px-6 py-2 font-bold text-white transition duration-300 bg-red-500 rounded hover:bg-red-700"
+        <div class="flex items-end gap-2">
+          <button *ngIf="runState.status === 'running'"
+            class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg border border-red-200 transition-colors hover:bg-red-100"
             (click)="onCancel()">
             Cancel
-            <span
-              class="inline-block w-4 h-4 ml-2 border-4 border-white rounded-full spinner-border animate-spin border-t-transparent"></span>
+          </button>
+          <button
+            class="px-6 py-2 font-bold text-white bg-blue-500 rounded transition duration-300 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500"
+            [disabled]="runState.status === 'starting' || runState.status === 'running'"
+            (click)="onRunCCVA()">
+            <span *ngIf="runState.status === 'starting'" class="inline-flex gap-2 items-center">
+              <span class="inline-block w-4 h-4 rounded-full border-2 animate-spin spinner-border border-white/60 border-t-transparent"></span>
+              Starting...
+            </span>
+            <span *ngIf="runState.status === 'running'">Running...</span>
+            <span *ngIf="runState.status !== 'starting' && runState.status !== 'running'">Run CCVA</span>
           </button>
         </div>
       </div>
 
       <!-- Data Source and Upload Section -->
-      <!-- TODOS: THIS IS TEMPORARY HIDE  -->
       <div class="flex items-end justify-between">
         <div class="flex items-end space-x-4">
 
@@ -137,103 +144,70 @@
     </div>
   </div>
 
+  <!-- Run feedback: a single-line status strip plus a collapsible terminal log,
+       both embedded directly in the page flow - no card, no popup, no
+       enter/leave animation. Stays put once a run has started or finished;
+       the next run simply overwrites it. -->
+  <div *ngIf="runState.status !== 'idle'" class="mb-6">
+    <div class="flex gap-2 items-center px-3 py-2 text-xs rounded-md border"
+      [ngClass]="{
+        'bg-blue-50 border-blue-200 text-blue-700': runState.status === 'starting' || runState.status === 'running',
+        'bg-green-50 border-green-200 text-green-700': runState.status === 'completed',
+        'bg-red-50 border-red-200 text-red-700': runState.status === 'error'
+      }">
+      <ng-container [ngSwitch]="runState.status">
+        <i *ngSwitchCase="'completed'" class="ph ph-check-circle shrink-0"></i>
+        <i *ngSwitchCase="'error'" class="ph ph-warning shrink-0"></i>
+        <svg *ngSwitchDefault class="w-3 h-3 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+      </ng-container>
 
+      <span class="font-medium truncate">
+        {{ runState.message || (runState.status === 'starting' ? 'Starting...' : 'Running...') }}
+      </span>
 
+      <span class="ml-auto tabular-nums shrink-0">{{ runState.progress }}%</span>
+      <span class="text-[11px] opacity-75 shrink-0" *ngIf="runState.elapsedTime !== '0:00:00'">{{ runState.elapsedTime }}</span>
+    </div>
 
-  <!-- Scrollable Content Section -->
-  <div class="overflow-y-auto max-h-[calc(100vh-200px)]">
-    <!-- <span class="text-xl font-bold text-gray-700">CCVA Background Analysis</span> -->
-
-    <div *ngIf="isResultsPanelVisible" @expandFade class="p-6 mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div class="flex justify-between mb-4">
-        <span class="text-lg font-semibold text-gray-800">Analysis Progress</span>
-        <button (click)="closeResultsPanel()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <div class="flex flex-col gap-4 mb-6 md:flex-row md:justify-between md:items-center">
-        <div class="grid flex-1 grid-cols-2 gap-4 md:grid-cols-4">
-          <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p class="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase">Total Records</p>
-            <p class="text-xl font-bold text-gray-900">{{ totalRecords }}</p>
-          </div>
-          <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p class="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase">Progress</p>
-            <div class="flex items-center gap-2">
-              <div class="flex-1 overflow-hidden h-2 bg-gray-200 rounded-full">
-                <div [style.width.%]="progress"
-                  class="h-full bg-blue-500 rounded-full transition-all duration-300">
-                </div>
-              </div>
-              <span class="text-sm font-bold text-blue-600 tabular-nums min-w-[2.5rem] text-right">{{ progress }}%</span>
-            </div>
-          </div>
-          <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p class="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase">Status</p>
-            <div class="flex items-center gap-1.5 min-w-0">
-              <span class="shrink-0 w-2 h-2 rounded-full"
-                [class.bg-blue-400]="progress > 0 && progress < 100"
-                [class.bg-green-500]="progress === 100"
-                [class.bg-gray-300]="progress === 0"
-                [class.animate-pulse]="progress > 0 && progress < 100"></span>
-              <p class="text-sm font-medium text-gray-700 leading-tight" style="overflow-wrap:break-word;word-break:break-word;">
-                {{ message || (progress === 0 ? 'Starting...' : 'Processing...') }}
-              </p>
-            </div>
-          </div>
-          <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p class="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase">Elapsed Time</p>
-            <p class="text-xl font-bold text-gray-900">{{ elapsedTime }}</p>
-          </div>
+    <!-- Execution Logs -->
+    <div class="mt-2" *ngIf="runState.logs.length > 0 || runState.status === 'running' || runState.status === 'starting'">
+      <button (click)="isLogsExpanded = !isLogsExpanded"
+        class="flex justify-between items-center px-3 py-1.5 w-full text-xs bg-gray-50 rounded-md border border-gray-200 transition-colors hover:bg-gray-100">
+        <div class="flex gap-2 items-center">
+          <span class="font-medium text-gray-600">Execution Logs</span>
+          <span *ngIf="runState.logs.length > 0"
+            class="px-1.5 py-0.5 text-[10px] font-medium bg-white rounded-full border border-gray-300 text-gray-500">{{
+            runState.logs.length }}</span>
         </div>
-        <button *ngIf="isTaskRunning"
-          class="px-6 py-2 font-bold text-white transition duration-300 bg-red-500 rounded hover:bg-red-700"
-          (click)="onCancel()">
-          Cancel
-        </button>
-      </div>
-      <!-- Logs Section -->
-      <div class="mt-6">
-        <button (click)="isLogsExpanded = !isLogsExpanded"
-          class="flex justify-between items-center p-3 mb-2 w-full bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
-          <div class="flex gap-2 items-center">
-            <span class="text-sm font-bold text-gray-700">Execution Logs</span>
-            <span *ngIf="logs.length > 0"
-              class="px-2 py-0.5 text-xs font-medium bg-white rounded-full border border-gray-300 text-gray-600">({{
-              logs.length }} entries)</span>
+        <div class="flex gap-3 items-center">
+          <span *ngIf="runState.logs.length > 0" (click)="clearLogs(); $event.stopPropagation()"
+            class="text-gray-500 cursor-pointer hover:text-gray-700">Clear</span>
+          <svg class="w-3 h-3 text-gray-400 transition-transform duration-200" [class.rotate-180]="isLogsExpanded"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </button>
+      <div class="overflow-hidden transition-all duration-300" [style.max-height]="isLogsExpanded ? '176px' : '0px'">
+        <div #logsContainer
+          class="overflow-auto p-3 max-h-40 font-mono text-xs bg-gray-50 rounded-b-md border border-t-0 border-gray-200"
+          style="scroll-behavior: smooth;">
+          <div *ngIf="runState.logs.length === 0" class="italic font-medium text-gray-400">
+            Waiting for logs...
           </div>
-          <div class="flex gap-2 items-center">
-            <button *ngIf="logs.length > 0" (click)="logs = []; $event.stopPropagation()"
-              class="px-2 py-1 text-xs font-medium text-gray-600 bg-white rounded border border-gray-300 hover:bg-gray-50 pointer-events-auto">
-              Clear
-            </button>
-            <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" [class.rotate-180]="isLogsExpanded"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </div>
-        </button>
-        <div class="overflow-hidden transition-all duration-300" [style.max-height]="isLogsExpanded ? '400px' : '0px'">
-          <div #logsContainer
-            class="overflow-auto p-4 max-h-28 font-mono text-sm bg-gray-50 border border-gray-200 rounded-lg shadow-inner"
-            style="scroll-behavior: smooth;">
-            <div *ngIf="logs.length === 0" class="font-medium text-gray-400 italic">
-              Waiting for logs...
-            </div>
-            <div *ngFor="let log of logs; let last = last" class="mb-1 text-gray-700" [attr.data-last]="last">
-              <span class="font-bold text-gray-400 mr-2">></span> <span [class.text-red-600]="log.includes('ERROR')"
-                [class.text-yellow-600]="log.includes('WARNING') || log.includes('WARN')"
-                [class.font-semibold]="log.includes('ERROR') || log.includes('WARNING') || log.includes('WARN')">{{ log
-                }}</span>
-            </div>
+          <div *ngFor="let log of runState.logs" class="mb-0.5 text-gray-700">
+            <span class="mr-1 font-bold text-gray-400">&gt;</span>
+            <span [class.text-red-600]="log.includes('ERROR')"
+              [class.text-yellow-600]="log.includes('WARNING') || log.includes('WARN')"
+              [class.font-semibold]="log.includes('ERROR') || log.includes('WARNING') || log.includes('WARN')">{{ log
+              }}</span>
           </div>
         </div>
       </div>
     </div>
-    <!-- Charts Component -->
-    <!-- <app-ccva-graphs *ngIf="!isTaskRunning" [charts]="charts"></app-ccva-graphs> -->
   </div>
 </div>
+</ng-container>
