@@ -38,11 +38,20 @@
   </div>
 
   <!-- ── Body ───────────────────────────────────────────────────────────── -->
-  <div *ngIf="!loading && !loadError"
+  <div *ngIf="!loading && !loadError" #codingWindowBody
        class="flex flex-col flex-1 min-h-0 gap-4 p-4 lg:flex-row">
 
-    <!-- Reference: the submission being coded -->
-    <section class="flex flex-col flex-1 min-h-0 bg-white border border-gray-200 rounded-lg">
+    <!-- Reference: the submission being coded.
+         min-w-0 + a fixed basis (rather than the old plain flex-1) keeps
+         this panel's width independent of its own content - a flex item's
+         default min-width is auto, so without min-w-0 wide content (e.g.
+         the ML analysis results on the Coding Sheet side) could grow that
+         side past its share and squeeze this one. Only takes effect at the
+         lg breakpoint, matching lg:flex-row above; below it the panels stack
+         and width doesn't apply. -->
+    <section
+      class="flex flex-col flex-1 min-h-0 min-w-0 bg-white border border-gray-200 rounded-lg lg:flex-none lg:basis-[var(--va-details-width)]"
+      [style.--va-details-width.%]="vaDetailsWidthPercent">
       <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-gray-200">
         <div>
           <h3 class="text-sm font-semibold text-gray-900">VA Details</h3>
@@ -109,8 +118,24 @@
       </div>
     </section>
 
+    <!-- Drag handle: adjusts vaDetailsWidthPercent, which the VA Details
+         panel above is bound to. Only shown/interactive at the lg breakpoint,
+         matching lg:flex-row - there's nothing to resize once the panels
+         stack. -->
+    <div
+      class="items-stretch justify-center hidden w-2 shrink-0 cursor-col-resize group touch-none select-none lg:flex"
+      (mousedown)="startResize($event)"
+      (keydown)="onResizerKeydown($event)"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize VA Details and Coding Sheet panels"
+      tabindex="0">
+      <div class="w-px transition-colors bg-gray-200 group-hover:bg-blue-400"
+           [class.bg-blue-500]="isResizingPanels"></div>
+    </div>
+
     <!-- Coding sheet -->
-    <section class="flex flex-col flex-1 min-h-0 bg-white border border-gray-200 rounded-lg">
+    <section class="flex flex-col flex-1 min-h-0 min-w-0 bg-white border border-gray-200 rounded-lg">
       <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-gray-200">
         <h3 class="text-sm font-semibold text-gray-900">Coding Sheet</h3>
         <div class="flex items-center gap-2">

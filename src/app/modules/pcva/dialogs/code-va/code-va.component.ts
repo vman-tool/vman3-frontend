@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../services/va-records/va-records.service';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject, takeUntil } from 'rxjs';
@@ -37,6 +37,29 @@ export class CodeVaComponent implements OnInit, AfterViewInit, OnDestroy {
   displayFields: VaField[] = [];
 
   searchText = '';
+
+  // ---------------------------------------------------------- panel resize
+  //
+  // VA Details and Coding Sheet used to both be plain `flex-1` siblings, so
+  // their split was computed from content size rather than held fixed - a
+  // flex item's default min-width is `auto`, not 0, so once the ML analysis
+  // results added wide content to the Coding Sheet side, that side's minimum
+  // claim grew past its "fair" 50% and squeezed VA Details. VA Details is now
+  // driven by this fixed percentage instead (see the template's CSS variable
+  // binding); Coding Sheet just fills whatever's left, so neither panel's
+  // width depends on what's rendered inside it, only on this value and the
+  // drag handle between them.
+  private static readonly WIDTH_STORAGE_KEY = 'pcva-coding-window-va-details-width';
+  private static readonly MIN_PANEL_PERCENT = 20;
+  private static readonly MAX_PANEL_PERCENT = 80;
+
+  vaDetailsWidthPercent = this.loadStoredPanelWidth();
+  isResizingPanels = false;
+
+  @ViewChild('codingWindowBody') private codingWindowBody?: ElementRef<HTMLDivElement>;
+
+  private resizeMove = (event: MouseEvent) => this.onResizerMouseMove(event);
+  private resizeEnd = () => this.stopResize();
 
   /**
    * Whether the ML panel is offered, from PCVA Configuration.
@@ -103,6 +126,57 @@ export class CodeVaComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // Defensive: only matters if the dialog is closed mid-drag, since
+    // stopResize() already removes these at the end of a normal drag.
+    document.removeEventListener('mousemove', this.resizeMove);
+    document.removeEventListener('mouseup', this.resizeEnd);
+  }
+
+  // ---------------------------------------------------------- panel resize
+
+  private loadStoredPanelWidth(): number {
+    const stored = Number(localStorage.getItem(CodeVaComponent.WIDTH_STORAGE_KEY));
+    if (!stored || Number.isNaN(stored)) return 50;
+    return this.clampPanelPercent(stored);
+  }
+
+  private clampPanelPercent(value: number): number {
+    return Math.min(
+      CodeVaComponent.MAX_PANEL_PERCENT,
+      Math.max(CodeVaComponent.MIN_PANEL_PERCENT, value)
+    );
+  }
+
+  startResize(event: MouseEvent): void {
+    event.preventDefault();
+    this.isResizingPanels = true;
+    document.addEventListener('mousemove', this.resizeMove);
+    document.addEventListener('mouseup', this.resizeEnd);
+  }
+
+  private onResizerMouseMove(event: MouseEvent): void {
+    const container = this.codingWindowBody?.nativeElement;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const percent = ((event.clientX - rect.left) / rect.width) * 100;
+    this.vaDetailsWidthPercent = this.clampPanelPercent(percent);
+  }
+
+  private stopResize(): void {
+    if (!this.isResizingPanels) return;
+    this.isResizingPanels = false;
+    document.removeEventListener('mousemove', this.resizeMove);
+    document.removeEventListener('mouseup', this.resizeEnd);
+    localStorage.setItem(CodeVaComponent.WIDTH_STORAGE_KEY, String(this.vaDetailsWidthPercent));
+  }
+
+  /** Arrow keys nudge the split by 2% for keyboard/accessibility use. */
+  onResizerKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    const delta = event.key === 'ArrowLeft' ? -2 : 2;
+    this.vaDetailsWidthPercent = this.clampPanelPercent(this.vaDetailsWidthPercent + delta);
+    localStorage.setItem(CodeVaComponent.WIDTH_STORAGE_KEY, String(this.vaDetailsWidthPercent));
   }
 
   // ---------------------------------------------------------------- loading

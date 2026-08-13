@@ -1,5 +1,5 @@
 import { TriggersService } from './../../../../core/services/triggers/triggers.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '../../../../shared/dialogs/confirm/confirmation-dialog.component';
 import { CcvaService } from '../../services/ccva.service';
@@ -24,8 +24,13 @@ export class ListCcvaComponent implements OnInit {
   // Loading state
   isLoading: boolean = false;
 
-  // Dropdown state for actions
+  // Dropdown state for actions. Rendered as a single fixed-position portal
+  // outside the table's overflow-x-auto wrapper (see template) - nested
+  // inside it, the menu was clipped by that wrapper for rows near the
+  // bottom of the table instead of floating above the page.
   dropdownOpen: number | null = null;
+  dropdownRow: any = null;
+  dropdownPosition: { top: number; left: number } = { top: 0, left: 0 };
 
   // Row selection — max 2, FIFO queue
   selectedRows: any[] = [];
@@ -197,7 +202,7 @@ export class ListCcvaComponent implements OnInit {
   }
 
   compareCSMF(): void {
-    this.dropdownOpen = null;
+    this.closeDropdown();
     if (this.selectedRows.length !== 2) {
       this.snackBar.open('Select exactly 2 runs using the checkboxes to compare.', 'Close', {
         horizontalPosition: 'end',
@@ -212,13 +217,36 @@ export class ListCcvaComponent implements OnInit {
     );
   }
 
-  // Toggle dropdown for actions
-  toggleDropdown(index: number): void {
+  // Toggle dropdown for actions. Position is computed from the trigger
+  // button so the fixed-position portal (see template) lands next to it.
+  toggleDropdown(index: number, row: any, event: MouseEvent): void {
     if (this.dropdownOpen === index) {
-      this.dropdownOpen = null; // Close the dropdown if it's already open
-    } else {
-      this.dropdownOpen = index; // Open the dropdown for the selected row
+      this.closeDropdown();
+      return;
     }
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.dropdownPosition = { top: rect.bottom + 4, left: rect.right - 192 }; // 192px = w-48
+    this.dropdownRow = row;
+    this.dropdownOpen = index;
+  }
+
+  closeDropdown(): void {
+    this.dropdownOpen = null;
+    this.dropdownRow = null;
+  }
+
+  // Click anywhere outside the menu closes it; clicks inside it (button or
+  // menu items) stop propagation before reaching here (see template).
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeDropdown();
+  }
+
+  // Fixed positioning doesn't track the row while scrolling, so close
+  // rather than let the menu drift away from its button.
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.closeDropdown();
   }
 
   // Paging is client-side (see pagedData), so these only move the window -
@@ -226,14 +254,14 @@ export class ListCcvaComponent implements OnInit {
   goToPreviousPage(): void {
     if (this.hasPrevious) {
       this.pageNumber--;
-      this.dropdownOpen = null;
+      this.closeDropdown();
     }
   }
 
   goToNextPage(): void {
     if (this.hasNext) {
       this.pageNumber++;
-      this.dropdownOpen = null;
+      this.closeDropdown();
     }
   }
 

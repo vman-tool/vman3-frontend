@@ -39,8 +39,15 @@ export class CcvaGraphsComponent implements OnInit {
   created_at: string = '';
   task_id: string = '';
   ccva_graph_db_source: boolean = true;
-  include_undeterminants_ingraph = true;
-  tempoChartData = [];
+  // Which GBD groups are shown, toggled by clicking their legend entry -
+  // display-only, filters the rendered chart without touching the stored
+  // CSMF or recomputing percentages against a smaller denominator.
+  includeGroup: { [key: string]: boolean } = {
+    communicable: true,
+    ncd: true,
+    injury: true,
+    undetermined: true,
+  };
   filterData: {
     locations: string[];
     start_date?: string;
@@ -88,7 +95,7 @@ export class CcvaGraphsComponent implements OnInit {
 
   private classifyGbd(label: string): keyof typeof this.GBD_COLORS {
     const l = label.toLowerCase();
-    if (l.includes('undetermined') || l.includes('unknown')) return 'undetermined';
+    if (l.includes('undetermin') || l.includes('unknown')) return 'undetermined';
 
     // Group III – Injuries
     if (
@@ -209,7 +216,6 @@ export class CcvaGraphsComponent implements OnInit {
               this.elapsed_time = progressData.data[0].elapsed_time;
               this.created_at = progressData.data[0].created_at;
             }
-            this.tempoChartData = progressData.data[0];
             this.loadChartData(progressData.data[0]);
           },
           error: (error) => {
@@ -224,51 +230,34 @@ export class CcvaGraphsComponent implements OnInit {
   }
   loadChartData(data: any) {
     let graphs = data.graphs ?? [];
+    // originalChartData keeps the full, untouched CSMF as returned by the
+    // run - the Undeterminants toggle only changes what filterGraphData()
+    // renders from it, never this stored copy, so re-toggling never desyncs
+    // labels/values or loses data.
     for (let key in graphs) {
-      let chartLabels = graphs[key].index;
-      // i want to remove the  chartlabels that is "Undeterminant" from the chart and it data if the include_undeterminants_ingraph is false
-      if (
-        chartLabels.includes('Undeterminant') &&
-        this.include_undeterminants_ingraph == false
-      ) {
-        console.log('Undeterminant found');
-
-        const index = chartLabels.indexOf('Undeterminant');
-        if (index > -1) {
-          let newChartLabels = [...chartLabels];
-          const newChartValues = [...graphs[key].values];
-          newChartLabels.splice(index, 1);
-          newChartValues.splice(index, 1);
-          chartLabels = newChartLabels;
-          graphs[key].values = newChartValues;
-        }
-      }
-
-      const chartData = [
-        {
-          label: 'csmf',
-          data: graphs[key].values,
-          backgroundColor: this.getBarColors(chartLabels),
-          borderWidth: 1,
-        },
-      ];
+      const chartLabels = graphs[key].index;
       if (chartLabels?.length > 0) {
-        this.renderChart(key, chartLabels, chartData);
         this.originalChartData[key] = {
-          labels: chartLabels,
+          labels: [...chartLabels],
           data: [...graphs[key].values],
         };
-        this.filterGraphData();
       }
     }
+    this.filterGraphData();
     this.isLoading = false;
   }
 
   filterGraphData(): void {
     for (let key in this.originalChartData) {
       if (this.originalChartData[key]) {
-        const originalData = this.originalChartData[key].data;
-        const originalLabels = this.originalChartData[key].labels;
+        const originalLabels: any[] = [];
+        const originalData: any[] = [];
+        this.originalChartData[key].labels.forEach((label: string, i: number) => {
+          if (this.includeGroup[this.classifyGbd(label)]) {
+            originalLabels.push(label);
+            originalData.push(this.originalChartData[key].data[i]);
+          }
+        });
 
         // Use the sliderValue to determine how many data points to show
         const dataToShow = Math.max(
@@ -287,7 +276,6 @@ export class CcvaGraphsComponent implements OnInit {
             borderWidth: 1,
           },
         ];
-        console.log(filteredLabels.length, filteredData.length);
         this.renderChart(key, filteredLabels, chartData);
       }
     }
@@ -388,9 +376,9 @@ export class CcvaGraphsComponent implements OnInit {
 
     this.ngOnInit();
   }
-  toggleChangeUndeterminants(event: any) {
-    this.include_undeterminants_ingraph = event.target.checked;
-    this.loadChartData(this.tempoChartData);
+  toggleGroup(group: keyof typeof this.GBD_COLORS): void {
+    this.includeGroup[group] = !this.includeGroup[group];
+    this.filterGraphData();
   }
 
   onFilterChange() {

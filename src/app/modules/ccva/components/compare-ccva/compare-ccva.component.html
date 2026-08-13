@@ -50,27 +50,32 @@
       </div>
     </div>
 
-    <!-- GBD Color Legend -->
+    <!-- GBD Color Legend - click an entry to show/hide that group. Display-only,
+         does not change the CSMF or recompute percentages. -->
     <div class="flex flex-wrap gap-x-5 gap-y-2 mb-5 px-1">
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 cursor-pointer select-none" [class.opacity-50]="!includeGroup['communicable']"
+        (click)="toggleGroup('communicable')" [title]="(includeGroup['communicable'] ? 'Hide' : 'Show') + ' Group I'">
         <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
           style="background:rgba(178,24,43,0.85)"></span>
-        <span class="text-xs text-gray-600">Group I – Communicable, Maternal & Neonatal</span>
+        <span class="text-xs text-gray-600" [class.line-through]="!includeGroup['communicable']">Group I – Communicable, Maternal & Neonatal</span>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 cursor-pointer select-none" [class.opacity-50]="!includeGroup['ncd']"
+        (click)="toggleGroup('ncd')" [title]="(includeGroup['ncd'] ? 'Hide' : 'Show') + ' Group II'">
         <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
           style="background:rgba(33,102,172,0.85)"></span>
-        <span class="text-xs text-gray-600">Group II – Non-Communicable (NCD)</span>
+        <span class="text-xs text-gray-600" [class.line-through]="!includeGroup['ncd']">Group II – Non-Communicable (NCD)</span>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 cursor-pointer select-none" [class.opacity-50]="!includeGroup['injury']"
+        (click)="toggleGroup('injury')" [title]="(includeGroup['injury'] ? 'Hide' : 'Show') + ' Group III'">
         <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
           style="background:rgba(35,139,69,0.85)"></span>
-        <span class="text-xs text-gray-600">Group III – Injuries</span>
+        <span class="text-xs text-gray-600" [class.line-through]="!includeGroup['injury']">Group III – Injuries</span>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 cursor-pointer select-none" [class.opacity-50]="!includeGroup['undetermined']"
+        (click)="toggleGroup('undetermined')" [title]="(includeGroup['undetermined'] ? 'Hide' : 'Show') + ' Undetermined'">
         <span class="inline-block w-3 h-3 rounded-sm flex-shrink-0"
           style="background:rgba(160,160,160,0.75)"></span>
-        <span class="text-xs text-gray-600">Undetermined</span>
+        <span class="text-xs text-gray-600" [class.line-through]="!includeGroup['undetermined']">Undetermined</span>
       </div>
     </div>
 

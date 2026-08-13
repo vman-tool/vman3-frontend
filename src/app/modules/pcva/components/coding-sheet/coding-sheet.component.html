@@ -602,12 +602,36 @@
                 <div class="text-sm font-semibold text-gray-900">
                   What moved the model most
                 </div>
+
+                <!-- "Undetermined" (and any other OOD-flagged label) has no
+                     per-feature explanation of its own - the record's entropy
+                     was too high across every class at once, not pushed by any
+                     one input. What's shown below is the model's strongest
+                     concrete guess *before* that flag, which the backend may
+                     name differently from the displayed cause - silently
+                     reusing "this cause" in that case would imply these
+                     factors justify a result they don't. -->
+                <div *ngIf="ml.contributions_mismatch"
+                  class="flex gap-2 items-start p-2 mt-2 mb-2 text-xs text-amber-800 bg-amber-50 rounded-md border border-amber-200">
+                  <i class="mt-0.5 ph ph-warning shrink-0"></i>
+                  <span>
+                    This record was flagged <strong>{{ ml.cause }}</strong> — too uncertain
+                    for the model to commit to one cause, which has no factors of its own to
+                    show. The list below explains its strongest concrete guess before that
+                    flag, <strong>{{ ml.contributions_for }}</strong>, not why it was marked
+                    {{ ml.cause }}.
+                  </span>
+                </div>
+
                 <!-- Without this the two colours are a guess. Amber rather than
                      grey for the opposing side: grey reads as "inactive" when
                      the point is that the input actively pulled the other way. -->
                 <p class="mt-0.5 mb-2 text-xs text-gray-500">
                   Each input is scored for how far it pushed the model
-                  <span class="font-medium text-blue-700">towards</span> this cause or
+                  <span class="font-medium text-blue-700">towards</span>
+                  <ng-container *ngIf="!ml.contributions_mismatch">this cause</ng-container>
+                  <ng-container *ngIf="ml.contributions_mismatch">{{ ml.contributions_for }}</ng-container>
+                  or
                   <span class="font-medium text-amber-700">away from</span> it. Longer
                   bars moved it further. Bars compare within this record only.
                 </p>
