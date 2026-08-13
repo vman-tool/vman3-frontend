@@ -72,35 +72,11 @@
           </td>
           <!-- stopPropagation so using the menu doesn't also toggle the row -->
           <td class="px-6 py-2.5" (click)="$event.stopPropagation()">
-            <div class="relative dropdown-actions">
-              <button
-                class="px-2.5 py-1 text-xs font-medium text-gray-600 border border-gray-200 rounded hover:bg-gray-100 hover:text-gray-900"
-                (click)="toggleDropdown(i)">
-                Actions
-              </button>
-              <div *ngIf="dropdownOpen === i"
-                class="absolute right-0 z-10 w-48 py-2 mt-2 bg-white rounded-lg shadow-xl">
-                <a (click)="onRowClick(row.id); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                  Display CSMF
-                </a>
-                <a (click)="compareCSMF()" class="block px-4 py-2 text-sm cursor-pointer"
-                  [ngClass]="selectedRows.length === 2
-                    ? 'text-blue-700 hover:bg-blue-50 font-medium'
-                    : 'text-gray-400 hover:bg-gray-50'">
-                  Compare CSMF
-                  <span *ngIf="selectedRows.length !== 2" class="text-xs font-normal ml-1">(select 2)</span>
-                </a>
-                <a (click)="setDefault(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                  Set Default
-                </a>
-                <a (click)="downloadDefault(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                  Download Data
-                </a>
-                <a (click)="deleteRow(row); dropdownOpen = null" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                  Delete
-                </a>
-              </div>
-            </div>
+            <button
+              class="px-2.5 py-1 text-xs font-medium text-gray-600 border border-gray-200 rounded hover:bg-gray-100 hover:text-gray-900"
+              (click)="toggleDropdown(i, row, $event)">
+              Actions
+            </button>
           </td>
         </tr>
       </tbody>
@@ -128,5 +104,32 @@
         </li>
       </ul>
     </nav>
+  </div>
+
+  <!-- Row actions menu - a single fixed-position portal rendered outside the
+       overflow-x-auto wrapper above, so it floats over the page instead of
+       being clipped by that wrapper for rows near the table's edge. -->
+  <div *ngIf="dropdownOpen !== null && dropdownRow" class="fixed z-50 w-48 py-2 bg-white rounded-lg shadow-xl"
+    [style.top.px]="dropdownPosition.top" [style.left.px]="dropdownPosition.left"
+    (click)="$event.stopPropagation()">
+    <a (click)="onRowClick(dropdownRow.id); closeDropdown()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+      Display CSMF
+    </a>
+    <a (click)="compareCSMF()" class="block px-4 py-2 text-sm cursor-pointer"
+      [ngClass]="selectedRows.length === 2
+        ? 'text-blue-700 hover:bg-blue-50 font-medium'
+        : 'text-gray-400 hover:bg-gray-50'">
+      Compare CSMF
+      <span *ngIf="selectedRows.length !== 2" class="text-xs font-normal ml-1">(select 2)</span>
+    </a>
+    <a (click)="setDefault(dropdownRow); closeDropdown()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+      Set Default
+    </a>
+    <a (click)="downloadDefault(dropdownRow); closeDropdown()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+      Download Data
+    </a>
+    <a (click)="deleteRow(dropdownRow); closeDropdown()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+      Delete
+    </a>
   </div>
 </div>

@@ -12,6 +12,18 @@ echo ""
 
 # 1. Docker containers (ArangoDB, Redis, Celery worker, Flower)
 echo "[1/3] Starting Docker containers..."
+
+# docker-compose.dev.yml declares vman3-net as an external network - Compose
+# expects it to already exist and won't create it. On a machine where it's
+# never been created (fresh install, new Docker environment, CI runner),
+# `docker compose up` fails to start anything that needs it (ArangoDB
+# included) but doesn't stop the script, so this used to fail silently and
+# only surface later as "can't log in" with no obvious cause.
+if ! docker network inspect vman3-net >/dev/null 2>&1; then
+    echo "Docker network 'vman3-net' not found — creating it..."
+    docker network create vman3-net
+fi
+
 (cd "$BACKEND_DIR" && docker compose -f docker-compose.dev.yml up -d)
 echo "Docker containers running."
 echo ""
@@ -67,6 +79,19 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # 3. Angular dev server (foreground — Ctrl+C stops everything)
 echo "[3/3] Starting Angular dev server on :4200..."
+
+# Same problem as port 8080 above: a previous run that didn't exit cleanly
+# (closed terminal, killed shell, crashed) leaves ng serve bound to :4200,
+# and `npm start` then just prompts to use a different port instead of
+# reusing this one.
+STALE_PIDS=$(lsof -ti :4200 2>/dev/null)
+if [ -n "$STALE_PIDS" ]; then
+    echo "Found stale process(es) on :4200 (PIDs: $STALE_PIDS) — killing..."
+    echo "$STALE_PIDS" | xargs kill -9 2>/dev/null
+    sleep 1
+    echo "Port 4200 cleared."
+fi
+
 echo "Open http://localhost:4200 in your browser."
 echo "Press Ctrl+C to stop all services."
 echo ""

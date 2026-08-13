@@ -31,6 +31,19 @@ export class CompareCcvaComponent implements OnInit {
   charts1: { [key: string]: GroupChart } = {};
   charts2: { [key: string]: GroupChart } = {};
 
+  // Raw per-run CSMF as returned by the API, kept untouched so the legend
+  // toggles can rebuild charts1/charts2 from the full data rather than
+  // recomputing percentages against a smaller denominator.
+  private rawGraphs1: any = {};
+  private rawGraphs2: any = {};
+  // Which GBD groups are shown, toggled by clicking their legend entry.
+  includeGroup: { [key: string]: boolean } = {
+    communicable: true,
+    ncd: true,
+    injury: true,
+    undetermined: true,
+  };
+
   readonly GROUPS = ['all', 'adult', 'child', 'neonate', 'male', 'female'];
 
   readonly GROUP_TITLES: { [key: string]: string } = {
@@ -111,12 +124,20 @@ export class CompareCcvaComponent implements OnInit {
           elapsed_time:  d2.elapsed_time ?? '',
         };
 
-        this.charts1 = this.buildCharts(d1.graphs ?? {});
-        this.charts2 = this.buildCharts(d2.graphs ?? {});
+        this.rawGraphs1 = d1.graphs ?? {};
+        this.rawGraphs2 = d2.graphs ?? {};
+        this.charts1 = this.buildCharts(this.rawGraphs1);
+        this.charts2 = this.buildCharts(this.rawGraphs2);
         this.isLoading = false;
       },
       error: () => { this.error = true; this.isLoading = false; },
     });
+  }
+
+  toggleGroup(group: keyof typeof this.GBD_COLORS): void {
+    this.includeGroup[group] = !this.includeGroup[group];
+    this.charts1 = this.buildCharts(this.rawGraphs1);
+    this.charts2 = this.buildCharts(this.rawGraphs2);
   }
 
   private buildCharts(graphs: any): { [key: string]: GroupChart } {
@@ -125,8 +146,9 @@ export class CompareCcvaComponent implements OnInit {
       const g = graphs[key];
       if (!g?.index?.length) continue;
 
-      const paired: { label: string; value: number }[] =
+      let paired: { label: string; value: number }[] =
         (g.index as string[]).map((label: string, i: number) => ({ label, value: g.values[i] ?? 0 }));
+      paired = paired.filter(p => this.includeGroup[this.classifyGbd(p.label)]);
       paired.sort((a, b) => b.value - a.value);
       const top = paired.slice(0, 15);
 
@@ -146,7 +168,7 @@ export class CompareCcvaComponent implements OnInit {
 
   private classifyGbd(label: string): keyof typeof this.GBD_COLORS {
     const l = label.toLowerCase();
-    if (l.includes('undetermined') || l.includes('unknown')) return 'undetermined';
+    if (l.includes('undetermin') || l.includes('unknown')) return 'undetermined';
     if (
       l.includes('external cause') || l.includes('injur') || l.includes('accident') ||
       l.includes('assault') || l.includes('self-harm') || l.includes('drowning') ||
