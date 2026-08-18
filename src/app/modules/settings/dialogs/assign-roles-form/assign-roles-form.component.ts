@@ -38,6 +38,11 @@ export class AssignRolesFormComponent implements OnInit {
   // be restricted by a combination of values spanning several admin levels
   // (e.g. district_a OR ward_b), not just one level as before.
   selectedLocations: LocationSelection[] = [];
+  // The creator's own restricted areas, if any - when non-empty, the tree
+  // starts browsing from these places instead of Region, since a restricted
+  // creator can only ever grant access within (or equal to) their own
+  // boundary (enforced again server-side in assign_roles()).
+  creatorBoundary: LocationSelection[] = [];
 
   field_labels?: FieldLabel[];
   canAssignRoles: any;
@@ -86,11 +91,20 @@ export class AssignRolesFormComponent implements OnInit {
     // broadest permitted level is the lowest level number among those.
     const creatorAccessLimit = this.data?.current_user_access_limit;
     const legacyCreatorField: string = creatorAccessLimit?.field ?? '';
-    const creatorFields: string[] = (creatorAccessLimit?.limit_by || [])
-      .map((item: any) => item?.field || legacyCreatorField)
-      .filter((f: string) => !!f);
-    const creatorLevels = creatorFields
-      .map((f: string) => allLevels.find(l => l.value === f)?.level ?? 0)
+    this.creatorBoundary = (creatorAccessLimit?.limit_by || [])
+      .map((item: any) => {
+        const field = item?.field || legacyCreatorField;
+        const levelDef = allLevels.find(l => l.value === field);
+        return field && item?.value != null ? {
+          field,
+          field_label: levelDef?.label || field,
+          label: item?.label || item?.value,
+          value: item?.value,
+        } : null;
+      })
+      .filter((item: any): item is LocationSelection => !!item);
+    const creatorLevels = this.creatorBoundary
+      .map(b => allLevels.find(l => l.value === b.field)?.level ?? 0)
       .filter((l: number) => l > 0);
     const creatorLevel = creatorLevels.length ? Math.min(...creatorLevels) : 0;
 

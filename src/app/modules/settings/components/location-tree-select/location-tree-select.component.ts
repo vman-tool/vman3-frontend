@@ -52,6 +52,12 @@ export class LocationTreeSelectComponent implements OnDestroy {
   @Input() levels: LocationLevel[] = [];
   @Input() selected: LocationSelection[] = [];
   @Input() fieldLabels: FieldLabel[] = [];
+  // When the person using this control is themselves access-limited, the
+  // tree must start browsing from their own restricted place(s) rather than
+  // Region - they can only ever grant access within (or equal to) their own
+  // boundary, so showing the rest of the country here would just be a list
+  // of options the backend will reject anyway.
+  @Input() creatorBoundary: LocationSelection[] = [];
   @Output() selectedChange = new EventEmitter<LocationSelection[]>();
 
   isOpen = false;
@@ -128,10 +134,25 @@ export class LocationTreeSelectComponent implements OnDestroy {
   }
 
   private async loadRoot(): Promise<void> {
-    const level1 = this.levelDef(1);
-    if (!level1) return;
     this.rootLoading = true;
     try {
+      if (this.creatorBoundary.length > 0) {
+        // Restricted creator: root the tree at their own place(s) instead of
+        // fetching Region - those are the only starting points they're
+        // allowed to grant access within.
+        this.rootNodes = this.creatorBoundary
+          .map(b => {
+            const levelDef = this.levels.find(l => l.value === b.field);
+            return levelDef ? this.makeNode(levelDef, b.value, b.label) : null;
+          })
+          .filter((n): n is TreeNode => !!n)
+          .sort((a, b) => (a.label < b.label ? -1 : 1));
+        this.rootLoaded = true;
+        return;
+      }
+
+      const level1 = this.levelDef(1);
+      if (!level1) return;
       const values = await this.fetchValues(level1.value);
       this.rootNodes = values
         .map(v => this.makeNode(level1, v.value, v.label))
