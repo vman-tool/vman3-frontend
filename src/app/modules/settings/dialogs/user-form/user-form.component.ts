@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
@@ -10,7 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './user-form.component.html',
   styleUrl: './user-form.component.scss'
 })
-export class UserFormComponent implements OnInit, AfterViewInit {
+export class UserFormComponent implements OnInit {
   
   name?: string;
   password?: string;
@@ -20,6 +20,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
   is_active: any;
   accessLimit?: any;
   selectedRoles?: any;
+  canSelectNoLimit: boolean = true;
 
 
   constructor(
@@ -46,14 +47,6 @@ export class UserFormComponent implements OnInit, AfterViewInit {
     this.currentUser = JSON.parse(localStorage.getItem("current_user") || "{}");
   }
 
-  ngAfterViewInit() {
-    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
-    if (dialogElement) {
-      (dialogElement as HTMLElement).style.maxWidth = '100vw';
-      (dialogElement as HTMLElement).style.minWidth = '0';
-    }
-  }
-
   onSelected(data: any, key: string): void {
     if(key === 'roles'){
       this.selectedRoles = data
@@ -63,10 +56,18 @@ export class UserFormComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onCanSelectNoLimitChange(canSelectNoLimit: boolean): void {
+    this.canSelectNoLimit = canSelectNoLimit;
+  }
+
 
   saveUser() {
     if(!this.name){
       this.notificationMessage('Please enter a role name');
+      return;
+    }
+    if(!this.canSelectNoLimit && !this.accessLimit?.limit_by?.length){
+      this.notificationMessage('Your own account is access-limited, so you must restrict this user to at least one location.');
       return;
     }
     let user: any = {

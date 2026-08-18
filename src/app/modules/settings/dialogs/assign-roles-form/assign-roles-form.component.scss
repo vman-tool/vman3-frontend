@@ -1,3 +1,15 @@
+// Roles (left) and Location Access (right) side by side so the dialog body
+// doesn't need to stack (and scroll past) two full sections vertically.
+.roles-and-access-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @media (min-width: 900px) {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 .selection-container {
     display: flex;
     justify-content: space-between;
@@ -37,29 +49,4 @@
     mat-selection-list {
         width: 100;
     }
-}
-
-.data-access-selection-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-
-    .available-items,
-    .selected-items {
-        width: 38%;
-    }
-
-    .scrollable-list {
-        height: 200px;
-        overflow-y: auto;
-        border: 1px solid #D1D5DB;
-        background-color: #F9FAFB;
-        border-radius: 0.375rem;
-        padding: 1rem;
-    }
-}
-
-.form-labels-container {
-    height: 200px;
-    overflow-y: auto;
 }

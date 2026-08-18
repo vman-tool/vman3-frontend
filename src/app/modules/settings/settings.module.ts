@@ -36,6 +36,7 @@ import { AddIcd10CategoryComponent } from './dialogs/add-icd10-category/add-icd1
 import { AddIcd10CategoryTypeComponent } from './dialogs/add-icd10-category-type/add-icd10-category-type.component';
 import { DataExportComponent } from './components/data-export/data-export.component';
 import { DqaThresholdsComponent } from './components/dqa-thresholds/dqa-thresholds.component';
+import { LocationTreeSelectComponent } from './components/location-tree-select/location-tree-select.component';
 
 import { ModuleHeaderComponent } from 'app/shared/components/module-header/module-header.component';
 
@@ -53,6 +54,7 @@ import { ModuleHeaderComponent } from 'app/shared/components/module-header/modul
     RoleFormComponent,
     ViewRoleComponent,
     AssignRolesFormComponent,
+    LocationTreeSelectComponent,
     UserFormComponent,
     ViewUserComponent,
     UpdateSystemImagesComponent,

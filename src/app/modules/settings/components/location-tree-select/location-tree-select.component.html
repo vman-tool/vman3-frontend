@@ -1,0 +1,64 @@
+<div class="location-tree-select">
+
+  <!-- Trigger -->
+  <button type="button" class="trigger" (click)="toggleDropdown($event)">
+    <span class="trigger-label" *ngIf="selected.length === 0">All levels (no limit)</span>
+    <span class="trigger-chips" *ngIf="selected.length > 0">
+      <span class="chip" *ngFor="let item of selected.slice(0, 3)">
+        {{ item.label }}
+        <i class="ph ph-x chip-remove" (click)="removeChip(item); $event.stopPropagation()"></i>
+      </span>
+      <span class="chip-more" *ngIf="selected.length > 3">+{{ selected.length - 3 }} more</span>
+    </span>
+    <i class="ph ph-caret-down trigger-caret"></i>
+  </button>
+
+  <!-- Panel -->
+  <div class="tree-panel" *ngIf="isOpen"
+    [style.top.px]="dropdownPosition.top" [style.left.px]="dropdownPosition.left" [style.width.px]="dropdownPosition.width">
+
+    <div class="tree-panel-header">
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search..." class="tree-search" (click)="$event.stopPropagation()">
+      <button type="button" class="clear-all" *ngIf="selected.length > 0" (click)="clearAll()">Clear all</button>
+    </div>
+
+    <p class="tree-hint">No limit selected means access to all levels. Checking a place grants access to everything within it - click the arrow to drill into its sub-areas.</p>
+
+    <div class="tree-groups">
+      <div class="tree-loading" *ngIf="rootLoading">Loading...</div>
+
+      <ng-container *ngIf="!rootLoading">
+        <ng-container *ngFor="let node of rootNodes">
+          <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: node }"></ng-container>
+        </ng-container>
+        <p class="tree-empty" *ngIf="rootNodes.length === 0">No values found.</p>
+      </ng-container>
+    </div>
+  </div>
+
+</div>
+
+<!-- Recursive node template: renders one geographic node plus, if expanded,
+     its children via the same template - this is how Angular expresses an
+     arbitrary-depth tree without a separate recursive component. -->
+<ng-template #nodeTpl let-node>
+  <div class="tree-node" *ngIf="matchesSearch(node) || node.expanded">
+    <span class="tree-node-row">
+      <i class="ph tree-caret" [ngClass]="node.expanded ? 'ph-caret-down' : 'ph-caret-right'"
+        [class.tree-caret-hidden]="!hasChildren(node)"
+        (click)="toggleExpand(node)"></i>
+      <input type="checkbox" [checked]="isChecked(node)" (change)="toggleCheck(node)">
+      <span class="tree-node-label" (click)="toggleExpand(node)">{{ node.label }}</span>
+    </span>
+
+    <div class="tree-node-children" *ngIf="node.expanded">
+      <div class="tree-loading" *ngIf="node.loading">Loading {{ node.fieldLabel }}...</div>
+      <ng-container *ngIf="!node.loading">
+        <ng-container *ngFor="let child of node.children">
+          <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: child }"></ng-container>
+        </ng-container>
+        <p class="tree-empty" *ngIf="node.children.length === 0">No sub-areas found.</p>
+      </ng-container>
+    </div>
+  </div>
+</ng-template>

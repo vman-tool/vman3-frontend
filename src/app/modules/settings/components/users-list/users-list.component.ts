@@ -129,7 +129,8 @@ export class UsersListComponent implements OnInit {
   onAssignRoles(user: any){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "60vw";
+    dialogConfig.width = "80vw";
+    dialogConfig.maxWidth = "1100px";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       user: user,
@@ -161,7 +162,8 @@ export class UsersListComponent implements OnInit {
   onAddUser(){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "60vw";
+    dialogConfig.width = "80vw";
+    dialogConfig.maxWidth = "1100px";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       system_config: this.systemConfigData,
@@ -181,7 +183,8 @@ export class UsersListComponent implements OnInit {
   onEditUser(user: any){
     let dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "60vw";
+    dialogConfig.width = "80vw";
+    dialogConfig.maxWidth = "1100px";
     dialogConfig.panelClass = "cdk-overlay-pane"
     dialogConfig.data = {
       user: user,
@@ -228,19 +231,33 @@ export class UsersListComponent implements OnInit {
 
   getAccessLevelLabel(user: any): string {
     const accessLimit = user?.access_limit;
-    if (!accessLimit?.field) return '-';
+    const limitBy: any[] = accessLimit?.limit_by || [];
+    if (!limitBy.length) return '-';
+
     const map: Record<string, string | undefined> = {
       [this.fieldMappingData?.location_level1 || '']: this.systemConfigData?.admin_level1,
       [this.fieldMappingData?.location_level2 || '']: this.systemConfigData?.admin_level2,
       [this.fieldMappingData?.location_level3 || '']: this.systemConfigData?.admin_level3,
       [this.fieldMappingData?.location_level4 || '']: this.systemConfigData?.admin_level4,
     };
-    const levelName = map[accessLimit.field] || accessLimit.field;
-    const values = (accessLimit.limit_by as any[])
-      ?.map((item: any) => item.label || item.value)
-      .filter(Boolean)
-      .join(', ');
-    return values ? `${levelName} (${values})` : levelName;
+
+    // Supports both the legacy shape (a single top-level `field` shared by
+    // all limit_by items) and the current shape (each item carries its own
+    // `field`, since a user can now be restricted across several levels).
+    const legacyField = accessLimit?.field;
+    const groups = new Map<string, string[]>();
+    for (const item of limitBy) {
+      const field = item?.field || legacyField;
+      const label = item?.label || item?.value;
+      if (!field || !label) continue;
+      if (!groups.has(field)) groups.set(field, []);
+      groups.get(field)!.push(label);
+    }
+    if (!groups.size) return '-';
+
+    return Array.from(groups.entries())
+      .map(([field, values]) => `${map[field] || field} (${values.join(', ')})`)
+      .join('; ');
   }
 
   onPageChange(event: any) {

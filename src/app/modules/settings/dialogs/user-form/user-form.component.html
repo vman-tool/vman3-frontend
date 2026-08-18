@@ -25,22 +25,22 @@
     <section>
       <p class="section-label">Basic Information</p>
       <div class="grid grid-cols-12 gap-4 mt-3">
-        <div class="col-span-6">
+        <div class="col-span-5">
           <label class="field-label">Name</label>
           <input type="text" [(ngModel)]="name" class="form-input">
         </div>
-        <div class="col-span-6">
+        <div class="col-span-5">
           <label class="field-label">Email</label>
           <input type="email" [(ngModel)]="email" class="form-input">
         </div>
-        <div class="col-span-12">
-          <label class="inline-flex items-center gap-2 cursor-pointer">
+        <div class="col-span-2 flex items-end">
+          <label class="inline-flex items-center gap-2 cursor-pointer pb-2.5">
             <input type="checkbox" class="hidden peer" [(ngModel)]="is_active">
             <div class="w-5 h-5 rounded flex border border-gray-400 items-center justify-center flex-shrink-0"
                 [ngClass]="{ 'bg-blue-600 border-blue-600 text-white': is_active }">
               <i class="ph-check text-xs" *ngIf="is_active"></i>
             </div>
-            <span class="text-sm text-gray-700">Active Account</span>
+            <span class="text-sm text-gray-700 whitespace-nowrap">Active Account</span>
           </label>
         </div>
       </div>
@@ -53,7 +53,8 @@
         <app-assign-roles-form
           [embedded_component]="true"
           (selectRoles)="onSelected($event, 'roles')"
-          (selectAccessLimit)="onSelected($event, 'access_limit')">
+          (selectAccessLimit)="onSelected($event, 'access_limit')"
+          (canSelectNoLimitChange)="onCanSelectNoLimitChange($event)">
         </app-assign-roles-form>
       </div>
     </section>

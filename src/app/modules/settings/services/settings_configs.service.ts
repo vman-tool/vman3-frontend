@@ -207,9 +207,16 @@ export class SettingConfigService {
     this.systemImagesFetchTime = 0;
   }
 
-  getUniqueValuesOfField(field: string): Observable<any> {
-    console.log(field, 'get-field-unique-value')
-    return this.http.get<string[]>(`${this.configService.API_URL}/settings/get-field-unique-value?field=${field}`)
+  // parentField/parentValue scope the result to just the values that
+  // actually co-occur with that parent in submitted records (e.g. only the
+  // districts recorded within one specific region), for a real drill-down
+  // location hierarchy rather than a flat, unscoped value list.
+  getUniqueValuesOfField(field: string, parentField?: string, parentValue?: string): Observable<any> {
+    let url = `${this.configService.API_URL}/settings/get-field-unique-value?field=${field}`;
+    if (parentField && parentValue != null) {
+      url += `&parent_field=${encodeURIComponent(parentField)}&parent_value=${encodeURIComponent(parentValue)}`;
+    }
+    return this.http.get<string[]>(url)
   }
 
   getBackupSettings(): Observable<{ data: BackupSettings; message: string }> {
