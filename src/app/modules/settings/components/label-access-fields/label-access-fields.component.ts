@@ -73,7 +73,11 @@ export class LabelAccessFieldsComponent implements OnInit {
 
   async setLocations() {
     const savedFieldLabel = this.field_labels?.find((field_label: any) => field_label?.field_id === this.selectedLocationType?.value) || undefined;
-    const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value));
+    // scopeToUser=false: this is a config screen for relabelling raw ODK
+    // values, not a data filter - an admin needs to see (and fix) every
+    // value that exists in the system, not just the ones within their own
+    // access_limit boundary.
+    const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value, undefined, undefined, false));
     // let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value]);
     let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value]);
 
