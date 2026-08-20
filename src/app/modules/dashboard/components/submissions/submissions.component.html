@@ -1,18 +1,18 @@
 <div class="mt-8">
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <span class="section-title">VA Data</span>
-      <p class="text-gray-500">{{ totalRecords }} submission summary</p>
+  <div class="bg-white rounded-lg">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <span class="section-title">VA Data</span>
+        <p class="text-gray-500">{{ totalRecords }} submission summary</p>
+      </div>
+      <div>
+        <img (click)="downloadRecords()" src="assets/icons/download.svg" class="h-10 cursor-pointer"
+          alt="Download Records" />
+      </div>
     </div>
-    <div>
-      <img (click)="downloadRecords()" src="assets/icons/download.svg" class="h-10 cursor-pointer"
-        alt="Download Records" />
-    </div>
-  </div>
 
-  <div class="relative overflow-hidden shadow-md sm:rounded-lg">
-    <div class="overflow-y-auto h-[40vh]">
-      <table class="w-full table-fixed text-sm text-gray-500 dark:text-gray-400">
+    <div class="relative w-full overflow-auto border border-gray-200 rounded-lg dark:border-gray-700 h-[40vh]">
+      <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
 
         <colgroup>
           <col style="width:16%">
@@ -26,60 +26,60 @@
           <col style="width:8%">
         </colgroup>
 
-        <thead class="sticky top-0 z-10 text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <thead class="sticky top-0 z-10 text-xs font-medium tracking-wide text-gray-500 uppercase bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-left overflow-hidden"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
                 (click)="onSort('region')">
               <span class="flex items-center gap-1 min-w-0">
                 <span class="truncate">{{region ?? 'Region'}}</span>
                 <i [class]="sortIcon('region')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-left overflow-hidden"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
                 (click)="onSort('district')">
               <span class="flex items-center gap-1 min-w-0">
                 <span class="truncate">{{district ?? 'District'}}</span>
                 <i [class]="sortIcon('district')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('count')">
               <span class="flex items-center justify-end gap-1">
                 Count <i [class]="sortIcon('count')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-center overflow-hidden"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
                 (click)="onSort('lastSubmission')">
               <span class="flex items-center justify-center gap-1 min-w-0">
                 <span class="truncate">Last Submission</span>
                 <i [class]="sortIcon('lastSubmission')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('adults')">
               <span class="flex items-center justify-end gap-1">
                 Adults <i [class]="sortIcon('adults')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('children')">
               <span class="flex items-center justify-end gap-1">
                 Children <i [class]="sortIcon('children')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('neonates')">
               <span class="flex items-center justify-end gap-1">
                 Neonates <i [class]="sortIcon('neonates')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('male')">
               <span class="flex items-center justify-end gap-1">
                 Male <i [class]="sortIcon('male')" class="shrink-0"></i>
               </span>
             </th>
-            <th scope="col" class="px-4 py-4 cursor-pointer select-none text-right"
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('female')">
               <span class="flex items-center justify-end gap-1">
                 Female <i [class]="sortIcon('female')" class="shrink-0"></i>
@@ -89,42 +89,45 @@
         </thead>
 
         <tbody>
-          <tr *ngIf="(dataSubmissions?.length === 0 || !dataSubmissions) && !isLoading"
-              class="bg-gray-200">
-            <td colspan="9" class="px-4 py-4 text-center">No record was found</td>
+          <!-- No data rows: no zebra striping, matching the CCVA history table -
+               a light hover tint is enough to read rows apart. -->
+          <tr *ngIf="(dataSubmissions?.length === 0 || !dataSubmissions) && !isLoading">
+            <td colspan="9" class="px-4 py-8 text-center text-gray-400">No record was found</td>
           </tr>
           <tr *ngIf="isLoading">
-            <td colspan="9" class="py-6 text-center bg-gray-200 animate-pulse"></td>
+            <td colspan="9" class="py-6 text-center bg-gray-50 animate-pulse"></td>
           </tr>
-          <tr *ngFor="let record of sortedData; let i = index"
-              class="border-b text-gray-600 dark:bg-gray-800 dark:border-gray-700"
-              [class.bg-gray-200]="i % 2 !== 0">
-            <td class="px-4 py-4 text-left max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <tr *ngFor="let record of sortedData"
+              class="border-b border-gray-100 last:border-0 text-gray-600 hover:bg-gray-50 transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
+            <td class="px-4 py-2.5 text-left text-gray-900 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis dark:text-gray-200"
                 [title]="record.region">{{ record.region }}</td>
-            <td class="px-4 py-4 text-left max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+            <td class="px-4 py-2.5 text-left max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
                 [title]="record.district">{{ record.district }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ record.count }}</td>
-            <td class="px-4 py-4 text-center max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.count }}</td>
+            <td class="px-4 py-2.5 text-center max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
                 [title]="record.lastSubmission">{{ record.lastSubmission }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ record.adults }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ record.children }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ record.neonates }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ record.male }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ record.female }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.adults }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.children }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.neonates }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.male }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.female }}</td>
           </tr>
         </tbody>
 
-        <tfoot class="sticky bottom-0 z-10 text-xs font-semibold text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <!-- Footer total: a client-side sum of the currently loaded rows -
+             distinct from the header's server-side total record count above,
+             kept as two separate totals rather than merged into one. -->
+        <tfoot class="sticky bottom-0 z-10 text-xs font-semibold text-gray-700 uppercase bg-gray-50 border-t border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
           <tr>
-            <td class="px-4 py-4 text-left">Total</td>
-            <td class="px-4 py-4"></td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalCount() }}</td>
-            <td class="px-4 py-4"></td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalAdults() }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalChildren() }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalNeonates() }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalMale() }}</td>
-            <td class="px-4 py-4 text-right tabular-nums">{{ getTotalFemale() }}</td>
+            <td class="px-4 py-2.5 text-left">Total</td>
+            <td class="px-4 py-2.5"></td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalCount() }}</td>
+            <td class="px-4 py-2.5"></td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalAdults() }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalChildren() }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalNeonates() }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalMale() }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalFemale() }}</td>
           </tr>
         </tfoot>
 
