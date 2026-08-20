@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { signal, Signal } from '@angular/core';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +9,7 @@ export class FilterService {
   private _filterData = signal<{
     start_date: string | undefined;
     end_date: string | undefined;
-    locations: string[];
+    locations: LocationSelection[];
     date_type: string | undefined;
     ccva_graph_db_source: boolean;
   }>({
@@ -22,7 +23,7 @@ export class FilterService {
   get filterData(): Signal<{
     start_date: string | undefined;
     end_date: string | undefined;
-    locations: string[];
+    locations: LocationSelection[];
     date_type: string | undefined;
     ccva_graph_db_source: boolean;
   }> {
@@ -32,7 +33,7 @@ export class FilterService {
   setFilterData(data: {
     start_date: string | undefined;
     end_date: string | undefined;
-    locations: string[];
+    locations: LocationSelection[];
     date_type: string | undefined;
     ccva_graph_db_source: boolean;
   }) {

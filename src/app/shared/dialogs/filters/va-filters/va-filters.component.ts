@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit } from '@angular/core';
 import { FilterService } from '../../../services/filter.service';
-import { LocationService } from '../../../services/location.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
@@ -10,10 +9,13 @@ import { UsersService } from 'app/modules/settings/services/users.service';
 import { lastValueFrom } from 'rxjs';
 import { FieldLabel, FieldMapping, settingsConfigData, SystemConfig } from 'app/modules/settings/interface';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
-import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
-import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
 import { ListRecordsService } from 'app/modules/records/services/list-records/list-records.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+  LocationTreeSelectComponent,
+  LocationLevel,
+  LocationSelection,
+} from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
   selector: 'app-va-filters',
@@ -26,6 +28,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     FormsModule,
     CustomDropdownComponent,
     MatProgressSpinnerModule,
+    LocationTreeSelectComponent,
   ],
   templateUrl: './va-filters.component.html',
   styleUrl: './va-filters.component.scss',
@@ -34,9 +37,10 @@ export class VaFiltersComponent implements OnInit {
   selectedDateType?: string = 'death_date';
   startDate?: Date;
   endDate?: Date;
-  selectedLocation: string[] = [];
-  // selectedResultsFilter: string = 'both';
-  allLocations: any[] = [];
+  // A user can now filter by a combination of places spanning several admin
+  // levels at once (e.g. one region OR one ward elsewhere), matching how
+  // access_limit restrictions work.
+  selectedLocations: LocationSelection[] = [];
   current_user?: any
 
   isLoading: boolean = true;
@@ -55,33 +59,26 @@ export class VaFiltersComponent implements OnInit {
   systemConfigData?: SystemConfig;
   fieldMappingData?: FieldMapping;
   fieldLabels: FieldLabel[] | undefined;
-  selectedLocationType: any;
+  // The admin levels this user can filter by - unrestricted users get all
+  // configured levels starting at Region; a location-restricted user only
+  // gets levels at or below their own (see initLocationAccess()).
+  locationTypes: LocationLevel[] = [];
+  // This user's own access_limit, translated into the tree's selection
+  // shape - when non-empty, the location tree roots at these places instead
+  // of Region, since that's all this user has permission to see anyway.
+  creatorBoundary: LocationSelection[] = [];
+
   constructor(
-    private locationService: LocationService,
     private filterService: FilterService,
     private usersService: UsersService,
     private settingConfigService: SettingConfigService,
-    private genericIndexedDbService: GenericIndexedDbService,
     private datePipe: DatePipe,
     private listRecordsService: ListRecordsService
   ) { }
 
   ngOnInit(): void {
     this.resetFilterData();
-    this.getUserAccessLimit();
-    this.locationService.getLocations().subscribe({
-      next: (locations) => {
-        this.allLocations = locations.map((location: string) => ({
-          key: location,
-          value: location,
-        }));
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Failed to fetch locations:', error);
-        this.isLoading = false;
-      },
-    });
+    this.initLocationAccess();
   }
 
   async loadSystemConfigurations() {
@@ -123,44 +120,62 @@ export class VaFiltersComponent implements OnInit {
     } as any);
   }
 
-  async getUserAccessLimit() {
+  // Figures out which admin levels this user may filter by, and - if their
+  // own access is itself restricted - which place(s) the location tree
+  // should root at. Previously this fetched the FULL unscoped value list for
+  // whichever single field the access_limit happened to name, then got
+  // raced/overwritten by a second, unrelated fetch - the actual bug behind
+  // a level-2-restricted user seeing every location in the tree. The tree
+  // component now owns its own (correctly scoped) fetching, so this just
+  // needs to establish the boundary, not the values within it.
+  async initLocationAccess() {
     await this.loadSystemConfigurations();
     this.current_user = JSON.parse(localStorage.getItem("current_user") || "{}");
+
+    const allLevels: LocationLevel[] = [
+      { label: this.systemConfigData?.admin_level1 || '', value: this.fieldMappingData?.location_level1 || '', level: 1 },
+      { label: this.systemConfigData?.admin_level2 || '', value: this.fieldMappingData?.location_level2 || '', level: 2 },
+      { label: this.systemConfigData?.admin_level3 || '', value: this.fieldMappingData?.location_level3 || '', level: 3 },
+      { label: this.systemConfigData?.admin_level4 || '', value: this.fieldMappingData?.location_level4 || '', level: 4 },
+    ];
+
     const user_roles_data: any = await lastValueFrom(this.usersService.getUserRoles(this.current_user?.uuid));
     const access_limit = user_roles_data?.data?.access_limit;
 
-    const locationField = access_limit?.field || this.fieldMappingData?.location_level1;
-    if (locationField) {
-      this.selectedLocationType = { value: locationField };
-    }
-    if (!this.selectedLocationType?.value) return;
-
-    const savedFieldLabel = this.fieldLabels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
-    const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
-    let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value])
-
-    locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
-
-    if (locationsFromQuestions?.value?.options?.length && locationsFromDb?.data?.length) {
-      this.allLocations = locationsFromQuestions?.value?.options?.filter((locationToFilter: any) => locationsFromDb?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
-        return {
-          name: savedFieldLabel?.options?.hasOwnProperty(location?.value) ? savedFieldLabel?.options[location?.value] : location?.label,
-          value: location?.value,
-          unique: location?.value
-        }
+    // Supports both the legacy shape (a single top-level `field` shared by
+    // all limit_by items) and the current shape (each item carries its own
+    // `field`).
+    const legacyField: string = access_limit?.field ?? '';
+    this.creatorBoundary = (access_limit?.limit_by || [])
+      .map((item: any) => {
+        const field = item?.field || legacyField;
+        const levelDef = allLevels.find(l => l.value === field);
+        return field && item?.value != null ? {
+          field,
+          field_label: levelDef?.label || field,
+          label: item?.label || item?.value,
+          value: item?.value,
+        } : null;
       })
-    } else {
-      this.allLocations = locationsFromDb?.data?.map((location: any) => {
-        return {
-          name: savedFieldLabel?.options?.hasOwnProperty(location) ? savedFieldLabel?.options[location] : location,
-          value: location,
-          unique: location
-        }
-      }) || []
+      .filter((item: any): item is LocationSelection => !!item);
+
+    const boundaryLevels = this.creatorBoundary
+      .map(b => allLevels.find(l => l.value === b.field)?.level ?? 0)
+      .filter((l: number) => l > 0);
+    const boundaryLevel = boundaryLevels.length ? Math.min(...boundaryLevels) : 0;
+
+    this.locationTypes = allLevels
+      .filter(l => l.label && l.value)
+      .filter(l => boundaryLevel === 0 || l.level >= boundaryLevel);
+
+    // Pre-check the user's own place(s) as a starting point, matching the
+    // previous behavior - actual filtering still only takes effect once
+    // they click Apply, same as any other filter here.
+    if (this.creatorBoundary.length) {
+      this.selectedLocations = this.creatorBoundary;
     }
-    if (access_limit && this.selectedLocationType?.value === access_limit?.field) {
-      this.selectedLocation = this.allLocations?.filter((location) => access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-    }
+
+    this.isLoading = false;
   }
 
   applyFilters(): void {
@@ -171,22 +186,13 @@ export class VaFiltersComponent implements OnInit {
     const formattedEndDate = this.endDate
       ? this.datePipe.transform(this.endDate, 'yyyy-MM-dd')?.toString()
       : undefined;
-    var locations: string[] = [];
-    if (
-      this.selectedLocation.length > 0 &&
-      this.selectedLocation !== undefined
-    ) {
-      locations = this.selectedLocation;
-    }
     const filterData = {
       start_date: formattedStartDate,
       end_date: formattedEndDate,
-      locations: locations,
+      locations: this.selectedLocations,
       date_type: this.selectedDateType,
       ccva_graph_db_source: true,
     };
-    console.log('Filters applied:', filterData);
-    // You can now apply filters based on the selected date type and other fields.
     this.filterService.setFilterData(filterData);
   }
 
@@ -194,7 +200,7 @@ export class VaFiltersComponent implements OnInit {
     this.selectedDateType = undefined;
     this.startDate = undefined;
     this.endDate = undefined;
-    this.selectedLocation = [];
+    this.selectedLocations = [];
     const filterData = {
       start_date: undefined,
       end_date: undefined,
@@ -206,9 +212,10 @@ export class VaFiltersComponent implements OnInit {
     this.filterService.setFilterData(filterData);
   }
 
-  onSearchableChange(selectedItems: any) {
-    this.selectedLocation = selectedItems;
+  onLocationSelectionChange(selection: LocationSelection[]): void {
+    this.selectedLocations = selection;
   }
+
   onOpenSelectField(isOpen: boolean) {
     if (isOpen) {
       this.addHeightClass('h-[400px]', 'h-60');
@@ -230,42 +237,4 @@ export class VaFiltersComponent implements OnInit {
       }
     }
   }
-
-  // exportRecords(): void {
-  //   this.isExporting = true;
-  //   const formattedStartDate = this.startDate
-  //     ? this.datePipe.transform(this.startDate, 'yyyy-MM-dd')?.toString()
-  //     : undefined;
-  //   const formattedEndDate = this.endDate
-  //     ? this.datePipe.transform(this.endDate, 'yyyy-MM-dd')?.toString()
-  //     : undefined;
-
-  //   const locations = this.selectedLocation.length > 0 ? this.selectedLocation : undefined;
-
-  //   this.listRecordsService
-  //     .exportRecords(
-  //       formattedStartDate,
-  //       formattedEndDate,
-  //       locations,
-  //       this.selectedDateType,
-  //       // this.selectedResultsFilter
-  //     )
-  //     .subscribe({
-  //       next: (blob: Blob) => {
-  //         // Create download link and trigger download
-  //         const url = window.URL.createObjectURL(blob);
-  //         const link = document.createElement('a');
-  //         link.href = url;
-  //         link.download = `va_records_export_${new Date().toISOString().split('T')[0]}.xlsx`;
-  //         link.click();
-  //         window.URL.revokeObjectURL(url);
-  //         this.isExporting = false;
-  //       },
-  //       error: (error: any) => {
-  //         console.error('Export failed:', error);
-  //         alert('Failed to export records. Please try again.');
-  //         this.isExporting = false;
-  //       },
-  //     });
-  // }
 }

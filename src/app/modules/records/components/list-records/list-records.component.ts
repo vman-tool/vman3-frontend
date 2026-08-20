@@ -11,6 +11,7 @@ import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-fil
 import { FilterService } from '../../../../shared/services/filter.service';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 @Component({
   standalone: false,
   selector: 'app-list-records',
@@ -32,7 +33,7 @@ export class ListRecordsComponent implements OnInit {
   error: string | null = null;
   locationLevel1Label: string = 'Region';
   locationLevel2Label: string = 'District';
-  filterData: { locations: string[]; startDate?: string; endDate?: string } = {
+  filterData: { locations: LocationSelection[]; startDate?: string; endDate?: string } = {
     locations: [],
     startDate: undefined,
     endDate: undefined,

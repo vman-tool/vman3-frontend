@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -26,7 +27,7 @@ export class ListRecordsService {
     limit: number = 10,
     startDate?: string,
     endDate?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     searchBy?: string,
     searchValue?: string
   ): Observable<any> {
@@ -41,7 +42,7 @@ export class ListRecordsService {
       params = params.set('end_date', endDate);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     // Only include search parameters when a search value is provided
     if (searchValue) {
@@ -72,7 +73,7 @@ export class ListRecordsService {
   exportRecords(
     startDate?: string,
     endDate?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     dateType?: string,
     resultsFilter?: string
   ): Observable<Blob> {
@@ -85,7 +86,7 @@ export class ListRecordsService {
       params = params.set('end_date', endDate);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     if (dateType) {
       params = params.set('date_type', dateType);

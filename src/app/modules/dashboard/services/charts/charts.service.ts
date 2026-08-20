@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map, catchError, of } from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Injectable({
   providedIn: 'root',
@@ -23,7 +24,7 @@ export class ChartsService {
   getChartfetchStatistics(
     start_date?: string,
     end_date?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     date_type?: string
   ): Observable<any> {
     let params = new HttpParams();
@@ -40,7 +41,7 @@ export class ChartsService {
       params = params.set('date_type', date_type);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     return this.http
       .get<any>(`${this.configService.API_URL}/statistics/charts`, { params })

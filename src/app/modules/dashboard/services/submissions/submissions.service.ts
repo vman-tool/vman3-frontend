@@ -6,6 +6,7 @@ import * as XLSX from '@e965/xlsx';
 import * as FileSaver from 'file-saver';
 import { SubmissionsDataModel } from '../../interface';
 import { ConfigService } from 'app/app.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 const EXCEL_TYPE =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
 const EXCEL_EXTENSION = '.xlsx';
@@ -30,7 +31,7 @@ export class SubmissionsService {
     limit: number = 10,
     start_date?: string,
     end_date?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     date_type?: string
   ): Observable<any> {
     let params = new HttpParams()
@@ -44,7 +45,7 @@ export class SubmissionsService {
       params = params.set('end_date', end_date);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     if (date_type) {
       params = params.set('date_type', date_type);

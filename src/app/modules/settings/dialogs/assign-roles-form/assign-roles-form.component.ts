@@ -4,7 +4,7 @@ import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FieldLabel } from '../../interface';
-import { LocationSelection } from '../../components/location-tree-select/location-tree-select.component';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
   standalone: false,

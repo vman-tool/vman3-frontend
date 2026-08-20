@@ -1,9 +1,11 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
-import { SettingConfigService } from '../../services/settings_configs.service';
+import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
-import { FieldLabel } from '../../interface';
+import { FieldLabel } from 'app/modules/settings/interface';
 
 export interface LocationLevel {
   label: string;
@@ -42,9 +44,13 @@ export interface TreeNode {
 // backend matches by field=value on the record itself, selecting a region
 // already covers every district/ward/village within it with no separate
 // "select all descendants" affordance needed.
+//
+// Shared (not settings-specific) because it's used both by the Add/Edit User
+// access-limit picker and by the dashboard's location filter.
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'app-location-tree-select',
+  imports: [CommonModule, FormsModule],
   templateUrl: './location-tree-select.component.html',
   styleUrl: './location-tree-select.component.scss'
 })
@@ -54,9 +60,9 @@ export class LocationTreeSelectComponent implements OnDestroy {
   @Input() fieldLabels: FieldLabel[] = [];
   // When the person using this control is themselves access-limited, the
   // tree must start browsing from their own restricted place(s) rather than
-  // Region - they can only ever grant access within (or equal to) their own
-  // boundary, so showing the rest of the country here would just be a list
-  // of options the backend will reject anyway.
+  // Region - they can only ever grant/see access within (or equal to) their
+  // own boundary, so showing the rest of the country here would just be a
+  // list of options the backend will reject or return nothing for anyway.
   @Input() creatorBoundary: LocationSelection[] = [];
   @Output() selectedChange = new EventEmitter<LocationSelection[]>();
 
@@ -137,9 +143,9 @@ export class LocationTreeSelectComponent implements OnDestroy {
     this.rootLoading = true;
     try {
       if (this.creatorBoundary.length > 0) {
-        // Restricted creator: root the tree at their own place(s) instead of
-        // fetching Region - those are the only starting points they're
-        // allowed to grant access within.
+        // Restricted user: root the tree at their own place(s) instead of
+        // fetching Region - those are the only starting points they can
+        // browse/grant within.
         this.rootNodes = this.creatorBoundary
           .map(b => {
             const levelDef = this.levels.find(l => l.value === b.field);

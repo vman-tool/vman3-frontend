@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -24,7 +25,7 @@ export class MapDataService {
   getMapRecordsData(
     startDate?: string,
     endDate?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     date_type?: string
   ): Observable<any> {
     let params = new HttpParams();
@@ -36,7 +37,7 @@ export class MapDataService {
       params = params.set('end_date', endDate);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     if (date_type) {
       params = params.set('date_type', date_type);

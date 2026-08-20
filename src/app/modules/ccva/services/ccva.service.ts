@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConfigService } from '../../../app.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +13,7 @@ export class CcvaService {
     selected_success_type: string | null = null,
     start_date?: string,
     end_date?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     date_type?: string,
     ccva_graph_db_source: boolean = true
   ) {
@@ -31,7 +32,7 @@ export class CcvaService {
       params = params.set('date_type', date_type);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     return this.http.get(
       `${this.configService.API_URL}/ccva?ccva_id=${ccvaId}`,
@@ -46,7 +47,7 @@ export class CcvaService {
     selected_success_type: string | null = null,
     start_date?: string,
     end_date?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     date_type?: string,
     ccva_graph_db_source: boolean = true
   ) {
@@ -66,7 +67,7 @@ export class CcvaService {
       params = params.set('date_type', date_type);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     if (ccvaId && ccvaId.length > 0) {
       pathUrl = `${this.configService.API_URL}/ccva?ccva_id=${ccvaId}`;
