@@ -17,6 +17,7 @@ import type {} from 'leaflet.markercluster';
 declare const L: typeof import('leaflet');
 import { MapDataService } from '../../services/map-data.service';
 import { FilterService } from '../../../../shared/services/filter.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
   standalone: false,
@@ -31,7 +32,7 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
   isLoading = true;
   locations: any[] = [];
   filterData: {
-    locations: string[];
+    locations: LocationSelection[];
     start_date?: string;
     end_date?: string;
     date_type?: string;

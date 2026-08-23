@@ -21,6 +21,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BaseChartDirective } from 'ng2-charts';
 import { CcvaService } from 'app/modules/ccva/services/ccva.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 // import { FilterService } from '../../../../shared/services/filter.service';
 
 @Component({
@@ -59,7 +60,7 @@ export class CcvaGraphsPublicComponent implements OnInit {
   include_undeterminants_ingraph = true;
   tempoChartData = [];
   filterData: {
-    locations: string[];
+    locations: LocationSelection[];
     start_date?: string;
     end_date?: string;
     date_type?: string;

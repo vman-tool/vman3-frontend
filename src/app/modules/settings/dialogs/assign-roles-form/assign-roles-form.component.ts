@@ -1,14 +1,10 @@
-import { AfterViewInit, Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
-import { SettingConfigService } from '../../services/settings_configs.service';
-import { FormBuilder } from '@angular/forms';
 import { FieldLabel } from '../../interface';
-import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
-import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
   standalone: false,
@@ -16,13 +12,17 @@ import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constan
   templateUrl: './assign-roles-form.component.html',
   styleUrl: './assign-roles-form.component.scss'
 })
-export class AssignRolesFormComponent implements OnInit, AfterViewInit {
+export class AssignRolesFormComponent implements OnInit {
 
   @Input() embedded_component: boolean = false;
 
   @Output() selectRoles: EventEmitter<any> = new EventEmitter()
   @Output() selectAccessLimit: EventEmitter<any> = new EventEmitter()
-  
+  // Lets an embedding parent (the Add/Edit User dialog) enforce the same
+  // "a restricted creator can't grant unrestricted access" rule that
+  // saveAssignment() enforces when this component saves on its own.
+  @Output() canSelectNoLimitChange: EventEmitter<boolean> = new EventEmitter()
+
   availableRoles: any[] = [];
   selectedRoles: any[] = [];
   searchTermAvailable: string = '';
@@ -30,24 +30,28 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
   allRoles: any[] = [];
   userUuid: string = '';
   access_limit?: any;
+  // The admin levels (Region/District/.../Village) this creator is allowed to
+  // grant, already filtered so a level-restricted creator can never see a
+  // broader level than their own (see getLocationFields()).
   locationTypes: any[] = [];
-  locations: any[] = [];
-  loadLocations: boolean = false;
-  selectedLocations: any[] = [];
-  selectedLocationType?: any;
-  availableLocationsSearchTerm: string = '';
-  selectedLocationsSearchTerm: string = '';
-  assignLabels: any;
-  labelsForm: any;
+  // Flat list of checked leaves across all levels at once - a user can now
+  // be restricted by a combination of values spanning several admin levels
+  // (e.g. district_a OR ward_b), not just one level as before.
+  selectedLocations: LocationSelection[] = [];
+  // The creator's own restricted areas, if any - when non-empty, the tree
+  // starts browsing from these places instead of Region, since a restricted
+  // creator can only ever grant access within (or equal to) their own
+  // boundary (enforced again server-side in assign_roles()).
+  creatorBoundary: LocationSelection[] = [];
 
-  system_config: any;
-  field_mapping: any; 
   field_labels?: FieldLabel[];
   canAssignRoles: any;
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
+  // False when the creator's own access is itself restricted - in that case
+  // they must restrict the new user to at least one location too, they
+  // cannot hand out unrestricted ("no limit") access broader than their own.
   canSelectNoLimit: boolean = true;
-  selectedLocationTypeValue: string = '';
   user: any;
 
 
@@ -56,9 +60,6 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private usersService: UsersService,
     private snackBar: MatSnackBar,
-    private genericIndexedDbService: GenericIndexedDbService,
-    private settingConfigService: SettingConfigService,
-    private formBuilder: FormBuilder,
   ){}
 
   notificationMessage(message: string): void {
@@ -78,15 +79,6 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.getAllRoles();
   }
 
-  get locationTypeOptions(): { value: string; label: string }[] {
-    const opts: { value: string; label: string }[] = [];
-    if (this.canSelectNoLimit) opts.push({ value: '', label: 'No Limit' });
-    for (const lt of this.locationTypes) {
-      if (lt?.value) opts.push({ value: lt.value, label: lt.label });
-    }
-    return opts;
-  }
-
   getLocationFields() {
     const allLevels = [
       { label: this.data?.system_config?.admin_level1, value: this.data?.field_mapping?.location_level1, level: 1 },
@@ -95,12 +87,29 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
       { label: this.data?.system_config?.admin_level4, value: this.data?.field_mapping?.location_level4, level: 4 }
     ];
 
-    const creatorField: string = this.data?.current_user_access_limit?.field ?? '';
-    const creatorLevel = creatorField
-      ? (allLevels.find(l => l.value === creatorField)?.level ?? 0)
-      : 0;
+    // A creator can itself be restricted across several levels; their
+    // broadest permitted level is the lowest level number among those.
+    const creatorAccessLimit = this.data?.current_user_access_limit;
+    const legacyCreatorField: string = creatorAccessLimit?.field ?? '';
+    this.creatorBoundary = (creatorAccessLimit?.limit_by || [])
+      .map((item: any) => {
+        const field = item?.field || legacyCreatorField;
+        const levelDef = allLevels.find(l => l.value === field);
+        return field && item?.value != null ? {
+          field,
+          field_label: levelDef?.label || field,
+          label: item?.label || item?.value,
+          value: item?.value,
+        } : null;
+      })
+      .filter((item: any): item is LocationSelection => !!item);
+    const creatorLevels = this.creatorBoundary
+      .map(b => allLevels.find(l => l.value === b.field)?.level ?? 0)
+      .filter((l: number) => l > 0);
+    const creatorLevel = creatorLevels.length ? Math.min(...creatorLevels) : 0;
 
     this.canSelectNoLimit = creatorLevel === 0;
+    this.canSelectNoLimitChange.emit(this.canSelectNoLimit);
 
     this.locationTypes = allLevels
       .filter(l => l.label && l.value)
@@ -108,45 +117,40 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
 
     this.field_labels = this.data?.field_labels;
   }
-  
+
 
   async getAllRoles() {
     const rolesResponse: any = await lastValueFrom(this.usersService.getRoles({paging: false}))
     this.userUuid = this.user?.uuid || undefined;
     this.allRoles = rolesResponse?.data
-    
+
     if(this.userUuid){
       const user_roles: any = await lastValueFrom(this.usersService.getUserRoles(this.userUuid))
       this.selectedRoles = user_roles?.data?.roles || [];
       this.access_limit = user_roles?.data?.access_limit
     }
     this.availableRoles = this.allRoles.filter((role: any) => !this.selectedRoles.some(selectedRole => selectedRole?.uuid === role?.uuid));
-    this.selectedLocationType = this.locationTypes.filter((locationType: any) => locationType?.value === this.access_limit?.field)[0];
-    this.selectedLocationTypeValue = this.selectedLocationType?.value ?? '';
-    if(this.selectedLocationType && this.access_limit){
-      this.setLocations()
-    }
+
+    // Supports both the legacy shape (a single top-level `field` shared by
+    // all limit_by items) and the current shape (each item carries its own
+    // `field`), so previously-saved users still render correctly.
+    const legacyField = this.access_limit?.field;
+    this.selectedLocations = (this.access_limit?.limit_by || [])
+      .map((item: any) => {
+        const field = item?.field || legacyField;
+        const levelDef = this.locationTypes.find((lt: any) => lt.value === field);
+        return {
+          field,
+          field_label: levelDef?.label || field,
+          label: item?.label,
+          value: item?.value,
+        };
+      })
+      .filter((item: any) => !!item.field && item.value != null);
+
     if(!this.embedded_component){
       this.selectRoles.emit(this.selectedRoles);
-      this.selectAccessLimit.emit({
-        field: this.selectedLocationType?.value,
-        limit_by: this.selectedLocations?.map(
-          (location) => {
-            return {
-              label: location?.name,
-              value: location?.value
-            }
-          }
-        )
-      })
-    }
-  }
-
-  ngAfterViewInit() {
-    const dialogElement = document.querySelector('.cdk-overlay-pane.mat-mdc-dialog-panel');
-    if (dialogElement) {
-      (dialogElement as HTMLElement).style.maxWidth = '100vw';
-      (dialogElement as HTMLElement).style.minWidth = '0';
+      this.selectAccessLimit.emit(this.buildAccessLimit());
     }
   }
 
@@ -155,7 +159,7 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
       role?.name?.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
     );
   }
-  
+
   filteredSelectedRoles() {
     return this.selectedRoles.filter(role =>
       role?.name?.toLowerCase().includes(this.searchSelectedRolesTerm.toLowerCase())
@@ -193,230 +197,47 @@ export class AssignRolesFormComponent implements OnInit, AfterViewInit {
     this.selectRoles.emit(this.selectedRoles);
   }
 
-  get assignLabelsCheckbox(){
-    return document.querySelector(".peer") as HTMLInputElement
+  onLocationSelectionChange(selection: LocationSelection[]): void {
+    this.selectedLocations = selection;
+    this.selectAccessLimit.emit(this.buildAccessLimit());
   }
 
-  onLocationTypeValueChange(value: string) {
-    this.selectedLocationTypeValue = value;
-    this.onSelectLocationType({ target: { value } });
-  }
-
-  async onSelectLocationType(e: any){
-    e?.stopPropagation?.();
-    this.loadLocations = true;
-    this.selectedLocationType = this.locationTypes?.filter((locationType) => locationType?.value === e?.target?.value)[0]
-    
-    if(!this.selectedLocationType){
-      if(this.assignLabelsCheckbox && this.assignLabels){
-        this.assignLabelsCheckbox.dispatchEvent(new Event('change'));
-      }
-    }
-    
-    if(this.selectedLocationType){
-      this.setLocations()
-    }
-    this.loadLocations = false;
-  }
-
-  async setLocations(){
-    const savedFieldLabel = this.field_labels?.filter((field_label: any) => field_label?.field_id === this.selectedLocationType?.value)[0] || undefined
-      const locationsFromDb = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(this.selectedLocationType?.value))
-      // let locationsFromQuestions: any = await this.indexedDBService.getQuestionsByKeys([this.selectedLocationType?.value])
-      let locationsFromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [this.selectedLocationType?.value])
-      
-      locationsFromQuestions = locationsFromQuestions?.length ? locationsFromQuestions?.filter((objectedLocation: any) => objectedLocation)[0] : undefined;
-      
-      if(locationsFromQuestions?.value?.options?.length && locationsFromDb?.data?.length){
-        this.locations = locationsFromQuestions?.value?.options?.filter((locationToFilter: any) => locationsFromDb?.data?.some((location: any) => locationToFilter?.value === location))?.map((location: any) => {
-          return {
-            name: savedFieldLabel?.options?.hasOwnProperty(location?.value) ? savedFieldLabel?.options[location?.value] : location?.label,
-            value: location?.value,
-            unique: location?.value
-          }
-        })
-      } else {
-        this.locations = locationsFromDb?.data?.map((location: any) => {
-          return {
-            name: savedFieldLabel?.options?.hasOwnProperty(location) ? savedFieldLabel?.options[location] : location,
-            value: location,
-            unique: location
-          }
-        }) || []
-      }
-      if(this.access_limit && this.selectedLocationType?.value === this.access_limit?.field){
-        this.selectedLocations = this.locations?.filter((location) => this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-        this.locations = this.locations?.filter((location) => !this.access_limit?.limit_by?.some((access_limit: any) => location?.value === access_limit?.value))
-      }
-      if(this.access_limit && this.selectedLocationType?.value !== this.access_limit?.field){
-        this.selectedLocations = []
-      }
-      this.createForm()
-  }
-
-   onAssignLabels(event: any){
-    this.assignLabels = event.target.checked && this.selectedLocationType;
-    this.assignLabelsCheckbox.checked = this.assignLabels;
-
-  }
-
-  createForm(){
-    this.labelsForm = this.formBuilder.group({});
-
-    this.selectedLocations?.forEach(location => {
-      this.labelsForm!.addControl(location.value, this.formBuilder.control(location?.name !== location.value ? location?.name : ''));
-    });
-
-    this.locations?.forEach(location => {
-      this.labelsForm!.addControl(location.value, this.formBuilder.control(location?.name !== location.value ? location?.name : ''));
-    });
-  }
-
-
-  filteredLocations() {
-    return this.locations?.filter(location =>
-      location?.name?.toLowerCase().includes(this.availableLocationsSearchTerm.toLowerCase())
-    );
-  }
-  
-  filteredSelectedLocations() {
-    return this.selectedLocations.filter(location =>
-      location?.name?.toLowerCase().includes(this.selectedLocationsSearchTerm.toLowerCase())
-    );
-  }
-
-  moveLocationToSelected(selectedLocation: any) {
-    this.selectedLocations = [
-      ...this.selectedLocations,
-      selectedLocation
-    ].sort((locationA, locationB) => {
-        if (locationA.name < locationB.name) {
-          return -1;
-        } else {
-          return 1;
-        }
-      });
-    this.locations = this.locations.filter(location => location?.unique !== selectedLocation?.unique);
-    this.selectAccessLimit.emit({
-      field: this.selectedLocationType?.value,
-      limit_by: this.selectedLocations?.map(
-        (location) => {
-          return {
-            label: location?.name,
-            value: location?.value
-          }
-        }
-      )
-    })
-  }
-
-  moveLocationToAvailable(deselectedLocation: any) {
-    this.locations = [
-      ...this.locations,
-      deselectedLocation
-    ].sort((locationA, locationB) => {
-        if (locationA.name < locationB.name) {
-          return -1;
-        } else {
-          return 1;
-        }
-      })
-    this.selectedLocations = this.selectedLocations.filter(location => location?.unique !== deselectedLocation?.unique);
-    this.selectAccessLimit.emit({
-      field: this.selectedLocationType?.value,
-      limit_by: this.selectedLocations?.map(
-        (location) => {
-          return {
-            label: location?.name,
-            value: location?.value
-          }
-        }
-      )
-    })
+  private buildAccessLimit(): any {
+    if (!this.selectedLocations?.length) return {};
+    return {
+      limit_by: this.selectedLocations.map(item => ({
+        field: item.field,
+        field_label: item.field_label,
+        label: item.label,
+        value: item.value,
+      })),
+    };
   }
 
   saveAssignment() {
-    if(this.assignLabels){
-      const labelsForm = document.getElementById("labelsForm");
-      if(labelsForm){
-        labelsForm.dispatchEvent(new Event('submit'));
-      }
+    if (this.canLimitDataAccess && !this.canSelectNoLimit && this.selectedLocations.length === 0) {
+      this.notificationMessage('Your own account is access-limited, so you must restrict this user to at least one location.');
+      return;
     }
-    else {
 
-      let roleAssignment: any = {
-        user: this.userUuid,
-        roles: this.selectedRoles?.map(role => role?.uuid)
-      }
-
-      if(this.selectedLocations?.length && this.selectedLocationType){
-        roleAssignment.access_limit = {
-          field: this.selectedLocationType?.value,
-          limit_by: this.selectedLocations?.map((location) => {
-              return {
-                label: location?.name,
-                value: location?.value
-              }
-            }
-          )
-        }
-      } else {
-        roleAssignment.access_limit = {}
-      }
-  
-      this.usersService.saveAssignment(roleAssignment ).subscribe(
-        {
-          next: () => {
-            this.notificationMessage('Assignment saved successfully');
-            this.dialogRef.close(true);
-          },
-          error: (error) => {
-            console.error(error);
-            this.notificationMessage('Failed to assign/unassign role');
-          }
-        }
-      )
+    let roleAssignment: any = {
+      user: this.userUuid,
+      roles: this.selectedRoles?.map(role => role?.uuid),
+      access_limit: this.buildAccessLimit(),
     }
-  }
 
-  async onSubmitLabels(e: Event){
-    let values: any = {};
-    Object.keys(this.labelsForm.value)?.forEach((key: string) => {
-      if(this.labelsForm.value[key]?.length){
-        values = {
-          ...values,
-          [key]:this.labelsForm.value[key]
-        }
-      }
-    })
-    const labels_data = [
+    this.usersService.saveAssignment(roleAssignment).subscribe(
       {
-        field_id: this.selectedLocationType?.value, 
-        options: values
+        next: () => {
+          this.notificationMessage('Assignment saved successfully');
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          console.error(error);
+          this.notificationMessage('Failed to assign/unassign role');
+        }
       }
-    ]
-
-    const saved_labels = await lastValueFrom(this.settingConfigService.saveConnectionData("field_labels", labels_data))
-    if(!saved_labels?.error){
-      this.loadLocations = true;
-      const get_settings = await lastValueFrom(this.settingConfigService.getSettingsConfig())
-
-      this.field_labels = get_settings?.field_labels
-
-      this.setLocations()
-
-      this.loadLocations = false;
-
-      if(this.assignLabelsCheckbox){
-        this.assignLabelsCheckbox.checked = false;
-        this.assignLabelsCheckbox.dispatchEvent(new Event('change'));
-      }
-
-      this.notificationMessage('Labels saved successfully');
-    } else {
-      this.notificationMessage('Failed to save labels');
-    }
-    
+    )
   }
 
   onClose(){

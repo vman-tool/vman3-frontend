@@ -36,12 +36,15 @@
         </div>
 
         <!-- Location Dropdown -->
-        <!-- TODOS: add padding in the right (curt) ^/ v -->
-        <div class="pt-4 max-w-72">
-          <app-searchable-select-for-objects id="location" label="Locations" [items]="allLocations"
-            [inputSelectedItems]="selectedLocation" [multiSelect]="true" placeholder="Select a Locations"
-            (select)="onSearchableChange($event)" [reset]="resetSelection" [closeDropdown]="closeDropdown"
-            (open)="onOpenSelectField($event)"></app-searchable-select-for-objects>
+        <div class="w-72">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <app-location-tree-select
+            [levels]="locationTypes"
+            [selected]="selectedLocations"
+            [fieldLabels]="fieldLabels || []"
+            [creatorBoundary]="creatorBoundary"
+            (selectedChange)="onLocationSelectionChange($event)">
+          </app-location-tree-select>
         </div>
 
         <!-- Results Filter Dropdown -->

@@ -207,9 +207,26 @@ export class SettingConfigService {
     this.systemImagesFetchTime = 0;
   }
 
-  getUniqueValuesOfField(field: string): Observable<any> {
-    console.log(field, 'get-field-unique-value')
-    return this.http.get<string[]>(`${this.configService.API_URL}/settings/get-field-unique-value?field=${field}`)
+  // parentField/parentValue scope the result to just the values that
+  // actually co-occur with that parent in submitted records (e.g. only the
+  // districts recorded within one specific region), for a real drill-down
+  // location hierarchy rather than a flat, unscoped value list.
+  //
+  // scopeToUser (default true) additionally restricts results to the caller's
+  // own access_limit - the right default for anything filtering data the
+  // user is browsing (dashboard filters, the access-limit tree). Pass false
+  // for admin-configuration pickers - e.g. re-labelling raw ODK values -
+  // where the caller needs the full universe of values to manage, not just
+  // the ones within their own data-access boundary.
+  getUniqueValuesOfField(field: string, parentField?: string, parentValue?: string, scopeToUser: boolean = true): Observable<any> {
+    let url = `${this.configService.API_URL}/settings/get-field-unique-value?field=${field}`;
+    if (parentField && parentValue != null) {
+      url += `&parent_field=${encodeURIComponent(parentField)}&parent_value=${encodeURIComponent(parentValue)}`;
+    }
+    if (!scopeToUser) {
+      url += `&scope_to_user=false`;
+    }
+    return this.http.get<string[]>(url)
   }
 
   getBackupSettings(): Observable<{ data: BackupSettings; message: string }> {

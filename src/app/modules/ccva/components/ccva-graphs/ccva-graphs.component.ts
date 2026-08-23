@@ -13,6 +13,7 @@ import { CcvaService } from '../../services/ccva.service';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FilterService } from '../../../../shared/services/filter.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
   standalone: false,
@@ -49,7 +50,7 @@ export class CcvaGraphsComponent implements OnInit {
     undetermined: true,
   };
   filterData: {
-    locations: string[];
+    locations: LocationSelection[];
     start_date?: string;
     end_date?: string;
     date_type?: string;

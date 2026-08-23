@@ -26,6 +26,7 @@ import {
   DqaSnapshot,
 } from '../../../data-quality/services/general-dqa.service';
 import { DqaThresholdService, StatusBadge as TierBadge } from '../../../data-quality/services/dqa-threshold.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
   standalone: false,
@@ -36,7 +37,7 @@ import { DqaThresholdService, StatusBadge as TierBadge } from '../../../data-qua
 export class GraphsComponent implements OnInit {
   graphData: any = {};
   filterData: {
-    locations: string[];
+    locations: LocationSelection[];
     start_date?: string;
     end_date?: string;
     date_type?: string;

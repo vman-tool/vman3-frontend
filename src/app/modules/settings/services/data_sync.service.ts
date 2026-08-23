@@ -18,6 +18,7 @@ export interface ActiveSyncStatus {
   last_schedule_fired?: LastScheduleFired | null;
 }
 import { ConfigService } from 'app/app.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Injectable({
   providedIn: 'root',
@@ -84,7 +85,7 @@ export class DataSyncService {
   exportRecords(
     startDate?: string,
     endDate?: string,
-    locations?: string[],
+    locations?: LocationSelection[],
     dateType?: string,
     resultsFilter?: string
   ): Observable<Blob> {
@@ -97,7 +98,7 @@ export class DataSyncService {
       params = params.set('end_date', endDate);
     }
     if (locations && locations.length > 0) {
-      params = params.set('locations', locations.join(','));
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
     }
     if (dateType) {
       params = params.set('date_type', dateType);

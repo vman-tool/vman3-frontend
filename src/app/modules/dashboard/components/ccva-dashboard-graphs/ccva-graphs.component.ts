@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { ChartOptions, ChartType, ChartDataset } from 'chart.js'; // Import NgChartsModule for Chart.js integration
 import { CcvaService } from '../../../ccva/services/ccva.service';
 import { FilterService } from '../../../../shared/services/filter.service';
+import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
   standalone: false,
@@ -24,7 +25,7 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   elapsed_time = '0:00:00';
   created_at: string = '';
   filterData: {
-    locations: string[];
+    locations: LocationSelection[];
     start_date?: string;
     end_date?: string;
     date_type?: string;
