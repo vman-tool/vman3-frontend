@@ -198,22 +198,22 @@ export class SidebarComponent {
       }
     }
 
-    // const questions = await this.indexedDBService.getQuestions();
-    const questions = await this.genericIndexedDBService.getData(OBJECTSTORE_VA_QUESTIONS);
-
-    if(!questions.length){
-      await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
-        map(async (response: any) => {
-          if(response?.data){
-            // await this.indexedDBService.addQuestions(response?.data);
-            // await this.indexedDBService.addQuestionsAsObject(response?.data);
-
-            await this.genericIndexedDBService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
-            await this.genericIndexedDBService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS,response?.data);
-          }
-        })
-      ));
-    }
+    // Always refresh from the backend here, rather than only when the local
+    // store is empty - this runs once per app load (sidebar is instantiated
+    // once, outside the router-outlet), so it's cheap, but it's also the one
+    // reliable point where a browser that already has a cached (and
+    // possibly outdated) question list picks up fields the backend has
+    // since started reporting - e.g. data-driven fields like isadult/
+    // ischild/instanceid that a stale cache would otherwise hide from
+    // Field Mapping's search forever, since it only reads this local store.
+    await lastValueFrom(this.vaRecordsService.getQuestions().pipe(
+      map(async (response: any) => {
+        if(response?.data){
+          await this.genericIndexedDBService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response?.data);
+          await this.genericIndexedDBService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS,response?.data);
+        }
+      })
+    ));
   }
   getCollapsedRoute(menuItem: any): string {
     if (menuItem.subMenuItems?.length) {

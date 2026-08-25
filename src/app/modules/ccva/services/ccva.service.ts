@@ -87,6 +87,13 @@ export class CcvaService {
       {}
     );
   }
+  // Clear an item's default status
+  clear_default_ccva(id: string) {
+    return this.http.post(
+      `${this.configService.API_URL}/ccva/${id}/clear-default`,
+      {}
+    );
+  }
   download_default_ccva(task_id: string) {
     window.open(
       `${this.configService.API_URL}/ccva/download_ccva_results/${task_id}?file_format=csv`

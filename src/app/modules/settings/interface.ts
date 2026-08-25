@@ -10,12 +10,12 @@ export interface OdkConfigModel {
 export interface SystemConfig {
   app_name: string;
   page_title: string;
-  page_subtitle?: string;
+  page_subtitle: string;
   admin_level1: string;
-  admin_level2?: string;
-  admin_level3?: string;
+  admin_level2: string;
+  admin_level3: string;
   admin_level4?: string;
-  map_center: string;
+  map_center?: string;
   [key: string]: any; // Allow for any additional fields
 }
 
@@ -29,7 +29,6 @@ export interface FieldMapping {
   instance_id: string;
   va_id: string;
   consent_id?: string;
-  date: string;
   location_level1: string;
   location_level2?: string;
   location_level3?: string;
