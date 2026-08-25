@@ -516,18 +516,22 @@ export class DataSyncComponent implements OnInit, OnDestroy {
    * it no longer triggers the upload - that is the action button's job.
    */
   checkHeaders(): void {
+    // Real ODK Central CSV exports join a submission's group path onto each
+    // field name with '-' (e.g. "consented-presets-id10002"), so comparing
+    // csvHeaders literally against bare question ids rejected every
+    // real-world export here - the backend applies this same cleaning
+    // before insert (settings_routes.py's upload_csv), so matching against
+    // it too keeps this check consistent with what actually gets uploaded.
+    const cleanedHeaders = this.csvHeaders.map((h) =>
+      this.cleanOdkColumnName(h).toLowerCase()
+    );
+
     this.mismatchedHeaders = this.requiredHeaders.filter(
-      (header) =>
-        !this.csvHeaders
-          .map((h) => h.toLowerCase())
-          .includes(header.toLowerCase())
+      (header) => !cleanedHeaders.includes(header.toLowerCase())
     );
 
     this.mismatchedHeadersAdditinal = this.requiredHeadersAdditions.filter(
-      (header) =>
-        !this.csvHeaders
-          .map((h) => h.toLowerCase())
-          .includes(header.toLowerCase())
+      (header) => !cleanedHeaders.includes(header.toLowerCase())
     );
 
     if (this.mismatchedHeaders.length > 0) {
@@ -537,6 +541,24 @@ export class DataSyncComponent implements OnInit, OnDestroy {
       this.showError(this.fileErrors);
       this.resetFileInput();
     }
+  }
+
+  /**
+   * Strip an ODK group prefix from a column name, keeping the last segment
+   * - e.g. "orgunit-region" -> "region". Mirrors clean_odk_column_name in
+   * the backend's app/shared/utils/odk_columns.py so the pre-upload check
+   * here agrees with what the server actually stores. A trailing segment
+   * shorter than 3 characters (e.g. the "-a" in "...-id10013-a") is folded
+   * back into the segment before it rather than kept on its own, since a
+   * bare "a" is never a real question id.
+   */
+  private cleanOdkColumnName(col: string, sep = '-'): string {
+    const parts = col.split(sep);
+    while (parts.length > 1 && parts[parts.length - 1].length < 3) {
+      parts[parts.length - 2] = parts[parts.length - 2] + sep + parts[parts.length - 1];
+      parts.pop();
+    }
+    return parts[parts.length - 1];
   }
 
   private formatFileSize(bytes: number): string {
@@ -639,7 +661,7 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     const formData = new FormData();
     formData.append('file', this.selectedFile);
-    formData.append('KEY', 'instanceid');
+    formData.append('unique_id', 'instanceid');
 
     this.isDataSyncing = true; // Show loading state
 

@@ -1,10 +1,9 @@
 import { FieldLabel, FieldMapping, SystemConfig, SystemImages } from '../../interface';
 import { Component } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { ConnectionFormComponent } from '../../dialogs/connection-form/connection-form.component';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { OdkConfigModel, settingsConfigData } from '../../interface';
 import { SettingConfigService } from '../../services/settings_configs.service';
-import { SettingsConfigsFormComponent } from '../../dialogs/settings-configs-form/settings-configs-form.component';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { lastValueFrom } from 'rxjs';
 import { AuthService } from 'app/core/services/authentication/auth.service';
@@ -27,14 +26,21 @@ export class ConfigurationComponent {
   isLoading = true; // Add isLoading state
   hasOdkApiData = false;
   odkApiData: OdkConfigModel | undefined;
+  odkApiConfigForm!: FormGroup;
+  isSavingOdkConfig = false;
   systemConfigData: SystemConfig | undefined;
+  systemConfigForm!: FormGroup;
+  isSavingSystemConfig = false;
   fieldMappingData: FieldMapping | undefined;
+  fieldMappingForm!: FormGroup;
+  vaFieldOptions: any[] = [];
+  isSavingFieldMapping = false;
   vaSummaryData: string[] = [];
+  isSavingVaSummary = false;
 
   dataAccess?: any;
 
   selectedTab = 'system-config'; // Default selected tab
-  vaSummaryObjects?: any;
   fieldLabels: FieldLabel[] | undefined;
 
   // Questions Sync Properties
@@ -208,14 +214,66 @@ export class ConfigurationComponent {
   private dataLoaded = false;
 
   constructor(
-    public dialog: MatDialog,
     private settingConfigService: SettingConfigService,
     private indexedDBService: IndexedDBService,
     private genericIndexedDbService: GenericIndexedDbService,
     private authService: AuthService,
     private vaRecordsService: VaRecordsService,
     private dataSyncService: DataSyncService,
-  ) { }
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar,
+  ) {
+    this.odkApiConfigForm = this.fb.group({
+      url: ['', [Validators.required, Validators.pattern(/^(https?:\/\/[^\s]+)$/)]],
+      username: ['', Validators.required],
+      password: ['', Validators.required],
+      form_id: ['', Validators.required],
+      project_id: ['', Validators.required],
+      api_version: ['v1'],
+    });
+
+    this.systemConfigForm = this.fb.group({
+      app_name: ['', Validators.required],
+      page_title: ['', Validators.required],
+      page_subtitle: [''],
+      admin_level1: ['', Validators.required],
+      admin_level2: [''],
+      admin_level3: [''],
+      admin_level4: [''],
+      map_center: ['', Validators.required],
+    });
+
+    this.fieldMappingForm = this.fb.group({
+      instance_id: ['', Validators.required],
+      va_id: ['', Validators.required],
+      consent_id: [''],
+      date: ['', Validators.required],
+      location_level1: ['', Validators.required],
+      location_level2: [''],
+      location_level3: [''],
+      location_level4: [''],
+      deceased_gender: [''],
+      is_adult: ['', Validators.required],
+      is_child: ['', Validators.required],
+      is_neonate: ['', Validators.required],
+      birth_date: [''],
+      death_date: [''],
+      interview_date: [''],
+      submitted_date: [''],
+      interviewer_name: ['', Validators.required],
+      interviewer_phone: [''],
+      interviewer_sex: [''],
+    });
+
+    this.genericIndexedDbService
+      .getData(OBJECTSTORE_VA_QUESTIONS)
+      .then((questions) => {
+        this.vaFieldOptions = questions?.map((question: any) => ({
+          label: question.value?.label,
+          value: question.key,
+        })) || [];
+      });
+  }
 
   async hasAccess(privileges: string[]) {
     return await lastValueFrom(this.authService.hasPrivilege(privileges));
@@ -254,15 +312,37 @@ export class ConfigurationComponent {
         this.hasOdkApiData = !!data;
         if (this.hasOdkApiData && data) {
           this.odkApiData = data.odk_api_configs;
+          this.odkApiConfigForm.patchValue(
+            this.odkApiData && Object.keys(this.odkApiData).length
+              ? this.odkApiData
+              : {
+                url: 'https://central.iact.co.tz',
+                username: 'admin@vman.net',
+                password: 'password',
+                form_id: 'WHOVA_V1_5_3_TZV1',
+                project_id: '2',
+                api_version: 'v1',
+              }
+          );
           this.systemConfigData = data?.system_configs;
+          this.systemConfigForm.patchValue(
+            this.systemConfigData && Object.keys(this.systemConfigData).length
+              ? this.systemConfigData
+              : {
+                app_name: 'VMan3',
+                page_title: 'The United Republic of Tanzania',
+                page_subtitle: 'Verbal Autopsy Management Dashboard',
+                admin_level1: 'Region',
+                admin_level2: 'District',
+                admin_level3: 'Ward',
+                admin_level4: 'Village',
+                map_center: '[-6.3, 34.8]',
+              }
+          );
           this.fieldMappingData = data?.field_mapping;
-          this.vaSummaryData = data?.va_summary;
+          this.fieldMappingForm.patchValue(this.fieldMappingData || {});
+          this.vaSummaryData = data?.va_summary || [];
           this.fieldLabels = data?.field_labels;
-          this.vaSummaryObjects =
-            data?.va_summary && data?.va_summary !== null
-              // ? await this.indexedDBService.getQuestionsByKeys(data?.va_summary)
-              ? await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, data?.va_summary)
-              : [];
         }
         this.isLoading = false; // Stop isLoading
         this.dataLoaded = true; // Mark data as loaded
@@ -274,21 +354,6 @@ export class ConfigurationComponent {
     });
   }
 
-  editOdkApi(): void {
-    const dialogRef = this.dialog.open(ConnectionFormComponent, {
-      width: '700px',
-      data: this.odkApiData,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.odkApiData = result;
-        this.hasOdkApiData = true;
-        this.refreshData();
-      }
-    });
-  }
-
   // Method to force refresh data
   refreshData(): void {
     this.dataLoaded = false;
@@ -296,39 +361,159 @@ export class ConfigurationComponent {
     this.loadOdkApiData();
   }
 
-  editForm(
-    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary'
-  ): void {
-    const data =
-      type === 'va_summary'
-        ? { va_summary: this.vaSummaryData }
-        : this.odkApiData;
-    const dialogRef = this.dialog.open(SettingsConfigsFormComponent, {
-      width: type === 'field_mapping' ? '40%' : '50%',
-      data: {
-        type: type,
-        ...data,
-      },
-      maxHeight: '98vh',
-    });
-
-    dialogRef.afterClosed().subscribe(async (result) => {
-      if (result) {
-        if (type === 'va_summary') {
-          this.vaSummaryData = result;
-          // this.vaSummaryObjects = await this.indexedDBService.getQuestionsByKeys(result);
-          this.vaSummaryObjects = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, result);
-        }
-
-        this.odkApiData = result;
-        this.hasOdkApiData = true;
-        this.refreshData();
-      }
-    });
+  onVaSummaryFieldsChange(next: string[]): void {
+    this.vaSummaryData = next;
   }
 
-  addOdkApi(): void {
-    this.editOdkApi();
+  saveVaSummaryFields(): void {
+    this.isSavingVaSummary = true;
+    this.settingConfigService
+      .saveConnectionData('va_summary', this.vaSummaryData)
+      .subscribe({
+        next: () => {
+          this.isSavingVaSummary = false;
+          this.snackBar.open('VA Summary configuration saved successfully', 'Close', {
+            duration: 3000,
+          });
+          this.refreshData();
+        },
+        error: (error) => {
+          this.isSavingVaSummary = false;
+          const errorMessage =
+            error?.error?.detail ??
+            error?.error?.message ??
+            error?.message ??
+            'Failed to save VA summary fields';
+          this.snackBar.open(errorMessage, 'Close', {
+            duration: 6000,
+            panelClass: ['error-snackbar'],
+          });
+        },
+      });
+  }
+
+  saveOdkApiConfig(): void {
+    if (this.odkApiConfigForm.valid) {
+      this.isSavingOdkConfig = true;
+      this.settingConfigService
+        .saveConnectionData('odk_api_configs', this.odkApiConfigForm.value)
+        .subscribe({
+          next: () => {
+            this.isSavingOdkConfig = false;
+            this.snackBar.open('ODK API configuration saved successfully', 'Close', {
+              duration: 3000,
+            });
+            this.refreshData();
+          },
+          error: (error) => {
+            this.isSavingOdkConfig = false;
+            const errorMessage =
+              error?.error?.detail ??
+              error?.error?.message ??
+              error?.message ??
+              'Failed to save ODK API configuration';
+            this.snackBar.open(errorMessage, 'Close', {
+              duration: 6000,
+              panelClass: ['error-snackbar'],
+            });
+          },
+        });
+    } else {
+      this.odkApiConfigForm.markAllAsTouched();
+      this.snackBar.open('ODK API configuration form is invalid', 'Close', {
+        duration: 3000,
+      });
+    }
+  }
+
+  saveSystemConfig(): void {
+    if (this.systemConfigForm.valid) {
+      this.isSavingSystemConfig = true;
+      this.settingConfigService
+        .saveConnectionData('system_configs', this.systemConfigForm.value)
+        .subscribe({
+          next: () => {
+            this.isSavingSystemConfig = false;
+            this.snackBar.open('System configuration saved successfully', 'Close', {
+              duration: 3000,
+            });
+            this.refreshData();
+          },
+          error: (error) => {
+            this.isSavingSystemConfig = false;
+            const errorMessage =
+              error?.error?.detail ??
+              error?.error?.message ??
+              error?.message ??
+              'Failed to save system configuration';
+            this.snackBar.open(errorMessage, 'Close', {
+              duration: 6000,
+              panelClass: ['error-snackbar'],
+            });
+          },
+        });
+    } else {
+      this.systemConfigForm.markAllAsTouched();
+      this.snackBar.open('System configuration form is invalid', 'Close', {
+        duration: 3000,
+      });
+    }
+  }
+
+  // Labels for the fields required across CCVA/PCVA/DQA - kept in sync with
+  // the backend's REQUIRED_FIELD_MAPPING_LABELS in odk_configs.py, which is
+  // the real source of truth (this list only drives the client-side message;
+  // the backend still validates on save regardless of what the form sends).
+  private static readonly REQUIRED_FIELD_MAPPING_LABELS: Record<string, string> = {
+    instance_id: 'Instance ID',
+    va_id: 'VA ID',
+    date: 'Date',
+    location_level1: 'Location Level 1',
+    interviewer_name: 'Interviewer Name',
+    is_adult: 'Is Adult',
+    is_child: 'Is Child',
+    is_neonate: 'Is Neonate',
+  };
+
+  saveFieldMapping(): void {
+    if (this.fieldMappingForm.valid) {
+      this.isSavingFieldMapping = true;
+      this.settingConfigService
+        .saveConnectionData('field_mapping', this.fieldMappingForm.value)
+        .subscribe({
+          next: () => {
+            this.isSavingFieldMapping = false;
+            this.snackBar.open('Field mapping saved successfully', 'Close', {
+              duration: 3000,
+            });
+            this.refreshData();
+          },
+          error: (error) => {
+            this.isSavingFieldMapping = false;
+            const errorMessage =
+              error?.error?.detail ??
+              error?.error?.message ??
+              error?.message ??
+              'Failed to save field mapping';
+            this.snackBar.open(errorMessage, 'Close', {
+              duration: 6000,
+              panelClass: ['error-snackbar'],
+            });
+          },
+        });
+    } else {
+      this.fieldMappingForm.markAllAsTouched();
+      const missingLabels = Object.entries(ConfigurationComponent.REQUIRED_FIELD_MAPPING_LABELS)
+        .filter(([key]) => this.fieldMappingForm.get(key)?.invalid)
+        .map(([, label]) => label);
+      const message = missingLabels.length
+        ? `Please map the following required fields: ${missingLabels.join(', ')}`
+        : 'Field mapping form is invalid';
+      this.snackBar.open(message, 'Close', {
+        duration: 6000,
+        panelClass: ['error-snackbar'],
+      });
+    }
   }
 
   onLoadLabelAccess() {

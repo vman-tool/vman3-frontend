@@ -32,7 +32,8 @@ export class SubmissionsService {
     start_date?: string,
     end_date?: string,
     locations?: LocationSelection[],
-    date_type?: string
+    date_type?: string,
+    group_level?: number
   ): Observable<any> {
     let params = new HttpParams()
       .set('page_number', page.toString())
@@ -49,6 +50,9 @@ export class SubmissionsService {
     }
     if (date_type) {
       params = params.set('date_type', date_type);
+    }
+    if (group_level) {
+      params = params.set('group_level', group_level.toString());
     }
     return this.http
       .get<any>(`${this.configService.API_URL}/statistics/submissions`, {

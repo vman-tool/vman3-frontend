@@ -1,0 +1,60 @@
+<div class="flex items-stretch gap-3">
+  <!-- Available -->
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-semibold tracking-wide text-gray-600 uppercase">{{ leftTitle }}</span>
+      <span class="text-xs text-gray-400">{{ availableItems.length }}</span>
+    </div>
+    <input type="text" [(ngModel)]="availableSearch" placeholder="Search..."
+      class="block w-full px-3 py-1.5 mb-2 text-sm rounded-md border border-gray-300 focus:outline-none" />
+    <div class="overflow-y-auto bg-white rounded-md border border-gray-200 h-80 divide-y divide-gray-100">
+      <div *ngFor="let item of filteredAvailable" (click)="toggleAvailable(item.value)"
+        (dblclick)="moveOneRight(item)" class="px-3 py-2 text-sm cursor-pointer select-none"
+        [class.bg-blue-100]="isHighlightedAvailable(item.value)"
+        [class.hover:bg-gray-50]="!isHighlightedAvailable(item.value)">
+        {{ item.label }} <span class="text-gray-400">({{ item.value }})</span>
+      </div>
+      <div *ngIf="!filteredAvailable.length" class="px-3 py-6 text-sm text-center text-gray-400">
+        No fields
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrows -->
+  <div class="flex flex-col items-center gap-2 pt-20 shrink-0">
+    <button type="button" (click)="moveRight()" [disabled]="!highlightedAvailableCount"
+      title="Move selected to the right"
+      class="flex justify-center items-center w-9 h-9 text-gray-600 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+      <i class="ph ph-arrow-right"></i>
+    </button>
+    <button type="button" (click)="moveLeft()" [disabled]="!highlightedSelectedCount"
+      title="Move selected back to the left"
+      class="flex justify-center items-center w-9 h-9 text-gray-600 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+      <i class="ph ph-arrow-left"></i>
+    </button>
+  </div>
+
+  <!-- Selected -->
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-semibold tracking-wide text-gray-600 uppercase">{{ rightTitle }}</span>
+      <span class="text-xs text-gray-400">{{ selectedItems.length }}</span>
+    </div>
+    <input type="text" [(ngModel)]="selectedSearch" placeholder="Search..."
+      class="block w-full px-3 py-1.5 mb-2 text-sm rounded-md border border-gray-300 focus:outline-none" />
+    <div class="overflow-y-auto bg-white rounded-md border border-gray-200 h-80 divide-y divide-gray-100">
+      <div *ngFor="let item of filteredSelected" (click)="toggleSelected(item.value)" (dblclick)="moveOneLeft(item)"
+        class="px-3 py-2 text-sm cursor-pointer select-none"
+        [class.bg-blue-100]="isHighlightedSelected(item.value)"
+        [class.hover:bg-gray-50]="!isHighlightedSelected(item.value)">
+        {{ item.label }} <span class="text-gray-400">({{ item.value }})</span>
+      </div>
+      <div *ngIf="!filteredSelected.length" class="px-3 py-6 text-sm text-center text-gray-400">
+        No fields selected
+      </div>
+    </div>
+  </div>
+</div>
+<p class="mt-2 text-xs text-gray-400">
+  Double-click a field to move it, or click to select one or more and use the arrows.
+</p>

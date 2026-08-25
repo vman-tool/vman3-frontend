@@ -25,13 +25,29 @@ export class SubmissionsComponent {
   errorMessage: string | null = null;
   region: string | undefined;
   district: string | undefined;
+  ward: string | undefined;
   // The raw ODK field names (e.g. "id10005r"), as opposed to `region`/
-  // `district` above which are just the configured column *labels*
-  // ("Region"/"District") - needed to look a value up in field_labels,
-  // which is keyed by field_id.
+  // `district`/`ward` above which are just the configured column *labels*
+  // ("Region"/"District"/"Ward") - needed to look a value up in
+  // field_labels, which is keyed by field_id.
   private regionField?: string;
   private districtField?: string;
+  private wardField?: string;
   private fieldLabels: FieldLabel[] = [];
+  // How many admin levels deep the table currently drills into: 1 (region
+  // only) through 3 (region/district/ward). Sent to the backend so grouping
+  // happens there, not just column visibility here.
+  groupLevel: number = 2;
+  // Plain fields, not getters: a getter returning a new array/object
+  // literal on every template check makes *ngFor treat it as a brand new
+  // list each change-detection pass (no trackBy) and re-render forever,
+  // which Angular eventually stops as NG0103 (infinite change detection).
+  groupLevelOptions: { value: string; label: string }[] = [
+    { value: '1', label: 'Region' },
+    { value: '2', label: 'District' },
+    { value: '3', label: 'Ward' },
+  ];
+  colWidths: number[] = [16, 22, 8, 14, 8, 8, 9, 7, 8];
   // Rows exactly as the API returned them, before applying custom
   // field_labels - kept so relabels loaded later (see initial()) can be
   // re-applied without re-fetching.
@@ -85,9 +101,12 @@ export class SubmissionsComponent {
         ) {
           this.region = config.system_configs.admin_level1;
           this.district = config.system_configs.admin_level2;
+          this.ward = config.system_configs.admin_level3;
           this.regionField = config.field_mapping.location_level1;
           this.districtField = config.field_mapping.location_level2;
+          this.wardField = config.field_mapping.location_level3;
           this.fieldLabels = config.field_labels || [];
+          this.refreshGroupLevelOptions();
           // Settings can load after records have already rendered with raw
           // values (these two fetches race) - re-apply labels to whatever
           // is already loaded rather than waiting for the next refresh.
@@ -119,8 +138,40 @@ export class SubmissionsComponent {
     this.dataSubmissions = this.rawDataSubmissions.map(record => ({
       ...record,
       region: this.labelFor(this.regionField, record.region),
-      district: this.labelFor(this.districtField, record.district),
+      district: record.district ? this.labelFor(this.districtField, record.district) : record.district,
+      ward: record.ward ? this.labelFor(this.wardField, record.ward) : record.ward,
     }));
+  }
+
+  // ── Group-by level ─────────────────────────────────────────────────────────
+
+  private refreshGroupLevelOptions(): void {
+    this.groupLevelOptions = [
+      { value: '1', label: this.region ?? 'Region' },
+      { value: '2', label: this.district ?? 'District' },
+      { value: '3', label: this.ward ?? 'Ward' },
+    ];
+  }
+
+  onGroupLevelChange(value: string): void {
+    const level = Number(value);
+    if (!level || level === this.groupLevel) return;
+    this.groupLevel = level;
+    this.colWidths = this.widthsForLevel(level);
+    this.loadRecords();
+  }
+
+  /** <colgroup> widths (%), sized so the table always fills 100% regardless
+   * of how many location columns are currently shown. */
+  private widthsForLevel(level: number): number[] {
+    if (level === 1) return [26, 10, 20, 10, 10, 10, 7, 7];
+    if (level === 3) return [14, 15, 13, 7, 13, 8, 8, 6, 6];
+    return [16, 22, 8, 14, 8, 8, 9, 7, 8];
+  }
+
+  /** Total column count: 7 fixed metric columns plus one per admin level shown. */
+  get totalColumns(): number {
+    return 7 + this.groupLevel;
   }
 
   setupEffect() {
@@ -140,7 +191,8 @@ export class SubmissionsComponent {
         this.filterData.start_date,
         this.filterData.end_date,
         this.filterData.locations,
-        this.filterData.date_type
+        this.filterData.date_type,
+        this.groupLevel
       )
       .subscribe({
         next: (response: ResponseMainModel<any>) => {
