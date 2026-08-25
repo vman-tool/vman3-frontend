@@ -67,7 +67,10 @@ export class LabelAccessFieldsComponent implements OnInit {
       { value: '', label: 'Not selected' },
       ...this.locationTypes
         .filter((locationType) => locationType?.value)
-        .map((locationType) => ({ value: locationType.value, label: locationType.label })),
+        // A level can have its field mapped but its display label (e.g.
+        // admin_level4) left blank - fall back to the raw field name
+        // rather than showing an empty-looking option.
+        .map((locationType) => ({ value: locationType.value, label: locationType.label || locationType.value })),
     ];
   }
 
