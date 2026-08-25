@@ -136,6 +136,35 @@ export class ListCcvaComponent implements OnInit {
     });
   }
 
+  // Action: Clear default status with confirmation
+  clearDefault(row: any): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        message: `Are you sure you want to clear this entry's default status?`,
+        action: 'Clear Default',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.ccvaService.clear_default_ccva(row.id).subscribe(
+          () => {
+            console.log('Cleared default successfully:', row.id);
+            this.fetchData(); // Refresh the data after successful operation
+          },
+          (error) => {
+            console.error('Error clearing default:', error);
+            this.snackBar.open('Error clearing default:', 'Close', {
+              horizontalPosition: 'end',
+              verticalPosition: 'top',
+              duration: 3000,
+            });
+          }
+        );
+      }
+    });
+  }
+
   // Action: Delete entry with confirmation
   deleteRow(row: any): void {
     console.log(row, 'row');
