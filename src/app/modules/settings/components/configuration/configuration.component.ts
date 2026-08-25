@@ -28,6 +28,7 @@ export class ConfigurationComponent {
   odkApiData: OdkConfigModel | undefined;
   odkApiConfigForm!: FormGroup;
   isSavingOdkConfig = false;
+  showOdkPassword = false;
   systemConfigData: SystemConfig | undefined;
   systemConfigForm!: FormGroup;
   isSavingSystemConfig = false;
@@ -50,7 +51,7 @@ export class ConfigurationComponent {
   isQuestionsSyncTabLoading: boolean = false;
 
   // Data Dictionary sub-tabs: 'xform' (upload) | 'server' (ODK sync)
-  dictionaryTab: 'xform' | 'server' = 'xform';
+  dictionaryTab: 'xform' | 'server' = 'server';
 
   // "Override existing labels" - one per tab, both default off (No).
   // Off: only missing labels/languages are filled. On: incoming values replace
@@ -235,19 +236,20 @@ export class ConfigurationComponent {
     this.systemConfigForm = this.fb.group({
       app_name: ['', Validators.required],
       page_title: ['', Validators.required],
-      page_subtitle: [''],
+      page_subtitle: ['', Validators.required],
       admin_level1: ['', Validators.required],
-      admin_level2: [''],
-      admin_level3: [''],
+      admin_level2: ['', Validators.required],
+      admin_level3: ['', Validators.required],
+      // Not every deployment configures a 4th admin level or a map center
+      // point - both can be left blank and filled in later.
       admin_level4: [''],
-      map_center: ['', Validators.required],
+      map_center: [''],
     });
 
     this.fieldMappingForm = this.fb.group({
       instance_id: ['', Validators.required],
       va_id: ['', Validators.required],
       consent_id: [''],
-      date: ['', Validators.required],
       location_level1: ['', Validators.required],
       location_level2: [''],
       location_level3: [''],
@@ -265,6 +267,19 @@ export class ConfigurationComponent {
       interviewer_sex: [''],
     });
 
+    this.refreshVaFieldOptions();
+  }
+
+  // vaFieldOptions backs the Field Mapping / VA-Summary search pickers.
+  // Previously this only ever ran once, in the constructor - fine when
+  // Field Mapping was its own dialog (a fresh component instance, and so a
+  // fresh fetch, every time it opened), but now that it lives inline on
+  // this page-level component, syncing questions later in the same page
+  // session updated IndexedDB correctly without ever refreshing this array,
+  // so the search kept showing whatever (possibly empty) snapshot existed
+  // when the page first loaded - exactly what a fresh DB reset hits, since
+  // any sync happens strictly after that first load.
+  private refreshVaFieldOptions(): void {
     this.genericIndexedDbService
       .getData(OBJECTSTORE_VA_QUESTIONS)
       .then((questions) => {
@@ -426,6 +441,15 @@ export class ConfigurationComponent {
     }
   }
 
+  private static readonly REQUIRED_SYSTEM_CONFIG_LABELS: Record<string, string> = {
+    app_name: 'Application Name',
+    page_title: 'Page Title',
+    page_subtitle: 'Page Subtitle',
+    admin_level1: 'Admin Level 1',
+    admin_level2: 'Admin Level 2',
+    admin_level3: 'Admin Level 3',
+  };
+
   saveSystemConfig(): void {
     if (this.systemConfigForm.valid) {
       this.isSavingSystemConfig = true;
@@ -454,8 +478,15 @@ export class ConfigurationComponent {
         });
     } else {
       this.systemConfigForm.markAllAsTouched();
-      this.snackBar.open('System configuration form is invalid', 'Close', {
-        duration: 3000,
+      const missingLabels = Object.entries(ConfigurationComponent.REQUIRED_SYSTEM_CONFIG_LABELS)
+        .filter(([key]) => this.systemConfigForm.get(key)?.invalid)
+        .map(([, label]) => label);
+      const message = missingLabels.length
+        ? `Please fill in the following required fields: ${missingLabels.join(', ')}`
+        : 'System configuration form is invalid';
+      this.snackBar.open(message, 'Close', {
+        duration: 6000,
+        panelClass: ['error-snackbar'],
       });
     }
   }
@@ -467,7 +498,6 @@ export class ConfigurationComponent {
   private static readonly REQUIRED_FIELD_MAPPING_LABELS: Record<string, string> = {
     instance_id: 'Instance ID',
     va_id: 'VA ID',
-    date: 'Date',
     location_level1: 'Location Level 1',
     interviewer_name: 'Interviewer Name',
     is_adult: 'Is Adult',
@@ -602,6 +632,7 @@ export class ConfigurationComponent {
       console.error('Failed to sync questions.');
     } else {
       console.log(`${this.syncedQuestions.length} questions synced.`);
+      this.refreshVaFieldOptions();
     }
 
     this.isQuestionsSyncing = false;
@@ -669,6 +700,7 @@ export class ConfigurationComponent {
     }
 
     this.isQuestionsSyncing = false;
+    this.refreshVaFieldOptions();
   }
 
   onForceCheck(event: any, isChecked: boolean) {
