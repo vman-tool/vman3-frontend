@@ -26,8 +26,6 @@ export interface FieldLabel {
 }
 
 export interface FieldMapping {
-  table_name: string;
-  table_details?: string;
   instance_id: string;
   va_id: string;
   consent_id?: string;

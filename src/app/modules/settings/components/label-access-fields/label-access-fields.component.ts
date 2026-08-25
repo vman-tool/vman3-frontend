@@ -60,10 +60,20 @@ export class LabelAccessFieldsComponent implements OnInit {
     ];
   }
 
-  async onSelectLocationType(e: any) {
-    e?.stopPropagation();
+  /** Unconfigured levels (no field mapped) are left out, same as the native
+   * select previously skipped them via *ngIf="locationType?.value". */
+  get locationTypeOptions(): { value: string; label: string }[] {
+    return [
+      { value: '', label: 'Not selected' },
+      ...this.locationTypes
+        .filter((locationType) => locationType?.value)
+        .map((locationType) => ({ value: locationType.value, label: locationType.label })),
+    ];
+  }
+
+  async onSelectLocationType(value: string) {
     this.loadLocations = true;
-    this.selectedLocationType = this.locationTypes?.find((locationType) => locationType?.value === e?.target?.value);
+    this.selectedLocationType = this.locationTypes?.find((locationType) => locationType?.value === value);
 
     if (this.selectedLocationType) {
       await this.setLocations();

@@ -1,13 +1,8 @@
 <div>
     <label for="location" class="block mb-3 text-sm font-medium text-gray-700">Select Location Field: </label>
-    <select id="location" (change)="onSelectLocationType($event)"
-        class="mb-3 block w-full px-3 py-2 mt-1 block w-40 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        <option value="">Not selected</option>
-        <ng-container *ngFor="let locationType of locationTypes;">
-            <option *ngIf="locationType?.value" [value]="locationType?.value"
-                [selected]="selectedLocationType?.value === locationType?.value">{{ locationType?.label }}</option>
-        </ng-container>
-    </select>
+    <app-custom-dropdown id="location" widthClass="w-full sm:w-64" [options]="locationTypeOptions"
+        [selectedValue]="selectedLocationType?.value" (selectedValueChange)="onSelectLocationType($event)">
+    </app-custom-dropdown>
 </div>
 <div class="form-labels-container w-full ml-3 h-[50h] mb-[10vh] bg-gray-50 p-3 h-50" *ngIf="selectedLocationType && !initiatingForm">
     <div class="flex items-center gap-4">

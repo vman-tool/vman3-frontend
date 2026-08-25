@@ -1,7 +1,8 @@
 export interface SubmissionsDataModel {
   totalSubmitedToday: number;
   region: string;
-  district: string;
+  district?: string;
+  ward?: string;
   count: number;
   lastSubmission: string;
   adults: number;

@@ -127,77 +127,157 @@
     class="mt-4 tab-content">
     <!-- System Configuration Section -->
     <div class="my-8">
-      <!-- <div class="mb-4 text-xl font-normal">System Configuration</div> -->
-      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <p class="text-sm text-gray-500">
+        General application branding and the administrative location levels used across the system.
+      </p>
+      <hr class="mt-4 mb-6 h-px bg-gray-200 border-0 dark:bg-gray-700">
 
       <div *ngIf="isLoading && !odkApiData" class="flex items-center justify-center p-4 ">
         <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
 
-      <div *ngIf="systemConfigData; else NosystemConfigData"
-        class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
-        <div>
-          <p><strong>Application Name:</strong> {{systemConfigData.app_name ||''}}</p>
-          <p><strong>Page Title:</strong> {{ systemConfigData.page_title ||'' }}</p>
-          <p><strong>Page Subtitle:</strong> {{ systemConfigData.page_subtitle || ''
-            }}</p>
-          <p><strong>Admin Level_1:</strong> {{ systemConfigData.admin_level1 || '' }}</p>
-          <p><strong>Admin Level_2:</strong> {{ systemConfigData.admin_level2 || '' }}</p>
-          <p><strong>Admin Level_3:</strong> {{ systemConfigData.admin_level3 || '' }}</p>
-          <p><strong>Admin Level_4:</strong> {{ systemConfigData.admin_level4 || '' }}</p>
+      <form *ngIf="!isLoading" [formGroup]="systemConfigForm" (ngSubmit)="saveSystemConfig()" class="space-y-4">
+
+        <!-- General -->
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-gear-six text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">General</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Application Name</label>
+              <input type="text" formControlName="app_name" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter application name" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Page Title</label>
+              <input type="text" formControlName="page_title" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter page title" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Page Subtitle</label>
+              <input type="text" formControlName="page_subtitle" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter page subtitle" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Location Settings -->
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-map-pin text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">Location Settings</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Admin Level 1</label>
+              <input type="text" formControlName="admin_level1" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter admin level 1" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Admin Level 2</label>
+              <input type="text" formControlName="admin_level2" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter admin level 2" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Admin Level 3</label>
+              <input type="text" formControlName="admin_level3" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter admin level 3" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Admin Level 4</label>
+              <input type="text" formControlName="admin_level4" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter admin level 4" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">GPS Coordinates</label>
+              <input type="text" formControlName="map_center" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="e.g. [-6.3, 34.8]" />
+            </div>
+          </div>
+        </section>
+
+        <div *ngIf="dataAccess?.updateSystemConfigs || dataAccess?.addSystemConfigs" class="flex justify-end">
+          <button type="submit" [disabled]="isSavingSystemConfig"
+            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ isSavingSystemConfig ? 'Saving...' : 'Save Configuration' }}
+          </button>
         </div>
-        @if(!isLoading && dataAccess?.updateSystemConfigs){
-        <button (click)="editForm('system_configs')"
-          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Edit
-        </button>
-        }
-      </div>
-      <ng-template #NosystemConfigData>
-
-        <button *ngIf="!isLoading && dataAccess?.addSystemConfigs" (click)="editForm('system_configs')"
-          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Add System Configuration
-        </button>
-
-      </ng-template>
-
+      </form>
     </div>
   </div>
 
   <div *ngIf="selectedTab === 'odk-api' && dataAccess?.viewODKSettings" id="odk-api" class="mt-4 tab-content">
     <!-- ODK API Section -->
     <div class="my-8">
-      <!-- <div class="mb-4 text-xl font-normal">ODK api</div>  -->
-      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <p class="text-sm text-gray-500">
+        Connection details for the ODK Central server this system syncs verbal autopsy submissions from.
+      </p>
+      <hr class="mt-4 mb-6 h-px bg-gray-200 border-0 dark:bg-gray-700">
+
       <div *ngIf="isLoading && !odkApiData" class="flex items-center justify-center p-4 ">
         <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
-      <div *ngIf="odkApiData; else noOdkApiData">
-        <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
-          <div>
-            <p><strong>Central URL:</strong> {{ odkApiData.url }}</p>
-            <p><strong>Central Username:</strong> {{ odkApiData.username }}</p>
-            <p><strong>Central Password:</strong> {{ odkApiData.password ? '*'.repeat(odkApiData.password.length) : ''
-              }}</p>
-            <p><strong>Form ID:</strong> {{ odkApiData.form_id }}</p>
-            <p><strong>Project Id</strong> {{ odkApiData.project_id }}</p>
-            <p><strong>ApI Version:</strong> {{ odkApiData.api_version }}</p>
 
+      <form *ngIf="!isLoading" [formGroup]="odkApiConfigForm" (ngSubmit)="saveOdkApiConfig()" class="space-y-4">
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-share-network text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">ODK Central Connection</span>
           </div>
-          <button (click)="editForm('odk_api_configs')" *ngIf="dataAccess?.updateODKSettings"
-            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Edit
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">ODK Central URL</label>
+              <input type="url" formControlName="url" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter ODK Central URL" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Username</label>
+              <input type="text" formControlName="username" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter username" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Password</label>
+              <input type="password" formControlName="password" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter password" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Form ID</label>
+              <input type="text" formControlName="form_id" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter Form ID" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">Project ID</label>
+              <input type="text" formControlName="project_id" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter Project ID" />
+            </div>
+
+            <div class="mb-3 flex items-center gap-3">
+              <label class="w-44 shrink-0 text-sm font-medium text-gray-700">API Version</label>
+              <input type="text" formControlName="api_version" class="flex-1 min-w-0 py-2 px-4 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none"
+                placeholder="Enter API Version" />
+            </div>
+          </div>
+        </section>
+
+        <div *ngIf="dataAccess?.updateODKSettings || dataAccess?.addODKSettings" class="flex justify-end">
+          <button type="submit" [disabled]="isSavingOdkConfig"
+            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ isSavingOdkConfig ? 'Validating & Saving...' : 'Save ODK API Configuration' }}
           </button>
         </div>
-      </div>
-      <ng-template #noOdkApiData>
-
-        <button (click)="addOdkApi()" *ngIf="dataAccess?.addODKSettings"
-          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Add ODK API
-        </button>
-      </ng-template>
+      </form>
     </div>
   </div>
 
@@ -607,81 +687,190 @@
     class="mt-4 tab-content">
     <!-- Field Mapping Section -->
     <div class="my-8">
-      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+      <p class="text-sm text-gray-500">
+        Tell the system which raw column in your data plays each role below. Search picks up any field
+        actually present in your uploaded VA records, not just formal survey questions.
+      </p>
+      <hr class="mt-4 mb-6 h-px bg-gray-200 border-0 dark:bg-gray-700">
+
       <div *ngIf="isLoading && !fieldMappingData" class="flex items-center justify-center p-4 ">
         <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
-      <div *ngIf="fieldMappingData; else noFieldMappingData">
-        <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
-          <div>
-            <p><strong>Table Name:</strong> {{ fieldMappingData.table_name }}</p>
-            <p><strong>Table Details:</strong> {{ fieldMappingData.table_details }}</p>
-            <p><strong>Instance ID:</strong> {{ fieldMappingData.instance_id }}</p>
-            <p><strong>VA ID:</strong> {{ fieldMappingData.va_id }}</p>
-            <p><strong>Consent ID:</strong> {{ fieldMappingData.consent_id }}</p>
-            <p><strong>Location Level 1:</strong> {{ fieldMappingData.location_level1 }}</p>
-            <p><strong>Location Level 2:</strong> {{ fieldMappingData.location_level2 }}</p>
-            <p><strong>Location Level 3:</strong> {{ fieldMappingData.location_level3 }}</p>
-            <p><strong>Location Level 4:</strong> {{ fieldMappingData.location_level4 }}</p>
-            <p><strong>Deceased Gender:</strong> {{ fieldMappingData.deceased_gender }}</p>
-            <p><strong>Is Adult:</strong> {{ fieldMappingData.is_adult }}</p>
-            <p><strong>Is Child:</strong> {{ fieldMappingData.is_child }}</p>
-            <p><strong>Is Neonate:</strong> {{ fieldMappingData.is_neonate }}</p>
-            <p><strong>Today's Date:</strong> {{ fieldMappingData.date }}</p>
-            <p><strong>Date of Birth:</strong> {{ fieldMappingData.birth_date }}</p>
-            <p><strong>Date of Death:</strong> {{ fieldMappingData.death_date }}</p>
-            <p><strong>Submission date:</strong> {{ fieldMappingData.submitted_date }}</p>
-            <p><strong>Interview date:</strong> {{ fieldMappingData.interview_date }}</p>
 
-            <p><strong>Interviewer Name:</strong> {{ fieldMappingData.interviewer_name }}</p>
-            <p><strong>Interviewer Phone:</strong> {{ fieldMappingData.interviewer_phone }}</p>
-            <p><strong>Interviewer Sex:</strong> {{ fieldMappingData.interviewer_sex }}</p>
-            <!-- <p><strong>Respondent Gender:</strong> {{ fieldMappingData.respondent_gender }}</p>
-          <p><strong>Respondent Name:</strong> {{ fieldMappingData.respondent_name }}</p>
-          <p><strong>Respondent Phone:</strong> {{ fieldMappingData.respondent_phone }}</p>
-          <p><strong>Respondent Relationship:</strong> {{ fieldMappingData.respondent_relationship }}</p>
-          <p><strong>GPS Coordinates:</strong> {{ fieldMappingData.gps_coordinates }}</p>
-          <p><strong>GPS Accuracy:</strong> {{ fieldMappingData.gps_accuracy }}</p> -->
+      <form *ngIf="!isLoading" [formGroup]="fieldMappingForm" (ngSubmit)="saveFieldMapping()" class="space-y-4">
+
+        <!-- Record Identifiers -->
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-identification-badge text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">Record Identifiers</span>
           </div>
-          <button *ngIf="!isLoading && dataAccess?.updateFieldMapping" (click)="editForm('field_mapping')"
-            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Edit
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <app-searchable-select id="Instance ID" label="Instance ID"
+              [control]="fieldMappingForm.get('instance_id')!" [items]="vaFieldOptions"
+              placeholder="Search Instance ID">
+            </app-searchable-select>
+
+            <app-searchable-select id="Verbal Autopsy ID (VA ID)" label="Verbal Autopsy ID (VA ID)"
+              [control]="fieldMappingForm.get('va_id')!" [items]="vaFieldOptions" placeholder="Search VA ID">
+            </app-searchable-select>
+
+            <app-searchable-select id="Consent ID" label="Consent ID"
+              [control]="fieldMappingForm.get('consent_id')!" [items]="vaFieldOptions"
+              placeholder="Search Consent ID">
+            </app-searchable-select>
+          </div>
+        </section>
+
+        <!-- Location Hierarchy -->
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-map-pin text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">Location Hierarchy</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <app-searchable-select id="Location Level 1" label="Location Level 1"
+              [control]="fieldMappingForm.get('location_level1')!" [items]="vaFieldOptions"
+              placeholder="Search Location Level 1">
+            </app-searchable-select>
+
+            <app-searchable-select id="Location Level 2" label="Location Level 2"
+              [control]="fieldMappingForm.get('location_level2')!" [items]="vaFieldOptions"
+              placeholder="Search Location Level 2">
+            </app-searchable-select>
+
+            <app-searchable-select id="Location Level 3" label="Location Level 3"
+              [control]="fieldMappingForm.get('location_level3')!" [items]="vaFieldOptions"
+              placeholder="Search Location Level 3">
+            </app-searchable-select>
+
+            <app-searchable-select id="Location Level 4" label="Location Level 4"
+              [control]="fieldMappingForm.get('location_level4')!" [items]="vaFieldOptions"
+              placeholder="Search Location Level 4">
+            </app-searchable-select>
+          </div>
+        </section>
+
+        <!-- Age Group & Gender -->
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-users-three text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">Age Group & Gender</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <app-searchable-select id="Deceased Gender" label="Deceased Gender"
+              [control]="fieldMappingForm.get('deceased_gender')!" [items]="vaFieldOptions"
+              placeholder="Search Deceased Gender">
+            </app-searchable-select>
+
+            <app-searchable-select id="Is the Deceased an Adult?" label="Is the Deceased an Adult?"
+              [control]="fieldMappingForm.get('is_adult')!" [items]="vaFieldOptions"
+              placeholder="Search Is Adult">
+            </app-searchable-select>
+
+            <app-searchable-select id="Is the Deceased a Child?" label="Is the Deceased a Child?"
+              [control]="fieldMappingForm.get('is_child')!" [items]="vaFieldOptions"
+              placeholder="Search Is Child">
+            </app-searchable-select>
+
+            <app-searchable-select id="Is the Deceased a Neonate?" label="Is the Deceased a Neonate?"
+              [control]="fieldMappingForm.get('is_neonate')!" [items]="vaFieldOptions"
+              placeholder="Search Is Neonate">
+            </app-searchable-select>
+          </div>
+        </section>
+
+        <!-- Dates -->
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-calendar-blank text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">Dates</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <app-searchable-select id="date" label="Today's Date" [control]="fieldMappingForm.get('date')!"
+              [items]="vaFieldOptions" placeholder="Search date">
+            </app-searchable-select>
+
+            <app-searchable-select id="submitted date" label="Submission Date"
+              [control]="fieldMappingForm.get('submitted_date')!" [items]="vaFieldOptions"
+              placeholder="Search submitted date">
+            </app-searchable-select>
+
+            <app-searchable-select id="interview date" label="Interview Date"
+              [control]="fieldMappingForm.get('interview_date')!" [items]="vaFieldOptions"
+              placeholder="Search interview date">
+            </app-searchable-select>
+
+            <app-searchable-select id="birth date" label="Date of Birth"
+              [control]="fieldMappingForm.get('birth_date')!" [items]="vaFieldOptions"
+              placeholder="Search birth date">
+            </app-searchable-select>
+
+            <app-searchable-select id="death date" label="Date of Death"
+              [control]="fieldMappingForm.get('death_date')!" [items]="vaFieldOptions"
+              placeholder="Search death date">
+            </app-searchable-select>
+          </div>
+        </section>
+
+        <!-- Interviewer Details -->
+        <section class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="ph ph-headset text-blue-600"></i>
+            <span class="text-sm font-semibold text-gray-800">Interviewer Details</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <app-searchable-select id="Interviewer Name" label="Interviewer Name"
+              [control]="fieldMappingForm.get('interviewer_name')!" [items]="vaFieldOptions"
+              placeholder="Search Interviewer Name">
+            </app-searchable-select>
+
+            <app-searchable-select id="Interviewer Phone Number" label="Interviewer Phone Number"
+              [control]="fieldMappingForm.get('interviewer_phone')!" [items]="vaFieldOptions"
+              placeholder="Search Interviewer Phone Number">
+            </app-searchable-select>
+
+            <app-searchable-select id="Interviewer Sex" label="Interviewer Sex"
+              [control]="fieldMappingForm.get('interviewer_sex')!" [items]="vaFieldOptions"
+              placeholder="Search Interviewer Sex">
+            </app-searchable-select>
+          </div>
+        </section>
+
+        <div *ngIf="dataAccess?.updateFieldMapping || dataAccess?.addFieldMapping" class="flex justify-end">
+          <button type="submit" [disabled]="isSavingFieldMapping"
+            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ isSavingFieldMapping ? 'Saving...' : 'Save Field Mapping' }}
           </button>
         </div>
-      </div>
-      <ng-template #noFieldMappingData>
-        <button *ngIf="!isLoading && dataAccess?.addFieldMapping" (click)="editForm('field_mapping')"
-          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Add Field Mapping
-        </button>
-      </ng-template>
+      </form>
     </div>
   </div>
   <div *ngIf="selectedTab === 'va-summary' && dataAccess?.viewSummaryFields" id="va-summary" class="mt-4 tab-content">
-    <!-- Field Mapping Section -->
+    <!-- VA Summary Section -->
     <div class="my-8">
-      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
-      <div *ngIf="isLoading && !vaSummaryObjects" class="flex items-center justify-center p-4 ">
+      <p class="text-sm text-gray-500">
+        Choose which fields appear in the VA record's summary view, and in what order. Move fields between the
+        two lists, or double-click a field to move it immediately.
+      </p>
+      <hr class="mt-4 mb-6 h-px bg-gray-200 border-0 dark:bg-gray-700">
+
+      <div *ngIf="isLoading" class="flex items-center justify-center p-4 ">
         <div class="w-10 h-10 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
       </div>
-      <div *ngIf="vaSummaryObjects?.length; else noVaSummaryData">
-        <div class="flex items-start justify-between p-4 rounded-lg shadow-sm bg-gray-50">
-          <div *ngIf="vaSummaryObjects?.length">
-            <p *ngFor="let vaQuestion of vaSummaryObjects;"><strong>{{ vaQuestion?.value?.label ?
-                vaQuestion?.value?.label : vaQuestion?.key }}:</strong> {{ vaQuestion?.key }}</p>
-          </div>
-          <button *ngIf="!isLoading && dataAccess?.updateSummaryFields" (click)="editForm('va_summary')"
-            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Edit
+
+      <div *ngIf="!isLoading">
+        <app-dual-list-transfer [items]="vaFieldOptions" [selected]="vaSummaryData" leftTitle="Available Fields"
+          rightTitle="Summary Fields" (selectedChange)="onVaSummaryFieldsChange($event)">
+        </app-dual-list-transfer>
+
+        <div *ngIf="dataAccess?.updateSummaryFields || dataAccess?.addSummaryFields" class="flex justify-end mt-4">
+          <button type="button" (click)="saveVaSummaryFields()" [disabled]="isSavingVaSummary"
+            class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ isSavingVaSummary ? 'Saving...' : 'Save VA Summary Configuration' }}
           </button>
         </div>
       </div>
-      <ng-template #noVaSummaryData>
-        <button *ngIf="!isLoading && dataAccess?.addSummaryFields" (click)="editForm('va_summary')"
-          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Add VA Summary
-        </button>
-      </ng-template>
     </div>
   </div>
   <div *ngIf="selectedTab === 'system-images' && dataAccess?.updateSystemImages" id="system-images"

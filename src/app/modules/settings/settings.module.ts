@@ -9,10 +9,9 @@ import { ConfirmResetComponent } from './dialogs/confirm-reset/confirm-reset.com
 import { SettingsComponent } from './settings.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataSyncComponent } from './components/data-sync/data-sync.component';
-import { SettingsConfigsFormComponent } from './dialogs/settings-configs-form/settings-configs-form.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ConnectionFormComponent } from './dialogs/connection-form/connection-form.component';
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
+import { DualListTransferComponent } from '../../shared/components/dual-list-transfer/dual-list-transfer.component';
 import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
 import { UsersListComponent } from './components/users-list/users-list.component';
 import { RolesComponent } from './components/roles/roles.component';
@@ -46,9 +45,7 @@ import { ModuleHeaderComponent } from 'app/shared/components/module-header/modul
     ConfirmResetComponent,
     DataSyncComponent,
     ConfigurationComponent,
-    SettingsConfigsFormComponent,
     UsersComponent,
-    ConnectionFormComponent,
     UsersListComponent,
     RolesComponent,
     RoleFormComponent,
@@ -81,6 +78,7 @@ import { ModuleHeaderComponent } from 'app/shared/components/module-header/modul
     FormsModule,
     MaterialModule,
     SearchableSelectComponent,
+    DualListTransferComponent,
     CustomDropdownComponent,
     HeaderMappingModalComponent,
     LocationTreeSelectComponent,

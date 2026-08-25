@@ -9,6 +9,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { SubmissionsComponent } from './components/submissions/submissions.component';
 import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-filters.component';
 import { CcvaDashboardGraphsComponent } from './components/ccva-dashboard-graphs/ccva-graphs.component';
+import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { CcvaDashboardGraphsComponent } from './components/ccva-dashboard-graphs
     SharedModule,
     MaterialModule,
     VaFiltersComponent,
+    CustomDropdownComponent,
     // EchartGraphComponent,
   ],
 })
