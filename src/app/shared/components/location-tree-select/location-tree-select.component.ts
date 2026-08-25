@@ -191,7 +191,7 @@ export class LocationTreeSelectComponent implements OnDestroy {
     // level in that case would "expand" a node into a single duplicate copy
     // of itself, so a node is a leaf whenever the next level has no field of
     // its own to drill into.
-    return !!nextLevel && nextLevel.value !== node.field;
+    return !!nextLevel && !!nextLevel.value && nextLevel.value !== node.field;
   }
 
   async toggleExpand(node: TreeNode): Promise<void> {
