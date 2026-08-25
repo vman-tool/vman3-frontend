@@ -31,6 +31,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   backgroundImageStyle: string = "url('../../../../../assets/images/auth-bg.png')";
   isLoading: boolean = false;
   SOFTWARE_VERSION: string = '';
+  showPassword: boolean = false;
   constructor(
     private authService: AuthService,
     private settingConfigService: SettingConfigService,
