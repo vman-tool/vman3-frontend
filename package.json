@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "private": true,
   "dependencies": {
@@ -59,16 +61,14 @@
     "@angular/cli": "^20.3.31",
     "@angular/compiler-cli": "^20.3.27",
     "@types/file-saver": "^2.0.7",
-    "@types/jasmine": "~5.1.0",
+    "@types/jest": "^30.0.0",
     "@types/leaflet": "^1.9.12",
     "@types/lodash": "^4.17.7",
     "autoprefixer": "^10.4.19",
-    "jasmine-core": "~5.1.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
+    "fake-indexeddb": "^6.2.5",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "jest-preset-angular": "^17.0.0",
     "postcss": "^8.5.18",
     "tailwindcss": "^3.4.7",
     "typescript": "~5.8.3"
