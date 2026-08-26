@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PcvaResultsComponent } from './pcva-results.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('PcvaResultsComponent', () => {
   let component: PcvaResultsComponent;
@@ -8,7 +10,8 @@ describe('PcvaResultsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PcvaResultsComponent]
+      declarations: [PcvaResultsComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

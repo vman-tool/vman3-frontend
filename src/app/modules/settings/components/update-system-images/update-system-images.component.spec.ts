@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { UpdateSystemImagesComponent } from './update-system-images.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('UpdateSystemImagesComponent', () => {
   let component: UpdateSystemImagesComponent;
@@ -8,7 +10,8 @@ describe('UpdateSystemImagesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [UpdateSystemImagesComponent]
+      declarations: [UpdateSystemImagesComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

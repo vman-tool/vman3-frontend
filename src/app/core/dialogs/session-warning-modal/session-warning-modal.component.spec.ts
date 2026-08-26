@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SessionWarningModalComponent } from './session-warning-modal.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('SessionWarningModalComponent', () => {
   let component: SessionWarningModalComponent;
@@ -8,7 +10,8 @@ describe('SessionWarningModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SessionWarningModalComponent]
+      declarations: [SessionWarningModalComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

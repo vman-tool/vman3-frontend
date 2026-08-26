@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DiscordantsChatsComponent } from './discordants-chats.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('DiscordantsChatsComponent', () => {
   let component: DiscordantsChatsComponent;
@@ -8,7 +10,8 @@ describe('DiscordantsChatsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [DiscordantsChatsComponent]
+      declarations: [DiscordantsChatsComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

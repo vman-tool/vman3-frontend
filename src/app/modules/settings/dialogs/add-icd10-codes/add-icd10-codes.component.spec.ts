@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AddIcd10CodesComponent } from './add-icd10-codes.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 describe('AddIcd10CodesComponent', () => {
   let component: AddIcd10CodesComponent;
@@ -8,7 +11,8 @@ describe('AddIcd10CodesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AddIcd10CodesComponent]
+      declarations: [AddIcd10CodesComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting(), { provide: MatDialogRef, useValue: {} }, { provide: MAT_DIALOG_DATA, useValue: {} }]
     })
     .compileComponents();
 
