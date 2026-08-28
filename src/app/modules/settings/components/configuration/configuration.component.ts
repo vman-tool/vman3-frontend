@@ -290,6 +290,21 @@ export class ConfigurationComponent {
       });
   }
 
+  // Re-fetches the question dictionary from the backend (which merges in
+  // data-driven fields like isadult/ischild/instanceid found on the actual
+  // uploaded records - see get_form_questions_service), writes it into
+  // IndexedDB, then refreshes vaFieldOptions from that. Unlike
+  // refreshVaFieldOptions() alone, this doesn't just re-read whatever
+  // IndexedDB already happened to have.
+  private async refreshQuestionsFromBackend(): Promise<void> {
+    const response: any = await lastValueFrom(this.vaRecordsService.getQuestions());
+    if (response?.data) {
+      await this.genericIndexedDbService.addDataAsObjectValues(OBJECTSTORE_VA_QUESTIONS, response.data);
+      await this.genericIndexedDbService.addDataAsIs(OBJECTSTORE_VA_QUESTIONS, OBJECTKEY_ODK_QUESTIONS, response.data);
+    }
+    this.refreshVaFieldOptions();
+  }
+
   async hasAccess(privileges: string[]) {
     return await lastValueFrom(this.authService.hasPrivilege(privileges));
   }
@@ -791,9 +806,15 @@ export class ConfigurationComponent {
         }
         this.xformUploading = false;
         this.xformFile = null;
-        // Refresh so the enriched labels/languages are visible immediately
+        // Refresh so the enriched labels/languages are visible immediately.
+        // Field Mapping's search also needs a real backend re-fetch here
+        // (not just a re-read of whatever IndexedDB already had) - it's the
+        // backend call that merges in data-driven fields like isadult/
+        // ischild/instanceid from the actual uploaded records, which the
+        // enrich-only xForm upload itself never adds to the dictionary.
         this.loadQuestionsSyncTab();
         this.loadDataDictionary();
+        this.refreshQuestionsFromBackend();
       },
       error: (err: any) => {
         this.xformUploadError =
