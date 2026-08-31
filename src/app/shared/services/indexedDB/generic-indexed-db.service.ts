@@ -16,6 +16,11 @@ export class GenericIndexedDbService {
 
   constructor() {
     this.dbPromise = this.initDB();
+    // initDB() already logs its own errors and rethrows. Nothing awaits
+    // this assignment itself, so a rejection here was an unhandled promise
+    // rejection - callers that need the result still get it (and any
+    // rejection) through getDb() below.
+    this.dbPromise.catch(() => {});
     this.setupErrorHandling();
   }
 

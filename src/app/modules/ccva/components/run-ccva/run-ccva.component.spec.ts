@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RunCcvaComponent } from './run-ccva.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('RunCcvaComponent', () => {
   let component: RunCcvaComponent;
@@ -8,7 +10,8 @@ describe('RunCcvaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [RunCcvaComponent]
+      declarations: [RunCcvaComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

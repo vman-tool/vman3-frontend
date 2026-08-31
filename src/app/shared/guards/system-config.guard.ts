@@ -32,7 +32,10 @@ export class SettingsGuard implements CanActivate {
 
     return this.settingsConfigsService.getSettingsConfig(true).pipe(
       map((config: settingsConfigData | null) => {
-        if (config && Object.keys(config.odk_api_configs).length && Object.keys(config.odk_api_configs).length && Object.keys(config.field_mapping).length) {
+        // ODK API config is deliberately NOT required here - a deployment
+        // that only ever uploads CSV/xForm data has no reason to fill in
+        // that tab, and shouldn't be locked out of the dashboard for it.
+        if (config && Object.keys(config.system_configs).length && Object.keys(config.field_mapping).length) {
           return true;
         } else {
           this.snackBar.open(

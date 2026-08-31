@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SearchableSelectForObjectsComponent } from './searchable-select-for-objects.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('SearchableSelectForObjectsComponent', () => {
   let component: SearchableSelectForObjectsComponent;
@@ -8,7 +10,8 @@ describe('SearchableSelectForObjectsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SearchableSelectForObjectsComponent]
+      imports: [SearchableSelectForObjectsComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

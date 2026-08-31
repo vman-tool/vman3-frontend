@@ -38,10 +38,12 @@ export class BodyComponent implements OnInit, OnDestroy {
     this.settingsConfigsService
       .getSettingsConfig(true)
       .subscribe((config: settingsConfigData | null) => {
+        // ODK API config is deliberately NOT required here - a deployment
+        // that only ever uploads CSV/xForm data has no reason to fill in
+        // that tab, and shouldn't be treated as "unconfigured" for it.
         if (
           config &&
-          Object.keys(config.odk_api_configs).length &&
-          Object.keys(config.odk_api_configs).length &&
+          Object.keys(config.system_configs).length &&
           Object.keys(config.field_mapping).length
         ) {
           this.app_name = config.system_configs.app_name;

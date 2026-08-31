@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { Icd10CategoryComponent } from './icd10-category.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('Icd10CategoryComponent', () => {
   let component: Icd10CategoryComponent;
@@ -8,7 +10,8 @@ describe('Icd10CategoryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [Icd10CategoryComponent]
+      declarations: [Icd10CategoryComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

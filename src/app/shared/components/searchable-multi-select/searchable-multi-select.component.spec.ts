@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SearchableMultiSelectComponent } from './searchable-multi-select.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('SearchableMultiSelectComponent', () => {
   let component: SearchableMultiSelectComponent;
@@ -8,7 +10,8 @@ describe('SearchableMultiSelectComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SearchableMultiSelectComponent]
+      imports: [SearchableMultiSelectComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

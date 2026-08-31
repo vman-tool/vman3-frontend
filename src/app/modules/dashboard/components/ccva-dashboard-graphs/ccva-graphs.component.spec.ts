@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CcvaDashboardGraphsComponent } from './ccva-graphs.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('CcvaDashboardGraphsComponent', () => {
   let component: CcvaDashboardGraphsComponent;
@@ -8,7 +10,8 @@ describe('CcvaDashboardGraphsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CcvaDashboardGraphsComponent]
+      declarations: [CcvaDashboardGraphsComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 
