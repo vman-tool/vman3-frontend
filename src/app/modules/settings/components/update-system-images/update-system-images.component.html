@@ -1,4 +1,4 @@
-<div class="grid grid-cols-3 gap-6 items-center justify-center bg-white">
+<div class="grid grid-cols-3 gap-6 items-start justify-center bg-white">
 
     <div class="flex flex-col items-center justify-center p-4 rounded-lg">
         <span class="text-xl text-gray-900 mb-5">Favicon</span>
@@ -6,7 +6,7 @@
             <img [src]="previewImages.favicon || systemImages?.favicon" alt="favicon"
                 class="max-h-[100%] max-w-[100%] object-contain absolute inset-0 m-auto">
         </div>
-        <div class="flex items-center gap-2 mb-4">
+        <div class="flex items-center gap-2 mb-2">
             <div class="relative w-12 h-12">
                 <input type="file" id="fileInput1" (change)="onFileSelected($event, 'favicon')"
                     class="relative w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
@@ -21,12 +21,20 @@
                 class="w-12 h-12 flex items-center justify-center rounded-lg transition-colors" [ngClass]="{
                                     'text-red-500 hover:bg-red-50 cursor-pointer': previewImages.favicon,
                                     'text-gray-300 cursor-not-allowed': !previewImages.favicon
-                                  }">
+                                  }" title="Discard the unsaved preview">
                 <span class="text-4xl">
                     <i class="ph-trash"></i>
                 </span>
             </button>
         </div>
+        <p *ngIf="validationErrors.favicon" class="text-xs text-red-600 text-center mb-2 max-w-[180px]">{{ validationErrors.favicon }}</p>
+        <button (click)="onResetSingleImage('favicon')" [disabled]="!hasCustomImage('favicon') || resettingImage"
+            class="text-xs font-medium underline" [ngClass]="{
+                'text-gray-300 cursor-not-allowed': !hasCustomImage('favicon') || resettingImage,
+                'text-yellow-700 hover:text-yellow-800 cursor-pointer': hasCustomImage('favicon') && !resettingImage
+            }">
+            {{ resettingImage === 'favicon' ? 'Resetting...' : 'Reset to default' }}
+        </button>
     </div>
 
     <div class="flex flex-col items-center justify-center p-4 rounded-lg">
@@ -35,7 +43,7 @@
             <img [src]="previewImages.logo ||systemImages?.logo" alt="logo"
                 class="max-h-[100%] max-w-[100%] object-contain absolute inset-0 m-auto">
         </div>
-        <div class="flex items-center gap-2 mb-4">
+        <div class="flex items-center gap-2 mb-2">
             <div class="relative w-12 h-12">
                 <input type="file" id="fileInput2" (change)="onFileSelected($event, 'logo')"
                     class="relative w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
@@ -50,12 +58,20 @@
                 class="w-12 h-12 flex items-center justify-center rounded-lg transition-colors" [ngClass]="{
                                               'text-red-500 hover:bg-red-50 cursor-pointer': previewImages.logo,
                                               'text-gray-300 cursor-not-allowed': !previewImages.logo
-                                            }">
+                                            }" title="Discard the unsaved preview">
                 <span class="text-4xl">
                     <i class="ph-trash"></i>
                 </span>
             </button>
         </div>
+        <p *ngIf="validationErrors.logo" class="text-xs text-red-600 text-center mb-2 max-w-[180px]">{{ validationErrors.logo }}</p>
+        <button (click)="onResetSingleImage('logo')" [disabled]="!hasCustomImage('logo') || resettingImage"
+            class="text-xs font-medium underline" [ngClass]="{
+                'text-gray-300 cursor-not-allowed': !hasCustomImage('logo') || resettingImage,
+                'text-yellow-700 hover:text-yellow-800 cursor-pointer': hasCustomImage('logo') && !resettingImage
+            }">
+            {{ resettingImage === 'logo' ? 'Resetting...' : 'Reset to default' }}
+        </button>
     </div>
 
     <div class="flex flex-col items-center justify-center p-4 rounded-lg">
@@ -64,7 +80,7 @@
             <img [src]="previewImages.home_image || systemImages?.home_image" alt="login-image"
                 class="max-h-[100%] max-w-[100%] object-contain absolute inset-0 m-auto">
         </div>
-        <div class="flex items-center gap-2 mb-4">
+        <div class="flex items-center gap-2 mb-2">
             <div class="relative w-12 h-12">
                 <input type="file" id="fileInput3" (change)="onFileSelected($event, 'home_image')"
                     class="relative w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
@@ -79,26 +95,34 @@
                 class="w-12 h-12 flex items-center justify-center rounded-lg transition-colors" [ngClass]="{
                                                         'text-red-500 hover:bg-red-50 cursor-pointer': previewImages.home_image,
                                                         'text-gray-300 cursor-not-allowed': !previewImages.home_image
-                                                      }">
+                                                      }" title="Discard the unsaved preview">
                 <span class="text-4xl">
                     <i class="ph-trash"></i>
                 </span>
             </button>
         </div>
+        <p *ngIf="validationErrors.home_image" class="text-xs text-red-600 text-center mb-2 max-w-[180px]">{{ validationErrors.home_image }}</p>
+        <button (click)="onResetSingleImage('home_image')" [disabled]="!hasCustomImage('home_image') || resettingImage"
+            class="text-xs font-medium underline" [ngClass]="{
+                'text-gray-300 cursor-not-allowed': !hasCustomImage('home_image') || resettingImage,
+                'text-yellow-700 hover:text-yellow-800 cursor-pointer': hasCustomImage('home_image') && !resettingImage
+            }">
+            {{ resettingImage === 'home_image' ? 'Resetting...' : 'Reset to default' }}
+        </button>
     </div>
 </div>
 <div class="button">
     <button
-        (click)="onResetImages($event)" 
+        (click)="onResetImages($event)"
         class="px-4 py-2 text-white mr-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         [ngClass]="{
             'bg-gray-500 hover:bg-gray-700 hover:cursor-not-allowed': !canReset,
             'bg-yellow-600 hover:bg-yellow-700 hover:cursor-pointer': canReset,
         }">
-        Reset Images
+        Reset All
     </button>
     <button
-        (click)="onSaveImages($event)" 
+        (click)="onSaveImages($event)"
         class="px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         [ngClass]="{
             'bg-gray-500 hover:bg-gray-700 hover:cursor-not-allowed': !previewImages.home_image && !previewImages.logo && !previewImages.favicon,
