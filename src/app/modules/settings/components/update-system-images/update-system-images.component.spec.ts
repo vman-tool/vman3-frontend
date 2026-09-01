@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { UpdateSystemImagesComponent } from './update-system-images.component';
 import { provideHttpClient } from '@angular/common/http';
@@ -194,8 +194,15 @@ describe('UpdateSystemImagesComponent (unit)', () => {
       expect(component.validationErrors.favicon).toBeUndefined();
     });
 
-    it('accepts a valid image and sets the preview via FileReader', async () => {
-      const { component } = makeComponent();
+    it('accepts a valid image, previews it immediately, and uploads it in the same step - no separate Save', async () => {
+      // Regression: a two-step "preview, then click Save" flow made it easy
+      // to lose the browser file reference between the two steps, which is
+      // exactly what caused Save to appear to silently reset the image
+      // instead of applying it. Selecting a file now uploads it directly.
+      const { component, settingConfigService } = makeComponent();
+      settingConfigService.saveSystemImages.mockReturnValue(
+        of({ data: [{ favicon: null, logo: '/uploads/logo.png', home_image: null }] })
+      );
       const file = makeFile('logo.png', 1024);
 
       const input = selectFile(component, file, 'logo');
@@ -204,9 +211,26 @@ describe('UpdateSystemImagesComponent (unit)', () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(component.validationErrors.logo).toBeUndefined();
-      expect(component.logo).toBe(file);
-      expect(component.previewImages.logo).toEqual(expect.stringContaining('data:'));
-      expect(input.value).toBe('x'); // untouched on success
+      expect(settingConfigService.saveSystemImages).toHaveBeenCalledWith({ logo: file });
+      expect(component.systemImages?.logo).toBe('http://backend/uploads/logo.png');
+      expect(component.canReset).toBe(true);
+      // The local preview is cleared once the real, saved URL is in place.
+      expect(component.previewImages.logo).toBeUndefined();
+      expect(input.value).toBe(''); // input cleared so re-selecting the same file still fires 'change'
+    });
+
+    it('clears the preview and notifies on an upload failure', async () => {
+      const { component, settingConfigService, snackBar } = makeComponent();
+      settingConfigService.saveSystemImages.mockReturnValue(throwError(() => new Error('network down')));
+      const file = makeFile('logo.png', 1024);
+
+      selectFile(component, file, 'logo');
+      resolveLastImageAsDecodable(100, 100);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(component.previewImages.logo).toBeUndefined();
+      expect(component.uploadingImage).toBeNull();
+      expect(snackBar.open).toHaveBeenCalled();
     });
   });
 
@@ -236,30 +260,35 @@ describe('UpdateSystemImagesComponent (unit)', () => {
     });
   });
 
-  describe('onSaveImages', () => {
-    it('refuses to save while any image has a pending validation error', () => {
-      const { component, settingConfigService } = makeComponent();
-      component.validationErrors.logo = 'too large';
-      component.previewImages.logo = 'data:image/png;base64,x';
-
-      component.onSaveImages({ stopPropagation: jest.fn() });
-
-      expect(settingConfigService.saveSystemImages).not.toHaveBeenCalled();
+  describe('onDownloadImage', () => {
+    beforeEach(() => {
+      (globalThis as any).fetch = jest.fn().mockResolvedValue({
+        blob: () => Promise.resolve(new Blob(['fake'], { type: 'image/png' })),
+      });
     });
 
-    it('saves and marks every image as reset-able afterward', () => {
-      const { component, settingConfigService } = makeComponent();
-      component.previewImages.logo = 'data:image/png;base64,x';
-      component.logo = makeFile('logo.png', 100);
-      settingConfigService.saveSystemImages.mockReturnValue(
-        of({ data: [{ favicon: null, logo: '/uploads/logo.png', home_image: null }] })
-      );
+    it('does nothing when there is nothing to download', async () => {
+      const { component } = makeComponent();
+      component.systemImages = {};
 
-      component.onSaveImages({ stopPropagation: jest.fn() });
+      await component.onDownloadImage('logo');
 
-      expect(settingConfigService.saveSystemImages).toHaveBeenCalled();
-      expect(component.canReset).toBe(true);
-      expect(component.previewImages).toEqual({});
+      expect((globalThis as any).fetch).not.toHaveBeenCalled();
+    });
+
+    it('fetches the current image as a blob and triggers a named download', async () => {
+      const { component } = makeComponent();
+      component.systemImages = { logo: 'http://backend/uploads/abc.png' };
+      const realLink = document.createElement('a');
+      const clickSpy = jest.spyOn(realLink, 'click').mockImplementation(() => {});
+      jest.spyOn(document, 'createElement').mockReturnValue(realLink);
+
+      await component.onDownloadImage('logo');
+
+      expect((globalThis as any).fetch).toHaveBeenCalledWith('http://backend/uploads/abc.png');
+      expect(realLink.download).toBe('logo.png');
+      expect(clickSpy).toHaveBeenCalled();
+      (document.createElement as jest.Mock).mockRestore();
     });
   });
 });

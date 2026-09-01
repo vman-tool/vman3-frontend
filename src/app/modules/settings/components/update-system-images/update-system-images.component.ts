@@ -42,16 +42,20 @@ export class UpdateSystemImagesComponent implements OnInit {
   // The untransformed values from the backend (undefined/null when a given
   // image was never uploaded) - systemImages itself gets overwritten with
   // fallback default-asset paths for display, so this is what decides
-  // whether a per-image Reset button is enabled.
+  // whether a given image has anything to reset or download as "custom".
   private rawSystemImages: SystemImages = {};
 
-  favicon?: any;
-  logo?: any;
-  home_image?: any;
+  // Shown immediately (from the local file, before the upload round trip
+  // resolves) so the picture updates the instant a file is chosen -
+  // selecting a file uploads and saves it in one step, there's no separate
+  // "Save" to confirm.
   previewImages: PreviewImages = {};
   validationErrors: Partial<Record<ImageType, string>> = {};
   canReset: boolean = false;
   resettingImage: ImageType | null = null;
+  uploadingImage: ImageType | null = null;
+
+  readonly imageLabels = IMAGE_VALIDATION_RULES;
 
   constructor(
     private snackBar: MatSnackBar,
@@ -138,6 +142,8 @@ export class UpdateSystemImagesComponent implements OnInit {
 
   }
 
+  // Choosing a file validates, previews, and uploads it in one step - it
+  // replaces the existing image immediately, there's no separate Save.
   onFileSelected(e: any, type: ImageType): void {
     const fileInput = e?.target as HTMLInputElement;
     if (!fileInput?.files?.length) {
@@ -154,22 +160,45 @@ export class UpdateSystemImagesComponent implements OnInit {
         return;
       }
 
-      if (type === 'favicon') {
-        this.favicon = file;
-      } else if (type === 'logo') {
-        this.logo = file;
-      } else if (type === 'home_image') {
-        this.home_image = file;
-      }
-
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         this.previewImages = {
           ...this.previewImages,
           [type]: e?.target?.result,
         };
+        // Only start the upload once the preview is actually showing - the
+        // response (clearing the preview in favor of the real saved URL)
+        // must never be able to arrive before the preview is set, or it'd
+        // be immediately overwritten right back to the stale image.
+        this.uploadImage(file, type);
       };
       reader.readAsDataURL(file);
+      fileInput.value = '';
+    });
+  }
+
+  private uploadImage(file: File, type: ImageType): void {
+    this.uploadingImage = type;
+    this.settingConfigService.saveSystemImages({ [type]: file }).subscribe({
+      next: (response: any) => {
+        this.uploadingImage = null;
+        if (response?.data) {
+          this.systemImages = response.data[0];
+          this.rawSystemImages = { ...this.systemImages };
+          this.canReset = true;
+          this.updateSystemImages();
+          this.clearPreview(type);
+          this.notificationMessage(`${IMAGE_VALIDATION_RULES[type].label} updated successfully`);
+        } else {
+          this.clearPreview(type);
+          this.notificationMessage(`Failed to update ${IMAGE_VALIDATION_RULES[type].label.toLowerCase()}`);
+        }
+      },
+      error: () => {
+        this.uploadingImage = null;
+        this.clearPreview(type);
+        this.notificationMessage(`Failed to update ${IMAGE_VALIDATION_RULES[type].label.toLowerCase()}`);
+      },
     });
   }
 
@@ -215,14 +244,11 @@ export class UpdateSystemImagesComponent implements OnInit {
     });
   }
 
-  resetPreview(type: ImageType): void {
-    delete this.validationErrors[type];
-    if (this.previewImages[type]) {
-      if (this.previewImages[type]?.startsWith('blob:')) {
-        URL.revokeObjectURL(this.previewImages[type]!);
-      }
-      delete this.previewImages[type];
+  private clearPreview(type: ImageType): void {
+    if (this.previewImages[type]?.startsWith('blob:')) {
+      URL.revokeObjectURL(this.previewImages[type]!);
     }
+    delete this.previewImages[type];
   }
 
   onResetImages(e: any){
@@ -236,7 +262,8 @@ export class UpdateSystemImagesComponent implements OnInit {
             this.canReset = false;
             this.updateSystemImages()
             this.notificationMessage("System images reset successfully")
-            this.resetAllPreview();
+            this.previewImages = {};
+            this.validationErrors = {};
           } else {
             this.notificationMessage("Failed to reset system images")
           }
@@ -245,13 +272,11 @@ export class UpdateSystemImagesComponent implements OnInit {
           this.notificationMessage("Failed to reset system images")
         }
       })
-    } else {
-      this.resetAllPreview();
     }
   }
 
   // Resets just one image back to its default, leaving the other two
-  // (custom or otherwise) untouched.
+  // (custom or otherwise) untouched. Bound to that image's Delete icon.
   onResetSingleImage(type: ImageType): void {
     if (!this.hasCustomImage(type) || this.resettingImage) {
       return;
@@ -265,7 +290,7 @@ export class UpdateSystemImagesComponent implements OnInit {
           this.rawSystemImages = { ...this.systemImages };
           this.canReset = !!(this.rawSystemImages.favicon || this.rawSystemImages.logo || this.rawSystemImages.home_image);
           this.updateSystemImages();
-          this.resetPreview(type);
+          this.clearPreview(type);
           this.notificationMessage(`${IMAGE_VALIDATION_RULES[type].label} reset to default`);
         } else {
           this.notificationMessage(`Failed to reset ${IMAGE_VALIDATION_RULES[type].label.toLowerCase()}`);
@@ -278,56 +303,44 @@ export class UpdateSystemImagesComponent implements OnInit {
     });
   }
 
-  onSaveImages(e: any){
-    e?.stopPropagation()
-    if (this.validationErrors.favicon || this.validationErrors.logo || this.validationErrors.home_image) {
-      this.notificationMessage('Fix the highlighted image(s) before saving.');
+  // Downloads whatever is currently showing for that image - the custom
+  // upload, or the bundled default if none was uploaded.
+  async onDownloadImage(type: ImageType): Promise<void> {
+    const url = this.previewImages[type] || this.systemImages?.[type];
+    if (!url) {
       return;
     }
-    if(this.previewImages.logo || this.previewImages.home_image || this.previewImages.favicon){
-      const imagesObject = {
-        logo: this.logo,
-        home_image: this.home_image,
-        favicon: this.favicon,
-      }
-
-      this.settingConfigService.saveSystemImages(imagesObject).subscribe(
-        {
-          next: (response: any) => {
-            if(response?.data){
-              this.systemImages = response?.data[0]
-              this.rawSystemImages = { ...this.systemImages };
-              this.canReset = true;
-              this.updateSystemImages()
-              this.notificationMessage("System images updated successfully")
-              this.resetAllPreview()
-            } else {
-              this.notificationMessage("Failed to update system images")
-            }
-          },
-          error: (error) => {
-            this.notificationMessage("Failed to update system images")
-          }
-        }
-      )
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const extension = this.extensionFromUrl(url, blob.type);
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `${type}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      this.notificationMessage(`Failed to download ${IMAGE_VALIDATION_RULES[type].label.toLowerCase()}`);
     }
+  }
+
+  private extensionFromUrl(url: string, mimeType: string): string {
+    const match = url.match(/\.([a-zA-Z0-9]+)(?:\?|#|$)/);
+    if (match) {
+      return match[1];
+    }
+    return mimeType.split('/').pop() || 'png';
   }
 
   ngOnDestroy() {
-    this.resetAllPreview()
-  }
-
-  private resetAllPreview(){
     Object.values(this.previewImages).forEach(url => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
     });
-    this.previewImages = {};
-    this.validationErrors = {};
-    this.favicon = undefined;
-    this.logo = undefined;
-    this.home_image = undefined;
   }
 
 }
