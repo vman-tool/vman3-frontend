@@ -28,7 +28,7 @@ export class SettingConfigService {
 
   // General method to save data
   saveConnectionData(
-    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'field_labels' | 'sync_status' | 'dqa_thresholds',
+    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'va_summary_cod_options' | 'field_labels' | 'sync_status' | 'dqa_thresholds',
     data: any
   ): Observable<ResponseMainModel<any>> {
     return this.http
@@ -94,6 +94,9 @@ export class SettingConfigService {
                 va_summary:
                   response.data?.va_summary ||
                   [],
+                va_summary_cod_options:
+                  response.data?.va_summary_cod_options ||
+                  { include_ccva_default: false, include_pcva: false },
                 field_labels:
                   response.data?.field_labels ||
                   [],
@@ -184,6 +187,11 @@ export class SettingConfigService {
     }
 
     return this.http.post<any>(`${this.configService.API_URL}/settings/system_images/`, formData).pipe(
+      // Without this, the in-memory cache above kept serving the pre-upload
+      // response for up to CACHE_DURATION - including through a logout/
+      // login, since that's a client-side route change, not a page reload,
+      // so this singleton service (and its cache) survives it.
+      tap(() => this.clearCache()),
       catchError((error: any) => {
         console.error('Error fetching system images:', error);
         return of([]);
@@ -193,8 +201,19 @@ export class SettingConfigService {
 
   resetImages() {
     return this.http.delete<any>(`${this.configService.API_URL}/settings/system_images/`).pipe(
+      tap(() => this.clearCache()),
       catchError((error: any) => {
         console.error('Error resetting system images:', error);
+        return of([]);
+      })
+    )
+  }
+
+  resetSingleImage(imageType: 'favicon' | 'logo' | 'home_image') {
+    return this.http.delete<any>(`${this.configService.API_URL}/settings/system_images/${imageType}`).pipe(
+      tap(() => this.clearCache()),
+      catchError((error: any) => {
+        console.error(`Error resetting ${imageType}:`, error);
         return of([]);
       })
     )

@@ -60,6 +60,7 @@
 
 
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs/operators';
 import { ActiveSyncStatus, LastScheduleFired } from '../../services/data_sync.service';
 import { BackupSettings, DataSyncSettingsService, DayOfWeek } from '../../services/data_sync_settings.service';
@@ -111,7 +112,7 @@ export class SettingsConfigsComponent implements OnInit, OnDestroy {
   private serverClockOffset: number = 0;
   private serverClockTicker: ReturnType<typeof setInterval> | null = null;
 
-  constructor(private settingsService: DataSyncSettingsService) {}
+  constructor(private settingsService: DataSyncSettingsService, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.loadAllSettings();
@@ -137,6 +138,15 @@ export class SettingsConfigsComponent implements OnInit, OnDestroy {
       },
       error: () => { /* silently skip if server-time endpoint unavailable */ }
     });
+  }
+
+  // Whether a schedule is currently in effect (at least one day selected -
+  // matches the backend's own gate in check_odk_sync_schedule, which skips
+  // firing entirely when cron_settings.days is empty). Drives the Active/
+  // Idle badge - separate from activeSyncStatus.active, which reflects a
+  // sync actually running right now, not whether one is scheduled to.
+  get isScheduleConfigured(): boolean {
+    return this.daysOfWeek.some(day => day.checked);
   }
 
   get lastScheduleFiredDisplay(): string | null {
@@ -247,13 +257,24 @@ export class SettingsConfigsComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => this.isSavingSettings = false))
       .subscribe({
         next: () => {
-          console.log('Cron settings saved successfully');
           this.isSettingsChanged = false;
           // Cache is automatically cleared in the service after saving
+          this.snackBar.open('Scheduler saved', 'Close', { duration: 2500 });
         },
         error: (error: any) => {
           console.error('Error saving cron settings', error);
-          this.settingsError = 'Failed to save settings. Please try again.';
+          // Surface the backend's own message (e.g. "ODK API is not
+          // configured...") rather than a generic one - it's specific and
+          // actionable, telling the user exactly what to fix.
+          const message = error?.error?.detail ?? error?.error?.message ?? 'Failed to save settings. Please try again.';
+          this.snackBar.open(message, 'Close', { duration: 6000 });
+          this.settingsError = message;
+          // A rejected save leaves the day checkboxes on the user's
+          // unsaved (and rejected) selection - reload what's actually
+          // saved, so the Idle/Active badge (isScheduleConfigured, driven
+          // by these same checkboxes) doesn't claim a schedule is active
+          // when the save that would have enabled it just failed.
+          this.loadSettings();
         }
       });
   }

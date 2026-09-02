@@ -867,6 +867,26 @@
           rightTitle="Summary Fields" (selectedChange)="onVaSummaryFieldsChange($event)">
         </app-dual-list-transfer>
 
+        <!-- Mirrors the dual-list-transfer's own flex-1 / arrows / flex-1 row so
+             this lines up under the Summary Fields (right) panel, at the same
+             vertical position as its "Double-click a field..." caption. -->
+        <div class="flex items-start gap-3 mt-1">
+          <div class="flex-1 min-w-0"></div>
+          <div class="w-9 shrink-0"></div>
+          <div class="flex items-center flex-1 min-w-0 gap-6">
+            <label class="flex items-center gap-1.5 text-xs text-gray-500">
+              <input type="checkbox" [(ngModel)]="vaSummaryCodOptions.include_ccva_default"
+                class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+              Include CoD from CCVA default settings
+            </label>
+            <label class="flex items-center gap-1.5 text-xs text-gray-500">
+              <input type="checkbox" [(ngModel)]="vaSummaryCodOptions.include_pcva"
+                class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+              Include CoD from PCVA
+            </label>
+          </div>
+        </div>
+
         <div *ngIf="dataAccess?.updateSummaryFields || dataAccess?.addSummaryFields" class="flex justify-end mt-4">
           <button type="button" (click)="saveVaSummaryFields()" [disabled]="isSavingVaSummary"
             class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">

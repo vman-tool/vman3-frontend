@@ -93,7 +93,8 @@
               [title]="row.region">{{ row.region }}</td>
           <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
               [title]="row.district">{{ row.district }}</td>
-          <td class="px-6 py-4 whitespace-nowrap">{{ row.interviewDay }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.interviewDay">{{ row.interviewDay | date:'yyyy-MM-dd' }}</td>
           <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
               [title]="row.interviewerName">{{ row.interviewerName }}</td>
           <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"

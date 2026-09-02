@@ -142,6 +142,67 @@
             this record.
           </p>
         </ng-template>
+
+        <!-- Cause of Death -->
+        <div *ngIf="codOptions.include_ccva_default || codOptions.include_pcva" class="pt-4 mt-4 border-t border-gray-200">
+          <h4 class="mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Cause of Death</h4>
+
+          <div *ngIf="codLoading" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
+            <mat-spinner diameter="16" color="accent"></mat-spinner>
+            Loading Cause of Death…
+          </div>
+
+          <p *ngIf="!codLoading && codError" class="px-3 py-2 text-sm text-red-600">{{ codError }}</p>
+
+          <div *ngIf="!codLoading && !codError" class="space-y-3">
+
+            <!-- CCVA -->
+            <div *ngIf="codOptions.include_ccva_default" class="px-3 py-2 rounded-md bg-gray-50">
+              <dt class="text-xs font-medium text-gray-500">CCVA ({{ codData?.ccva?.algorithm || 'default' }})</dt>
+              <ng-container *ngIf="codData?.ccva as ccva; else noCcva">
+                <dd class="mt-0.5 text-sm font-medium text-gray-900 break-words">{{ ccva.cause1 }}</dd>
+                <dd *ngIf="ccva.probability !== null && ccva.probability !== undefined" class="mt-0.5 text-xs text-gray-500">
+                  Likelihood: {{ ccva.probability }}%
+                </dd>
+              </ng-container>
+              <ng-template #noCcva>
+                <dd class="mt-0.5 text-sm text-gray-500">
+                  No CCVA default run is configured, or it has no result for this record.
+                </dd>
+              </ng-template>
+            </div>
+
+            <!-- PCVA -->
+            <div *ngIf="codOptions.include_pcva" class="px-3 py-2 rounded-md bg-gray-50">
+              <dt class="text-xs font-medium text-gray-500">PCVA</dt>
+              <ng-container *ngIf="codData?.pcva as pcva; else noPcva">
+                <dd class="mt-1 text-sm font-medium text-gray-900 break-words">
+                  <ng-container *ngIf="pcva.concordance.reached; else notConcordant">
+                    Underlying Cause: {{ pcva.concordance.underlying_cause }}
+                    <span class="block text-xs font-normal text-gray-500">
+                      Agreed by {{ pcva.concordance.agreeing_coders }} of {{ pcva.concordance.total_coders }} coders
+                    </span>
+                  </ng-container>
+                  <ng-template #notConcordant>
+                    <span class="text-xs font-normal text-gray-500">
+                      Not yet concordant ({{ pcva.concordance.agreeing_coders }}/{{ pcva.concordance.concordance_level }} needed)
+                    </span>
+                  </ng-template>
+                </dd>
+                <ul class="mt-2 space-y-1">
+                  <li *ngFor="let coder of pcva.coders" class="text-xs text-gray-600">
+                    <span class="font-medium text-gray-700">{{ coder.coder }}:</span>
+                    {{ coder.underlying_cause || 'No underlying cause recorded' }}
+                  </li>
+                </ul>
+              </ng-container>
+              <ng-template #noPcva>
+                <dd class="mt-0.5 text-sm text-gray-500">No PCVA coding found for this record.</dd>
+              </ng-template>
+            </div>
+
+          </div>
+        </div>
       </div>
     </aside>
   </div>

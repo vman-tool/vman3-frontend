@@ -202,4 +202,41 @@ describe('ConfigurationComponent', () => {
       );
     });
   });
+
+  describe('saveVaSummaryFields', () => {
+    // One button now saves both the selected fields and the Cause of Death
+    // checkboxes - there used to be two separate save buttons/methods for
+    // these, which the user found confusing (two steps for one section).
+    it('saves the selected fields and the CoD checkboxes together, in a single click', () => {
+      const { component, settingConfigService, snackBar } = makeComponent();
+      component.vaSummaryData = ['age_adult', 'sex'];
+      component.vaSummaryCodOptions = { include_ccva_default: true, include_pcva: false };
+
+      component.saveVaSummaryFields();
+
+      expect(settingConfigService.saveConnectionData).toHaveBeenCalledWith('va_summary', ['age_adult', 'sex']);
+      expect(settingConfigService.saveConnectionData).toHaveBeenCalledWith(
+        'va_summary_cod_options',
+        { include_ccva_default: true, include_pcva: false }
+      );
+      expect(component.isSavingVaSummary).toBe(false);
+      expect(snackBar.open).toHaveBeenCalledWith(
+        'VA Summary configuration saved successfully',
+        'Close',
+        expect.anything()
+      );
+    });
+
+    it('surfaces the backend error message when either save fails', () => {
+      const { component, settingConfigService, snackBar } = makeComponent();
+      settingConfigService.saveConnectionData.mockReturnValue(
+        throwError(() => ({ error: { detail: 'Failed to save' } }))
+      );
+
+      component.saveVaSummaryFields();
+
+      expect(component.isSavingVaSummary).toBe(false);
+      expect(snackBar.open).toHaveBeenCalledWith('Failed to save', 'Close', expect.anything());
+    });
+  });
 });
