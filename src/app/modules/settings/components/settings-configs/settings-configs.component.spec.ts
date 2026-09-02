@@ -36,6 +36,7 @@ describe('SettingsConfigsComponent (unit)', () => {
         backup_settings: { frequency: 'daily', time: '00:00', location: 'local' },
       })),
       getServerTime: jest.fn().mockReturnValue(of({ epoch_ms: Date.now() })),
+      getCronSettings: jest.fn().mockReturnValue(of({ days: [], time: '00:00' })),
       saveCronSettings: jest.fn().mockReturnValue(of({})),
       saveBackupSettings: jest.fn().mockReturnValue(of({})),
     } as any;
@@ -95,13 +96,50 @@ describe('SettingsConfigsComponent (unit)', () => {
       expect(snackBar.open).toHaveBeenCalledWith('Scheduler saved', 'Close', expect.anything());
     });
 
-    it('notifies on failure', () => {
+    it('shows a generic message on a plain network failure', () => {
       const { component, settingsService, snackBar } = makeComponent();
       settingsService.saveCronSettings.mockReturnValue(throwError(() => new Error('network down')));
 
       component.saveSettings();
 
-      expect(snackBar.open).toHaveBeenCalledWith('Failed to save scheduler', 'Close', expect.anything());
+      expect(snackBar.open).toHaveBeenCalledWith(
+        'Failed to save settings. Please try again.', 'Close', expect.anything()
+      );
+    });
+
+    it('surfaces the backend\'s specific rejection message instead of a generic one', () => {
+      // Regression: enabling a schedule with no working ODK API connection
+      // is rejected server-side with a specific, actionable message ("ODK
+      // API is not configured...") - that message must reach the user, not
+      // a generic "failed to save".
+      const { component, settingsService, snackBar } = makeComponent();
+      settingsService.saveCronSettings.mockReturnValue(
+        throwError(() => ({ error: { detail: 'ODK API is not configured.' } }))
+      );
+
+      component.saveSettings();
+
+      expect(snackBar.open).toHaveBeenCalledWith('ODK API is not configured.', 'Close', expect.anything());
+      expect(component.settingsError).toBe('ODK API is not configured.');
+    });
+
+    it('reverts the day checkboxes to what is actually saved when the save is rejected', () => {
+      // Regression: the Idle/Active badge (isScheduleConfigured) is driven
+      // directly by these checkboxes. Without reverting them, checking a
+      // day and having the save rejected still left the badge showing
+      // "Active", even though nothing was actually saved.
+      const { component, settingsService } = makeComponent();
+      settingsService.getCronSettings.mockReturnValue(of({ days: [], time: '00:00' })); // nothing saved server-side
+      settingsService.saveCronSettings.mockReturnValue(
+        throwError(() => ({ error: { detail: 'ODK API is not configured.' } }))
+      );
+      component.daysOfWeek.forEach(d => d.checked = false);
+      component.daysOfWeek[0].checked = true; // Monday - the rejected, unsaved edit
+
+      component.saveSettings();
+
+      expect(component.isScheduleConfigured).toBe(false);
+      expect(component.daysOfWeek[0].checked).toBe(false);
     });
   });
 });

@@ -3,14 +3,38 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { VaRecordsService } from '../../../modules/pcva/services/va-records/va-records.service';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject, takeUntil } from 'rxjs';
 import { filter_keys_without_data } from 'app/shared/helpers/odk_data.helpers';
-import { settingsConfigData } from 'app/modules/settings/interface';
+import { settingsConfigData, VaSummaryCodOptions } from 'app/modules/settings/interface';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
+import { ListRecordsService } from 'app/modules/records/services/list-records/list-records.service';
 import {
   DEFAULT_VA_LANGUAGE,
   VaDictionary,
   VaDictionaryService,
   VaField,
 } from 'app/shared/services/va-dictionary/va-dictionary.service';
+
+interface CcvaCod {
+  algorithm: string;
+  cause1: string | null;
+  probability: number | null;
+}
+
+interface PcvaCoderCod {
+  coder: string;
+  coded_at: string | null;
+  underlying_cause: string | null;
+}
+
+interface PcvaCod {
+  coders: PcvaCoderCod[];
+  concordance: {
+    reached: boolean;
+    underlying_cause: string | null;
+    agreeing_coders: number;
+    total_coders: number;
+    concordance_level: number;
+  };
+}
 
 @Component({
   standalone: false,
@@ -38,6 +62,11 @@ export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
   displayFields: VaField[] = [];
   summaryFields: VaField[] = [];
 
+  codOptions: VaSummaryCodOptions = { include_ccva_default: false, include_pcva: false };
+  codLoading = false;
+  codError = '';
+  codData: { ccva: CcvaCod | null; pcva: PcvaCod | null } | null = null;
+
   searchText = '';
 
   private record: any = null;
@@ -52,7 +81,8 @@ export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private vaRecordsService: VaRecordsService,
     private vaDictionaryService: VaDictionaryService,
-    private settingConfigService: SettingConfigService
+    private settingConfigService: SettingConfigService,
+    private listRecordsService: ListRecordsService
   ) {
     // Callers disagree about what they hand over: the VA Records table passes
     // the whole row, while the PCVA tables pass just the id string. Accept
@@ -137,6 +167,8 @@ export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
       await this.loadSummaryKeys();
 
       this.applyLanguage();
+
+      this.loadCauseOfDeath();
     } catch (error: any) {
       console.error('Failed to load the VA record:', error);
       this.loadError = 'This VA record could not be loaded. Please try again.';
@@ -160,9 +192,31 @@ export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.settingConfigService.getSettingsConfig()
       );
       this.summaryKeys = config?.va_summary ?? [];
+      this.codOptions = config?.va_summary_cod_options ?? { include_ccva_default: false, include_pcva: false };
     } catch {
       this.summaryKeys = [];
     }
+  }
+
+  private loadCauseOfDeath(): void {
+    if (!this.codOptions.include_ccva_default && !this.codOptions.include_pcva) {
+      return;
+    }
+
+    this.codLoading = true;
+    this.codError = '';
+    this.listRecordsService
+      .getCauseOfDeath(this.vaId, this.codOptions.include_ccva_default, this.codOptions.include_pcva)
+      .subscribe({
+        next: (response: any) => {
+          this.codData = response?.data ?? null;
+          this.codLoading = false;
+        },
+        error: () => {
+          this.codError = 'Cause of Death could not be loaded.';
+          this.codLoading = false;
+        },
+      });
   }
 
   // --------------------------------------------------------------- language

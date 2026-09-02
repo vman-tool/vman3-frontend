@@ -1,11 +1,11 @@
-import { FieldLabel, FieldMapping, SystemConfig, SystemImages } from '../../interface';
+import { FieldLabel, FieldMapping, SystemConfig, SystemImages, VaSummaryCodOptions } from '../../interface';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { OdkConfigModel, settingsConfigData } from '../../interface';
 import { SettingConfigService } from '../../services/settings_configs.service';
 import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
-import { lastValueFrom } from 'rxjs';
+import { forkJoin, lastValueFrom } from 'rxjs';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
@@ -38,6 +38,7 @@ export class ConfigurationComponent {
   isSavingFieldMapping = false;
   vaSummaryData: string[] = [];
   isSavingVaSummary = false;
+  vaSummaryCodOptions: VaSummaryCodOptions = { include_ccva_default: false, include_pcva: false };
 
   dataAccess?: any;
 
@@ -372,6 +373,7 @@ export class ConfigurationComponent {
           this.fieldMappingData = data?.field_mapping;
           this.fieldMappingForm.patchValue(this.fieldMappingData || {});
           this.vaSummaryData = data?.va_summary || [];
+          this.vaSummaryCodOptions = data?.va_summary_cod_options || { include_ccva_default: false, include_pcva: false };
           this.fieldLabels = data?.field_labels;
         }
         this.isLoading = false; // Stop isLoading
@@ -397,29 +399,30 @@ export class ConfigurationComponent {
 
   saveVaSummaryFields(): void {
     this.isSavingVaSummary = true;
-    this.settingConfigService
-      .saveConnectionData('va_summary', this.vaSummaryData)
-      .subscribe({
-        next: () => {
-          this.isSavingVaSummary = false;
-          this.snackBar.open('VA Summary configuration saved successfully', 'Close', {
-            duration: 3000,
-          });
-          this.refreshData();
-        },
-        error: (error) => {
-          this.isSavingVaSummary = false;
-          const errorMessage =
-            error?.error?.detail ??
-            error?.error?.message ??
-            error?.message ??
-            'Failed to save VA summary fields';
-          this.snackBar.open(errorMessage, 'Close', {
-            duration: 6000,
-            panelClass: ['error-snackbar'],
-          });
-        },
-      });
+    forkJoin([
+      this.settingConfigService.saveConnectionData('va_summary', this.vaSummaryData),
+      this.settingConfigService.saveConnectionData('va_summary_cod_options', this.vaSummaryCodOptions),
+    ]).subscribe({
+      next: () => {
+        this.isSavingVaSummary = false;
+        this.snackBar.open('VA Summary configuration saved successfully', 'Close', {
+          duration: 3000,
+        });
+        this.refreshData();
+      },
+      error: (error) => {
+        this.isSavingVaSummary = false;
+        const errorMessage =
+          error?.error?.detail ??
+          error?.error?.message ??
+          error?.message ??
+          'Failed to save VA summary fields';
+        this.snackBar.open(errorMessage, 'Close', {
+          duration: 6000,
+          panelClass: ['error-snackbar'],
+        });
+      },
+    });
   }
 
   saveOdkApiConfig(): void {

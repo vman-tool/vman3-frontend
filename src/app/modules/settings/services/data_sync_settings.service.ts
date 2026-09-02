@@ -174,13 +174,18 @@ export class DataSyncSettingsService {
       time: selectedTime
     };
 
+    // Unlike this service's other save/get methods, errors here must reach
+    // the caller as errors, not get swallowed into a fake `of({})` success
+    // (handleError's usual behavior below) - the backend can reject this
+    // save outright (e.g. "ODK API is not configured"), and the caller
+    // needs that rejection to actually show up as a failure, not a false
+    // "saved" toast.
     return this.http.post<ApiResponse<any>>(`${this.configService.API_URL}/settings/cron`, payload).pipe(
       map(response => response.data),
       tap(response => {
         console.log('Cron settings saved successfully', response);
         this.clearCache(); // Clear cache after saving
-      }),
-      catchError(this.handleError('saveCronSettings', {}))
+      })
     );
   }
 

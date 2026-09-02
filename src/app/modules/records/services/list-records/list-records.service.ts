@@ -100,4 +100,15 @@ export class ListRecordsService {
       responseType: 'blob'
     });
   }
+
+  getCauseOfDeath(vaId: string, includeCcva: boolean, includePcva: boolean): Observable<any> {
+    const params = new HttpParams()
+      .set('include_ccva', includeCcva)
+      .set('include_pcva', includePcva);
+
+    return this.http.get<any>(
+      `${this.configService.API_URL}/records/${encodeURIComponent(vaId)}/cause-of-death`,
+      { params }
+    );
+  }
 }

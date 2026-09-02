@@ -28,7 +28,7 @@ export class SettingConfigService {
 
   // General method to save data
   saveConnectionData(
-    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'field_labels' | 'sync_status' | 'dqa_thresholds',
+    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'va_summary_cod_options' | 'field_labels' | 'sync_status' | 'dqa_thresholds',
     data: any
   ): Observable<ResponseMainModel<any>> {
     return this.http
@@ -94,6 +94,9 @@ export class SettingConfigService {
                 va_summary:
                   response.data?.va_summary ||
                   [],
+                va_summary_cod_options:
+                  response.data?.va_summary_cod_options ||
+                  { include_ccva_default: false, include_pcva: false },
                 field_labels:
                   response.data?.field_labels ||
                   [],
