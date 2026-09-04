@@ -1,4 +1,4 @@
-import { Component, effect } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, effect } from '@angular/core';
 import { SubmissionsService } from '../../services/submissions/submissions.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ResponseMainModel } from '../../../../shared/interface/main.interface';
@@ -45,6 +45,105 @@ export class SubmissionsComponent {
   // unit labels - kept so relabels loaded later (see initial()) can be
   // re-applied without re-fetching.
   private rawDataSubmissions: SubmissionsDataModel[] = [];
+
+  // ── Period filter (this table only - independent of the page-wide
+  // <app-va-filters> date range) ──────────────────────────────────────────
+  // When set to anything but 'all', overrides filterData's own start/end
+  // date for this table's request only, so Submitted/Expected/Completeness/
+  // First/Last/Coverage are all recomputed server-side for exactly that
+  // period rather than just hiding rows client-side.
+  periodFilter: 'all' | 'year' | 'month' | 'today' = 'all';
+  periodFilterOptions: { value: string; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'year', label: 'This Year' },
+    { value: 'month', label: 'This Month' },
+    { value: 'today', label: 'Today' },
+  ];
+
+  onPeriodFilterChange(value: string): void {
+    const next = value as typeof this.periodFilter;
+    if (next === this.periodFilter) return;
+    this.periodFilter = next;
+    this.loadRecords();
+  }
+
+  // Local YYYY-MM-DD boundaries for the selected period, computed from the
+  // browser's own clock - null (no override) when periodFilter is 'all'.
+  private periodDateRange(): { start_date?: string; end_date?: string } {
+    if (this.periodFilter === 'all') {
+      return { start_date: this.filterData.start_date, end_date: this.filterData.end_date };
+    }
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const end = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    let start: string;
+    if (this.periodFilter === 'today') {
+      start = end;
+    } else if (this.periodFilter === 'month') {
+      start = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`;
+    } else {
+      start = `${now.getFullYear()}-01-01`;
+    }
+    return { start_date: start, end_date: end };
+  }
+
+  // ── Download menu ───────────────────────────────────────────────────────
+
+  @ViewChild('summaryTable') summaryTableRef?: ElementRef<HTMLTableElement>;
+  downloadMenuOpen = false;
+  isExporting = false;
+  downloadFormats: { value: 'xlsx' | 'image' | 'pdf'; label: string }[] = [
+    { value: 'xlsx', label: 'Excel (.xlsx)' },
+    { value: 'image', label: 'Image (.png)' },
+    { value: 'pdf', label: 'PDF' },
+  ];
+
+  toggleDownloadMenu(): void {
+    this.downloadMenuOpen = !this.downloadMenuOpen;
+  }
+
+  // Closes the download menu on any click outside it. Uses
+  // event.composedPath() rather than event.target.closest(...) - see the
+  // identical pattern (and the reason for it) on the expected-deaths years
+  // dropdown in configuration.component.ts.
+  @HostListener('document:click', ['$event'])
+  onDocumentClickForDownloadMenu(event: MouseEvent): void {
+    if (!this.downloadMenuOpen) return;
+    const path = event.composedPath() as HTMLElement[];
+    const inside = path.some(el => el?.classList?.contains?.('download-menu-wrapper'));
+    if (!inside) this.downloadMenuOpen = false;
+  }
+
+  async onDownload(format: 'xlsx' | 'image' | 'pdf'): Promise<void> {
+    if (this.isExporting) return;
+    this.downloadMenuOpen = false;
+
+    if (format === 'xlsx') {
+      this.listSubmissionsService.exportToExcel(this.sortedData, 'VA_Submissions');
+      return;
+    }
+
+    const tableEl = this.summaryTableRef?.nativeElement;
+    if (!tableEl) return;
+
+    this.isExporting = true;
+    try {
+      if (format === 'image') {
+        await this.listSubmissionsService.exportToImage(tableEl, 'VA_Submissions');
+      } else {
+        await this.listSubmissionsService.exportToPdf(tableEl, 'VA_Submissions');
+      }
+    } catch (error) {
+      console.error('Export failed', error);
+      this.snackBar.open('Export failed. Please try again.', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3000,
+      });
+    } finally {
+      this.isExporting = false;
+    }
+  }
 
   sortColumn: keyof SubmissionsDataModel | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -182,12 +281,13 @@ export class SubmissionsComponent {
   loadRecords(): void {
     this.isLoading = true;
     this.recordsSub?.unsubscribe();
+    const { start_date, end_date } = this.periodDateRange();
     this.recordsSub = this.listSubmissionsService
       .getsubmissionsData(
         this.pageNumber,
         this.limit,
-        this.filterData.start_date,
-        this.filterData.end_date,
+        start_date,
+        end_date,
         this.filterData.locations,
         this.filterData.date_type,
         this.groupLevel
@@ -286,9 +386,5 @@ export class SubmissionsComponent {
   // only the date portion is ever shown.
   formatDate(value: string | null | undefined): string {
     return value ? value.slice(0, 10) : '';
-  }
-
-  downloadRecords() {
-    this.listSubmissionsService.exportToExcel(this.dataSubmissions, 'VA_Submissions');
   }
 }

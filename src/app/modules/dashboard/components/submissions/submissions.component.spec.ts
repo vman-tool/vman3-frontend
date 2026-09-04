@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { SubmissionsComponent } from './submissions.component';
+import { SubmissionsService } from '../../services/submissions/submissions.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
@@ -97,6 +99,157 @@ describe('SubmissionsComponent', () => {
       expect(component.totalColumns).toBe(13);
       component.groupLevel = 3;
       expect(component.totalColumns).toBe(14);
+    });
+  });
+
+  describe('period filter', () => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const todayStr = () => {
+      const now = new Date();
+      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    };
+
+    it('defaults to all', () => {
+      expect(component.periodFilter).toBe('all');
+    });
+
+    it('sends no date override to the request when set to all', () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'getsubmissionsData').mockReturnValue(of({ data: [], total: 0 }));
+      component.filterData.start_date = undefined;
+      component.filterData.end_date = undefined;
+      component.loadRecords();
+      const args = spy.mock.calls[spy.mock.calls.length - 1];
+      expect(args[2]).toBeUndefined();
+      expect(args[3]).toBeUndefined();
+    });
+
+    it('uses today as both start and end date for "today"', () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'getsubmissionsData').mockReturnValue(of({ data: [], total: 0 }));
+      component.onPeriodFilterChange('today');
+      const args = spy.mock.calls[spy.mock.calls.length - 1];
+      expect(args[2]).toBe(todayStr());
+      expect(args[3]).toBe(todayStr());
+    });
+
+    it('uses the first of the current month as the start date for "month"', () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'getsubmissionsData').mockReturnValue(of({ data: [], total: 0 }));
+      component.onPeriodFilterChange('month');
+      const args = spy.mock.calls[spy.mock.calls.length - 1];
+      const now = new Date();
+      expect(args[2]).toBe(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`);
+      expect(args[3]).toBe(todayStr());
+    });
+
+    it('uses January 1st of the current year as the start date for "year"', () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'getsubmissionsData').mockReturnValue(of({ data: [], total: 0 }));
+      component.onPeriodFilterChange('year');
+      const args = spy.mock.calls[spy.mock.calls.length - 1];
+      const now = new Date();
+      expect(args[2]).toBe(`${now.getFullYear()}-01-01`);
+    });
+
+    it('does nothing when re-selecting the currently active period', () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'getsubmissionsData').mockReturnValue(of({ data: [], total: 0 }));
+      component.periodFilter = 'month';
+      spy.mockClear();
+      component.onPeriodFilterChange('month');
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('download menu', () => {
+    it('toggles open and closed', () => {
+      component.downloadMenuOpen = false;
+      component.toggleDownloadMenu();
+      expect(component.downloadMenuOpen).toBe(true);
+      component.toggleDownloadMenu();
+      expect(component.downloadMenuOpen).toBe(false);
+    });
+
+    it('closes on a click outside the menu wrapper', () => {
+      component.downloadMenuOpen = true;
+      const outsideEl = document.createElement('div');
+      const event = { composedPath: () => [outsideEl] } as unknown as MouseEvent;
+      component.onDocumentClickForDownloadMenu(event);
+      expect(component.downloadMenuOpen).toBe(false);
+    });
+
+    it('stays open on a click inside the menu wrapper', () => {
+      component.downloadMenuOpen = true;
+      const insideEl = document.createElement('div');
+      insideEl.classList.add('download-menu-wrapper');
+      const event = { composedPath: () => [insideEl] } as unknown as MouseEvent;
+      component.onDocumentClickForDownloadMenu(event);
+      expect(component.downloadMenuOpen).toBe(true);
+    });
+
+    it('is a no-op when the menu is already closed', () => {
+      component.downloadMenuOpen = false;
+      const event = { composedPath: () => [] } as unknown as MouseEvent;
+      component.onDocumentClickForDownloadMenu(event);
+      expect(component.downloadMenuOpen).toBe(false);
+    });
+  });
+
+  describe('onDownload', () => {
+    it('exports Excel via the service using the currently sorted data, and closes the menu', async () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'exportToExcel').mockImplementation(() => {});
+      component.downloadMenuOpen = true;
+      component.dataSubmissions = [];
+      await component.onDownload('xlsx');
+      expect(spy).toHaveBeenCalledWith(component.sortedData, 'VA_Submissions');
+      expect(component.downloadMenuOpen).toBe(false);
+    });
+
+    it('exports an image via the service using the table element ref', async () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'exportToImage').mockResolvedValue();
+      const fakeTable = document.createElement('table');
+      component.summaryTableRef = { nativeElement: fakeTable } as any;
+      await component.onDownload('image');
+      expect(spy).toHaveBeenCalledWith(fakeTable, 'VA_Submissions');
+      expect(component.isExporting).toBe(false);
+    });
+
+    it('exports a PDF via the service using the table element ref', async () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'exportToPdf').mockResolvedValue();
+      const fakeTable = document.createElement('table');
+      component.summaryTableRef = { nativeElement: fakeTable } as any;
+      await component.onDownload('pdf');
+      expect(spy).toHaveBeenCalledWith(fakeTable, 'VA_Submissions');
+    });
+
+    it('does nothing for image/pdf when the table element ref is unavailable', async () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'exportToImage').mockResolvedValue();
+      component.summaryTableRef = undefined;
+      await component.onDownload('image');
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('ignores a call while an export is already in progress', async () => {
+      const service = TestBed.inject(SubmissionsService);
+      const spy = jest.spyOn(service, 'exportToImage').mockResolvedValue();
+      component.isExporting = true;
+      await component.onDownload('image');
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('resets isExporting when the export throws', async () => {
+      const service = TestBed.inject(SubmissionsService);
+      jest.spyOn(service, 'exportToImage').mockRejectedValue(new Error('boom'));
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+      const fakeTable = document.createElement('table');
+      component.summaryTableRef = { nativeElement: fakeTable } as any;
+      await component.onDownload('image');
+      expect(component.isExporting).toBe(false);
     });
   });
 });

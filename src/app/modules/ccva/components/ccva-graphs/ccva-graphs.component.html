@@ -99,12 +99,20 @@
         <!-- Bar Chart -->
         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg" *ngFor="let key of chartKeys">
           <span *ngIf="charts[key]" id="chart-{{key}}" class="chart-{{key}}">
-            <!-- Dynamic Title -->
-            <div class="flex justify-between mb-4">
-              <span class="block text-xl font-semibold text-center text-gray-700">
-                {{ getDynamicTitle(key) }}
-              </span>
-              <img (click)="downloadChart(key)" src="assets/icons/download.svg" class="h-6 cursor-pointer"
+            <!-- Title (shared across all 6 charts) + subtitle (the
+                 demographic group) - sized to this page's own Start
+                 Date/Total Records/Time Taken labels (text-lg) above it,
+                 rather than the old text-xl which read larger than them. -->
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex-1 min-w-0 text-center">
+                <div class="text-lg font-semibold text-gray-900 leading-snug">
+                  {{ chartTitle }}
+                </div>
+                <div class="text-xs text-gray-400 mt-0.5">
+                  {{ getChartSubtitle(key) }}
+                </div>
+              </div>
+              <img (click)="downloadChart(key)" src="assets/icons/download.svg" class="h-6 cursor-pointer shrink-0 ml-2"
                 alt="Download chart" />
 
             </div>

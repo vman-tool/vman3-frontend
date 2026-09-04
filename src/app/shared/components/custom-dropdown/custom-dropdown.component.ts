@@ -13,6 +13,11 @@ export class CustomDropdownComponent {
   @Input() selectedValue: string | undefined = ''; // Selected value
   @Output() selectedValueChange = new EventEmitter<string>(); // Emit changes
   @Input() widthClass = 'w-40';  // default Tailwind width
+  // Smaller text/padding/caret, for a control sitting among already-small
+  // text (e.g. a compact table's own header row) where the default size
+  // reads oversized by comparison. Opt-in so every other call site of this
+  // shared dropdown keeps its current size unchanged.
+  @Input() compact = false;
 
   // Handle value changes
   onChange(value: string) {

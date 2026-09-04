@@ -14,12 +14,25 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div *ngFor="let key of chartKeys; trackBy: trackByKey" class="p-4 bg-white border border-gray-200 rounded-lg shadow-lg">
           <span *ngIf="charts[key]" id="chart-{{key}}" class="chart-{{key}}">
-            <!-- Dynamic Title with Download Button -->
-            <div class="flex justify-between mb-4">
-              <span class="block text-xl font-semibold text-center text-gray-700">
-                {{ getDynamicTitle(key) }}
-              </span>
-              <img (click)="downloadChart(key)" src="assets/icons/download.svg" class="h-6 cursor-pointer"
+            <!-- Title (shared across all 6 charts) + subtitle (the
+                 demographic group) with Download Button. Sized close to the
+                 other dashboard card titles (Monthly Submissions, VA by Age
+                 Group, ...) - a touch larger since it's carrying less text
+                 now that the group name moved to its own subtitle line -
+                 inlined rather than referencing .card-title by name, since
+                 that class is defined in graphs.component.scss and (being
+                 view-encapsulated) doesn't reach into this child
+                 component's template. -->
+            <div class="flex justify-between items-start mb-4">
+              <div class="min-w-0">
+                <div class="text-sm font-semibold tracking-tight leading-snug text-gray-700">
+                  {{ chartTitle }}
+                </div>
+                <div class="text-[11px] text-gray-400 mt-0.5">
+                  {{ getChartSubtitle(key) }}
+                </div>
+              </div>
+              <img (click)="downloadChart(key)" src="assets/icons/download.svg" class="h-6 cursor-pointer shrink-0 ml-2"
                 alt="Download chart" />
 
             </div>

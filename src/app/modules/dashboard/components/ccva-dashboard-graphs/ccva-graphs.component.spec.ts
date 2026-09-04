@@ -24,6 +24,19 @@ describe('CcvaDashboardGraphsComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('chartTitle / getChartSubtitle', () => {
+    it('uses the same title for every chart, with only the subtitle differing per demographic key', () => {
+      expect(component.chartTitle).toBe('Distribution of Causes of Death');
+      expect(component.getChartSubtitle('adult')).toBe('Adult Population');
+      expect(component.getChartSubtitle('child')).toBe('Child Population');
+      expect(component.getChartSubtitle('neonate')).toBe('Neonate Population');
+      expect(component.getChartSubtitle('male')).toBe('Male');
+      expect(component.getChartSubtitle('female')).toBe('Female');
+      expect(component.getChartSubtitle('all')).toBe('All');
+      expect(component.getChartSubtitle('unknown-key')).toBe('');
+    });
+  });
+
   describe('loadChartData', () => {
     const graphFor = (n: number) => ({ index: ['A', 'B'], values: [n, n] });
 
