@@ -1,4 +1,4 @@
-<div class="mt-8">
+<div class="mt-8 mb-8">
   <div class="bg-white rounded-lg">
     <div class="flex items-center justify-between mb-4">
       <div>
@@ -24,7 +24,7 @@
           <col *ngFor="let w of colWidths" [style.width.%]="w">
         </colgroup>
 
-        <thead class="sticky top-0 z-10 text-xs font-medium tracking-wide text-gray-500 uppercase bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
+        <thead class="sticky top-0 z-10 text-xs font-medium tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
                 (click)="onSort('region')">
@@ -50,14 +50,39 @@
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('count')">
               <span class="flex items-center justify-end gap-1">
-                Count <i [class]="sortIcon('count')" class="shrink-0"></i>
+                Submitted <i [class]="sortIcon('count')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
+                (click)="onSort('expected')">
+              <span class="flex items-center justify-end gap-1">
+                Expected <i [class]="sortIcon('expected')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
+                (click)="onSort('completeness')">
+              <span class="flex items-center justify-end gap-1">
+                Completeness <i [class]="sortIcon('completeness')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
+                (click)="onSort('firstSubmission')">
+              <span class="flex items-center justify-center gap-1 min-w-0">
+                <span class="truncate">First</span>
+                <i [class]="sortIcon('firstSubmission')" class="shrink-0"></i>
               </span>
             </th>
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
                 (click)="onSort('lastSubmission')">
               <span class="flex items-center justify-center gap-1 min-w-0">
-                <span class="truncate">Last Submission</span>
+                <span class="truncate">Last</span>
                 <i [class]="sortIcon('lastSubmission')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
+                (click)="onSort('coverage')">
+              <span class="flex items-center justify-end gap-1">
+                Coverage <i [class]="sortIcon('coverage')" class="shrink-0"></i>
               </span>
             </th>
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
@@ -111,8 +136,13 @@
             <td *ngIf="groupLevel >= 3" class="px-4 py-2.5 text-left max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
                 [title]="record.ward">{{ record.ward }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.count }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.expected ?? '—' }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.completeness != null ? (record.completeness + '%') : '—' }}</td>
             <td class="px-4 py-2.5 text-center max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
-                [title]="record.lastSubmission">{{ record.lastSubmission }}</td>
+                [title]="formatDate(record.firstSubmission)">{{ formatDate(record.firstSubmission) }}</td>
+            <td class="px-4 py-2.5 text-center max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="formatDate(record.lastSubmission)">{{ formatDate(record.lastSubmission) }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums whitespace-nowrap">{{ record.coverage != null ? (record.coverage + ' mo') : '—' }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.adults }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.children }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.neonates }}</td>
@@ -130,6 +160,10 @@
             <td *ngIf="groupLevel >= 2" class="px-4 py-2.5"></td>
             <td *ngIf="groupLevel >= 3" class="px-4 py-2.5"></td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalCount() }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalExpected() ?? '—' }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalCompleteness() != null ? (getTotalCompleteness() + '%') : '—' }}</td>
+            <td class="px-4 py-2.5"></td>
+            <td class="px-4 py-2.5"></td>
             <td class="px-4 py-2.5"></td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalAdults() }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalChildren() }}</td>

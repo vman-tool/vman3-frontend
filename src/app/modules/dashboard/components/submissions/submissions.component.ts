@@ -40,7 +40,7 @@ export class SubmissionsComponent {
     { value: '2', label: 'District' },
     { value: '3', label: 'Ward' },
   ];
-  colWidths: number[] = [16, 22, 8, 14, 8, 8, 9, 7, 8];
+  colWidths: number[] = [11, 12, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
   // Rows exactly as the API returned them, before applying friendly admin-
   // unit labels - kept so relabels loaded later (see initial()) can be
   // re-applied without re-fetching.
@@ -160,14 +160,16 @@ export class SubmissionsComponent {
   /** <colgroup> widths (%), sized so the table always fills 100% regardless
    * of how many location columns are currently shown. */
   private widthsForLevel(level: number): number[] {
-    if (level === 1) return [26, 10, 20, 10, 10, 10, 7, 7];
-    if (level === 3) return [14, 15, 13, 7, 13, 8, 8, 6, 6];
-    return [16, 22, 8, 14, 8, 8, 9, 7, 8];
+    if (level === 1) return [23, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
+    if (level === 3) return [8, 8, 7, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
+    return [11, 12, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
   }
 
-  /** Total column count: 7 fixed metric columns plus one per admin level shown. */
+  /** Total column count: 11 fixed metric columns (submitted, expected,
+   * completeness, first, last, coverage, adults, children, neonates, male,
+   * female) plus one per admin level shown. */
   get totalColumns(): number {
-    return 7 + this.groupLevel;
+    return 11 + this.groupLevel;
   }
 
   setupEffect() {
@@ -257,6 +259,33 @@ export class SubmissionsComponent {
 
   getTotalFemale(): number {
     return this.dataSubmissions?.reduce((acc, record) => acc + record.female, 0);
+  }
+
+  // Sum of expected across rows that have it - rows with no matching
+  // admin unit (expected === null) are excluded rather than treated as 0,
+  // so a handful of unmapped rows don't understate the total. Rounded to a
+  // whole number, like each row's own expected value - only completeness
+  // (a ratio) needs decimal precision.
+  getTotalExpected(): number | null {
+    const withExpected = this.dataSubmissions?.filter(record => record.expected != null) ?? [];
+    if (!withExpected.length) return null;
+    const total = withExpected.reduce((acc, record) => acc + (record.expected ?? 0), 0);
+    return Math.round(total);
+  }
+
+  // Overall completeness = total submitted / total expected * 100, not an
+  // average of each row's own percentage - avoids over-weighting small
+  // admin units with few expected deaths. Rounded to 2 decimal places.
+  getTotalCompleteness(): number | null {
+    const totalExpected = this.getTotalExpected();
+    if (!totalExpected) return null;
+    return Math.round((this.getTotalCount() / totalExpected) * 10000) / 100;
+  }
+
+  // Backend dates may be a bare YYYY-MM-DD or a full ISO datetime -
+  // only the date portion is ever shown.
+  formatDate(value: string | null | undefined): string {
+    return value ? value.slice(0, 10) : '';
   }
 
   downloadRecords() {
