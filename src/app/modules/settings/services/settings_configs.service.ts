@@ -28,7 +28,7 @@ export class SettingConfigService {
 
   // General method to save data
   saveConnectionData(
-    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'va_summary_cod_options' | 'field_labels' | 'sync_status' | 'dqa_thresholds',
+    type: 'odk_api_configs' | 'system_configs' | 'field_mapping' | 'va_summary' | 'va_summary_cod_options' | 'sync_status' | 'dqa_thresholds',
     data: any
   ): Observable<ResponseMainModel<any>> {
     return this.http
@@ -97,9 +97,6 @@ export class SettingConfigService {
                 va_summary_cod_options:
                   response.data?.va_summary_cod_options ||
                   { include_ccva_default: false, include_pcva: false },
-                field_labels:
-                  response.data?.field_labels ||
-                  [],
                 sync_status:
                   response.data?.sync_status ||
                   {
@@ -351,6 +348,30 @@ export class SettingConfigService {
       .post<any>(`${this.configService.API_URL}/settings/xform/upload`, formData)
       .pipe(catchError(err => {
         console.error('xform upload error:', err);
+        throw err;
+      }));
+  }
+
+  /** Admin-unit hierarchy + expected deaths, imported from an xForm. */
+  getExpectedDeaths(): Observable<any> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/settings/expected-deaths`)
+      .pipe(catchError(err => {
+        console.error('expected deaths fetch error:', err);
+        throw err;
+      }));
+  }
+
+  /** Edit one administrative unit's expected deaths for one period. Only a
+   * unit with no children can be edited directly. */
+  updateExpectedDeaths(key: string, period: string, expectedDeaths: number): Observable<any> {
+    return this.http
+      .patch<any>(
+        `${this.configService.API_URL}/settings/expected-deaths/${encodeURIComponent(key)}`,
+        { period, expected_deaths: expectedDeaths }
+      )
+      .pipe(catchError(err => {
+        console.error('expected deaths update error:', err);
         throw err;
       }));
   }

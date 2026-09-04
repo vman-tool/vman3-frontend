@@ -1,5 +1,5 @@
-import { FieldLabel, FieldMapping, SystemConfig, SystemImages, VaSummaryCodOptions } from '../../interface';
-import { Component } from '@angular/core';
+import { ExpectedDeathsNode, FieldMapping, SystemConfig, SystemImages, VaSummaryCodOptions } from '../../interface';
+import { Component, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { OdkConfigModel, settingsConfigData } from '../../interface';
@@ -43,7 +43,6 @@ export class ConfigurationComponent {
   dataAccess?: any;
 
   selectedTab = 'system-config'; // Default selected tab
-  fieldLabels: FieldLabel[] | undefined;
 
   // Questions Sync Properties
   syncedQuestions?: any[] = [];
@@ -75,6 +74,221 @@ export class ConfigurationComponent {
   dictionaryPage = 1;
   dictionaryPageSize = 10;
   readonly dictionaryPageSizes = [10, 25, 50, 100];
+
+  // Data Dictionary / Expected Number of Deaths sub-tabs
+  dictionaryResultsTab: 'dictionary' | 'expected-deaths' = 'dictionary';
+
+  // Expected Number of Deaths
+  expectedDeathsTree: ExpectedDeathsNode[] = [];
+  expectedDeathsConfigured = false;
+  expectedDeathsMaxLevel = 0;
+  expectedDeathsLoading = false;
+  expectedDeathsError = '';
+  expectedDeathsSearch = '';
+  expandedDeathsKeys = new Set<string>();
+
+  // Periods (e.g. years) the imported data carries - "total" for a single-
+  // period file. The table has one column per VISIBLE period; visibility is
+  // toggled via a checkbox dropdown, defaulting to "everything shown". A
+  // small bespoke dropdown rather than the shared searchable-multi-select:
+  // that component's input echoes the selection as text and grows with it -
+  // here the control must stay a fixed width and never show the selection,
+  // just drive which table columns are visible.
+  expectedDeathsPeriods: string[] = [];
+  visiblePeriods: string[] = [];
+  yearsDropdownOpen = false;
+
+  // A plain field, not a getter: this feeds *ngFor for the checkbox rows,
+  // and a getter returning a fresh array of fresh objects on every
+  // change-detection pass makes NgForOf treat every row as removed+re-added
+  // on every check - destroying and recreating the checkbox elements
+  // constantly, which made clicking one a race against Angular replacing it
+  // out from under the click (see recomputeFilteredExpectedDeathsTree for
+  // the same lesson learned earlier on this page).
+  periodOptions: { value: string; label: string }[] = [];
+
+  toggleYearsDropdown(): void {
+    this.yearsDropdownOpen = !this.yearsDropdownOpen;
+  }
+
+  isPeriodVisible(period: string): boolean {
+    return this.visiblePeriods.includes(period);
+  }
+
+  togglePeriodVisibility(period: string): void {
+    this.visiblePeriods = this.isPeriodVisible(period)
+      ? this.visiblePeriods.filter(p => p !== period)
+      : [...this.visiblePeriods, period];
+  }
+
+  // Closes the years dropdown on any click outside it. Uses
+  // event.composedPath() rather than event.target.closest(...): this page
+  // has separate, pre-existing change-detection churn (unrelated to this
+  // control - reproduces with none of this session's changes applied) that
+  // can detach the clicked element from the live DOM by the time this
+  // handler runs. target.closest() on an already-detached node silently
+  // returns null even for a click genuinely inside the dropdown; the
+  // composed path is a snapshot taken at dispatch time, so it is unaffected.
+  @HostListener('document:click', ['$event'])
+  onDocumentClickForYearsDropdown(event: MouseEvent): void {
+    if (!this.yearsDropdownOpen) return;
+    const path = event.composedPath() as HTMLElement[];
+    const inside = path.some(el => el?.classList?.contains?.('years-dropdown-wrapper'));
+    if (!inside) {
+      this.yearsDropdownOpen = false;
+    }
+  }
+
+  // The stored tree, or - while searching - only the branches that match,
+  // fully expanded so a match is never hidden behind a collapsed ancestor.
+  // A plain field, recomputed explicitly (not a getter): this feeds a
+  // recursive *ngTemplateOutlet, and a getter that returns a new array/object
+  // graph on every change-detection pass destabilises that recursion badly
+  // enough to trip Angular's "infinite change detection" guard (NG0103).
+  filteredExpectedDeathsTree: ExpectedDeathsNode[] = [];
+
+  get expectedDeathsSearchTerm(): string {
+    return this.expectedDeathsSearch.trim().toLowerCase();
+  }
+
+  private recomputeFilteredExpectedDeathsTree(): void {
+    const term = this.expectedDeathsSearchTerm;
+    if (!term) {
+      this.filteredExpectedDeathsTree = this.expectedDeathsTree;
+      return;
+    }
+
+    const filterNodes = (nodes: ExpectedDeathsNode[]): ExpectedDeathsNode[] =>
+      nodes.reduce<ExpectedDeathsNode[]>((acc, node) => {
+        const children = filterNodes(node.children || []);
+        if (node.label.toLowerCase().includes(term) || children.length) {
+          acc.push({ ...node, children });
+        }
+        return acc;
+      }, []);
+
+    this.filteredExpectedDeathsTree = filterNodes(this.expectedDeathsTree);
+  }
+
+  onExpectedDeathsSearchChange(): void {
+    this.recomputeFilteredExpectedDeathsTree();
+  }
+
+  /** Level labels reuse the country-configurable admin_level1-4 labels
+   * already set under System Configuration, rather than assuming any fixed
+   * set of level names - the xForm hierarchy can be anything. */
+  levelLabel(level: number): string {
+    const config = this.systemConfigData as any;
+    return (config && config[`admin_level${level}`]) || `Level ${level}`;
+  }
+
+  toggleExpandDeaths(key: string): void {
+    if (this.expandedDeathsKeys.has(key)) this.expandedDeathsKeys.delete(key);
+    else this.expandedDeathsKeys.add(key);
+  }
+
+  isExpandedDeaths(key: string): boolean {
+    return !!this.expectedDeathsSearchTerm || this.expandedDeathsKeys.has(key);
+  }
+
+  /** The node's value for a given period, or null if absent. */
+  deathsForPeriod(node: ExpectedDeathsNode, period: string): number | null {
+    const value = node.expected_deaths?.[period];
+    return value == null ? null : value;
+  }
+
+  private applyExpectedDeathsPeriods(periods: string[]): void {
+    this.expectedDeathsPeriods = periods;
+    this.periodOptions = periods.map(p => ({ value: p, label: p === 'total' ? 'Total' : p }));
+    // First load: show every period. Later loads: keep whatever the user
+    // currently has visible, minus any period that no longer exists.
+    this.visiblePeriods = this.visiblePeriods.length
+      ? this.visiblePeriods.filter(p => periods.includes(p))
+      : periods.slice();
+  }
+
+  loadExpectedDeaths(): void {
+    this.expectedDeathsLoading = true;
+    this.expectedDeathsError = '';
+    this.settingConfigService.getExpectedDeaths().subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? {};
+        this.expectedDeathsConfigured = !!data.configured;
+        this.expectedDeathsMaxLevel = data.max_level ?? 0;
+        this.expectedDeathsTree = data.tree ?? [];
+        this.applyExpectedDeathsPeriods(data.periods ?? []);
+        this.recomputeFilteredExpectedDeathsTree();
+        this.expectedDeathsLoading = false;
+      },
+      error: () => {
+        this.expectedDeathsError = 'Could not load expected deaths.';
+        this.expectedDeathsLoading = false;
+      },
+    });
+  }
+
+  // ── Inline expected-deaths editing (mirrors the dictionary label editor) ──
+  // Identified by "<node key>|<period>" so the same row can be edited in
+  // several period columns without ambiguity.
+  editingDeathsCell: string | null = null;
+  editingDeathsValue = '';
+  editingDeathsSaving = false;
+  editingDeathsError = '';
+
+  private deathsCellKey(key: string, period: string): string { return `${key}|${period}`; }
+
+  isEditingDeaths(key: string, period: string): boolean {
+    return this.editingDeathsCell === this.deathsCellKey(key, period);
+  }
+
+  startEditDeaths(node: ExpectedDeathsNode, period: string): void {
+    this.editingDeathsCell = this.deathsCellKey(node.key, period);
+    const current = node.expected_deaths?.[period];
+    this.editingDeathsValue = current != null ? String(current) : '';
+    this.editingDeathsError = '';
+  }
+
+  cancelEditDeaths(): void {
+    this.editingDeathsCell = null;
+    this.editingDeathsValue = '';
+    this.editingDeathsError = '';
+  }
+
+  saveEditDeaths(node: ExpectedDeathsNode, period: string): void {
+    // The bound <input type="number"> uses Angular's NumberValueAccessor,
+    // which writes an actual `number` into editingDeathsValue at runtime
+    // despite its `string` type - String() first so .trim() always works.
+    const raw = String(this.editingDeathsValue ?? '').trim();
+    const value = Number(raw);
+    if (!raw || Number.isNaN(value) || value < 0) {
+      this.editingDeathsError = 'Enter a valid, non-negative whole number.';
+      return;
+    }
+    // Expected deaths are always whole numbers - decimals are dropped.
+    const rounded = Math.round(value);
+    const current = node.expected_deaths?.[period];
+    if (rounded === current) { this.cancelEditDeaths(); return; }
+
+    this.editingDeathsSaving = true;
+    this.settingConfigService.updateExpectedDeaths(node.key, period, rounded).subscribe({
+      next: (res: any) => {
+        this.editingDeathsSaving = false;
+        this.editingDeathsCell = null;
+        const data = res?.data;
+        if (data?.tree) {
+          this.expectedDeathsTree = data.tree;
+          this.expectedDeathsMaxLevel = data.max_level ?? this.expectedDeathsMaxLevel;
+          this.expectedDeathsConfigured = !!data.configured;
+          this.applyExpectedDeathsPeriods(data.periods ?? this.expectedDeathsPeriods);
+          this.recomputeFilteredExpectedDeathsTree();
+        }
+      },
+      error: (err: any) => {
+        this.editingDeathsSaving = false;
+        this.editingDeathsError = err?.error?.detail ?? err?.error?.message ?? 'Failed to save.';
+      },
+    });
+  }
 
   /** Language shown in the fixed third column. English when available. */
   get dictionaryPrimaryLanguage(): string {
@@ -330,7 +544,6 @@ export class ConfigurationComponent {
       updateSummaryFields: await this.hasAccess([privileges.SETTINGS_UPDATE_VA_SUMMARY]),
       viewSummaryFields: await this.hasAccess([privileges.SETTINGS_VIEW_VA_SUMMARY]),
       updateSystemImages: await this.hasAccess([privileges.SETTINGS_UPDATE_SYSTEM_IMAGES]),
-      updateAccessLocationsLabels: await this.hasAccess([privileges.USERS_UPDATE_ACCESS_LIMIT_LABELS]),
       canSyncODKQuestions: await this.hasAccess([privileges.ODK_QUESTIONS_SYNC]),
 
     }
@@ -374,7 +587,6 @@ export class ConfigurationComponent {
           this.fieldMappingForm.patchValue(this.fieldMappingData || {});
           this.vaSummaryData = data?.va_summary || [];
           this.vaSummaryCodOptions = data?.va_summary_cod_options || { include_ccva_default: false, include_pcva: false };
-          this.fieldLabels = data?.field_labels;
         }
         this.isLoading = false; // Stop isLoading
         this.dataLoaded = true; // Mark data as loaded
@@ -564,21 +776,13 @@ export class ConfigurationComponent {
     }
   }
 
-  onLoadLabelAccess() {
-    this.selectedTab = "";
-
-    this.refreshData();
-
-    this.selectedTab = "label-access-fields";
-
-  }
-
   // Question Sync Methods
 
   loadQuestionsSyncTab() {
     console.log('Loading Questions Synchronization tab...');
     this.isQuestionsSyncTabLoading = true;
     this.loadDataDictionary();
+    this.loadExpectedDeaths();
 
     // Load questions data
     this.loadQuestions().then(() => {
@@ -807,6 +1011,10 @@ export class ConfigurationComponent {
           this.xformUploadSuccess +=
             ` ${d.unmatched_count} question(s) in the xForm are not in the dictionary and were skipped.`;
         }
+        if (d.expected_deaths) {
+          this.xformUploadSuccess +=
+            ` Expected deaths: ${d.expected_deaths.nodes_created} administrative unit(s) added.`;
+        }
         this.xformUploading = false;
         this.xformFile = null;
         // Refresh so the enriched labels/languages are visible immediately.
@@ -817,6 +1025,7 @@ export class ConfigurationComponent {
         // enrich-only xForm upload itself never adds to the dictionary.
         this.loadQuestionsSyncTab();
         this.loadDataDictionary();
+        this.loadExpectedDeaths();
         this.refreshQuestionsFromBackend();
       },
       error: (err: any) => {

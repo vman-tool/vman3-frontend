@@ -15,6 +15,7 @@ function makeComponent(overrides: {
   creatorBoundary?: LocationSelection[];
   uniqueValuesResponse?: any;
   cachedQuestionOptions?: any;
+  adminLabels?: Map<string, string>;
 } = {}) {
   const elementRef = { nativeElement: document.createElement('div') } as any;
   const settingConfigService = {
@@ -25,11 +26,15 @@ function makeComponent(overrides: {
   const genericIndexedDbService = {
     getDataByKeys: jest.fn().mockResolvedValue(overrides.cachedQuestionOptions ?? []),
   } as any;
+  const adminUnitLabelsService = {
+    load: jest.fn().mockReturnValue(of(overrides.adminLabels ?? new Map())),
+  } as any;
 
   const component = new LocationTreeSelectComponent(
     elementRef,
     settingConfigService,
-    genericIndexedDbService
+    genericIndexedDbService,
+    adminUnitLabelsService
   );
   component.levels = overrides.levels ?? [
     { label: 'Region', value: 'region', level: 1 },
@@ -38,7 +43,7 @@ function makeComponent(overrides: {
   component.selected = overrides.selected ?? [];
   component.creatorBoundary = overrides.creatorBoundary ?? [];
 
-  return { component, settingConfigService, genericIndexedDbService };
+  return { component, settingConfigService, genericIndexedDbService, adminUnitLabelsService };
 }
 
 function makeNode(partial: Partial<TreeNode>): TreeNode {
@@ -219,6 +224,32 @@ describe('LocationTreeSelectComponent', () => {
       expect(component.rootNodes.every((n) => n.level === 1 && n.field === 'region')).toBe(true);
       expect(component.rootLoaded).toBe(true);
       expect(component.isOpen).toBe(true);
+    });
+
+    // Regression: this used to read a separately hand-typed "Re-label
+    // Access Fields" alias list; it now sources friendly names from the
+    // expected_deaths admin hierarchy instead, falling back to the raw
+    // value when a code isn't in it.
+    it('prefers the expected_deaths admin-unit label over the raw value', async () => {
+      const { component } = makeComponent({
+        uniqueValuesResponse: { data: ['north'] },
+        adminLabels: new Map([['north', 'Northern Region']]),
+      });
+
+      await component.toggleDropdown(fakeMouseEvent());
+
+      expect(component.rootNodes[0].label).toBe('Northern Region');
+    });
+
+    it('falls back to the raw value when the code has no expected_deaths label', async () => {
+      const { component } = makeComponent({
+        uniqueValuesResponse: { data: ['unmapped_code'] },
+        adminLabels: new Map([['north', 'Northern Region']]),
+      });
+
+      await component.toggleDropdown(fakeMouseEvent());
+
+      expect(component.rootNodes[0].label).toBe('unmapped_code');
     });
 
     it('roots the tree at the creator boundary instead of fetching level 1, for a restricted user', async () => {

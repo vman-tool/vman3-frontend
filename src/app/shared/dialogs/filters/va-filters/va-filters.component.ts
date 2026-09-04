@@ -7,7 +7,7 @@ import { SharedModule } from '../../../shared.module';
 import { CustomDropdownComponent } from '../../../components/custom-dropdown/custom-dropdown.component';
 import { UsersService } from 'app/modules/settings/services/users.service';
 import { lastValueFrom } from 'rxjs';
-import { FieldLabel, FieldMapping, settingsConfigData, SystemConfig } from 'app/modules/settings/interface';
+import { FieldMapping, settingsConfigData, SystemConfig } from 'app/modules/settings/interface';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { ListRecordsService } from 'app/modules/records/services/list-records/list-records.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -58,7 +58,6 @@ export class VaFiltersComponent implements OnInit {
 
   systemConfigData?: SystemConfig;
   fieldMappingData?: FieldMapping;
-  fieldLabels: FieldLabel[] | undefined;
   // The admin levels this user can filter by - unrestricted users get all
   // configured levels starting at Region; a location-restricted user only
   // gets levels at or below their own (see initLocationAccess()).
@@ -88,7 +87,6 @@ export class VaFiltersComponent implements OnInit {
     if (data) {
       this.systemConfigData = data.system_configs;
       this.fieldMappingData = data.field_mapping;
-      this.fieldLabels = data.field_labels;
       this.computeDateTypeOptions();
     }
   }

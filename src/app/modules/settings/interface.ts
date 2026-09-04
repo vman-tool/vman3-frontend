@@ -19,12 +19,6 @@ export interface SystemConfig {
   [key: string]: any; // Allow for any additional fields
 }
 
-export interface FieldLabel {
-  field_id: string;
-  label?: string;
-  options?: any;
-}
-
 export interface FieldMapping {
   instance_id: string;
   va_id: string;
@@ -52,13 +46,31 @@ export interface VaSummaryCodOptions {
   include_pcva: boolean;
 }
 
+export interface ExpectedDeathsNode {
+  key: string;
+  level: number;
+  value: string;
+  label: string;
+  /** Keyed by period (e.g. "2023", "2024", or "total" for a single-period
+   * file) - a period absent from this map has no value at this node. */
+  expected_deaths: Record<string, number>;
+  is_leaf: boolean;
+  children: ExpectedDeathsNode[];
+}
+
+export interface ExpectedDeathsTree {
+  configured: boolean;
+  max_level: number;
+  periods: string[];
+  tree: ExpectedDeathsNode[];
+}
+
 export interface settingsConfigData {
   odk_api_configs: OdkConfigModel;
   system_configs: SystemConfig;
   field_mapping: FieldMapping;
   va_summary: string[];
   va_summary_cod_options?: VaSummaryCodOptions;
-  field_labels?: FieldLabel[];
   sync_status?: SyncStatus;
   dqa_thresholds?: DqaThresholds;
 }

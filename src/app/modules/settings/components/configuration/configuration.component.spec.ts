@@ -13,6 +13,8 @@ function makeComponent(overrides: { cachedQuestions?: any } = {}) {
     getSettingsConfig: jest.fn().mockReturnValue(of(null)),
     saveConnectionData: jest.fn().mockReturnValue(of({})),
     clearCache: jest.fn(),
+    getExpectedDeaths: jest.fn().mockReturnValue(of({ data: { configured: false, max_level: 0, periods: [], tree: [] } })),
+    updateExpectedDeaths: jest.fn().mockReturnValue(of({ data: { configured: true, max_level: 1, periods: [], tree: [] } })),
   } as any;
   const indexedDBService = {} as any;
   const genericIndexedDbService = {
@@ -237,6 +239,324 @@ describe('ConfigurationComponent', () => {
 
       expect(component.isSavingVaSummary).toBe(false);
       expect(snackBar.open).toHaveBeenCalledWith('Failed to save', 'Close', expect.anything());
+    });
+  });
+
+  describe('Expected Number of Deaths', () => {
+    function node(overrides: Partial<any> = {}) {
+      return {
+        key: 'k1', level: 1, value: 'v1', label: 'Region 1',
+        expected_deaths: { '2023': 100, '2024': 110 }, is_leaf: false, children: [],
+        ...overrides,
+      };
+    }
+
+    describe('loadExpectedDeaths', () => {
+      it('stores the tree, configured flag, and periods, defaulting every period to visible', () => {
+        const { component, settingConfigService } = makeComponent();
+        const tree = [node()];
+        settingConfigService.getExpectedDeaths.mockReturnValue(
+          of({ data: { configured: true, max_level: 2, periods: ['2023', '2024'], tree } })
+        );
+
+        component.loadExpectedDeaths();
+
+        expect(component.expectedDeathsConfigured).toBe(true);
+        expect(component.expectedDeathsMaxLevel).toBe(2);
+        expect(component.expectedDeathsTree).toEqual(tree);
+        expect(component.expectedDeathsPeriods).toEqual(['2023', '2024']);
+        expect(component.visiblePeriods).toEqual(['2023', '2024']);
+        expect(component.expectedDeathsLoading).toBe(false);
+      });
+
+      it('keeps the current visibility selection across a reload, dropping any period that is gone', () => {
+        const { component, settingConfigService } = makeComponent();
+        settingConfigService.getExpectedDeaths.mockReturnValue(
+          of({ data: { configured: true, max_level: 1, periods: ['2023', '2024'], tree: [] } })
+        );
+        component.loadExpectedDeaths();
+        // User hides 2024, leaving only 2023 visible.
+        component.togglePeriodVisibility('2024');
+
+        settingConfigService.getExpectedDeaths.mockReturnValue(
+          of({ data: { configured: true, max_level: 1, periods: ['2023', '2025'], tree: [] } })
+        );
+        component.loadExpectedDeaths();
+
+        // 2024 is gone from the new response and drops out; 2023 survives.
+        expect(component.visiblePeriods).toEqual(['2023']);
+      });
+
+      it('surfaces a load error', () => {
+        const { component, settingConfigService } = makeComponent();
+        settingConfigService.getExpectedDeaths.mockReturnValue(throwError(() => new Error('down')));
+
+        component.loadExpectedDeaths();
+
+        expect(component.expectedDeathsError).toBe('Could not load expected deaths.');
+        expect(component.expectedDeathsLoading).toBe(false);
+      });
+    });
+
+    describe('deathsForPeriod', () => {
+      it('reads the value for the given period', () => {
+        const { component } = makeComponent();
+        expect(component.deathsForPeriod(node(), '2023')).toBe(100);
+      });
+
+      it('returns null when the node has nothing for that period', () => {
+        const { component } = makeComponent();
+        expect(component.deathsForPeriod(node(), '2099')).toBeNull();
+      });
+    });
+
+    describe('togglePeriodVisibility / isPeriodVisible', () => {
+      it('hides a period that was visible', () => {
+        const { component } = makeComponent();
+        component.visiblePeriods = ['2023', '2024', '2025'];
+
+        component.togglePeriodVisibility('2024');
+
+        expect(component.visiblePeriods).toEqual(['2023', '2025']);
+        expect(component.isPeriodVisible('2024')).toBe(false);
+      });
+
+      it('shows a period that was hidden', () => {
+        const { component } = makeComponent();
+        component.visiblePeriods = ['2023'];
+
+        component.togglePeriodVisibility('2024');
+
+        expect(component.visiblePeriods).toEqual(['2023', '2024']);
+        expect(component.isPeriodVisible('2024')).toBe(true);
+      });
+    });
+
+    describe('years dropdown open/close', () => {
+      it('toggleYearsDropdown flips the open state', () => {
+        const { component } = makeComponent();
+        expect(component.yearsDropdownOpen).toBe(false);
+
+        component.toggleYearsDropdown();
+        expect(component.yearsDropdownOpen).toBe(true);
+
+        component.toggleYearsDropdown();
+        expect(component.yearsDropdownOpen).toBe(false);
+      });
+
+      // Real dispatched events, not plain { target } stand-ins: the handler
+      // reads event.composedPath(), which is only populated while an event
+      // is actually being dispatched through the DOM.
+      it('closes on a click outside the dropdown wrapper', () => {
+        const { component } = makeComponent();
+        component.yearsDropdownOpen = true;
+        const outsideEl = document.createElement('div');
+        document.body.appendChild(outsideEl);
+        outsideEl.addEventListener('click', (e) => component.onDocumentClickForYearsDropdown(e as MouseEvent));
+
+        outsideEl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        expect(component.yearsDropdownOpen).toBe(false);
+        outsideEl.remove();
+      });
+
+      it('stays open on a click inside the dropdown wrapper', () => {
+        const { component } = makeComponent();
+        component.yearsDropdownOpen = true;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'years-dropdown-wrapper';
+        const checkbox = document.createElement('input');
+        wrapper.appendChild(checkbox);
+        document.body.appendChild(wrapper);
+        checkbox.addEventListener('click', (e) => component.onDocumentClickForYearsDropdown(e as MouseEvent));
+
+        checkbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        expect(component.yearsDropdownOpen).toBe(true);
+        wrapper.remove();
+      });
+    });
+
+    describe('levelLabel', () => {
+      it('reuses the configurable admin_levelN label from System Configuration', () => {
+        const { component } = makeComponent();
+        component.systemConfigData = { admin_level1: 'Region', admin_level2: 'District' } as any;
+
+        expect(component.levelLabel(1)).toBe('Region');
+        expect(component.levelLabel(2)).toBe('District');
+      });
+
+      it('falls back to a generic "Level N" when no label is configured that deep', () => {
+        const { component } = makeComponent();
+        component.systemConfigData = { admin_level1: 'Region' } as any;
+
+        expect(component.levelLabel(3)).toBe('Level 3');
+      });
+    });
+
+    describe('filteredExpectedDeathsTree', () => {
+      // A plain field recomputed by onExpectedDeathsSearchChange() / after a
+      // reload - not a live getter. A getter re-evaluated on every
+      // change-detection pass, feeding a recursive *ngTemplateOutlet, was
+      // unstable enough in practice to trip Angular's NG0103 "infinite
+      // change detection" guard.
+      it('returns the tree unfiltered when there is no search term', () => {
+        const { component, settingConfigService } = makeComponent();
+        const tree = [node()];
+        settingConfigService.getExpectedDeaths.mockReturnValue(
+          of({ data: { configured: true, max_level: 1, tree } })
+        );
+
+        component.loadExpectedDeaths();
+
+        expect(component.filteredExpectedDeathsTree).toEqual(tree);
+      });
+
+      it('keeps a branch when a descendant matches, even if the branch itself does not', () => {
+        const { component } = makeComponent();
+        component.expectedDeathsTree = [
+          node({
+            key: 'region', label: 'Dodoma',
+            children: [node({ key: 'district', label: 'Kongwa District Council', children: [] })],
+          }),
+        ];
+        component.expectedDeathsSearch = 'kongwa';
+        component.onExpectedDeathsSearchChange();
+
+        const result = component.filteredExpectedDeathsTree;
+        expect(result.length).toBe(1);
+        expect(result[0].children.length).toBe(1);
+      });
+
+      it('drops branches with no match anywhere in them', () => {
+        const { component } = makeComponent();
+        component.expectedDeathsTree = [node({ label: 'Dodoma' })];
+        component.expectedDeathsSearch = 'no such place';
+        component.onExpectedDeathsSearchChange();
+
+        expect(component.filteredExpectedDeathsTree).toEqual([]);
+      });
+    });
+
+    describe('expand/collapse', () => {
+      it('toggles a key in and out of the expanded set', () => {
+        const { component } = makeComponent();
+        expect(component.isExpandedDeaths('k1')).toBe(false);
+
+        component.toggleExpandDeaths('k1');
+        expect(component.isExpandedDeaths('k1')).toBe(true);
+
+        component.toggleExpandDeaths('k1');
+        expect(component.isExpandedDeaths('k1')).toBe(false);
+      });
+
+      it('treats every node as expanded while a search is active', () => {
+        const { component } = makeComponent();
+        component.expectedDeathsSearch = 'dodoma';
+        expect(component.isExpandedDeaths('never-toggled')).toBe(true);
+      });
+    });
+
+    describe('editing a leaf value', () => {
+      // Editing is now identified by (node key, period) - each visible year
+      // column has its own independent edit affordance on the same row.
+      it('starts editing with the value for the given period', () => {
+        const { component } = makeComponent();
+        component.startEditDeaths(node({ key: 'w1', is_leaf: true }), '2024');
+
+        expect(component.editingDeathsValue).toBe('110');
+        expect(component.isEditingDeaths('w1', '2024')).toBe(true);
+        expect(component.isEditingDeaths('w1', '2023')).toBe(false);
+      });
+
+      it('handles editingDeathsValue arriving as an actual number, not a string', () => {
+        // Regression: <input type="number"> uses Angular's NumberValueAccessor,
+        // which writes a real `number` into the ngModel-bound field at
+        // runtime despite its declared `string` type - calling .trim()
+        // directly on it threw "not a function" the first time this was
+        // exercised through the real DOM (unit tests that only ever assign
+        // string literals never hit this).
+        const { component, settingConfigService } = makeComponent();
+        const leaf = node({ key: 'w1', is_leaf: true });
+        component.startEditDeaths(leaf, '2023');
+        (component as any).editingDeathsValue = 500;
+
+        expect(() => component.saveEditDeaths(leaf, '2023')).not.toThrow();
+        expect(settingConfigService.updateExpectedDeaths).toHaveBeenCalledWith('w1', '2023', 500);
+      });
+
+      it('rejects a non-numeric or negative value without calling the service', () => {
+        const { component, settingConfigService } = makeComponent();
+        const leaf = node({ key: 'w1', is_leaf: true });
+        component.startEditDeaths(leaf, '2023');
+        component.editingDeathsValue = '-5';
+
+        component.saveEditDeaths(leaf, '2023');
+
+        expect(settingConfigService.updateExpectedDeaths).not.toHaveBeenCalled();
+        expect(component.editingDeathsError).toBeTruthy();
+      });
+
+      it('rounds a decimal entry to a whole number before saving', () => {
+        const { component, settingConfigService } = makeComponent();
+        const leaf = node({ key: 'w1', is_leaf: true });
+        component.startEditDeaths(leaf, '2023');
+        component.editingDeathsValue = '500.7';
+
+        component.saveEditDeaths(leaf, '2023');
+
+        expect(settingConfigService.updateExpectedDeaths).toHaveBeenCalledWith('w1', '2023', 501);
+      });
+
+      it('saves the given period and replaces the tree with the server response', () => {
+        const { component, settingConfigService } = makeComponent();
+        const newTree = [node({ key: 'w1', is_leaf: true, expected_deaths: { '2023': 500 } })];
+        settingConfigService.updateExpectedDeaths.mockReturnValue(
+          of({ data: { configured: true, max_level: 3, periods: ['2023'], tree: newTree } })
+        );
+        const leaf = node({ key: 'w1', is_leaf: true });
+        component.startEditDeaths(leaf, '2023');
+        component.editingDeathsValue = '500';
+
+        component.saveEditDeaths(leaf, '2023');
+
+        expect(settingConfigService.updateExpectedDeaths).toHaveBeenCalledWith('w1', '2023', 500);
+        expect(component.expectedDeathsTree).toEqual(newTree);
+        expect(component.editingDeathsCell).toBeNull();
+      });
+
+      it('leaves other period columns on the same row untouched while one is being edited', () => {
+        const { component } = makeComponent();
+        const leaf = node({ key: 'w1', is_leaf: true });
+        component.startEditDeaths(leaf, '2023');
+
+        expect(component.isEditingDeaths('w1', '2023')).toBe(true);
+        expect(component.isEditingDeaths('w1', '2024')).toBe(false);
+      });
+
+      it('surfaces the backend rejection (e.g. editing a node with children) without closing the editor', () => {
+        const { component, settingConfigService } = makeComponent();
+        settingConfigService.updateExpectedDeaths.mockReturnValue(
+          throwError(() => ({ error: { detail: 'Only an administrative unit with no children can be edited directly.' } }))
+        );
+        const leaf = node({ key: 'd1', is_leaf: true });
+        component.startEditDeaths(leaf, '2023');
+        component.editingDeathsValue = '75';
+
+        component.saveEditDeaths(leaf, '2023');
+
+        expect(component.editingDeathsError).toBe('Only an administrative unit with no children can be edited directly.');
+        expect(component.editingDeathsSaving).toBe(false);
+      });
+
+      it('cancel clears the editing state', () => {
+        const { component } = makeComponent();
+        component.startEditDeaths(node({ key: 'w1', is_leaf: true }), '2023');
+        component.cancelEditDeaths();
+
+        expect(component.editingDeathsCell).toBeNull();
+        expect(component.editingDeathsValue).toBe('');
+      });
     });
   });
 });

@@ -8,7 +8,7 @@ import { ViewUserComponent } from '../../dialogs/view-user/view-user.component';
 import { SharedConfirmationComponent } from 'app/shared/dialogs/shared-confirmation/shared-confirmation.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SettingConfigService } from '../../services/settings_configs.service';
-import { FieldLabel, FieldMapping, OdkConfigModel, settingsConfigData, SystemConfig } from '../../interface';
+import { FieldMapping, OdkConfigModel, settingsConfigData, SystemConfig } from '../../interface';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges  from 'app/shared/constants/privileges.constants';
 
@@ -28,7 +28,6 @@ export class UsersListComponent implements OnInit {
   systemConfigData: SystemConfig | undefined;
   fieldMappingData: FieldMapping | undefined;
   vaSummaryData: string[] = [];
-  fieldLabels: FieldLabel[] | undefined;
   canAddUsers: boolean = false;
   canUpdateUsers: boolean = false;
   canDeactivateUser: boolean = false;
@@ -112,7 +111,6 @@ export class UsersListComponent implements OnInit {
         if (!!data) {
           this.systemConfigData = data?.system_configs;
           this.fieldMappingData = data?.field_mapping;
-          this.fieldLabels = data?.field_labels;
         }
       },
       error: (error) => {
@@ -136,7 +134,6 @@ export class UsersListComponent implements OnInit {
       user: user,
       system_config: this.systemConfigData,
       field_mapping: this.fieldMappingData,
-      field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
       canUpdateLimitLabels: this.canUpdateLimitLabels,
       canAssignRoles: this.canAssignRoles,
@@ -168,7 +165,6 @@ export class UsersListComponent implements OnInit {
     dialogConfig.data = {
       system_config: this.systemConfigData,
       field_mapping: this.fieldMappingData,
-      field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
       canUpdateLimitLabels: this.canUpdateLimitLabels,
       canAssignRoles: this.canAssignRoles,
@@ -190,7 +186,6 @@ export class UsersListComponent implements OnInit {
       user: user,
       system_config: this.systemConfigData,
       field_mapping: this.fieldMappingData,
-      field_labels: this.fieldLabels,
       canLimitDataAccess: this.canLimitDataAccess,
       canUpdateLimitLabels: this.canUpdateLimitLabels,
       canAssignRoles: this.canAssignRoles,

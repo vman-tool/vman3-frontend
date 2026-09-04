@@ -5,9 +5,10 @@ import { ResponseMainModel } from '../../../../shared/interface/main.interface';
 import { SubmissionsDataModel } from '../../interface';
 import { FilterService } from '../../../../shared/services/filter.service';
 import { SettingConfigService } from '../../../settings/services/settings_configs.service';
-import { settingsConfigData, FieldLabel } from '../../../settings/interface';
+import { settingsConfigData } from '../../../settings/interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
+import { AdminUnitLabelsService } from 'app/shared/services/admin-unit-labels/admin-unit-labels.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -26,14 +27,6 @@ export class SubmissionsComponent {
   region: string | undefined;
   district: string | undefined;
   ward: string | undefined;
-  // The raw ODK field names (e.g. "id10005r"), as opposed to `region`/
-  // `district`/`ward` above which are just the configured column *labels*
-  // ("Region"/"District"/"Ward") - needed to look a value up in
-  // field_labels, which is keyed by field_id.
-  private regionField?: string;
-  private districtField?: string;
-  private wardField?: string;
-  private fieldLabels: FieldLabel[] = [];
   // How many admin levels deep the table currently drills into: 1 (region
   // only) through 3 (region/district/ward). Sent to the backend so grouping
   // happens there, not just column visibility here.
@@ -48,8 +41,8 @@ export class SubmissionsComponent {
     { value: '3', label: 'Ward' },
   ];
   colWidths: number[] = [16, 22, 8, 14, 8, 8, 9, 7, 8];
-  // Rows exactly as the API returned them, before applying custom
-  // field_labels - kept so relabels loaded later (see initial()) can be
+  // Rows exactly as the API returned them, before applying friendly admin-
+  // unit labels - kept so relabels loaded later (see initial()) can be
   // re-applied without re-fetching.
   private rawDataSubmissions: SubmissionsDataModel[] = [];
 
@@ -80,6 +73,7 @@ export class SubmissionsComponent {
     public dialog: MatDialog,
     private filterService: FilterService,
     private settingsConfigsService: SettingConfigService,
+    private adminUnitLabelsService: AdminUnitLabelsService,
     private snackBar: MatSnackBar
   ) {
     this.initial();
@@ -87,6 +81,10 @@ export class SubmissionsComponent {
     // fires once on registration with the current filter state, so this
     // would just be a redundant duplicate request racing the real one.
     this.setupEffect();
+    // The admin-unit label map loads independently of both settings and
+    // records - re-apply once it's ready in case either already rendered
+    // with raw values first.
+    this.adminUnitLabelsService.load().subscribe(() => this.applyLabels());
   }
 
   initial() {
@@ -104,10 +102,6 @@ export class SubmissionsComponent {
           this.region = config.system_configs.admin_level1;
           this.district = config.system_configs.admin_level2;
           this.ward = config.system_configs.admin_level3;
-          this.regionField = config.field_mapping.location_level1;
-          this.districtField = config.field_mapping.location_level2;
-          this.wardField = config.field_mapping.location_level3;
-          this.fieldLabels = config.field_labels || [];
           this.refreshGroupLevelOptions();
           // Settings can load after records have already rendered with raw
           // values (these two fetches race) - re-apply labels to whatever
@@ -127,21 +121,21 @@ export class SubmissionsComponent {
       });
   }
 
-  // A raw ODK value (e.g. "Ilala_Municipal_Council") shown via its saved
-  // custom label (e.g. "Ilala MC") if an admin has set one under Settings >
-  // Configuration > Re-label Access Fields, else the raw value unchanged.
-  private labelFor(field: string | undefined, value: string): string {
-    if (!field || !value) return value;
-    const saved = this.fieldLabels.find((fl: any) => fl?.field_id === field);
-    return saved?.options?.hasOwnProperty(value) ? saved.options[value] : value;
+  // A raw ODK value (e.g. "Ilala_Municipal_Council") shown via its friendly
+  // name from the expected_deaths admin hierarchy (Settings > Configuration
+  // > Data Dictionary > Expected Number of Deaths) if it's one of that
+  // hierarchy's units, else the raw value unchanged.
+  private labelFor(value: string): string {
+    if (!value) return value;
+    return this.adminUnitLabelsService.friendlyLabel(value);
   }
 
   private applyLabels(): void {
     this.dataSubmissions = this.rawDataSubmissions.map(record => ({
       ...record,
-      region: this.labelFor(this.regionField, record.region),
-      district: record.district ? this.labelFor(this.districtField, record.district) : record.district,
-      ward: record.ward ? this.labelFor(this.wardField, record.ward) : record.ward,
+      region: this.labelFor(record.region),
+      district: record.district ? this.labelFor(record.district) : record.district,
+      ward: record.ward ? this.labelFor(record.ward) : record.ward,
     }));
   }
 
