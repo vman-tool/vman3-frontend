@@ -338,16 +338,22 @@ export class CcvaGraphsComponent implements OnInit {
     responsive: true,
   };
 
-  getDynamicTitle(key: string): string {
-    const titles: { [key: string]: string } = {
-      all: 'Distribution of Causes of Deaths for All Populations ',
-      male: 'Distribution of Causes of Deaths for Male Population ',
-      female: 'Distribution of Causes of Deaths for Female Population ',
-      adult: 'Distribution of Causes of Deaths for Adult Population ',
-      child: 'Distribution of Causes of Deaths for Child Population ',
-      neonate: 'Distribution of Causes of Deaths for Neonate Population ',
-    };
-    return titles[key] || '';
+  // Same title on every chart - only the demographic group (subtitle)
+  // differs, so it reads as one title + a small second line rather than a
+  // single long sentence repeated six times.
+  readonly chartTitle = 'Distribution of Causes of Death';
+
+  private readonly chartSubtitles: { [key: string]: string } = {
+    all: 'All',
+    male: 'Male',
+    female: 'Female',
+    adult: 'Adult Population',
+    child: 'Child Population',
+    neonate: 'Neonate Population',
+  };
+
+  getChartSubtitle(key: string): string {
+    return this.chartSubtitles[key] || '';
   }
 
   downloadChart(key: string) {

@@ -1,30 +1,60 @@
-<div class="mt-8">
+<div class="mt-8 mb-8">
   <div class="bg-white rounded-lg">
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
       <div>
         <span class="section-title">VA Data</span>
         <p class="text-gray-500">{{ totalRecords }} submission summary</p>
       </div>
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-medium text-gray-500">Group by</span>
-          <app-custom-dropdown widthClass="w-36" [options]="groupLevelOptions"
+
+      <!-- One toolbar: period filter, group-by, and download all live
+           together here instead of being split across separate controls. -->
+      <div class="flex items-center flex-wrap gap-1 bg-gray-50 border border-gray-200 rounded-lg p-1.5">
+        <div class="flex items-center gap-1.5 px-1.5">
+          <span class="text-xs font-medium text-gray-500 whitespace-nowrap">Period</span>
+          <app-custom-dropdown widthClass="w-24" [compact]="true" [options]="periodFilterOptions"
+            [selectedValue]="periodFilter" (selectedValueChange)="onPeriodFilterChange($event)">
+          </app-custom-dropdown>
+        </div>
+
+        <span class="hidden sm:block w-px h-6 bg-gray-200 mx-0.5"></span>
+
+        <div class="flex items-center gap-1.5 px-1.5">
+          <span class="text-xs font-medium text-gray-500 whitespace-nowrap">Group by</span>
+          <app-custom-dropdown widthClass="w-24" [compact]="true" [options]="groupLevelOptions"
             [selectedValue]="groupLevel.toString()" (selectedValueChange)="onGroupLevelChange($event)">
           </app-custom-dropdown>
         </div>
-        <img (click)="downloadRecords()" src="assets/icons/download.svg" class="h-10 cursor-pointer"
-          alt="Download Records" />
+
+        <span class="hidden sm:block w-px h-6 bg-gray-200 mx-0.5"></span>
+
+        <div class="relative download-menu-wrapper">
+          <button type="button" (click)="toggleDownloadMenu()" [disabled]="isExporting"
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 rounded-md hover:bg-white hover:shadow-sm transition-colors disabled:opacity-50 disabled:cursor-wait">
+            <img src="assets/icons/download.svg" class="h-4 w-4" alt="" />
+            <span>Download</span>
+            <i class="ph ph-caret-down text-xs" [class.animate-spin]="isExporting"></i>
+          </button>
+
+          <div *ngIf="downloadMenuOpen"
+               class="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20">
+            <button type="button" *ngFor="let fmt of downloadFormats" (click)="onDownload(fmt.value)"
+                    [disabled]="isExporting"
+                    class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-wait">
+              {{ fmt.label }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="relative w-full overflow-auto border border-gray-200 rounded-lg dark:border-gray-700 h-[40vh]">
-      <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
+    <div class="relative w-full overflow-auto border border-gray-200 rounded-lg dark:border-gray-700 h-[50vh]">
+      <table #summaryTable class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
 
         <colgroup>
           <col *ngFor="let w of colWidths" [style.width.%]="w">
         </colgroup>
 
-        <thead class="sticky top-0 z-10 text-xs font-medium tracking-wide text-gray-500 uppercase bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
+        <thead class="sticky top-0 z-10 text-xs font-medium tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
                 (click)="onSort('region')">
@@ -50,14 +80,39 @@
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('count')">
               <span class="flex items-center justify-end gap-1">
-                Count <i [class]="sortIcon('count')" class="shrink-0"></i>
+                Submitted <i [class]="sortIcon('count')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
+                (click)="onSort('expected')">
+              <span class="flex items-center justify-end gap-1">
+                Expected <i [class]="sortIcon('expected')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
+                (click)="onSort('completeness')">
+              <span class="flex items-center justify-end gap-1">
+                Completeness <i [class]="sortIcon('completeness')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
+                (click)="onSort('firstSubmission')">
+              <span class="flex items-center justify-center gap-1 min-w-0">
+                <span class="truncate">First</span>
+                <i [class]="sortIcon('firstSubmission')" class="shrink-0"></i>
               </span>
             </th>
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
                 (click)="onSort('lastSubmission')">
               <span class="flex items-center justify-center gap-1 min-w-0">
-                <span class="truncate">Last Submission</span>
+                <span class="truncate">Last</span>
                 <i [class]="sortIcon('lastSubmission')" class="shrink-0"></i>
+              </span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
+                (click)="onSort('coverage')">
+              <span class="flex items-center justify-end gap-1">
+                Coverage <i [class]="sortIcon('coverage')" class="shrink-0"></i>
               </span>
             </th>
             <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
@@ -111,8 +166,13 @@
             <td *ngIf="groupLevel >= 3" class="px-4 py-2.5 text-left max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
                 [title]="record.ward">{{ record.ward }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.count }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.expected ?? '—' }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ record.completeness != null ? (record.completeness + '%') : '—' }}</td>
             <td class="px-4 py-2.5 text-center max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
-                [title]="record.lastSubmission">{{ record.lastSubmission }}</td>
+                [title]="formatDate(record.firstSubmission)">{{ formatDate(record.firstSubmission) }}</td>
+            <td class="px-4 py-2.5 text-center max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="formatDate(record.lastSubmission)">{{ formatDate(record.lastSubmission) }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums whitespace-nowrap">{{ record.coverage != null ? (record.coverage + ' mo') : '—' }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.adults }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.children }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ record.neonates }}</td>
@@ -130,6 +190,10 @@
             <td *ngIf="groupLevel >= 2" class="px-4 py-2.5"></td>
             <td *ngIf="groupLevel >= 3" class="px-4 py-2.5"></td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalCount() }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalExpected() ?? '—' }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalCompleteness() != null ? (getTotalCompleteness() + '%') : '—' }}</td>
+            <td class="px-4 py-2.5"></td>
+            <td class="px-4 py-2.5"></td>
             <td class="px-4 py-2.5"></td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalAdults() }}</td>
             <td class="px-4 py-2.5 text-right tabular-nums">{{ getTotalChildren() }}</td>

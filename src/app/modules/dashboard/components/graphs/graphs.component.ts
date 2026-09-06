@@ -288,7 +288,22 @@ export class GraphsComponent implements OnInit {
   public doughnutChartType: ChartType = 'doughnut';
   public doughnutChartLegend = true;
 
-  processBarChartData(monthly_submissions: MonthlySubmission[]) {
+  // Distinct fill colors per year's bar dataset - Chart.js 4's built-in
+  // `colors` plugin only auto-assigns colors when NONE of a chart's datasets
+  // specify one; once the Target line dataset below sets its own borderColor,
+  // that plugin stops colorizing the whole chart, leaving every bar dataset
+  // in the default gray unless it's given an explicit color too.
+  private readonly barColorPalette: string[] = [
+    '#36A2EB', '#4BC0C0', '#9966FF', '#FF9F40', '#4CAF50', '#FFCE56', '#C9CBCF', '#E91E63',
+  ];
+
+  // monthlyTarget is the annual expected-deaths total (summed across the
+  // whole expected_deaths hierarchy, from Settings > Configuration > Data
+  // Dictionary > Expected Number of Deaths) already divided by 12 by the
+  // backend - rendered as a flat reference line across all 12 months.
+  // Chart.js 4 supports a mixed `type: 'line'` dataset inside a `type: 'bar'`
+  // chart natively, so no annotation plugin is needed for this.
+  processBarChartData(monthly_submissions: MonthlySubmission[], monthlyTarget?: number | null) {
     const yearMap = new Map<number, number[]>();
     monthly_submissions?.forEach((s) => {
       if (s.year !== null && s.month !== null) {
@@ -296,10 +311,31 @@ export class GraphsComponent implements OnInit {
         yearMap.get(s.year)![s.month - 1] = s.count;
       }
     });
-    this.barChartData = Array.from(yearMap.entries()).map(([year, counts]) => ({
-      data: counts,
-      label: year.toString(),
-    }));
+    const datasets: any[] = Array.from(yearMap.entries()).map(([year, counts], index) => {
+      const color = this.barColorPalette[index % this.barColorPalette.length];
+      return {
+        data: counts,
+        label: year.toString(),
+        backgroundColor: color,
+        borderColor: color,
+      };
+    });
+    if (monthlyTarget != null) {
+      datasets.push({
+        type: 'line',
+        label: 'Target',
+        data: new Array(12).fill(monthlyTarget),
+        borderColor: '#DC2626',
+        backgroundColor: '#DC2626',
+        borderWidth: 2,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        fill: false,
+        order: 0,
+      });
+    }
+    this.barChartData = datasets;
   }
 
   loadStatistics() {
@@ -313,7 +349,7 @@ export class GraphsComponent implements OnInit {
       )
       .subscribe(
         (data) => {
-          this.processBarChartData(data.data.monthly_submissions);
+          this.processBarChartData(data.data.monthly_submissions, data.data.monthly_target);
           this.doughnutChartData = {
             ...this.doughnutChartData,
             datasets: [{

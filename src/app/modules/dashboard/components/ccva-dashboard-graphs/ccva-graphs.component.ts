@@ -16,7 +16,6 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   @Input() charts: { [key: string]: any } = {}; // Store chart instances
   public chartLabels: any[] = [];
   public chartData: ChartDataset[] = [];
-  selectedView: 'gender' | 'age' = 'gender'; // Default to 'By Gender'
   ccva_graph_db_source: boolean = true;
   public barChartType: ChartType = 'bar';
   public barChartLegend = true;
@@ -39,6 +38,12 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   };
   public genderKeys: string[] = ['all', 'male', 'female']; // Keys for gender-based charts
   public ageGroupKeys: string[] = ['adult', 'child', 'neonate']; // Keys for age-group-based charts
+  // All 6 charts, shown at once (no more gender/age toggle) - a plain field
+  // set once per data load rather than a getter, since a getter returning a
+  // new array every change-detection pass made *ngFor tear down and rebuild
+  // every chart's canvas on each cycle, which is what caused the toggle's
+  // visible flicker/scroll-jump.
+  public chartKeys: string[] = [];
 
   public chartOptions: ChartOptions = {
     responsive: true,
@@ -159,9 +164,6 @@ export class CcvaDashboardGraphsComponent implements OnInit {
   loadChartData(data: any) {
     let graphs = data.graphs ?? [];
     for (let key in graphs) {
-      console.log('keyss', key, graphs[key]);
-      ['all', 'adults', 'childs'].includes(key);
-      // if (graphs.hasOwnProperty(key)) {
       const chartLabels = graphs[key].index; // Create unique labels for each chart
       const chartData = [
         {
@@ -171,11 +173,12 @@ export class CcvaDashboardGraphsComponent implements OnInit {
           borderWidth: 1,
         },
       ];
-      // if (chartLabels?.length > 0) {
       this.renderChart(key, chartLabels, chartData);
-      // }
-      // }
     }
+    // Fixed display order (gender-based charts, then age-group ones) - only
+    // the keys that actually rendered, since a sparse data set may be
+    // missing one (e.g. no neonate deaths recorded).
+    this.chartKeys = [...this.genderKeys, ...this.ageGroupKeys].filter((key) => key in this.charts);
   }
 
   getChartColor(key: string): string {
@@ -205,10 +208,6 @@ export class CcvaDashboardGraphsComponent implements OnInit {
     };
   }
 
-  // Toggle the view between 'gender' and 'age' when the checkbox is checked/unchecked
-  toggleView(event: any) {
-    this.selectedView = event.target.checked ? 'age' : 'gender';
-  }
   toggleCcvaSourceView(event: any) {
     this.ccva_graph_db_source = event.target.checked;
     this.filterData = this.filterService.filterData();
@@ -216,25 +215,22 @@ export class CcvaDashboardGraphsComponent implements OnInit {
     this.loadGraphData();
   }
 
-  get chartKeys(): string[] {
-    // Return keys based on the selected view (gender or age)
-    if (this.selectedView === 'gender') {
-      return this.genderKeys.filter((key) => key in this.charts);
-    } else {
-      return this.ageGroupKeys.filter((key) => key in this.charts);
-    }
-  }
+  // Same title on every chart - only the demographic group (subtitle)
+  // differs, so it reads as one title + a small second line rather than a
+  // single long sentence repeated six times.
+  readonly chartTitle = 'Distribution of Causes of Death';
 
-  getDynamicTitle(key: string): string {
-    const titles: { [key: string]: string } = {
-      all: 'Distribution of Causes of Deaths for All Populations ',
-      male: 'Distribution of Causes of Deaths for Male Population ',
-      female: 'Distribution of Causes of Deaths for Female Population ',
-      adult: 'Distribution of Causes of Deaths for Adult Population ',
-      child: 'Distribution of Causes of Deaths for Child Population ',
-      neonate: 'Distribution of Causes of Deaths for Neonate Population ',
-    };
-    return titles[key] || '';
+  private readonly chartSubtitles: { [key: string]: string } = {
+    all: 'All',
+    male: 'Male',
+    female: 'Female',
+    adult: 'Adult Population',
+    child: 'Child Population',
+    neonate: 'Neonate Population',
+  };
+
+  getChartSubtitle(key: string): string {
+    return this.chartSubtitles[key] || '';
   }
   // Function to download the chart
   downloadChart(key: string) {
@@ -252,5 +248,9 @@ export class CcvaDashboardGraphsComponent implements OnInit {
     } else {
       console.error('Chart canvas not found for', key);
     }
+  }
+
+  trackByKey(index: number, key: string): string {
+    return key;
   }
 }

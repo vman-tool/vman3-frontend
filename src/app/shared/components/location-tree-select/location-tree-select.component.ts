@@ -5,7 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
-import { FieldLabel } from 'app/modules/settings/interface';
+import { AdminUnitLabelsService } from 'app/shared/services/admin-unit-labels/admin-unit-labels.service';
 
 export interface LocationLevel {
   label: string;
@@ -57,7 +57,6 @@ export interface TreeNode {
 export class LocationTreeSelectComponent implements OnDestroy {
   @Input() levels: LocationLevel[] = [];
   @Input() selected: LocationSelection[] = [];
-  @Input() fieldLabels: FieldLabel[] = [];
   // When the person using this control is themselves access-limited, the
   // tree must start browsing from their own restricted place(s) rather than
   // Region - they can only ever grant/see access within (or equal to) their
@@ -85,6 +84,7 @@ export class LocationTreeSelectComponent implements OnDestroy {
     private elementRef: ElementRef,
     private settingConfigService: SettingConfigService,
     private genericIndexedDbService: GenericIndexedDbService,
+    private adminUnitLabelsService: AdminUnitLabelsService,
   ) {}
 
   @HostListener('document:click', ['$event'])
@@ -116,11 +116,6 @@ export class LocationTreeSelectComponent implements OnDestroy {
     return this.levels.find(l => l.level === level);
   }
 
-  private labelFor(field: string, value: string, fallback: string): string {
-    const savedFieldLabel = this.fieldLabels?.find((fl: any) => fl?.field_id === field);
-    return savedFieldLabel?.options?.hasOwnProperty(value) ? savedFieldLabel.options[value] : fallback;
-  }
-
   private async fetchValues(field: string, parentField?: string, parentValue?: string): Promise<{ value: string; label: string }[]> {
     const fromDb: any = await lastValueFrom(this.settingConfigService.getUniqueValuesOfField(field, parentField, parentValue));
     let fromQuestions: any = await this.genericIndexedDbService.getDataByKeys(OBJECTSTORE_VA_QUESTIONS, [field]);
@@ -133,9 +128,14 @@ export class LocationTreeSelectComponent implements OnDestroy {
     const optionLabels = new Map<string, string>(
       (fromQuestions?.value?.options || []).map((opt: any) => [opt.value, opt.label])
     );
+    // Administrative-unit codes (region/district/ward/...) get their
+    // friendly display name from the expected_deaths hierarchy when one is
+    // configured; the VA dictionary's own choice labels are the next
+    // fallback, then the raw value itself.
+    const adminLabels = await lastValueFrom(this.adminUnitLabelsService.load());
     return (fromDb?.data || []).map((loc: string) => ({
       value: loc,
-      label: this.labelFor(field, loc, optionLabels.get(loc) || loc),
+      label: adminLabels.get(loc) ?? optionLabels.get(loc) ?? loc,
     }));
   }
 

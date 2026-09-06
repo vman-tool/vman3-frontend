@@ -4,7 +4,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --legacy-peer-deps
+# Retries once: under QEMU emulation (arm64 builds on an amd64 runner), npm's
+# extraction of platform-specific optional native packages occasionally hits
+# a transient ENOENT/EEXIST race on mkdir - not a real dependency problem,
+# just an emulated-filesystem flake that a retry clears.
+RUN npm ci --legacy-peer-deps || npm ci --legacy-peer-deps
 
 COPY . .
 

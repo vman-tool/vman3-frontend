@@ -48,10 +48,16 @@ describe('CcvaGraphsComponent (unit)', () => {
     component = TestBed.createComponent(CcvaGraphsComponent).componentInstance;
   });
 
-  describe('getDynamicTitle / getChartColor', () => {
-    it('returns the known title for each demographic key and blank for an unknown one', () => {
-      expect(component.getDynamicTitle('male')).toContain('Male Population');
-      expect(component.getDynamicTitle('unknown-key')).toBe('');
+  describe('chartTitle / getChartSubtitle / getChartColor', () => {
+    it('uses the same title for every chart, with only the subtitle differing per demographic key', () => {
+      expect(component.chartTitle).toBe('Distribution of Causes of Death');
+      expect(component.getChartSubtitle('adult')).toBe('Adult Population');
+      expect(component.getChartSubtitle('child')).toBe('Child Population');
+      expect(component.getChartSubtitle('neonate')).toBe('Neonate Population');
+      expect(component.getChartSubtitle('male')).toBe('Male');
+      expect(component.getChartSubtitle('female')).toBe('Female');
+      expect(component.getChartSubtitle('all')).toBe('All');
+      expect(component.getChartSubtitle('unknown-key')).toBe('');
     });
 
     it('returns the known color for each demographic key and black for an unknown one', () => {

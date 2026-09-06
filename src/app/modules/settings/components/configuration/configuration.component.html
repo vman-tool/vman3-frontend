@@ -106,19 +106,6 @@
           <span class="text-sm font-medium">VMan ML Model</span>
         </a>
       </li>
-      <li class="me-2" *ngIf="dataAccess?.updateAccessLocationsLabels">
-        <a class="inline-flex items-center justify-center px-4 py-3 rounded-t-lg group hover:cursor-pointer"
-          (click)="selectedTab = 'label-access-fields'" [ngClass]="{
-           'text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500': selectedTab === 'label-access-fields',
-           'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 border-transparent': selectedTab !== 'label-access-fields'
-         }">
-          <i class="ph ph-tag text-base me-1.5" [ngClass]="{
-             'text-blue-600 dark:text-blue-500': selectedTab === 'label-access-fields',
-             'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300': selectedTab !== 'label-access-fields'
-           }"></i>
-          <span class="text-sm font-medium">Re-label Access Fields</span>
-        </a>
-      </li>
     </ul>
   </div>
 
@@ -558,8 +545,32 @@
         </ng-template>
       </ng-template>
 
-      <!-- ── Stored data dictionary (shared by both tabs) ────────────────── -->
+      <!-- ── Stored data dictionary / Expected Number of Deaths ──────────── -->
       <div class="mt-4">
+        <div class="mb-4 border-b border-gray-200">
+          <ul class="flex flex-wrap -mb-px text-sm font-medium">
+            <li class="mr-2">
+              <button type="button" (click)="dictionaryResultsTab = 'dictionary'"
+                class="inline-block px-4 py-2.5 border-b-2 rounded-t-lg transition-colors"
+                [ngClass]="dictionaryResultsTab === 'dictionary'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'">
+                Data Dictionary
+              </button>
+            </li>
+            <li class="mr-2">
+              <button type="button" (click)="dictionaryResultsTab = 'expected-deaths'"
+                class="inline-block px-4 py-2.5 border-b-2 rounded-t-lg transition-colors"
+                [ngClass]="dictionaryResultsTab === 'expected-deaths'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300'">
+                Expected Number of Deaths
+              </button>
+            </li>
+          </ul>
+        </div>
+
+      <div *ngIf="dictionaryResultsTab === 'dictionary'">
         <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
           <div>
             <span class="block text-lg font-semibold text-gray-800">Data Dictionary</span>
@@ -686,6 +697,157 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ── Expected Number of Deaths ────────────────────────────────── -->
+      <div *ngIf="dictionaryResultsTab === 'expected-deaths'">
+        <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
+          <div>
+            <span class="block text-lg font-semibold text-gray-800">Expected Number of Deaths</span>
+            <p class="text-sm text-gray-500">
+              Per administrative unit, from the uploaded xForm's <code class="text-xs">expected_deaths</code>
+              column. Totals above the lowest level are calculated automatically from their children.
+            </p>
+          </div>
+          <div class="flex items-center gap-2" *ngIf="expectedDeathsConfigured">
+            <!-- Fixed-width checkbox dropdown: never echoes the selection as
+                 text (that would grow the control), just toggles which
+                 period columns the table shows. -->
+            <div class="relative years-dropdown-wrapper" *ngIf="periodOptions.length > 1">
+              <button type="button" (click)="toggleYearsDropdown()"
+                class="flex items-center justify-between gap-2 w-28 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <span class="text-gray-700">Years</span>
+                <i class="ph ph-caret-down text-gray-400"></i>
+              </button>
+              <div *ngIf="yearsDropdownOpen"
+                class="absolute z-20 mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-auto">
+                <label *ngFor="let period of periodOptions"
+                  class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                  <input type="checkbox" [checked]="isPeriodVisible(period.value)"
+                    (change)="togglePeriodVisibility(period.value)"
+                    class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  {{ period.label }}
+                </label>
+              </div>
+            </div>
+            <input type="text" [(ngModel)]="expectedDeathsSearch" (ngModelChange)="onExpectedDeathsSearchChange()"
+              placeholder="Search administrative unit…"
+              class="px-3 py-1.5 w-64 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <button type="button" (click)="loadExpectedDeaths()" [disabled]="expectedDeathsLoading"
+              title="Reload from the server" aria-label="Reload expected deaths"
+              class="inline-flex items-center justify-center px-2.5 py-1.5 text-sm text-gray-600 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+              <i class="ph ph-arrows-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="expectedDeathsError" class="px-4 py-2.5 mb-3 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
+          {{ expectedDeathsError }}
+        </div>
+
+        <div *ngIf="expectedDeathsLoading" class="p-6 text-center text-gray-400 rounded-lg border border-gray-200">
+          Loading…
+        </div>
+
+        <div *ngIf="!expectedDeathsLoading && !expectedDeathsError && !expectedDeathsConfigured"
+          class="p-6 text-center text-gray-400 rounded-lg border border-gray-200">
+          No expected deaths data yet. Upload an xForm whose <code class="text-xs">choices</code> sheet has
+          an <code class="text-xs">expected_deaths</code> column, under the xForm Upload tab above.
+        </div>
+
+        <div *ngIf="!expectedDeathsLoading && !expectedDeathsError && expectedDeathsConfigured"
+          class="overflow-x-auto rounded-lg border border-gray-200">
+          <table class="w-full text-sm text-left text-gray-600">
+            <thead class="text-xs font-medium tracking-wide text-gray-500 uppercase border-b border-gray-200">
+              <tr>
+                <th scope="col" class="px-4 py-2.5 font-medium">Administrative Unit</th>
+                <th scope="col" class="w-32 px-4 py-2.5 font-medium">Level</th>
+                <th *ngFor="let period of visiblePeriods" scope="col" class="w-36 px-4 py-2.5 font-medium text-right">
+                  Expected Deaths{{ period !== 'total' ? ' ' + period : '' }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!visiblePeriods.length">
+                <td [attr.colspan]="2" class="px-4 py-8 text-center text-gray-400">
+                  No years selected - choose at least one under "Years shown" above.
+                </td>
+              </tr>
+              <tr *ngIf="visiblePeriods.length && !filteredExpectedDeathsTree.length">
+                <td [attr.colspan]="2 + visiblePeriods.length" class="px-4 py-8 text-center text-gray-400">
+                  No administrative unit matches that search.
+                </td>
+              </tr>
+              <ng-container *ngIf="visiblePeriods.length" >
+                <ng-container *ngFor="let root of filteredExpectedDeathsTree">
+                  <ng-container *ngTemplateOutlet="deathsRow; context: { $implicit: root, depth: 0 }"></ng-container>
+                </ng-container>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Recursive row template: any hierarchy depth, no assumption about
+             how many levels exist. -->
+        <ng-template #deathsRow let-node let-depth="depth">
+          <tr class="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+            <td class="px-4 py-2 break-words">
+              <div class="flex items-center gap-1" [style.paddingLeft.px]="depth * 20">
+                <button *ngIf="node.children.length" type="button" (click)="toggleExpandDeaths(node.key)"
+                  class="flex items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-700 shrink-0">
+                  <i [ngClass]="isExpandedDeaths(node.key) ? 'ph ph-caret-down' : 'ph ph-caret-right'"></i>
+                </button>
+                <span *ngIf="!node.children.length" class="w-5 shrink-0"></span>
+                <span>{{ node.label }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-2 text-xs text-gray-500">{{ levelLabel(node.level) }}</td>
+            <td *ngFor="let period of visiblePeriods" class="px-4 py-2 text-right group/cell">
+              <ng-container *ngIf="node.is_leaf; else aggregateValue">
+                <div *ngIf="isEditingDeaths(node.key, period); else readOnlyDeaths">
+                  <div class="flex items-center justify-end gap-2">
+                    <input type="number" min="0" step="1" [(ngModel)]="editingDeathsValue" autofocus
+                      (keydown.escape)="cancelEditDeaths()" (keydown.enter)="saveEditDeaths(node, period)"
+                      class="w-24 px-2 py-1 text-sm text-right rounded border border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                    <button type="button" (click)="saveEditDeaths(node, period)" [disabled]="editingDeathsSaving"
+                      class="px-2 py-0.5 text-xs text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50">
+                      {{ editingDeathsSaving ? 'Saving…' : 'Save' }}
+                    </button>
+                    <button type="button" (click)="cancelEditDeaths()"
+                      class="px-2 py-0.5 text-xs text-gray-600 rounded border border-gray-300 hover:bg-gray-100">
+                      Cancel
+                    </button>
+                  </div>
+                  <p *ngIf="editingDeathsError" class="mt-1 text-xs text-red-600">{{ editingDeathsError }}</p>
+                </div>
+                <ng-template #readOnlyDeaths>
+                  <div class="flex items-center justify-end gap-1">
+                    <span [ngClass]="{ 'text-gray-300': deathsForPeriod(node, period) === null }">
+                      {{ deathsForPeriod(node, period) !== null ? (deathsForPeriod(node, period) | number) : '—' }}
+                    </span>
+                    <button type="button" (click)="startEditDeaths(node, period)"
+                      [attr.aria-label]="'Edit expected deaths for ' + node.label + ' (' + period + ')'"
+                      [title]="'Edit expected deaths'"
+                      class="opacity-0 transition-opacity group-hover/cell:opacity-100 focus:opacity-100 shrink-0 px-1 text-gray-400 hover:text-blue-600">
+                      <i class="text-sm ph ph-pencil-simple"></i>
+                    </button>
+                  </div>
+                </ng-template>
+              </ng-container>
+              <ng-template #aggregateValue>
+                <span class="font-medium text-gray-800">
+                  {{ deathsForPeriod(node, period) !== null ? (deathsForPeriod(node, period) | number) : '—' }}
+                </span>
+              </ng-template>
+            </td>
+          </tr>
+          <ng-container *ngIf="isExpandedDeaths(node.key)">
+            <ng-container *ngFor="let child of node.children">
+              <ng-container *ngTemplateOutlet="deathsRow; context: { $implicit: child, depth: depth + 1 }"></ng-container>
+            </ng-container>
+          </ng-container>
+        </ng-template>
+      </div>
       </div>
     </div>
   </div>
@@ -905,17 +1067,6 @@
       </div>
     </div>
   </div>
-  <div *ngIf="selectedTab === 'label-access-fields' && dataAccess?.updateAccessLocationsLabels" id="access-fields"
-    class="mt-4 tab-content">
-    <div class="my-8">
-      <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
-      <div>
-        <app-label-access-fields [system_config]="systemConfigData" [field_mapping]="fieldMappingData"
-          [field_labels]="fieldLabels" (load_settings)="onLoadLabelAccess()"></app-label-access-fields>
-      </div>
-    </div>
-  </div>
-
   <div *ngIf="selectedTab === 'dqa-thresholds' && dataAccess?.viewSystemConfigs" id="dqa-thresholds"
        class="mt-4 tab-content">
     <div class="my-8">

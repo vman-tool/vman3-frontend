@@ -3,7 +3,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { lastValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FieldLabel } from '../../interface';
 import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 @Component({
@@ -44,7 +43,6 @@ export class AssignRolesFormComponent implements OnInit {
   // boundary (enforced again server-side in assign_roles()).
   creatorBoundary: LocationSelection[] = [];
 
-  field_labels?: FieldLabel[];
   canAssignRoles: any;
   canLimitDataAccess: boolean = false;
   canUpdateLimitLabels: boolean = false;
@@ -114,8 +112,6 @@ export class AssignRolesFormComponent implements OnInit {
     this.locationTypes = allLevels
       .filter(l => l.label && l.value)
       .filter(l => creatorLevel === 0 || l.level >= creatorLevel);
-
-    this.field_labels = this.data?.field_labels;
   }
 
 

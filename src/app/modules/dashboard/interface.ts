@@ -4,7 +4,11 @@ export interface SubmissionsDataModel {
   district?: string;
   ward?: string;
   count: number;
+  firstSubmission: string;
   lastSubmission: string;
+  expected: number | null;
+  completeness: number | null;
+  coverage: number | null;
   adults: number;
   children: number;
   neonates: number;
