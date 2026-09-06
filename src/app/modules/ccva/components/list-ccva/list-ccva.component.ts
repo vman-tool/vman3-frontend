@@ -35,6 +35,14 @@ export class ListCcvaComponent implements OnInit {
   // Row selection — max 2, FIFO queue
   selectedRows: any[] = [];
 
+  // Same 'h'/'l'/'v' -> label mapping as the run-ccva form
+  // (run-ccva.component.html) that captures these settings.
+  private readonly malariaHivLabels: { [code: string]: string } = {
+    h: 'High',
+    l: 'Low',
+    v: 'Very Low',
+  };
+
   constructor(
     private ccvaService: CcvaService,
     private dialog: MatDialog,
@@ -298,5 +306,21 @@ export class ListCcvaComponent implements OnInit {
   onRowClick(ccvaId: string): void {
     // Navigate to the /view/:id route
     this.router.navigate(['/ccva/view', ccvaId]);
+  }
+
+  // 'h'/'l'/'v' -> 'High'/'Low'/'Very Low'; '—' when this run predates the
+  // column (malaria_status/hiv_status weren't saved on older runs) or ran
+  // with the setting left unset.
+  malariaHivLabel(code: string | null | undefined): string {
+    if (!code) return '—';
+    return this.malariaHivLabels[code] ?? code;
+  }
+
+  // Navigate to the individual VA-level classifications for this run
+  // ("Display Data") - keyed by task_id, which is what ccva_results (unlike
+  // the graph summary's own _key/row.id) is actually stored against.
+  onDisplayData(row: any): void {
+    this.closeDropdown();
+    this.router.navigate(['/ccva/data', row.task_id]);
   }
 }

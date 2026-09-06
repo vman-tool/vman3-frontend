@@ -1,0 +1,185 @@
+<div class="bg-white rounded-lg">
+  <div class="flex items-center justify-between my-4">
+    <button (click)="onBack()" class="px-4 py-2 font-bold text-gray-800 bg-gray-200 rounded hover:bg-gray-400">
+      ← Back
+    </button>
+  </div>
+
+  <div class="relative w-full overflow-auto shadow-md sm:rounded-lg max-h-[75vh]">
+
+    <!-- ── Search controls ─────────────────────────────────────────────── -->
+    <div class="flex items-center gap-3 p-3 border-b border-gray-200 flex-wrap">
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-gray-500 whitespace-nowrap">VA ID</label>
+        <input type="text" [(ngModel)]="searchVaId" placeholder="Search VA ID"
+          class="h-[34px] px-2.5 border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-gray-500 whitespace-nowrap">Filter By</label>
+        <app-custom-dropdown widthClass="w-36" [compact]="true" [options]="filterByChoices"
+          [selectedValue]="filterBy" (selectedValueChange)="onFilterByChange($event)">
+        </app-custom-dropdown>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-gray-500 whitespace-nowrap">Filter Value</label>
+        <app-custom-dropdown widthClass="w-44" [compact]="true" [options]="filterValueChoices"
+          [selectedValue]="filterValue" (selectedValueChange)="onFilterValueChange($event)">
+        </app-custom-dropdown>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button (click)="onSearch()"
+          class="h-[34px] px-3.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700">
+          <i class="ph-magnifying-glass"></i> Search
+        </button>
+        <button (click)="onClearSearch()"
+          class="h-[34px] px-3.5 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
+          Clear
+        </button>
+      </div>
+
+      <!-- Right-aligned Columns + Download, pushed to the far end of the bar -->
+      <div class="flex items-center gap-2 ml-auto">
+        <div class="relative columns-menu-wrapper">
+          <button type="button" (click)="toggleColumnsMenu()"
+            class="h-[34px] px-3.5 flex items-center gap-1.5 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
+            <i class="ph-columns"></i> Columns
+            <i class="ph-caret-down text-xs"></i>
+          </button>
+          <div *ngIf="columnsMenuOpen"
+               class="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20">
+            <label class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox" [checked]="showCause2" (change)="toggleCause2Column()" />
+              Cause 2 &amp; Probability
+            </label>
+          </div>
+        </div>
+
+        <button (click)="onDownload()" [disabled]="isExporting"
+          class="h-[34px] px-3.5 flex items-center gap-1.5 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-wait">
+          <img src="assets/icons/download.svg" class="h-4 w-4" alt="" />
+          {{ isExporting ? 'Exporting…' : 'Download' }}
+        </button>
+      </div>
+    </div>
+    <!-- ── End search controls ─────────────────────────────────────────── -->
+
+    <!-- position:relative so the loading overlay below covers exactly the
+         table's own footprint without adding/removing a row - an extra row
+         that appears then disappears is what was causing the table to
+         shift down and back up on every filter/sort/clear click. -->
+    <div class="relative">
+      <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
+
+        <thead class="sticky top-0 z-10 text-xs font-medium tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('va_id')">
+              <span class="flex items-center gap-1">VA ID <i [class]="sortIcon('va_id')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('region')">
+              <span class="flex items-center gap-1">{{ regionLabel }} <i [class]="sortIcon('region')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('district')">
+              <span class="flex items-center gap-1">{{ districtLabel }} <i [class]="sortIcon('district')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('ward')">
+              <span class="flex items-center gap-1">{{ wardLabel }} <i [class]="sortIcon('ward')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('gender')">
+              <span class="flex items-center gap-1">Gender <i [class]="sortIcon('gender')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('age_group')">
+              <span class="flex items-center gap-1">Age Group <i [class]="sortIcon('age_group')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('broad')">
+              <span class="flex items-center gap-1">Broad Grp <i [class]="sortIcon('broad')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('major')">
+              <span class="flex items-center gap-1">Major Grp <i [class]="sortIcon('major')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('cause1')">
+              <span class="flex items-center gap-1">Cause 1 <i [class]="sortIcon('cause1')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium text-right">Cause 1 Prob.</th>
+            <ng-container *ngIf="showCause2">
+              <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none" (click)="onSort('cause2')">
+                <span class="flex items-center gap-1">Cause 2 <i [class]="sortIcon('cause2')" class="shrink-0"></i></span>
+              </th>
+              <th scope="col" class="px-4 py-2.5 font-medium text-right">Cause 2 Probability</th>
+            </ng-container>
+            <th scope="col" class="px-4 py-2.5 font-medium text-center">View</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngIf="(data?.length === 0 || !data) && !isLoading">
+            <td [attr.colspan]="totalColumns" class="px-4 py-8 text-center text-gray-400">
+              {{ errorMessage || 'No record was found' }}
+            </td>
+          </tr>
+          <tr *ngFor="let row of data"
+              class="border-b border-gray-100 last:border-0 text-gray-600 hover:bg-gray-50 transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
+            <td class="px-4 py-2.5 text-gray-900 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis dark:text-gray-200"
+                [title]="row.va_id">{{ row.va_id }}</td>
+            <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="locationLabel(row.locationLevel1)">{{ locationLabel(row.locationLevel1) }}</td>
+            <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="locationLabel(row.locationLevel2)">{{ locationLabel(row.locationLevel2) }}</td>
+            <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="locationLabel(row.locationLevel3)">{{ locationLabel(row.locationLevel3) }}</td>
+            <td class="px-4 py-2.5 capitalize">{{ row.gender || '—' }}</td>
+            <td class="px-4 py-2.5 capitalize">{{ row.age_group || '—' }}</td>
+            <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="row.cause1_broad">{{ row.cause1_broad || '—' }}</td>
+            <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="row.cause1_major">{{ row.cause1_major || '—' }}</td>
+            <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                [title]="row.cause1">{{ row.cause1 || '—' }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ formatProbability(row.cause1_probability) }}</td>
+            <ng-container *ngIf="showCause2">
+              <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+                  [title]="row.cause2">{{ row.cause2 || '—' }}</td>
+              <td class="px-4 py-2.5 text-right tabular-nums">{{ formatProbability(row.cause2_probability) }}</td>
+            </ng-container>
+            <td class="px-4 py-2.5 text-center">
+              <button (click)="onView(row)" title="View VA Record" class="text-gray-500 hover:text-blue-600">
+                <i class="ph-eye text-lg"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="isLoading"
+           class="absolute inset-0 z-10 flex items-center justify-center bg-white/60 pointer-events-none">
+        <i class="ph-spinner text-2xl text-gray-400 animate-spin"></i>
+      </div>
+    </div>
+
+    <nav class="flex flex-wrap items-center justify-between px-6 py-3 border-t border-gray-200 flex-column md:flex-row dark:border-gray-700"
+      aria-label="Table navigation">
+      <span class="block w-full mb-3 text-xs text-gray-500 dark:text-gray-400 md:mb-0 md:inline md:w-auto">
+        Showing <span class="font-medium text-gray-900 dark:text-white">{{ rangeStart }}-{{ rangeEnd }}</span>
+        of <span class="font-medium text-gray-900 dark:text-white">{{ totalRecords }}</span>
+      </span>
+      <ul class="inline-flex h-7 -space-x-px text-xs rtl:space-x-reverse">
+        <li>
+          <button type="button" (click)="goToPreviousPage()" [disabled]="!hasPrevious"
+            class="flex items-center justify-center h-7 px-3 leading-tight border border-gray-200 ms-0 rounded-s"
+            [ngClass]="hasPrevious
+              ? 'text-gray-600 bg-white hover:bg-gray-100 hover:text-gray-900 cursor-pointer'
+              : 'text-gray-300 bg-gray-50 cursor-not-allowed'">Previous</button>
+        </li>
+        <li>
+          <button type="button" (click)="goToNextPage()" [disabled]="!hasNext"
+            class="flex items-center justify-center h-7 px-3 leading-tight border border-gray-200 rounded-e"
+            [ngClass]="hasNext
+              ? 'text-gray-600 bg-white hover:bg-gray-100 hover:text-gray-900 cursor-pointer'
+              : 'text-gray-300 bg-gray-50 cursor-not-allowed'">Next</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

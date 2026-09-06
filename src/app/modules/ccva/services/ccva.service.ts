@@ -1,7 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import * as XLSX from '@e965/xlsx';
+import * as FileSaver from 'file-saver';
 import { ConfigService } from '../../../app.service';
 import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
+
+const EXCEL_TYPE =
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+const EXCEL_EXTENSION = '.xlsx';
 
 @Injectable({
   providedIn: 'root',
@@ -80,6 +86,42 @@ export class CcvaService {
     return this.http.get(`${this.configService.API_URL}/ccva/list`, {});
   }
 
+  // Get the individual VA-level classifications for one CCVA run
+  // ("Display Data"), paginated/sortable server-side, filterable by VA ID
+  // (free text) plus one of filterBy's fields (Gender/Age Group/Broad
+  // Category/Major Category).
+  get_ccva_individual_results(
+    taskId: string,
+    pageNumber: number = 1,
+    limit: number = 10,
+    searchVaId?: string,
+    filterBy?: string,
+    filterValue?: string,
+    sortBy?: string,
+    sortDir: 'asc' | 'desc' = 'asc'
+  ) {
+    let params = new HttpParams()
+      .set('page_number', pageNumber.toString())
+      .set('limit', limit.toString())
+      .set('sort_dir', sortDir);
+    if (searchVaId) {
+      params = params.set('search_va_id', searchVaId);
+    }
+    if (filterBy && filterValue) {
+      params = params.set('filter_by', filterBy).set('filter_value', filterValue);
+    }
+    if (sortBy) {
+      params = params.set('sort_by', sortBy);
+    }
+    return this.http.get(`${this.configService.API_URL}/ccva/${taskId}/results`, { params });
+  }
+
+  // Distinct Gender/Age Group/Broad Category/Major Category values that
+  // actually occur in this run, for the Filter Value dropdown.
+  get_ccva_filter_options(taskId: string) {
+    return this.http.get(`${this.configService.API_URL}/ccva/${taskId}/filter-options`, {});
+  }
+
   // Set an item as default
   set_default_ccva(id: string) {
     return this.http.post(
@@ -103,5 +145,22 @@ export class CcvaService {
   // Delete a CCVA result
   delete_ccva(id: string) {
     return this.http.delete(`${this.configService.API_URL}/ccva/${id}`);
+  }
+
+  // "Download the table" on the individual-results page - same
+  // XLSX.utils.json_to_sheet + file-saver pattern as
+  // SubmissionsService.exportToExcel.
+  exportToExcel(data: any[], fileName: string): void {
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const workbook: XLSX.WorkBook = {
+      Sheets: { data: worksheet },
+      SheetNames: ['data'],
+    };
+    const excelBuffer: any = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    const blob: Blob = new Blob([excelBuffer], { type: EXCEL_TYPE });
+    FileSaver.saveAs(blob, fileName + EXCEL_EXTENSION);
   }
 }
