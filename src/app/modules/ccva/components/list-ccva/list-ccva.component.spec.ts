@@ -290,4 +290,36 @@ describe('ListCcvaComponent (unit)', () => {
       expect(router.navigate).toHaveBeenCalledWith(['/ccva/view', '56007']);
     });
   });
+
+  describe('malariaHivLabel', () => {
+    it('maps h/l/v to High/Low/Very Low', () => {
+      const { component } = makeComponent();
+      expect(component.malariaHivLabel('h')).toBe('High');
+      expect(component.malariaHivLabel('l')).toBe('Low');
+      expect(component.malariaHivLabel('v')).toBe('Very Low');
+    });
+
+    it('falls back to an em dash for a missing value (older runs predate this column)', () => {
+      const { component } = makeComponent();
+      expect(component.malariaHivLabel(null)).toBe('—');
+      expect(component.malariaHivLabel(undefined)).toBe('—');
+      expect(component.malariaHivLabel('')).toBe('—');
+    });
+
+    it('returns an unrecognized code as-is rather than hiding it', () => {
+      const { component } = makeComponent();
+      expect(component.malariaHivLabel('x')).toBe('x');
+    });
+  });
+
+  describe('onDisplayData', () => {
+    it('navigates to the data route using the row task_id, and closes the dropdown', () => {
+      const { component, router } = makeComponent();
+      component.dropdownOpen = 1;
+      component.onDisplayData({ task_id: 'task-123' });
+
+      expect(router.navigate).toHaveBeenCalledWith(['/ccva/data', 'task-123']);
+      expect(component.dropdownOpen).toBeNull();
+    });
+  });
 });

@@ -95,5 +95,23 @@ describe('AdminUnitLabelsService', () => {
       expect(service.friendlyLabel(null)).toBe('');
       expect(service.friendlyLabel(undefined)).toBe('');
     });
+
+    it('matches case-insensitively as a fallback - some callers (e.g. ccva_results, built via an AQL LOWER()) hand over an already-lowercased value', async () => {
+      const { service } = makeService(TREE);
+      await service.load().toPromise();
+
+      expect(service.friendlyLabel('ilala_municipal_council')).toBe('Ilala Municipal Council');
+      expect(service.friendlyLabel('ARUSHA')).toBe('Arusha');
+    });
+
+    it('still prefers an exact-case match over the lower-cased fallback', async () => {
+      const { service } = makeService([
+        { key: 'a1', level: 1, value: 'Foo', label: 'Exact Foo', expected_deaths: {}, is_leaf: true, children: [] },
+        { key: 'a2', level: 1, value: 'foo', label: 'Lowercase foo', expected_deaths: {}, is_leaf: true, children: [] },
+      ]);
+      await service.load().toPromise();
+
+      expect(service.friendlyLabel('Foo')).toBe('Exact Foo');
+    });
   });
 });
