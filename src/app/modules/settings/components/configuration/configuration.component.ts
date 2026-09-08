@@ -574,8 +574,8 @@ export class ConfigurationComponent {
               ? this.systemConfigData
               : {
                 app_name: 'VMan3',
-                page_title: 'The United Republic of Tanzania',
-                page_subtitle: 'Verbal Autopsy Management Dashboard',
+                page_title: 'Ministry of Health XY',
+                page_subtitle: 'Verbal Autopsy Data Management',
                 admin_level1: 'Region',
                 admin_level2: 'District',
                 admin_level3: 'Ward',
