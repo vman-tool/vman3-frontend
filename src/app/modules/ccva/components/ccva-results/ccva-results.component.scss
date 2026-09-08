@@ -1,0 +1,9 @@
+// app-custom-dropdown's compact mode (py-1 text-xs) renders noticeably
+// shorter than the h-[34px] VA ID input / Search / Clear buttons on the row
+// above it - ::ng-deep here scopes a height override to just the three
+// dropdowns on the Filter By / Filter Value / Group By row, matching them
+// to the rest of the toolbar without changing compact's font size or
+// affecting any other app-custom-dropdown usage elsewhere in the app.
+:host ::ng-deep .ccva-filter-row app-custom-dropdown select {
+  height: 34px;
+}

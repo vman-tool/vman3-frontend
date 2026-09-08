@@ -2,12 +2,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as XLSX from '@e965/xlsx';
 import * as FileSaver from 'file-saver';
+import * as Papa from 'papaparse';
 import { ConfigService } from '../../../app.service';
 import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 
 const EXCEL_TYPE =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
 const EXCEL_EXTENSION = '.xlsx';
+const CSV_TYPE = 'text/csv;charset=utf-8;';
+const CSV_EXTENSION = '.csv';
 
 @Injectable({
   providedIn: 'root',
@@ -122,6 +125,33 @@ export class CcvaService {
     return this.http.get(`${this.configService.API_URL}/ccva/${taskId}/filter-options`, {});
   }
 
+  // Counts of the (already filtered) individual results grouped by one
+  // dimension - backs the Display Data table's Group By + Table/Pie/Bar
+  // views. Same search/filter params as get_ccva_individual_results, minus
+  // pagination/sort (the grouped result set is a handful of rows).
+  private ccvaResultFilterParams(searchVaId?: string, filterBy?: string, filterValue?: string): HttpParams {
+    let params = new HttpParams();
+    if (searchVaId) {
+      params = params.set('search_va_id', searchVaId);
+    }
+    if (filterBy && filterValue) {
+      params = params.set('filter_by', filterBy).set('filter_value', filterValue);
+    }
+    return params;
+  }
+
+  get_ccva_grouped_results(taskId: string, groupBy: string, searchVaId?: string, filterBy?: string, filterValue?: string) {
+    const params = this.ccvaResultFilterParams(searchVaId, filterBy, filterValue).set('group_by', groupBy);
+    return this.http.get(`${this.configService.API_URL}/ccva/${taskId}/grouped-results`, { params });
+  }
+
+  // Individual VA points with GPS coordinates, for the Display Data table's
+  // Map view - same search/filter params again, capped server-side.
+  get_ccva_map_points(taskId: string, searchVaId?: string, filterBy?: string, filterValue?: string) {
+    const params = this.ccvaResultFilterParams(searchVaId, filterBy, filterValue);
+    return this.http.get(`${this.configService.API_URL}/ccva/${taskId}/map-points`, { params });
+  }
+
   // Set an item as default
   set_default_ccva(id: string) {
     return this.http.post(
@@ -162,5 +192,14 @@ export class CcvaService {
     });
     const blob: Blob = new Blob([excelBuffer], { type: EXCEL_TYPE });
     FileSaver.saveAs(blob, fileName + EXCEL_EXTENSION);
+  }
+
+  // CSV variant of exportToExcel, using papaparse (already a dependency,
+  // already used for CSV in data-sync.component.ts) rather than repurposing
+  // the xlsx writer for a plain-text format.
+  exportToCsv(data: any[], fileName: string): void {
+    const csv = Papa.unparse(data);
+    const blob: Blob = new Blob([csv], { type: CSV_TYPE });
+    FileSaver.saveAs(blob, fileName + CSV_EXTENSION);
   }
 }

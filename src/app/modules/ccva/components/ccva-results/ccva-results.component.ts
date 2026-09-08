@@ -3,11 +3,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom } from 'rxjs';
+import { ChartDataset, ChartOptions } from 'chart.js';
 import { CcvaService } from '../../services/ccva.service';
 import { AdminUnitLabelsService } from 'app/shared/services/admin-unit-labels/admin-unit-labels.service';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { settingsConfigData } from 'app/modules/settings/interface';
+import { CcvaMapPoint } from '../ccva-map-view/ccva-map-view.component';
+import { colorForGroup, colorMapForValues } from '../../utils/ccva-group-colors';
 
 interface CcvaResultRow {
   va_id: string;
@@ -48,6 +51,18 @@ const FILTER_BY_CHOICES: { value: string; label: string }[] = [
   { value: 'major', label: 'Major Category' },
 ];
 
+interface CcvaGroupedRow {
+  group: string;
+  count: number;
+}
+
+type CcvaVizType = 'table' | 'pie' | 'bar' | 'map';
+
+// Group By choices whose value is one of the plain admin-level fields -
+// their labels are the configured Region/District/Ward names, rebuilt once
+// those load (see updateGroupByChoices()).
+const LOCATION_GROUP_BY_VALUES = ['region', 'district', 'ward'];
+
 // Same server-side pagination/search shape as list-records.component.ts,
 // with sortable column headers copied from the VA Data Submission Summary
 // table's onSort()/sortIcon() pattern (submissions.component.ts).
@@ -81,6 +96,51 @@ export class CcvaResultsComponent implements OnInit {
   // detection"), discovered live while verifying this feature.
   filterValueChoices: { value: string; label: string }[] = [{ value: '', label: 'All' }];
 
+  // Group By - aggregates the (already searched/filtered) record set into
+  // counts per group value, driving the Table(grouped)/Pie/Bar/Map views
+  // below. A plain field for the same NG0103 reason as filterValueChoices.
+  groupByChoices: { value: string; label: string }[] = [
+    { value: 'none', label: 'None' },
+    { value: 'region', label: 'Location Level 1' },
+    { value: 'district', label: 'Location Level 2' },
+    { value: 'ward', label: 'Location Level 3' },
+    { value: 'gender', label: 'Gender' },
+    { value: 'age_group', label: 'Age Group' },
+    { value: 'broad', label: 'Broad Category' },
+    { value: 'major', label: 'Major Category' },
+  ];
+  groupBy = 'none';
+  groupedData: CcvaGroupedRow[] = [];
+  groupedTotal = 0;
+  isLoadingGrouped = false;
+
+  vizType: CcvaVizType = 'table';
+  downloadMenuOpen = false;
+
+  mapPoints: CcvaMapPoint[] = [];
+  isLoadingMap = false;
+
+  public groupChartData: ChartDataset[] = [];
+  public groupChartLabels: string[] = [];
+  public groupBarChartOptions: ChartOptions = {
+    responsive: true,
+    indexAxis: 'y',
+    maintainAspectRatio: false,
+    scales: { x: { beginAtZero: true }, y: { beginAtZero: true } },
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: true, callbacks: { label: ctx => this.chartTooltipLabel(ctx) } },
+    },
+  };
+  public groupPieChartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: 'right' },
+      tooltip: { enabled: true, callbacks: { label: ctx => this.chartTooltipLabel(ctx) } },
+    },
+  };
+
   sortColumn: string | null = null;
   sortDirection: 'asc' | 'desc' = 'asc';
 
@@ -112,7 +172,7 @@ export class CcvaResultsComponent implements OnInit {
     this.loadLocationLabels();
     this.loadFilterOptions();
     this.adminUnitLabelsService.load().subscribe();
-    this.loadResults();
+    this.loadForCurrentView();
   }
 
   private loadFilterOptions(): void {
@@ -150,12 +210,30 @@ export class CcvaResultsComponent implements OnInit {
           this.regionLabel = config.system_configs.admin_level1 || this.regionLabel;
           this.districtLabel = config.system_configs.admin_level2 || this.districtLabel;
           this.wardLabel = config.system_configs.admin_level3 || this.wardLabel;
+          this.updateGroupByChoices();
         }
       },
       error: () => {
         // keep the generic fallback labels
       },
     });
+  }
+
+  // Group By's Region/District/Ward labels follow the configured admin
+  // level names, same as the table's own column headers - a plain field
+  // rebuild (not a getter) for the same NG0103 reason as filterValueChoices.
+  private updateGroupByChoices(): void {
+    const labelFor: Record<string, string> = { region: this.regionLabel, district: this.districtLabel, ward: this.wardLabel };
+    this.groupByChoices = this.groupByChoices.map(choice =>
+      LOCATION_GROUP_BY_VALUES.includes(choice.value) ? { value: choice.value, label: labelFor[choice.value] } : choice
+    );
+  }
+
+  // Public - used both internally and from the grouped table's column
+  // header in the template (strictTemplates forbids calling a private
+  // member from a template).
+  labelFromChoices(choices: { value: string; label: string }[], value: string): string {
+    return choices.find(c => c.value === value)?.label || value;
   }
 
   loadResults(): void {
@@ -193,7 +271,7 @@ export class CcvaResultsComponent implements OnInit {
 
   onSearch(): void {
     this.pageNumber = 1;
-    this.loadResults();
+    this.loadForCurrentView();
   }
 
   onClearSearch(): void {
@@ -202,7 +280,7 @@ export class CcvaResultsComponent implements OnInit {
     this.filterValue = '';
     this.updateFilterValueChoices();
     this.pageNumber = 1;
-    this.loadResults();
+    this.loadForCurrentView();
   }
 
   // Selecting a new Filter By field starts that field's value fresh (its
@@ -214,14 +292,163 @@ export class CcvaResultsComponent implements OnInit {
     this.filterValue = '';
     this.updateFilterValueChoices();
     this.pageNumber = 1;
-    this.loadResults();
+    this.loadForCurrentView();
   }
 
   onFilterValueChange(value: string): void {
     if (value === this.filterValue) return;
     this.filterValue = value;
     this.pageNumber = 1;
+    this.loadForCurrentView();
+  }
+
+  // ── Group By / View switcher ─────────────────────────────────────────────
+
+  onGroupByChange(value: string): void {
+    if (value === this.groupBy) return;
+    this.groupBy = value;
+    // Pie/Bar can't render without something to aggregate - fall back to
+    // Table rather than leaving a chart visualizing stale data.
+    if (this.groupBy === 'none' && (this.vizType === 'pie' || this.vizType === 'bar')) {
+      this.vizType = 'table';
+    }
+    // Reset to a sensible default (largest groups first) each time the
+    // grouping itself changes - the previous sort likely doesn't apply to
+    // the new dimension's values.
+    this.sortColumn = 'count';
+    this.sortDirection = 'desc';
+    this.pageNumber = 1;
+    // Map points don't depend on groupBy (only their color-coding does,
+    // handled reactively by ccva-map-view's own [groupBy] input) - no need
+    // to refetch.
+    if (this.vizType === 'map') return;
+    this.loadForCurrentView();
+  }
+
+  onVizTypeChange(vizType: CcvaVizType): void {
+    if (vizType === this.vizType) return;
+    if ((vizType === 'pie' || vizType === 'bar') && this.groupBy === 'none') return;
+    this.vizType = vizType;
+    this.downloadMenuOpen = false;
+    this.loadForCurrentView();
+  }
+
+  // Routes to whichever fetch the current groupBy/vizType combination
+  // needs - Search/Filter/Clear/Group By/View all funnel through this so
+  // every control stays correct no matter which view is active.
+  private loadForCurrentView(): void {
+    if (this.vizType === 'map') {
+      this.loadMapPoints();
+      return;
+    }
+    if (this.groupBy !== 'none') {
+      this.loadGroupedResults();
+      return;
+    }
     this.loadResults();
+  }
+
+  loadGroupedResults(): void {
+    if (!this.taskId) {
+      this.errorMessage = 'This CCVA run could not be identified.';
+      this.isLoadingGrouped = false;
+      return;
+    }
+    this.isLoadingGrouped = true;
+    const appliedFilterBy = this.filterBy !== 'none' ? this.filterBy : undefined;
+    const appliedFilterValue = appliedFilterBy ? this.filterValue || undefined : undefined;
+    this.ccvaService
+      .get_ccva_grouped_results(this.taskId, this.groupBy, this.searchVaId.trim() || undefined, appliedFilterBy, appliedFilterValue)
+      .subscribe({
+        next: (response: any) => {
+          this.groupedData = response?.data ?? [];
+          this.groupedTotal = response?.total ?? 0;
+          this.sortGroupedDataClientSide();
+          this.buildGroupChart();
+          this.isLoadingGrouped = false;
+        },
+        error: () => {
+          this.errorMessage = 'Failed to load grouped CCVA results.';
+          this.isLoadingGrouped = false;
+        },
+      });
+  }
+
+  loadMapPoints(): void {
+    if (!this.taskId) {
+      this.errorMessage = 'This CCVA run could not be identified.';
+      this.isLoadingMap = false;
+      return;
+    }
+    this.isLoadingMap = true;
+    const appliedFilterBy = this.filterBy !== 'none' ? this.filterBy : undefined;
+    const appliedFilterValue = appliedFilterBy ? this.filterValue || undefined : undefined;
+    this.ccvaService
+      .get_ccva_map_points(this.taskId, this.searchVaId.trim() || undefined, appliedFilterBy, appliedFilterValue)
+      .subscribe({
+        next: (response: any) => {
+          this.mapPoints = response?.data ?? [];
+          this.isLoadingMap = false;
+        },
+        error: () => {
+          this.errorMessage = 'Failed to load CCVA map points.';
+          this.isLoadingMap = false;
+        },
+      });
+  }
+
+  // A grouped row's raw `group` value shown with the same friendly-name /
+  // capitalization treatment the ungrouped table already gives that field.
+  groupLabel(row: CcvaGroupedRow): string {
+    if (LOCATION_GROUP_BY_VALUES.includes(this.groupBy)) {
+      return this.locationLabel(row.group);
+    }
+    if ((this.groupBy === 'gender' || this.groupBy === 'age_group') && row.group) {
+      return row.group.charAt(0).toUpperCase() + row.group.slice(1);
+    }
+    return row.group || 'Unclassified';
+  }
+
+  percentageFor(row: CcvaGroupedRow): string {
+    return this.groupedTotal ? `${((row.count / this.groupedTotal) * 100).toFixed(1)}%` : '—';
+  }
+
+  private sortGroupedDataClientSide(): void {
+    const dir = this.sortDirection === 'asc' ? 1 : -1;
+    this.groupedData = [...this.groupedData].sort((a, b) =>
+      this.sortColumn === 'count' ? (a.count - b.count) * dir : this.groupLabel(a).localeCompare(this.groupLabel(b)) * dir
+    );
+  }
+
+  private buildGroupChart(): void {
+    const colorMap = colorMapForValues(this.groupedData.map(r => r.group));
+    this.groupChartLabels = this.groupedData.map(r => this.groupLabel(r));
+    this.groupChartData = [
+      {
+        label: 'count',
+        data: this.groupedData.map(r => r.count),
+        backgroundColor: this.groupedData.map(r => colorForGroup(this.groupBy, r.group, colorMap)),
+        borderWidth: 1,
+      },
+    ];
+  }
+
+  private chartTooltipLabel(context: any): string {
+    const value = Number(context.raw) || 0;
+    const total = (context.dataset.data as number[]).reduce((acc: number, v: any) => acc + Number(v), 0);
+    const percentage = total ? ((value / total) * 100).toFixed(1) + '%' : '—';
+    return `${context.label}: ${value.toLocaleString()} (${percentage})`;
+  }
+
+  get groupChartTitle(): string {
+    return `Distribution by ${this.labelFromChoices(this.groupByChoices, this.groupBy)}`;
+  }
+
+  get groupChartSubtitle(): string {
+    if (this.filterBy !== 'none' && this.filterValue) {
+      return `${this.labelFromChoices(this.filterByChoices, this.filterBy)}: ${this.filterValue}`;
+    }
+    return 'All records';
   }
 
   onSort(column: string): void {
@@ -230,6 +457,12 @@ export class CcvaResultsComponent implements OnInit {
     } else {
       this.sortColumn = column;
       this.sortDirection = 'asc';
+    }
+    // The grouped summary table (Group/Count) sorts the already-fetched
+    // small array client-side - no need for a second round trip.
+    if (this.groupBy !== 'none' && this.vizType === 'table') {
+      this.sortGroupedDataClientSide();
+      return;
     }
     this.pageNumber = 1;
     this.loadResults();
@@ -327,40 +560,74 @@ export class CcvaResultsComponent implements OnInit {
 
   // ── Download ─────────────────────────────────────────────────────────────
 
-  async onDownload(): Promise<void> {
+  toggleDownloadMenu(): void {
+    this.downloadMenuOpen = !this.downloadMenuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClickForDownloadMenu(event: MouseEvent): void {
+    if (!this.downloadMenuOpen) return;
+    const path = event.composedPath() as HTMLElement[];
+    const inside = path.some(el => el?.classList?.contains?.('download-menu-wrapper'));
+    if (!inside) this.downloadMenuOpen = false;
+  }
+
+  private async fetchIndividualExportRows(): Promise<Record<string, any>[]> {
+    const appliedFilterBy = this.filterBy !== 'none' ? this.filterBy : undefined;
+    const appliedFilterValue = appliedFilterBy ? this.filterValue || undefined : undefined;
+    const response: any = await firstValueFrom(
+      this.ccvaService.get_ccva_individual_results(
+        this.taskId,
+        1,
+        EXPORT_LIMIT,
+        this.searchVaId.trim() || undefined,
+        appliedFilterBy,
+        appliedFilterValue,
+        this.sortColumn || undefined,
+        this.sortDirection
+      )
+    );
+    const rows: CcvaResultRow[] = response?.data ?? [];
+    return rows.map(row => ({
+      'VA ID': row.va_id,
+      [this.regionLabel]: this.locationLabel(row.locationLevel1),
+      [this.districtLabel]: this.locationLabel(row.locationLevel2),
+      [this.wardLabel]: this.locationLabel(row.locationLevel3),
+      Gender: row.gender || '—',
+      'Age Group': row.age_group || '—',
+      'Cause 1': row.cause1 || '—',
+      'Cause 1 Probability': this.formatProbability(row.cause1_probability),
+      'Broad Category': row.cause1_broad || '—',
+      'Major Category': row.cause1_major || '—',
+      'Cause 2': row.cause2 || '—',
+      'Cause 2 Probability': this.formatProbability(row.cause2_probability),
+    }));
+  }
+
+  // Exports the grouped summary (matching what's actually on screen) rather
+  // than raw individual rows, when a Group By is active.
+  private buildGroupedExportRows(): Record<string, any>[] {
+    const groupLabel = this.labelFromChoices(this.groupByChoices, this.groupBy);
+    return this.groupedData.map(row => ({
+      [groupLabel]: this.groupLabel(row),
+      Count: row.count,
+      Percentage: this.percentageFor(row),
+    }));
+  }
+
+  async onDownload(format: 'xlsx' | 'csv' = 'xlsx'): Promise<void> {
     if (!this.taskId || this.isExporting) return;
     this.isExporting = true;
+    this.downloadMenuOpen = false;
     try {
-      const appliedFilterBy = this.filterBy !== 'none' ? this.filterBy : undefined;
-      const appliedFilterValue = appliedFilterBy ? this.filterValue || undefined : undefined;
-      const response: any = await firstValueFrom(
-        this.ccvaService.get_ccva_individual_results(
-          this.taskId,
-          1,
-          EXPORT_LIMIT,
-          this.searchVaId.trim() || undefined,
-          appliedFilterBy,
-          appliedFilterValue,
-          this.sortColumn || undefined,
-          this.sortDirection
-        )
-      );
-      const rows: CcvaResultRow[] = response?.data ?? [];
-      const exportRows = rows.map(row => ({
-        'VA ID': row.va_id,
-        [this.regionLabel]: this.locationLabel(row.locationLevel1),
-        [this.districtLabel]: this.locationLabel(row.locationLevel2),
-        [this.wardLabel]: this.locationLabel(row.locationLevel3),
-        Gender: row.gender || '—',
-        'Age Group': row.age_group || '—',
-        'Cause 1': row.cause1 || '—',
-        'Cause 1 Probability': this.formatProbability(row.cause1_probability),
-        'Broad Category': row.cause1_broad || '—',
-        'Major Category': row.cause1_major || '—',
-        'Cause 2': row.cause2 || '—',
-        'Cause 2 Probability': this.formatProbability(row.cause2_probability),
-      }));
-      this.ccvaService.exportToExcel(exportRows, `CCVA_Results_${this.taskId}`);
+      const grouped = this.groupBy !== 'none';
+      const rows = grouped ? this.buildGroupedExportRows() : await this.fetchIndividualExportRows();
+      const fileName = `CCVA_${grouped ? 'Grouped_' + this.groupBy : 'Results'}_${this.taskId}`;
+      if (format === 'csv') {
+        this.ccvaService.exportToCsv(rows, fileName);
+      } else {
+        this.ccvaService.exportToExcel(rows, fileName);
+      }
     } catch (error) {
       console.error('Failed to export CCVA results', error);
       this.snackBar.open('Failed to export CCVA results. Please try again.', 'Close', {
@@ -371,5 +638,17 @@ export class CcvaResultsComponent implements OnInit {
     } finally {
       this.isExporting = false;
     }
+  }
+
+  // Pie/Bar image export - same canvas.toDataURL('image/png') mechanism
+  // already proven in ccva-graphs.component.ts's downloadChart().
+  downloadChartImage(): void {
+    this.downloadMenuOpen = false;
+    const canvasEl = document.querySelector('#ccva-group-chart canvas') as HTMLCanvasElement | null;
+    if (!canvasEl) return;
+    const link = document.createElement('a');
+    link.href = canvasEl.toDataURL('image/png');
+    link.download = `CCVA_${this.groupBy}_${this.vizType}_${this.taskId}.png`;
+    link.click();
   }
 }

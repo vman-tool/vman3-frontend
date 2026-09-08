@@ -14,6 +14,8 @@ describe('CcvaResultsComponent (unit)', () => {
       get_ccva_filter_options: jest.fn().mockReturnValue(of({
         data: { gender: ['female', 'male'], age_group: ['adult', 'child'], broad: ['Group II: Non-Communicable'], major: ['Diseases of the circulatory system'] },
       })),
+      get_ccva_grouped_results: jest.fn().mockReturnValue(of({ data: [], total: 0 })),
+      get_ccva_map_points: jest.fn().mockReturnValue(of({ data: [], total: 0 })),
     } as any;
     const dialog = { open: jest.fn() } as any;
     const snackBar = { open: jest.fn() } as any;
@@ -27,7 +29,9 @@ describe('CcvaResultsComponent (unit)', () => {
       })),
     } as any;
     const exportToExcel = jest.fn();
+    const exportToCsv = jest.fn();
     (ccvaService as any).exportToExcel = exportToExcel;
+    (ccvaService as any).exportToCsv = exportToCsv;
 
     const component = new CcvaResultsComponent(
       route, router, ccvaService, dialog, snackBar, adminUnitLabelsService, settingConfigService
@@ -36,7 +40,10 @@ describe('CcvaResultsComponent (unit)', () => {
     // see its own dedicated test below) - set it directly so tests focused
     // on search/sort/pagination don't need to call ngOnInit first.
     component.taskId = taskId ?? '';
-    return { component, route, router, ccvaService, dialog, snackBar, adminUnitLabelsService, settingConfigService, exportToExcel };
+    return {
+      component, route, router, ccvaService, dialog, snackBar, adminUnitLabelsService, settingConfigService,
+      exportToExcel, exportToCsv,
+    };
   }
 
   describe('ngOnInit / loadResults', () => {
@@ -495,6 +502,233 @@ describe('CcvaResultsComponent (unit)', () => {
 
       expect(snackBar.open).toHaveBeenCalled();
       expect(component.isExporting).toBe(false);
+    });
+
+    it('exports as CSV instead of Excel when asked', async () => {
+      const { component, exportToExcel, exportToCsv } = makeComponent();
+
+      await component.onDownload('csv');
+
+      expect(exportToCsv).toHaveBeenCalledTimes(1);
+      expect(exportToExcel).not.toHaveBeenCalled();
+    });
+
+    it('exports the grouped summary (not individual rows) when a Group By is active', async () => {
+      const { component, ccvaService, exportToExcel } = makeComponent();
+      component.groupBy = 'gender';
+      component.groupedData = [{ group: 'female', count: 3 }, { group: 'male', count: 7 }];
+      component.groupedTotal = 10;
+
+      await component.onDownload('xlsx');
+
+      expect(ccvaService.get_ccva_individual_results).not.toHaveBeenCalled();
+      expect(exportToExcel).toHaveBeenCalledTimes(1);
+      const [rows, fileName] = exportToExcel.mock.calls[0];
+      expect(fileName).toBe('CCVA_Grouped_gender_task-123');
+      expect(rows).toEqual([
+        { Gender: 'Female', Count: 3, Percentage: '30.0%' },
+        { Gender: 'Male', Count: 7, Percentage: '70.0%' },
+      ]);
+    });
+  });
+
+  describe('Group By / View switcher', () => {
+    it('onGroupByChange loads grouped results, resetting to page 1 and sorting by count desc', () => {
+      const { component, ccvaService } = makeComponent();
+      component.pageNumber = 3;
+      ccvaService.get_ccva_grouped_results.mockReturnValue(of({
+        data: [{ group: 'female', count: 4 }, { group: 'male', count: 9 }], total: 13,
+      }));
+
+      component.onGroupByChange('gender');
+
+      expect(component.groupBy).toBe('gender');
+      expect(component.pageNumber).toBe(1);
+      expect(component.sortColumn).toBe('count');
+      expect(component.sortDirection).toBe('desc');
+      expect(ccvaService.get_ccva_grouped_results).toHaveBeenCalledWith(
+        'task-123', 'gender', undefined, undefined, undefined
+      );
+      // Sorted desc by count on load, per the "largest groups first" default.
+      expect(component.groupedData).toEqual([{ group: 'male', count: 9 }, { group: 'female', count: 4 }]);
+      expect(component.groupedTotal).toBe(13);
+    });
+
+    it('is a no-op when reselecting the same Group By', () => {
+      const { component, ccvaService } = makeComponent();
+      component.groupBy = 'gender';
+      ccvaService.get_ccva_grouped_results.mockClear();
+
+      component.onGroupByChange('gender');
+
+      expect(ccvaService.get_ccva_grouped_results).not.toHaveBeenCalled();
+    });
+
+    it('falls back to Table when Group By is cleared while on Pie or Bar', () => {
+      const { component } = makeComponent();
+      component.groupBy = 'gender';
+      component.vizType = 'pie';
+
+      component.onGroupByChange('none');
+
+      expect(component.vizType).toBe('table');
+    });
+
+    it('onVizTypeChange ignores Pie/Bar while Group By is None', () => {
+      const { component, ccvaService } = makeComponent();
+      component.groupBy = 'none';
+
+      component.onVizTypeChange('pie');
+
+      expect(component.vizType).toBe('table');
+      expect(ccvaService.get_ccva_grouped_results).not.toHaveBeenCalled();
+    });
+
+    it('onVizTypeChange loads grouped results for Pie once a Group By is set', () => {
+      const { component, ccvaService } = makeComponent();
+      component.groupBy = 'broad';
+
+      component.onVizTypeChange('pie');
+
+      expect(component.vizType).toBe('pie');
+      expect(ccvaService.get_ccva_grouped_results).toHaveBeenCalledWith(
+        'task-123', 'broad', undefined, undefined, undefined
+      );
+    });
+
+    it('onVizTypeChange to Map loads map points instead of grouped/individual results', () => {
+      const { component, ccvaService } = makeComponent();
+
+      component.onVizTypeChange('map');
+
+      expect(component.vizType).toBe('map');
+      expect(ccvaService.get_ccva_map_points).toHaveBeenCalledWith('task-123', undefined, undefined, undefined);
+      expect(ccvaService.get_ccva_individual_results).not.toHaveBeenCalled();
+    });
+
+    it('switching Group By while on Map does not refetch map points (only their coloring changes)', () => {
+      const { component, ccvaService } = makeComponent();
+      component.vizType = 'map';
+      ccvaService.get_ccva_map_points.mockClear();
+
+      component.onGroupByChange('gender');
+
+      expect(ccvaService.get_ccva_map_points).not.toHaveBeenCalled();
+    });
+
+    it('search/filter/clear reload grouped results instead of individual rows once grouped', () => {
+      const { component, ccvaService } = makeComponent();
+      component.groupBy = 'broad';
+      ccvaService.get_ccva_grouped_results.mockClear();
+
+      component.onSearch();
+      expect(ccvaService.get_ccva_grouped_results).toHaveBeenCalledTimes(1);
+
+      component.onFilterByChange('gender');
+      expect(ccvaService.get_ccva_grouped_results).toHaveBeenCalledTimes(2);
+    });
+
+    it('groupLabel friendly-maps location groups, capitalizes gender/age_group, and falls back to Unclassified', () => {
+      const { component } = makeComponent();
+
+      component.groupBy = 'region';
+      expect(component.groupLabel({ group: 'dodoma', count: 1 })).toBe('Friendly(dodoma)');
+
+      component.groupBy = 'gender';
+      expect(component.groupLabel({ group: 'female', count: 1 })).toBe('Female');
+
+      component.groupBy = 'broad';
+      expect(component.groupLabel({ group: 'Group I: Communicable', count: 1 })).toBe('Group I: Communicable');
+      expect(component.groupLabel({ group: '', count: 1 })).toBe('Unclassified');
+    });
+
+    it('percentageFor computes a share of groupedTotal, and shows an em dash when total is 0', () => {
+      const { component } = makeComponent();
+      component.groupedTotal = 0;
+      expect(component.percentageFor({ group: 'x', count: 5 })).toBe('—');
+
+      component.groupedTotal = 4;
+      expect(component.percentageFor({ group: 'x', count: 1 })).toBe('25.0%');
+    });
+
+    it('onSort on the grouped table sorts client-side without a network call', () => {
+      const { component, ccvaService } = makeComponent();
+      component.groupBy = 'gender';
+      component.groupedData = [{ group: 'male', count: 9 }, { group: 'female', count: 4 }];
+      component.sortColumn = 'count';
+      component.sortDirection = 'desc';
+      ccvaService.get_ccva_grouped_results.mockClear();
+
+      component.onSort('count'); // toggles desc -> asc
+
+      expect(component.groupedData).toEqual([{ group: 'female', count: 4 }, { group: 'male', count: 9 }]);
+      expect(ccvaService.get_ccva_grouped_results).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('downloadChartImage', () => {
+    it('does nothing when no chart canvas is present', () => {
+      const { component } = makeComponent();
+      expect(() => component.downloadChartImage()).not.toThrow();
+    });
+
+    it('triggers a PNG download from the chart canvas', () => {
+      const { component } = makeComponent();
+      component.groupBy = 'broad';
+      component.vizType = 'pie';
+      component.downloadMenuOpen = true;
+
+      const container = document.createElement('span');
+      container.id = 'ccva-group-chart';
+      const canvas = document.createElement('canvas');
+      canvas.toDataURL = jest.fn().mockReturnValue('data:image/png;base64,fake');
+      container.appendChild(canvas);
+      document.body.appendChild(container);
+
+      const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+      component.downloadChartImage();
+
+      expect(canvas.toDataURL).toHaveBeenCalledWith('image/png');
+      expect(clickSpy).toHaveBeenCalled();
+      expect(component.downloadMenuOpen).toBe(false);
+
+      clickSpy.mockRestore();
+      document.body.removeChild(container);
+    });
+  });
+
+  describe('Download menu', () => {
+    it('toggleDownloadMenu opens and closes it', () => {
+      const { component } = makeComponent();
+      expect(component.downloadMenuOpen).toBe(false);
+      component.toggleDownloadMenu();
+      expect(component.downloadMenuOpen).toBe(true);
+      component.toggleDownloadMenu();
+      expect(component.downloadMenuOpen).toBe(false);
+    });
+
+    it('closes on a click outside the menu wrapper', () => {
+      const { component } = makeComponent();
+      component.downloadMenuOpen = true;
+      const outsideEl = document.createElement('div');
+      const event = { composedPath: () => [outsideEl] } as unknown as MouseEvent;
+
+      component.onDocumentClickForDownloadMenu(event);
+
+      expect(component.downloadMenuOpen).toBe(false);
+    });
+
+    it('stays open on a click inside the menu wrapper', () => {
+      const { component } = makeComponent();
+      component.downloadMenuOpen = true;
+      const insideEl = document.createElement('div');
+      insideEl.classList.add('download-menu-wrapper');
+      const event = { composedPath: () => [insideEl] } as unknown as MouseEvent;
+
+      component.onDocumentClickForDownloadMenu(event);
+
+      expect(component.downloadMenuOpen).toBe(true);
     });
   });
 });
