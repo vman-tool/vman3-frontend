@@ -12,11 +12,34 @@
     <div class="space-y-6">
       <!-- Filter Configuration -->
       <div class="p-5 bg-gray-50 rounded-lg border border-gray-200">
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+          <!-- Organization Unit - defaults to the current user's own
+               administrative unit; narrowing it further only changes what's
+               displayed here, since the backend independently enforces the
+               user's actual access_limit on every export regardless of this
+               selection. -->
+          <div class="space-y-2">
+            <!-- mb-2 (not just the wrapper's space-y-2) because
+                 app-location-tree-select's host renders as an inline
+                 element by default - vertical margin on an inline box has
+                 no effect, so space-y-2's margin-top alone collapsed to 0px
+                 here. A block-level label's own margin-bottom doesn't have
+                 that problem, so it's the robust fix regardless of what
+                 follows it. -->
+            <label class="block mb-2 text-sm font-medium text-gray-700">Organization Unit</label>
+            <app-location-tree-select
+              [levels]="locationTypes"
+              [selected]="selectedLocations"
+              [creatorBoundary]="creatorBoundary"
+              (selectedChange)="onLocationSelectionChange($event)">
+            </app-location-tree-select>
+            <p class="text-xs text-gray-500">Defaults to your own organization unit</p>
+          </div>
 
           <!-- Date Range -->
           <div class="space-y-2 md:col-span-2 xl:col-span-2">
-            <label class="block text-sm font-medium text-gray-700">Date Range</label>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Date Range</label>
             <div class="flex flex-col sm:flex-row items-center sm:space-x-2 space-y-2 sm:space-y-0">
               <div class="relative w-full">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -40,15 +63,15 @@
           </div>
 
           <!-- Date Type -->
-          <div class="space-y-2 pt-2">
-            <label class="block text-sm font-medium text-gray-700">Filter By Date Type</label>
+          <div class="space-y-2">
+            <label class="block mb-2 text-sm font-medium text-gray-700">Filter By Date Type</label>
             <app-custom-dropdown widthClass="w-full" [options]="dateTypeOptions"
               [(selectedValue)]="selectedDateType"></app-custom-dropdown>
             <p class="text-xs text-gray-500">Choose which date field to apply the range to</p>
           </div>
 
           <!-- Additional Sheets -->
-          <div *ngIf="canExportPcvaCcva" class="space-y-2 xl:col-span-3">
+          <div *ngIf="canExportPcvaCcva" class="space-y-2 xl:col-span-4">
             <label class="block text-sm font-medium text-gray-700">Additional Sheets</label>
             <p class="text-xs text-gray-500">Sheet 1 always contains all form submission variables. Check below to add extra sheets.</p>
             <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-6 p-3 bg-white rounded-lg border border-gray-200">
