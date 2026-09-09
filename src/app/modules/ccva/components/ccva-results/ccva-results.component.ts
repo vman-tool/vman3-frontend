@@ -492,7 +492,10 @@ export class CcvaResultsComponent implements OnInit {
     dialogConfig.width = '95vw';
     dialogConfig.height = '90vh';
     dialogConfig.panelClass = 'cdk-overlay-pane';
-    dialogConfig.data = { va: row.va_id };
+    // task_id scopes the popup's CCVA cause to this specific run, not
+    // whichever run happens to be marked default - see ViewVaComponent's
+    // constructor and ListRecordsService.getCauseOfDeath for why.
+    dialogConfig.data = { va: row.va_id, task_id: this.taskId };
     this.dialog.open(ViewVaComponent, dialogConfig);
   }
 
