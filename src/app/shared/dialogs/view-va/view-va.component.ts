@@ -45,6 +45,9 @@ interface PcvaCod {
 export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
   /** The submission this dialog was opened for. */
   vaId = '';
+  /** Set only when opened from one specific CCVA run's results table - see
+   * the constructor for why. */
+  taskId?: string;
 
   /** The row the records table was showing, for the header strip. */
   context: any;
@@ -90,6 +93,11 @@ export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
     const va = data?.va;
     this.context = va && typeof va === 'object' ? va : {};
     this.vaId = ViewVaComponent.resolveVaId(va);
+    // Set only when opened from a specific CCVA run's own results table
+    // (CCVA > Display Data) - scopes the CCVA cause shown below to that
+    // run instead of whichever run is marked default, since the row
+    // clicked is unambiguous and may not be the default run.
+    this.taskId = data?.task_id || undefined;
 
     this.contextItems = [
       { label: 'Interview day', value: this.context?.interviewDay },
@@ -206,7 +214,7 @@ export class ViewVaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.codLoading = true;
     this.codError = '';
     this.listRecordsService
-      .getCauseOfDeath(this.vaId, this.codOptions.include_ccva_default, this.codOptions.include_pcva)
+      .getCauseOfDeath(this.vaId, this.codOptions.include_ccva_default, this.codOptions.include_pcva, this.taskId)
       .subscribe({
         next: (response: any) => {
           this.codData = response?.data ?? null;

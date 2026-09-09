@@ -338,13 +338,15 @@ describe('CcvaResultsComponent (unit)', () => {
   });
 
   describe('onView', () => {
-    it('opens ViewVaComponent with the row VA id, matching the VA Records dialog config', () => {
-      const { component, dialog } = makeComponent();
+    it('opens ViewVaComponent with the row VA id and this run\'s task_id, matching the VA Records dialog config', () => {
+      const { component, dialog } = makeComponent('task-123');
       component.onView({ va_id: 'uuid-1' } as any);
 
       expect(dialog.open).toHaveBeenCalledTimes(1);
       const [, config] = dialog.open.mock.calls[0];
-      expect(config.data).toEqual({ va: 'uuid-1' });
+      // task_id scopes the popup's CCVA cause to this specific run, not
+      // whichever run is marked default - see ViewVaComponent.
+      expect(config.data).toEqual({ va: 'uuid-1', task_id: 'task-123' });
       expect(config.width).toBe('95vw');
       expect(config.height).toBe('90vh');
       expect(config.panelClass).toBe('cdk-overlay-pane');

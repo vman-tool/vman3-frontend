@@ -31,11 +31,11 @@ describe('ViewVaComponent', () => {
 // Cause of Death fetch (loadCauseOfDeath), which only runs when the settings
 // checkboxes (codOptions) enable it.
 describe('ViewVaComponent - Cause of Death (unit)', () => {
-  function makeComponent(getCauseOfDeath: jest.Mock = jest.fn()) {
+  function makeComponent(getCauseOfDeath: jest.Mock = jest.fn(), dialogData: any = { va: 'va-1' }) {
     const listRecordsService = { getCauseOfDeath } as any;
     const component = new ViewVaComponent(
       {} as any,
-      { va: 'va-1' },
+      dialogData,
       {} as any,
       {} as any,
       {} as any,
@@ -62,10 +62,25 @@ describe('ViewVaComponent - Cause of Death (unit)', () => {
 
     (component as any).loadCauseOfDeath();
 
-    expect(listRecordsService.getCauseOfDeath).toHaveBeenCalledWith('va-1', true, false);
+    // No task_id in dialog data (VA Records/PCVA callers) - falls back to
+    // the default-run behavior server-side.
+    expect(listRecordsService.getCauseOfDeath).toHaveBeenCalledWith('va-1', true, false, undefined);
     expect(component.codData).toEqual(response.data);
     expect(component.codLoading).toBe(false);
     expect(component.codError).toBe('');
+  });
+
+  it('passes the task_id through when opened from a specific CCVA run (Display Data)', () => {
+    const response = { data: { ccva: { algorithm: 'InterVA5', cause1: 'Malaria', probability: 91 }, pcva: null } };
+    const getCauseOfDeath = jest.fn().mockReturnValue(of(response));
+    const { component, listRecordsService } = makeComponent(getCauseOfDeath, { va: 'va-1', task_id: 'run-42' });
+    component.codOptions = { include_ccva_default: true, include_pcva: false };
+
+    expect(component.taskId).toBe('run-42');
+
+    (component as any).loadCauseOfDeath();
+
+    expect(listRecordsService.getCauseOfDeath).toHaveBeenCalledWith('va-1', true, false, 'run-42');
   });
 
   it('sets an error message when the fetch fails, without leaving the loading state stuck', () => {

@@ -101,10 +101,17 @@ export class ListRecordsService {
     });
   }
 
-  getCauseOfDeath(vaId: string, includeCcva: boolean, includePcva: boolean): Observable<any> {
-    const params = new HttpParams()
+  // taskId scopes the CCVA cause to one specific run (CCVA > Display Data,
+  // where the run being viewed is unambiguous) instead of whichever run is
+  // currently marked default (every other caller - VA Records, PCVA
+  // screens - which omit it).
+  getCauseOfDeath(vaId: string, includeCcva: boolean, includePcva: boolean, taskId?: string): Observable<any> {
+    let params = new HttpParams()
       .set('include_ccva', includeCcva)
       .set('include_pcva', includePcva);
+    if (taskId) {
+      params = params.set('task_id', taskId);
+    }
 
     return this.http.get<any>(
       `${this.configService.API_URL}/records/${encodeURIComponent(vaId)}/cause-of-death`,
