@@ -54,6 +54,14 @@ export class CcvaRunStateService {
 
   private socket: WebSocket | undefined;
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
+  // Safety net for a WebSocket that dies mid-run (network blip, proxy/
+  // load-balancer idle timeout, backend worker recycle) without the
+  // frontend ever finding out - see startReconciliationPoll(). Independent
+  // of the socket's own health, so it's what actually resolves the "stuck
+  // at Running... forever" bug now that the backend durably persists
+  // progress for every run path (see ccva_tasks.py's _publish_and_persist).
+  private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private static readonly RECONCILIATION_POLL_MS = 20_000;
 
   constructor(
     private runCcvaService: RunCcvaService,
@@ -174,16 +182,52 @@ export class CcvaRunStateService {
       }
     };
     this.socket.onerror = (event) => console.error('CCVA WebSocket error:', event);
+    // Logging only - deliberately no reconnect-on-close logic here. The
+    // reconciliation poll below is the actual recovery path: simpler and
+    // more robust than re-establishing a raw WebSocket (no backoff tuning,
+    // no risk of ending up with two open sockets), and it already reuses
+    // the exact same HTTP endpoint + applyUpdate() that rehydrate() uses on
+    // a full page reload.
+    this.socket.onclose = (event) => {
+      if (this.state.status === 'running' || this.state.status === 'starting') {
+        console.warn('CCVA WebSocket closed while a run is still in progress; relying on periodic reconciliation.', event);
+      }
+    };
+
+    this.startReconciliationPoll(taskId);
+  }
+
+  // Independent safety net alongside the WebSocket: while a run is in
+  // progress, periodically re-fetches progress over plain HTTP and feeds it
+  // through the same applyUpdate() the socket uses. Redundant (and cheap)
+  // while the socket is healthy; the only thing that resolves a silently
+  // dead socket without requiring the user to manually refresh the page.
+  private startReconciliationPoll(taskId: string): void {
+    if (this.pollInterval) clearInterval(this.pollInterval);
+    this.pollInterval = setInterval(() => {
+      if (this.state.status !== 'running' && this.state.status !== 'starting') return;
+      this.runCcvaService.getTaskProgress(taskId).subscribe({
+        next: (progressData) => {
+          if (progressData) this.applyUpdate(progressData);
+        },
+        error: (err) => console.error('CCVA progress reconciliation poll failed:', err),
+      });
+    }, CcvaRunStateService.RECONCILIATION_POLL_MS);
   }
 
   private disconnectSocket(): void {
     if (this.socket) {
+      this.socket.onclose = null; // avoid a stray close event after an intentional disconnect
       this.socket.close();
       this.socket = undefined;
     }
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
       this.countdownInterval = null;
+    }
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
     }
   }
 

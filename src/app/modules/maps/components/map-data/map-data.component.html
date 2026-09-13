@@ -1,6 +1,18 @@
-<app-va-filters [title]="title"></app-va-filters>
+<app-va-filters [title]="title" [locationFirst]="true" [autoApplyLocation]="true"></app-va-filters>
 <div class="relative w-full h-screen sm:rounded-lg">
   <div id="map" class="absolute inset-0 z-0"></div>
+
+  <div *ngIf="dqaIndicator !== 'none' && dqaLegendEntries.length > 0"
+       class="absolute bottom-3 left-3 z-[1000] bg-white/95 rounded-lg shadow px-3 py-2 text-xs text-gray-700 max-w-[220px]">
+    <div *ngFor="let entry of dqaLegendEntries" class="flex items-center gap-1.5 py-0.5">
+      <span class="inline-block w-2.5 h-2.5 rounded-full shrink-0" [style.background]="entry.colorHex"></span>
+      <span class="truncate">{{ entry.label }}</span>
+    </div>
+    <div class="text-[10px] text-gray-400 mt-1 pt-1 border-t border-gray-100">
+      Bubble color = mix of these · hover for the exact breakdown
+    </div>
+  </div>
+
   <div *ngIf="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75">
     <div class="w-32 h-32 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
   </div>

@@ -9,75 +9,91 @@
     <!-- Filter Section (Displayed when not loading) -->
     <div *ngIf="!isLoading" class="flex items-center justify-between space-x-4">
 
-      <!-- Left Section: Date Type, Start Date, End Date, and Location -->
-      <div class="flex items-center space-x-4">
-        <!-- Date Type Dropdown -->
-        <div>
-          <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
-          <app-custom-dropdown id="dateType" [options]="dateTypeOptions"
-            [(selectedValue)]="selectedDateType"></app-custom-dropdown>
-
-        </div>
-
-        <!-- Start Date Input -->
-        <div>
-          <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
-          <input id="startDate" type="date" [(ngModel)]="startDate"
-            (change)="$any($event.target).blur()"
-            class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        </div>
-
-        <!-- End Date Input -->
-        <div>
-          <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
-          <input id="endDate" type="date" [(ngModel)]="endDate"
-            (change)="$any($event.target).blur()"
-            class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-        </div>
-
-        <!-- Location Dropdown -->
+      <ng-container *ngIf="locationFirst; else defaultOrder">
+        <!-- Location first (leftmost), standalone -->
         <div class="w-72">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-          <app-location-tree-select
-            [levels]="locationTypes"
-            [selected]="selectedLocations"
-            [creatorBoundary]="creatorBoundary"
-            (selectedChange)="onLocationSelectionChange($event)">
-          </app-location-tree-select>
+          <ng-container *ngTemplateOutlet="locationField"></ng-container>
         </div>
 
-        <!-- Results Filter Dropdown -->
-        <!-- <div>
-          <label for="resultsFilter" class="block text-sm font-medium text-gray-700">Results Filter</label>
-          <select id="resultsFilter" [(ngModel)]="selectedResultsFilter"
-            class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            <option *ngFor="let option of resultsFilterOptions" [value]="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div> -->
-      </div>
+        <!-- Everything else - Date Type/Start/End plus the action buttons -
+             grouped together and pushed to the right as one set. -->
+        <div class="flex items-center ml-auto space-x-4">
+          <ng-container *ngTemplateOutlet="dateTypeField"></ng-container>
+          <ng-container *ngTemplateOutlet="startDateField"></ng-container>
+          <ng-container *ngTemplateOutlet="endDateField"></ng-container>
+          <ng-container *ngTemplateOutlet="actionButtons"></ng-container>
+        </div>
+      </ng-container>
 
-      <!-- Right Section: Apply, Export, and Reset Buttons -->
-      <div class="flex items-center ml-auto space-x-4">
-        <button (click)="applyFilters()" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
-          Apply
-        </button>
-        <!-- <button (click)="exportRecords()" [disabled]="isExporting" class="px-6 py-2 font-bold text-white rounded"
-          [ngClass]="isExporting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'">
-          <span *ngIf="!isExporting">
-            <i class="ph-download-simple mr-1"></i> Export
-          </span>
-          <span *ngIf="isExporting" class="flex items-center">
-            <mat-spinner diameter="20" class="mr-2" color="accent"></mat-spinner>
-            Exporting...
-          </span>
-        </button> -->
-        <button (click)="resetFilters()"
-          class="px-6 py-2 font-bold text-white bg-yellow-500 rounded hover:bg-yellow-600">
-          Reset
-        </button>
-      </div>
+      <ng-template #defaultOrder>
+        <!-- Left Section: Date Type, Start Date, End Date, and Location -->
+        <div class="flex items-center space-x-4">
+          <ng-container *ngTemplateOutlet="dateTypeField"></ng-container>
+          <ng-container *ngTemplateOutlet="startDateField"></ng-container>
+          <ng-container *ngTemplateOutlet="endDateField"></ng-container>
+          <div class="w-72">
+            <ng-container *ngTemplateOutlet="locationField"></ng-container>
+          </div>
+        </div>
+
+        <!-- Right Section: Apply and Reset Buttons -->
+        <div class="flex items-center ml-auto space-x-4">
+          <ng-container *ngTemplateOutlet="actionButtons"></ng-container>
+        </div>
+      </ng-template>
     </div>
   </div>
 </div>
+
+<ng-template #dateTypeField>
+  <div>
+    <label for="dateType" class="block text-sm font-medium text-gray-700">Date Type</label>
+    <app-custom-dropdown id="dateType" [options]="dateTypeOptions"
+      [(selectedValue)]="selectedDateType"></app-custom-dropdown>
+  </div>
+</ng-template>
+
+<ng-template #startDateField>
+  <div>
+    <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
+    <input id="startDate" type="date" [(ngModel)]="startDate"
+      (change)="$any($event.target).blur()"
+      class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+  </div>
+</ng-template>
+
+<ng-template #endDateField>
+  <div>
+    <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
+    <input id="endDate" type="date" [(ngModel)]="endDate"
+      (change)="$any($event.target).blur()"
+      class="block w-40 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+  </div>
+</ng-template>
+
+<ng-template #locationField>
+  <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+  <app-location-tree-select
+    [levels]="locationTypes"
+    [selected]="selectedLocations"
+    [creatorBoundary]="creatorBoundary"
+    (selectedChange)="onLocationSelectionChange($event)">
+  </app-location-tree-select>
+</ng-template>
+
+<ng-template #actionButtons>
+  <!-- Every other field here is a label + control stacked vertically, so the
+       control itself sits ~24px below the row's top edge. These buttons have
+       no label above them, so without this they float `items-center`-aligned
+       to the whole row's (taller) height instead of lining up with the actual
+       input controls next to them - mt-6 pushes them down to match. -->
+  <div class="flex items-center gap-4 mt-6">
+    <button (click)="applyFilters()" class="px-6 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
+      Apply
+    </button>
+    <button (click)="resetFilters()"
+      class="px-6 py-2 font-bold text-white bg-yellow-500 rounded hover:bg-yellow-600">
+      Reset
+    </button>
+  </div>
+</ng-template>

@@ -7,6 +7,13 @@
       <span class="inline-block w-2.5 h-2.5 rounded-full shrink-0" [style.background]="entry.color"></span>
       <span class="truncate">{{ entry.label }}</span>
     </div>
+    <label class="flex items-center gap-1.5 text-[10px] text-gray-500 mt-1.5 pt-1.5 border-t border-gray-100 cursor-pointer select-none">
+      <input type="checkbox" class="h-3 w-3" [(ngModel)]="showBreakdownPopup" (ngModelChange)="onToggleBreakdownPopup()" />
+      Show pop-up
+    </label>
+    <div class="text-[10px] text-gray-400 mt-1">
+      Bubble color {{ showBreakdownPopup ? ' · Hover for more details' : '' }}
+    </div>
   </div>
 
   <div *ngIf="isLoading" class="absolute inset-0 z-[1000] flex items-center justify-center bg-white/70">
