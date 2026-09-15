@@ -83,6 +83,13 @@
                     (selectedChange)="onLocationSelectionChange($event)">
                 </app-location-tree-select>
             </div>
+
+            <!-- Optional extra content a specific consumer wants under the
+                 location picker (e.g. the Add/Edit User dialog's Password
+                 fields, so that column's leftover height next to the
+                 taller Roles list isn't wasted) - a no-op when nothing is
+                 projected here, as in the standalone Assign Roles dialog. -->
+            <ng-content select="[locationExtra]"></ng-content>
         </div>
 
     </div>
