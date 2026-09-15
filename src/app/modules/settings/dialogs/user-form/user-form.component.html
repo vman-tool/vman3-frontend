@@ -55,25 +55,27 @@
           (selectRoles)="onSelected($event, 'roles')"
           (selectAccessLimit)="onSelected($event, 'access_limit')"
           (canSelectNoLimitChange)="onCanSelectNoLimitChange($event)">
+          <!-- Projected under "Limit Access By" (see locationExtra in
+               assign-roles-form) rather than its own section below - that
+               column has leftover height next to the taller Roles list,
+               so the dialog fits without scrolling. -->
+          <div locationExtra class="mt-6">
+            <p class="section-label">Password</p>
+            <p *ngIf="data?.user" class="text-xs text-gray-400 italic mt-1">
+              Leave blank to keep the current password.
+            </p>
+            <div class="mt-3 space-y-3">
+              <div>
+                <label class="field-label">Password</label>
+                <input type="password" [(ngModel)]="password" class="form-input" placeholder="············">
+              </div>
+              <div>
+                <label class="field-label">Confirm Password</label>
+                <input type="password" [(ngModel)]="confirm_password" class="form-input" placeholder="············">
+              </div>
+            </div>
+          </div>
         </app-assign-roles-form>
-      </div>
-    </section>
-
-    <!-- Password -->
-    <section>
-      <p class="section-label">Password</p>
-      <p *ngIf="data?.user" class="text-xs text-gray-400 italic mt-1">
-        Leave blank to keep the current password.
-      </p>
-      <div class="grid grid-cols-12 gap-4 mt-3">
-        <div class="col-span-6">
-          <label class="field-label">Password</label>
-          <input type="password" [(ngModel)]="password" class="form-input" placeholder="············">
-        </div>
-        <div class="col-span-6">
-          <label class="field-label">Confirm Password</label>
-          <input type="password" [(ngModel)]="confirm_password" class="form-input" placeholder="············">
-        </div>
       </div>
     </section>
 

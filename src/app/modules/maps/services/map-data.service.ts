@@ -57,4 +57,39 @@ export class MapDataService {
         })
       );
   }
+
+  // Reads the cached per-record DQA snapshot (see
+  // compute_and_store_dqa_map_points on the backend) filtered by the same
+  // date/location params as getMapRecordsData - a cheap read, not a
+  // recompute, so it's fine to call on every filter change.
+  getDqaMapPoints(
+    startDate?: string,
+    endDate?: string,
+    locations?: LocationSelection[]
+  ): Observable<any> {
+    let params = new HttpParams();
+
+    if (startDate) {
+      params = params.set('start_date', startDate);
+    }
+    if (endDate) {
+      params = params.set('end_date', endDate);
+    }
+    if (locations && locations.length > 0) {
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
+    }
+    return this.http
+      .get<any>(`${this.configService.API_URL}/data-quality/map-points`, { params })
+      .pipe(
+        map((response: any) => response),
+        catchError((error: any) => {
+          console.log('Error: ', error);
+          return of({
+            data: [],
+            message: 'Failed to fetch DQA map points',
+            error: error.message,
+          });
+        })
+      );
+  }
 }

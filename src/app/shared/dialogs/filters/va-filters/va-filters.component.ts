@@ -34,6 +34,13 @@ import {
   styleUrl: './va-filters.component.scss',
 })
 export class VaFiltersComponent implements OnInit {
+  // Both default false so every existing consumer (VA Records, CCVA, the
+  // dashboard graphs, etc.) renders/behaves exactly as before - only Data
+  // Map opts into the reordered "location first" layout and immediate
+  // (no-Apply-click) location filtering.
+  @Input() locationFirst = false;
+  @Input() autoApplyLocation = false;
+
   selectedDateType?: string = 'death_date';
   startDate?: Date;
   endDate?: Date;
@@ -212,6 +219,9 @@ export class VaFiltersComponent implements OnInit {
 
   onLocationSelectionChange(selection: LocationSelection[]): void {
     this.selectedLocations = selection;
+    if (this.autoApplyLocation) {
+      this.applyFilters();
+    }
   }
 
   onOpenSelectField(isOpen: boolean) {
