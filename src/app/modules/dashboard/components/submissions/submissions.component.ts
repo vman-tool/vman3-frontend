@@ -40,7 +40,93 @@ export class SubmissionsComponent {
     { value: '2', label: 'District' },
     { value: '3', label: 'Ward' },
   ];
-  colWidths: number[] = [11, 12, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
+  // ── Column visibility + adaptive labels ──────────────────────────────────
+  // Every metric column past "Submitted" can be hidden via the Columns menu
+  // (see toggleColumnVisibility) - First/Last default off since they're the
+  // least useful at a glance and free up real room for the rest. `weight`
+  // drives colWidths' proportional split below; `short`/`full` back
+  // columnLabelFor() - full names once hiding a column has actually
+  // reclaimed space, short+truncated (via the .truncate class + a [title]
+  // tooltip) while every column is shown and space is tight.
+  readonly TOGGLE_COLUMN_ORDER: string[] = [
+    'expected', 'completeness', 'firstSubmission', 'lastSubmission', 'coverage',
+    'adults', 'children', 'neonates', 'age_unclassified',
+    'male', 'female', 'gender_unclassified',
+  ];
+  readonly columnMeta: Record<string, { short: string; full: string; weight: number }> = {
+    expected: { short: 'Expect.', full: 'Expected', weight: 6 },
+    completeness: { short: 'Compl.', full: 'Completeness', weight: 8 },
+    firstSubmission: { short: 'First', full: 'First Submission', weight: 8 },
+    lastSubmission: { short: 'Last', full: 'Last Submission', weight: 8 },
+    coverage: { short: 'Coverage', full: 'Coverage', weight: 7 },
+    adults: { short: 'Adults', full: 'Adults', weight: 6 },
+    children: { short: 'Children', full: 'Children', weight: 6 },
+    neonates: { short: 'Neonates', full: 'Neonates', weight: 6 },
+    age_unclassified: { short: 'UnClass.', full: 'Unclassified (Age Group)', weight: 6 },
+    male: { short: 'Male', full: 'Male', weight: 6 },
+    female: { short: 'Female', full: 'Female', weight: 6 },
+    gender_unclassified: { short: 'UnClass.', full: 'Unclassified (Gender)', weight: 6 },
+  };
+  visibleColumns: Record<string, boolean> = {
+    expected: true, completeness: true, firstSubmission: false, lastSubmission: false,
+    coverage: true, adults: true, children: true, neonates: true, age_unclassified: true,
+    male: true, female: true, gender_unclassified: true,
+  };
+  columnsMenuOpen = false;
+
+  toggleColumnsMenu(): void {
+    this.columnsMenuOpen = !this.columnsMenuOpen;
+  }
+
+  toggleColumnVisibility(key: string): void {
+    this.visibleColumns[key] = !this.visibleColumns[key];
+    this.recomputeColWidths();
+  }
+
+  // Closes the Columns menu on any click outside it - the exact same
+  // pattern (and reason) as onDocumentClickForDownloadMenu below, kept as
+  // its own handler rather than merged into that one so neither menu's
+  // existing behavior/tests need to change.
+  @HostListener('document:click', ['$event'])
+  onDocumentClickForColumnsMenu(event: MouseEvent): void {
+    if (!this.columnsMenuOpen) return;
+    const path = event.composedPath() as HTMLElement[];
+    const inside = path.some(el => el?.classList?.contains?.('columns-menu-wrapper'));
+    if (!inside) this.columnsMenuOpen = false;
+  }
+
+  // True once at least one toggleable column is hidden - i.e. as soon as
+  // hiding a column has actually freed up room, every remaining header
+  // switches to its full name instead of the abbreviated one.
+  get useFullLabels(): boolean {
+    return this.TOGGLE_COLUMN_ORDER.some(key => !this.visibleColumns[key]);
+  }
+
+  columnLabelFor(key: string): string {
+    const meta = this.columnMeta[key];
+    return this.useFullLabels ? meta.full : meta.short;
+  }
+
+  // Plain field, not a getter - *ngFor over a getter that returns a new
+  // array literal every change-detection pass breaks trackBy identity and
+  // free-runs into NG0103 (see the note on groupLevelOptions above).
+  // Recomputed explicitly wherever the column set can change: groupLevel
+  // and column-visibility toggles.
+  private static readonly LOCATION_WEIGHTS: Record<number, number> = { 1: 11, 2: 12, 3: 8 };
+  private static readonly COUNT_WEIGHT = 6;
+  colWidths: number[] = [];
+
+  private recomputeColWidths(): void {
+    const weights: number[] = [SubmissionsComponent.LOCATION_WEIGHTS[1]];
+    if (this.groupLevel >= 2) weights.push(SubmissionsComponent.LOCATION_WEIGHTS[2]);
+    if (this.groupLevel >= 3) weights.push(SubmissionsComponent.LOCATION_WEIGHTS[3]);
+    weights.push(SubmissionsComponent.COUNT_WEIGHT);
+    for (const key of this.TOGGLE_COLUMN_ORDER) {
+      if (this.visibleColumns[key]) weights.push(this.columnMeta[key].weight);
+    }
+    const total = weights.reduce((a, b) => a + b, 0);
+    this.colWidths = weights.map(w => Math.round((w / total) * 1000) / 10);
+  }
   // Rows exactly as the API returned them, before applying friendly admin-
   // unit labels - kept so relabels loaded later (see initial()) can be
   // re-applied without re-fetching.
@@ -175,6 +261,7 @@ export class SubmissionsComponent {
     private adminUnitLabelsService: AdminUnitLabelsService,
     private snackBar: MatSnackBar
   ) {
+    this.recomputeColWidths();
     this.initial();
     // No separate initial loadRecords() call here - setupEffect()'s effect
     // fires once on registration with the current filter state, so this
@@ -252,23 +339,15 @@ export class SubmissionsComponent {
     const level = Number(value);
     if (!level || level === this.groupLevel) return;
     this.groupLevel = level;
-    this.colWidths = this.widthsForLevel(level);
+    this.recomputeColWidths();
     this.loadRecords();
   }
 
-  /** <colgroup> widths (%), sized so the table always fills 100% regardless
-   * of how many location columns are currently shown. */
-  private widthsForLevel(level: number): number[] {
-    if (level === 1) return [23, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
-    if (level === 3) return [8, 8, 7, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
-    return [11, 12, 6, 7, 9, 9, 9, 6, 6, 6, 6, 6, 7];
-  }
-
-  /** Total column count: 11 fixed metric columns (submitted, expected,
-   * completeness, first, last, coverage, adults, children, neonates, male,
-   * female) plus one per admin level shown. */
+  /** Total column count: "Submitted" (always shown) plus every currently
+   * visible toggleable metric column, plus one per admin level shown. */
   get totalColumns(): number {
-    return 11 + this.groupLevel;
+    const visibleToggleCount = this.TOGGLE_COLUMN_ORDER.filter(key => this.visibleColumns[key]).length;
+    return 1 + visibleToggleCount + this.groupLevel;
   }
 
   setupEffect() {
@@ -353,12 +432,20 @@ export class SubmissionsComponent {
     return this.dataSubmissions?.reduce((acc, record) => acc + record.neonates, 0);
   }
 
+  getTotalAgeUnclassified(): number {
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.age_unclassified, 0);
+  }
+
   getTotalMale(): number {
     return this.dataSubmissions?.reduce((acc, record) => acc + record.male, 0);
   }
 
   getTotalFemale(): number {
     return this.dataSubmissions?.reduce((acc, record) => acc + record.female, 0);
+  }
+
+  getTotalGenderUnclassified(): number {
+    return this.dataSubmissions?.reduce((acc, record) => acc + record.gender_unclassified, 0);
   }
 
   // Sum of expected across rows that have it - rows with no matching

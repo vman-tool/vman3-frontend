@@ -12,8 +12,10 @@ export interface SubmissionsDataModel {
   adults: number;
   children: number;
   neonates: number;
+  age_unclassified: number;
   male: number;
   female: number;
+  gender_unclassified: number;
 }
 
 export interface MonthlySubmission {
