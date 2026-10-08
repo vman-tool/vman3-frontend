@@ -562,13 +562,40 @@
   <div class="bg-white rounded-lg shadow-sm border border-gray-100">
     <div class="px-6 py-4 border-b border-gray-100">
       <div class="text-base font-semibold text-gray-900">Trend Analysis</div>
-      <p class="text-xs text-gray-400 mt-0.5">Quality score evolution over time</p>
+      <p class="text-xs text-gray-400 mt-0.5">
+        {{ activeCardLabel }} over time - tier mix (bars, left axis) and {{ activeCard === 'duration' ? 'median duration' : 'mean score' }} ({{ activeCard === 'duration' ? 'dashed' : 'solid' }} line{{ activeCard === 'duration' ? ', right axis' : '' }})
+      </p>
     </div>
-    <div class="flex items-center justify-center h-48 text-gray-300">
-      <div class="text-center">
-        <i class="ph ph-chart-line text-5xl mb-2 block"></i>
-        <span class="text-sm">Chart will be rendered here</span>
+
+    <ng-container *ngIf="isTrendLoading">
+      <div class="flex items-center justify-center h-48 text-gray-300">
+        <svg class="w-6 h-6 animate-spin text-amber-500" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
       </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isTrendLoading && hasTrendError">
+      <div class="flex items-center justify-center h-48 text-red-400 text-sm">
+        <i class="ph ph-warning-circle mr-1"></i>Failed to load trend data. Check backend connectivity.
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isTrendLoading && !hasTrendError && !hasTrendData">
+      <div class="flex items-center justify-center h-48 text-gray-300">
+        <div class="text-center">
+          <i class="ph ph-chart-line text-5xl mb-2 block"></i>
+          <span class="text-sm">No trend data yet - run a DQA computation first.</span>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="hasTrendData" class="px-6 py-4" style="height: 280px;">
+      <canvas baseChart
+        [datasets]="trendChartDatasets" [labels]="trendChartLabels"
+        [options]="trendChartOptions" [legend]="trendChartLegend" [type]="trendChartType">
+      </canvas>
     </div>
   </div>
 

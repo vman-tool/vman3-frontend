@@ -1,4 +1,5 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { ChartOptions, ChartType } from 'chart.js';
 import {
   GeneralDqaService,
   DistStat,
@@ -6,8 +7,16 @@ import {
   IciStats,
   InterviewerIci,
   SnapshotStatus,
+  DqaTrendPoint,
 } from '../../services/general-dqa.service';
 import { DqaThresholdService, StatusBadge as ThresholdBadge } from '../../services/dqa-threshold.service';
+
+// The chart data/service key for an indicator - distinct from `ActiveCard`
+// because this page calls the Duration card 'duration' everywhere else
+// (to match its own KPI-card vocabulary), while DqaThresholdService and the
+// raw DqaTrendPoint rows (and the Python AID functions they come from) all
+// use 'aid'.
+type IndicatorKey = 'rrs' | 'ics' | 'ici' | 'aid';
 
 // ─── SVG distribution visualisation ────────────────────────────────────────
 
@@ -267,6 +276,20 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
    */
   private pollsRemaining = 240;
 
+  // ── Trend Analysis (line = mean/median over time, stacked bar = tier mix) ─
+  // Raw per-record rows fetched once; `trendChartLabels`/`trendChartDatasets`
+  // are plain fields recomputed by `recomputeTrendChart()` (never getters -
+  // a getter returning a fresh array/object each call breaks ng2-charts'
+  // change detection with an NG0103 loop, as elsewhere in this codebase).
+  trendPoints: DqaTrendPoint[] = [];
+  isTrendLoading = true;
+  hasTrendError  = false;
+  trendChartLabels: string[] = [];
+  trendChartDatasets: any[] = [];
+  trendChartOptions: ChartOptions = { responsive: true };
+  readonly trendChartType: ChartType = 'bar';
+  readonly trendChartLegend = true;
+
   // Which card drives the breakdown table
   activeCard: ActiveCard = 'rrs';
 
@@ -314,6 +337,7 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFromSnapshot();
+    this.loadTrendPoints();
   }
 
   ngOnDestroy(): void {
@@ -351,6 +375,20 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadTrendPoints(): void {
+    this.svc.getTrendPoints().subscribe({
+      next: r => {
+        this.trendPoints = r?.data ?? [];
+        this.isTrendLoading = false;
+        this.recomputeTrendChart();
+      },
+      error: () => {
+        this.hasTrendError = true;
+        this.isTrendLoading = false;
+      },
+    });
+  }
+
   forceRefresh(): void {
     if (this.isRefreshing || this.analyticsStatus === 'running') return;
     this.isRefreshing = true;
@@ -365,7 +403,174 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
     });
   }
 
-  setActiveCard(card: ActiveCard): void { this.activeCard = card; }
+  setActiveCard(card: ActiveCard): void {
+    this.activeCard = card;
+    this.recomputeTrendChart();
+  }
+
+  // ── Trend Analysis aggregation ───────────────────────────────────────────
+  // `'duration'` is this page's own vocabulary; everywhere trend data and
+  // DqaThresholdService are involved it's `'aid'`.
+  private toIndicatorKey(card: ActiveCard): IndicatorKey {
+    return card === 'duration' ? 'aid' : card;
+  }
+
+  get hasTrendData(): boolean {
+    return !this.isTrendLoading && !this.hasTrendError && this.trendPoints.length > 0;
+  }
+
+  // Mean for RRS/ICS/ICI, median for AID/MID - matching how each
+  // indicator's own KPI card and breakdown table already summarise it
+  // (see `activeCentralValue` and INDICATOR_INFO.duration's note on why
+  // duration specifically uses the median).
+  private centralValue(indicator: IndicatorKey, values: number[]): number | null {
+    if (values.length === 0) return null;
+    if (indicator !== 'aid') {
+      return values.reduce((sum, v) => sum + v, 0) / values.length;
+    }
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+
+  // Rebuilds `trendChartLabels`/`trendChartDatasets`/`trendChartOptions` as
+  // plain fields (not getters - see their declaration comment) from the raw
+  // `trendPoints`. Called whenever the points first load and whenever
+  // `setActiveCard` switches which indicator the chart should show.
+  //
+  // Tiering happens here, client-side, via the live-configured
+  // DqaThresholdService - the same "store raw scores, classify on read"
+  // principle already used by the Data Map, so an admin's threshold edit
+  // (Settings > DQA Thresholds) updates this chart with no backend
+  // recompute needed.
+  private recomputeTrendChart(): void {
+    if (this.trendPoints.length === 0) {
+      this.trendChartLabels = [];
+      this.trendChartDatasets = [];
+      return;
+    }
+
+    const indicator = this.toIndicatorKey(this.activeCard);
+
+    const byMonth = new Map<string, DqaTrendPoint[]>();
+    for (const p of this.trendPoints) {
+      if (!byMonth.has(p.month)) byMonth.set(p.month, []);
+      byMonth.get(p.month)!.push(p);
+    }
+    const months = [...byMonth.keys()].sort();
+
+    // Fixed tier order/colors for this indicator (e.g. High/Moderate/Low),
+    // independent of any single month's values - keeps the stack order and
+    // legend colors stable across months and across threshold edits.
+    const tiers = this.thresholdSvc.legendFor(indicator);
+
+    const tierPct: Record<string, number[]> = {};
+    for (const tier of tiers) tierPct[tier.label] = [];
+    const centralSeries: (number | null)[] = [];
+
+    for (const month of months) {
+      const rows = byMonth.get(month)!;
+      const values: number[] = [];
+      const tierCounts: Record<string, number> = {};
+      for (const tier of tiers) tierCounts[tier.label] = 0;
+
+      for (const row of rows) {
+        const v = row[indicator];
+        if (v === null || v === undefined) continue;
+        values.push(v);
+        const tc = this.thresholdSvc.colorFor(indicator, v);
+        if (tc && tierCounts[tc.label] !== undefined) tierCounts[tc.label] += 1;
+      }
+
+      const total = values.length;
+      for (const tier of tiers) {
+        tierPct[tier.label].push(total > 0 ? Math.round((tierCounts[tier.label] / total) * 1000) / 10 : 0);
+      }
+      const central = this.centralValue(indicator, values);
+      // Rounded to 2dp here (not left to the tooltip) so the chart's own
+      // point data matches what's displayed on hover.
+      centralSeries.push(central === null ? null : Math.round(central * 100) / 100);
+    }
+
+    const isDuration = indicator === 'aid';
+    // Matches the distribution curve's own mean/median line convention on
+    // this same page: solid blue = mean, dashed red = median.
+    const lineColor = isDuration ? '#dc2626' : '#1d4ed8';
+
+    this.trendChartLabels = months;
+    this.trendChartDatasets = [
+      ...tiers.map(tier => ({
+        type: 'bar' as const,
+        label: tier.label,
+        data: tierPct[tier.label],
+        backgroundColor: tier.colorHex,
+        stack: 'tier',
+        yAxisID: 'y',
+        order: 1,
+      })),
+      {
+        type: 'line' as const,
+        label: isDuration ? 'Median' : 'Mean',
+        data: centralSeries,
+        borderColor: lineColor,
+        backgroundColor: lineColor,
+        borderDash: isDuration ? [6, 4] : [],
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: lineColor,
+        fill: false,
+        spanGaps: true,
+        // Always its own axis (y1), never shared with the tier-% bars (y) -
+        // RRS/ICS/ICI's mean happens to also sit on a 0-100 scale, but
+        // sharing the bars' axis squeezed the line against them. A
+        // dedicated axis is used for every indicator, consistently.
+        yAxisID: 'y1',
+        order: 0,
+      },
+    ];
+
+    this.trendChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: (ctx: any) => {
+              const value = ctx.parsed.y;
+              if (value === null || value === undefined) return `${ctx.dataset.label}: --`;
+              // Tier bars: whole-number-ish percentage. Mean/Median line:
+              // always 2dp, per the user's request, even for a round value
+              // like 60 (-> "60.00 min") rather than just "60 min".
+              if (ctx.dataset.stack === 'tier') return `${ctx.dataset.label}: ${value.toFixed(1)}%`;
+              const suffix = isDuration ? ' min' : '';
+              return `${ctx.dataset.label}: ${value.toFixed(2)}${suffix}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          min: 0,
+          max: 100,
+          title: { display: true, text: 'Tier share (%)' },
+        },
+        y1: {
+          position: 'right' as const,
+          grid: { drawOnChartArea: false },
+          // RRS/ICS/ICI's mean is 0-100 like the tier bars - pinned to the
+          // same range so the line's shape is comparable across indicators.
+          // Duration's median is in minutes, which isn't 0-100, so its axis
+          // auto-scales to the data instead.
+          ...(isDuration ? {} : { min: 0, max: 100 }),
+          title: { display: true, text: isDuration ? 'Median duration (min)' : 'Mean score' },
+        },
+      },
+    } as ChartOptions;
+  }
 
   // ── Derived state for the active card ──────────────────────────────────
 
