@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { DataFilterComponent } from '../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
 import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-filters.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MaterialModule,
     MatProgressSpinnerModule,
     VaFiltersComponent,
+    CustomDropdownComponent,
   ],
   exports: [RecordsComponent],
 })

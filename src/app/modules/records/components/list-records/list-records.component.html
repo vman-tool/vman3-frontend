@@ -8,12 +8,9 @@
 
       <div class="search-group">
         <label class="search-label">Search by</label>
-        <select [(ngModel)]="searchBy" class="search-select">
-          <option value="vaId">VA ID</option>
-          <option value="location_level1">{{ locationLevel1Label }}</option>
-          <option value="location_level2">{{ locationLevel2Label }}</option>
-          <option value="interviewer_name">Interviewer</option>
-        </select>
+        <app-custom-dropdown [options]="searchByOptions" [selectedValue]="searchBy"
+          (selectedValueChange)="onSearchByChange($event)">
+        </app-custom-dropdown>
       </div>
 
       <div class="search-input-group">
