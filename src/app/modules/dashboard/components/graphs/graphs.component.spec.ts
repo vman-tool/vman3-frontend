@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { GraphsComponent } from './graphs.component';
+import { GeneralDqaService } from '../../../data-quality/services/general-dqa.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
@@ -22,6 +24,44 @@ describe('GraphsComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('Median Interview Duration (dqaDuration)', () => {
+    // Regression test: this KPI card used to read .avg (the mean), which is
+    // misleading for a right-skewed duration distribution - it must read
+    // .p50 (the median) instead, matching the card's "Median Interview
+    // Duration" label and the vman_dq manuscript's own MID definition.
+    it('reads the median (p50), not the mean (avg), for both the value and its tier', () => {
+      const service = TestBed.inject(GeneralDqaService);
+      jest.spyOn(service, 'getAnalyticsSnapshot').mockReturnValue(of({
+        data: {
+          status: 'completed',
+          computed_at: '2026-01-01T00:00:00Z',
+          rrs: null,
+          ics: null,
+          ici: null,
+          aid: {
+            overall: { avg: 90, min_v: 1, max_v: 400, stddev: 50, p50: 35, count: 100 },
+            by_age_group: {
+              adults: { avg: 0, min_v: 0, max_v: 0, stddev: 0, p50: 0, count: 0 },
+              children: { avg: 0, min_v: 0, max_v: 0, stddev: 0, p50: 0, count: 0 },
+              neonates: { avg: 0, min_v: 0, max_v: 0, stddev: 0, p50: 0, count: 0 },
+            },
+            by_gender_adult: {
+              male_adults: { avg: 0, min_v: 0, max_v: 0, stddev: 0, p50: 0, count: 0 },
+              female_adults: { avg: 0, min_v: 0, max_v: 0, stddev: 0, p50: 0, count: 0 },
+            },
+          },
+        },
+      } as any));
+
+      component.ngOnInit();
+
+      // avg=90min would render "1h 30m" - the component must show the
+      // p50=35min figure instead.
+      expect(component.dqaDuration).toBe('35 min');
+      expect(component.dqaDuration).not.toBe('1h 30m');
+    });
   });
 
   describe('processBarChartData', () => {

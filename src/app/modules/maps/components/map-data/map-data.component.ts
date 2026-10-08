@@ -113,14 +113,15 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
     { value: 'rrs', label: 'RRS' },
     { value: 'ics', label: 'ICS' },
     { value: 'ici', label: 'ICI' },
-    { value: 'aid', label: 'AID' },
+    { value: 'aid', label: 'MID' },
   ];
   dqaLegendEntries: TierColor[] = [];
-  // Each indicator's overall average, shown right on its radio label (e.g.
-  // "RRS 84.1") - read straight from the same cached DQA snapshot that
-  // already gates dqaAvailable, so it refreshes automatically every time
-  // that snapshot does (the next nightly/manual recompute), with no
-  // separate fetch or polling of its own.
+  // Each indicator's overall summary stat, shown right on its radio label
+  // (e.g. "RRS 84.1") - read straight from the same cached DQA snapshot
+  // that already gates dqaAvailable, so it refreshes automatically every
+  // time that snapshot does (the next nightly/manual recompute), with no
+  // separate fetch or polling of its own. RRS/ICS/ICI are means; aid
+  // (shown as "MID") is the median - see dqaRadioLabel for why.
   dqaAverages: Partial<Record<'rrs' | 'ics' | 'ici' | 'aid', number | null>> = {};
   private dqaControl?: L.Control;
   private dqaColorByLabel: Record<string, string> = {};
@@ -156,7 +157,10 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
         // ICI's snapshot shape is IciStats, not GroupedStats - its overall
         // figure is a top-level field, not nested under .overall.avg.
         ici: snapshot?.ici?.overall_ici ?? null,
-        aid: snapshot?.aid?.overall?.avg ?? null,
+        // Median, not mean - interview durations are right-skewed, so the
+        // median is the representative "typical interview" statistic
+        // (matches General DQA and the Dashboard's own MID figure).
+        aid: snapshot?.aid?.overall?.p50 ?? null,
       };
       this.buildDqaControl();
     });
@@ -365,9 +369,9 @@ export class MapDataComponent implements OnInit, OnDestroy, AfterViewInit {
     this.statsControl!.addTo(this.map);
   }
 
-  // "RRS" -> "RRS 84.1" once its average is known (AID's is in minutes, so
-  // it gets a unit suffix to avoid reading like a 0-100 score); "None" and
-  // any indicator with no computable average (e.g. a field missing from
+  // "RRS" -> "RRS 84.1" once its value is known ("MID"'s is a median in
+  // minutes, not a 0-100 score, so it gets a unit suffix instead); "None"
+  // and any indicator with no computable value (e.g. a field missing from
   // this deployment's ODK form) keep the bare label.
   private dqaRadioLabel(indicator: DqaIndicator, label: string): string {
     if (indicator === 'none') return label;
