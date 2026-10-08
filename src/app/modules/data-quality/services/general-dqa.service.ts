@@ -66,6 +66,17 @@ export interface DqaAnalyticsConfig {
   last_triggered_date?: string;
 }
 
+// ── Trend Analysis (one row per VA record, for the General DQA page's
+// monthly trend chart) ──────────────────────────────────────────────────────
+
+export interface DqaTrendPoint {
+  month: string; // "YYYY-MM", bucketed server-side from field_mapping.submitted_date
+  rrs:   number | null;
+  ics:   number | null;
+  ici:   number | null;
+  aid:   number | null;
+}
+
 // ── Service ─────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -145,6 +156,20 @@ export class GeneralDqaService {
       .pipe(catchError(err => {
         console.error('ici-stats error:', err);
         return of({ data: null, message: 'Failed to fetch data' });
+      }));
+  }
+
+  // One row per VA record (month + each indicator's raw score) - the
+  // General DQA page aggregates these into monthly means/medians and tier
+  // percentages itself (see general-dqa.component.ts), the same way the
+  // Data Map already classifies DQA map points client-side, so threshold
+  // edits update the chart without a backend recompute.
+  getTrendPoints(): Observable<{ data: DqaTrendPoint[] | null; message: string }> {
+    return this.http
+      .get<any>(`${this.configService.API_URL}/data-quality/trend-points`)
+      .pipe(catchError(err => {
+        console.error('trend-points error:', err);
+        return of({ data: null, message: 'Failed to fetch trend points' });
       }));
   }
 }

@@ -12,12 +12,20 @@
   min-width: 320px;         // prevents it from getting too cramped
 }
 
-/* Left group: "Search by" label + select */
+/* Left group: "Search by" label + the shared app-custom-dropdown */
 .search-group {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;            // never shrink — keeps select visible
+  flex-shrink: 0;            // never shrink — keeps the dropdown visible
+}
+
+// app-custom-dropdown's own <select> otherwise renders a bit taller than
+// this toolbar's other 34px-tall controls (search input, buttons) - same
+// scoped height override already used for the CCVA Display Data toolbar's
+// dropdowns (.ccva-filter-row), applied here for the same reason.
+::ng-deep .search-group app-custom-dropdown select {
+  height: 34px;
 }
 
 /* Right group: text input + buttons — takes remaining space */
@@ -35,22 +43,6 @@
   color: #6b7280;
   white-space: nowrap;
   flex-shrink: 0;
-}
-
-.search-select {
-  height: 34px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  padding: 0 8px;
-  font-size: 13px;
-  color: #374151;
-  background: #ffffff;
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-  }
 }
 
 .search-input {

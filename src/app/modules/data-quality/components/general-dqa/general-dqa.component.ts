@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { ChartOptions, ChartType } from 'chart.js';
 import {
   GeneralDqaService,
   DistStat,
@@ -6,8 +7,16 @@ import {
   IciStats,
   InterviewerIci,
   SnapshotStatus,
+  DqaTrendPoint,
 } from '../../services/general-dqa.service';
 import { DqaThresholdService, StatusBadge as ThresholdBadge } from '../../services/dqa-threshold.service';
+
+// The chart data/service key for an indicator - distinct from `ActiveCard`
+// because this page calls the Duration card 'duration' everywhere else
+// (to match its own KPI-card vocabulary), while DqaThresholdService and the
+// raw DqaTrendPoint rows (and the Python AID functions they come from) all
+// use 'aid'.
+type IndicatorKey = 'rrs' | 'ics' | 'ici' | 'aid';
 
 // ─── SVG distribution visualisation ────────────────────────────────────────
 
@@ -88,6 +97,86 @@ export function iciClassify(ici: number | null): StatusBadge | null {
   if (ici >= 70) return { label: 'Good',      bgClass: 'bg-amber-50',   textClass: 'text-amber-700'   };
   return           { label: 'Critical',   bgClass: 'bg-red-50',     textClass: 'text-red-700'     };
 }
+
+// ─── Indicator methodology info (for the (i) popup on each KPI card) ───────
+// Sourced from this project's own validation manuscript
+// (vman_dq/reports/manuscript_v2.docx, section 2.3 "Indicator Definitions")
+// - kept here as static reference content rather than fetched at runtime.
+
+export interface IndicatorInfo {
+  name: string;
+  summary: string;
+  formula: string;
+  components?: { label: string; detail: string }[];
+  tiers: { label: string; range: string }[];
+  notes: string[];
+}
+
+export const INDICATOR_INFO: Record<ActiveCard, IndicatorInfo> = {
+  rrs: {
+    name: 'Respondent Reliability Score (RRS)',
+    summary: 'A weighted composite reflecting how reliable the respondent’s proxy-reported information is likely to be - not a direct, verified measure of accuracy.',
+    formula: 'RRS = Wᵣₑₗ + Wₚᵣₒₓ + Wᵣₑᴄ + Wₑᴅᵤ  (out of 100)',
+    components: [
+      { label: 'Relationship to deceased (max 40)', detail: 'Spouse/parent/child = 40 · other family member = 20 · other = 10' },
+      { label: 'Presence at death (max 30)', detail: 'Yes = 30 · No = 15' },
+      { label: 'Recall period (max 20)', detail: '< 90 days = 20 · 90–179 days = 15 · 180–364 days = 10 · ≥ 365 days = 0' },
+      { label: 'Respondent literacy proxy (max 10)', detail: 'Literate / secondary+ education = 10 · none or illiterate = 5. Uses the deceased’s own education fields, since the WHO-VA instrument does not capture respondent education directly.' },
+    ],
+    tiers: [
+      { label: 'High', range: '≥ 80' },
+      { label: 'Moderate', range: '50–79' },
+      { label: 'Low', range: '< 50' },
+    ],
+    notes: [
+      'Records with no parseable death or interview date are excluded, since the recall-period component cannot be computed.',
+      'RRS measures respondent characteristics associated with reliable reporting - it is not a direct check of whether the answers given are actually correct.',
+    ],
+  },
+  ics: {
+    name: 'Informative Completeness Score (ICS)',
+    summary: 'The share of binary (yes/no) questions a respondent answered definitively, rather than with “don’t know” or “refused”.',
+    formula: 'ICS = (informative yes/no answers ÷ all yes/no answers given) × 100',
+    tiers: [
+      { label: 'High', range: '≥ 90%' },
+      { label: 'Moderate', range: '70–89%' },
+      { label: 'Low', range: '< 70%' },
+    ],
+    notes: [
+      'Only questions that were actually asked and answered are counted - unanswered/system-missing fields are excluded from the denominator, so ICS measures the informativeness of what was recorded, not overall form completeness.',
+      'A high ICS does not guarantee accuracy (a respondent can confidently give a wrong answer), but a persistently low ICS signals the respondent could not or did not engage meaningfully with the interview.',
+    ],
+  },
+  ici: {
+    name: 'Internal Consistency Index (ICI)',
+    summary: 'Flags logically impossible or implausible combinations of answers within the same record - e.g. a symptom reported as lasting longer than the illness itself.',
+    formula: 'ICI = ((rules checked − rules violated) ÷ rules checked) × 100',
+    tiers: [
+      { label: 'Excellent', range: '≥ 90%' },
+      { label: 'Good', range: '70–89%' },
+      { label: 'Critical', range: '< 70%' },
+    ],
+    notes: [
+      'Up to 9 consistency rules are checked per record - e.g. pregnancy reported for a male decedent, a symptom duration exceeding the total illness duration, or an interview date that precedes the recorded death date.',
+      'A rule is skipped entirely for a dataset (not counted as a pass or a fail) if the fields it needs aren’t present in that deployment’s data - it never silently fails records just because a field is missing.',
+      'ICI is most informative when reviewed per interviewer: violations concentrated on one interviewer usually point to a training gap rather than random error.',
+    ],
+  },
+  duration: {
+    name: 'Median Interview Duration (MID)',
+    summary: 'The typical length of a VA interview, from start to finish.',
+    formula: 'Per record: Duration = interview end time − interview start time (minutes). Across records: MID = the median of all individual durations.',
+    tiers: [
+      { label: 'Normal', range: 'within the configured range' },
+      { label: 'Too Short / Too Long', range: 'outside it (Settings > Configuration)' },
+    ],
+    notes: [
+      'The median, not the mean, is used to summarise a dataset or interviewer: interview durations are typically right-skewed (a handful of very long interviews would otherwise pull a mean upward), so the median better represents a "typical" interview. Min/max and standard deviation are still shown alongside it to characterise the full spread.',
+      'Records with a non-positive or implausible duration (≥ 480 minutes / 8 hours) are excluded, as these almost always reflect a data-entry artefact rather than a real interview.',
+      'Unusually short durations can indicate skipped sections or an interview ended early (e.g. consent not obtained); unusually long ones may reflect respondent difficulty or a paused/resumed data-entry session.',
+    ],
+  },
+};
 
 // ─── Unified distribution table row ────────────────────────────────────────
 
@@ -187,8 +276,59 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
    */
   private pollsRemaining = 240;
 
+  // ── Trend Analysis (line = mean/median over time, stacked bar = tier mix) ─
+  // Raw per-record rows fetched once; `trendChartLabels`/`trendChartDatasets`
+  // are plain fields recomputed by `recomputeTrendChart()` (never getters -
+  // a getter returning a fresh array/object each call breaks ng2-charts'
+  // change detection with an NG0103 loop, as elsewhere in this codebase).
+  trendPoints: DqaTrendPoint[] = [];
+  isTrendLoading = true;
+  hasTrendError  = false;
+  trendChartLabels: string[] = [];
+  trendChartDatasets: any[] = [];
+  trendChartOptions: ChartOptions = { responsive: true };
+  readonly trendChartType: ChartType = 'bar';
+  readonly trendChartLegend = true;
+
   // Which card drives the breakdown table
   activeCard: ActiveCard = 'rrs';
+
+  // Which card's methodology popup is open (independent of activeCard, so
+  // opening it doesn't also switch the breakdown table).
+  infoCard: ActiveCard | null = null;
+  readonly indicatorInfo = INDICATOR_INFO;
+
+  // Used from the shared #infoPopupBody <ng-template> instead of indexing
+  // `indicatorInfo` directly there: `let-card="card"` has no way to declare
+  // its type, so the template sees `card` as `any` - and TS's noImplicitAny
+  // specifically disallows indexing a Record (which has no string index
+  // signature) with an `any`-typed key. A typed method parameter has no
+  // such restriction (passing `any` to an `ActiveCard`-typed parameter is
+  // always allowed).
+  infoFor(card: ActiveCard): IndicatorInfo {
+    return INDICATOR_INFO[card];
+  }
+
+  openInfo(card: ActiveCard, event: Event): void {
+    event.stopPropagation(); // don't also trigger the card's own (click)="setActiveCard(...)"
+    this.infoCard = this.infoCard === card ? null : card; // re-clicking the same (i) toggles it closed
+  }
+
+  closeInfo(): void {
+    this.infoCard = null;
+  }
+
+  // Closes an open popup on any click outside it. No "is this click inside
+  // the popup/icon" check is needed here: the popup content and the (i)
+  // button both call event.stopPropagation() on their own click handlers
+  // (above, and in the template), so a click ever reaches `document` only
+  // when it was genuinely outside both - same guarantee the Submissions
+  // table's download/columns menus rely on, just without needing a
+  // wrapper-class check since stopPropagation already filters at the source.
+  @HostListener('document:click')
+  onDocumentClickForInfoPopup(): void {
+    if (this.infoCard) this.closeInfo();
+  }
 
   constructor(
     private svc: GeneralDqaService,
@@ -197,6 +337,7 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFromSnapshot();
+    this.loadTrendPoints();
   }
 
   ngOnDestroy(): void {
@@ -234,6 +375,20 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadTrendPoints(): void {
+    this.svc.getTrendPoints().subscribe({
+      next: r => {
+        this.trendPoints = r?.data ?? [];
+        this.isTrendLoading = false;
+        this.recomputeTrendChart();
+      },
+      error: () => {
+        this.hasTrendError = true;
+        this.isTrendLoading = false;
+      },
+    });
+  }
+
   forceRefresh(): void {
     if (this.isRefreshing || this.analyticsStatus === 'running') return;
     this.isRefreshing = true;
@@ -248,7 +403,174 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
     });
   }
 
-  setActiveCard(card: ActiveCard): void { this.activeCard = card; }
+  setActiveCard(card: ActiveCard): void {
+    this.activeCard = card;
+    this.recomputeTrendChart();
+  }
+
+  // ── Trend Analysis aggregation ───────────────────────────────────────────
+  // `'duration'` is this page's own vocabulary; everywhere trend data and
+  // DqaThresholdService are involved it's `'aid'`.
+  private toIndicatorKey(card: ActiveCard): IndicatorKey {
+    return card === 'duration' ? 'aid' : card;
+  }
+
+  get hasTrendData(): boolean {
+    return !this.isTrendLoading && !this.hasTrendError && this.trendPoints.length > 0;
+  }
+
+  // Mean for RRS/ICS/ICI, median for AID/MID - matching how each
+  // indicator's own KPI card and breakdown table already summarise it
+  // (see `activeCentralValue` and INDICATOR_INFO.duration's note on why
+  // duration specifically uses the median).
+  private centralValue(indicator: IndicatorKey, values: number[]): number | null {
+    if (values.length === 0) return null;
+    if (indicator !== 'aid') {
+      return values.reduce((sum, v) => sum + v, 0) / values.length;
+    }
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+
+  // Rebuilds `trendChartLabels`/`trendChartDatasets`/`trendChartOptions` as
+  // plain fields (not getters - see their declaration comment) from the raw
+  // `trendPoints`. Called whenever the points first load and whenever
+  // `setActiveCard` switches which indicator the chart should show.
+  //
+  // Tiering happens here, client-side, via the live-configured
+  // DqaThresholdService - the same "store raw scores, classify on read"
+  // principle already used by the Data Map, so an admin's threshold edit
+  // (Settings > DQA Thresholds) updates this chart with no backend
+  // recompute needed.
+  private recomputeTrendChart(): void {
+    if (this.trendPoints.length === 0) {
+      this.trendChartLabels = [];
+      this.trendChartDatasets = [];
+      return;
+    }
+
+    const indicator = this.toIndicatorKey(this.activeCard);
+
+    const byMonth = new Map<string, DqaTrendPoint[]>();
+    for (const p of this.trendPoints) {
+      if (!byMonth.has(p.month)) byMonth.set(p.month, []);
+      byMonth.get(p.month)!.push(p);
+    }
+    const months = [...byMonth.keys()].sort();
+
+    // Fixed tier order/colors for this indicator (e.g. High/Moderate/Low),
+    // independent of any single month's values - keeps the stack order and
+    // legend colors stable across months and across threshold edits.
+    const tiers = this.thresholdSvc.legendFor(indicator);
+
+    const tierPct: Record<string, number[]> = {};
+    for (const tier of tiers) tierPct[tier.label] = [];
+    const centralSeries: (number | null)[] = [];
+
+    for (const month of months) {
+      const rows = byMonth.get(month)!;
+      const values: number[] = [];
+      const tierCounts: Record<string, number> = {};
+      for (const tier of tiers) tierCounts[tier.label] = 0;
+
+      for (const row of rows) {
+        const v = row[indicator];
+        if (v === null || v === undefined) continue;
+        values.push(v);
+        const tc = this.thresholdSvc.colorFor(indicator, v);
+        if (tc && tierCounts[tc.label] !== undefined) tierCounts[tc.label] += 1;
+      }
+
+      const total = values.length;
+      for (const tier of tiers) {
+        tierPct[tier.label].push(total > 0 ? Math.round((tierCounts[tier.label] / total) * 1000) / 10 : 0);
+      }
+      const central = this.centralValue(indicator, values);
+      // Rounded to 2dp here (not left to the tooltip) so the chart's own
+      // point data matches what's displayed on hover.
+      centralSeries.push(central === null ? null : Math.round(central * 100) / 100);
+    }
+
+    const isDuration = indicator === 'aid';
+    // Matches the distribution curve's own mean/median line convention on
+    // this same page: solid blue = mean, dashed red = median.
+    const lineColor = isDuration ? '#dc2626' : '#1d4ed8';
+
+    this.trendChartLabels = months;
+    this.trendChartDatasets = [
+      ...tiers.map(tier => ({
+        type: 'bar' as const,
+        label: tier.label,
+        data: tierPct[tier.label],
+        backgroundColor: tier.colorHex,
+        stack: 'tier',
+        yAxisID: 'y',
+        order: 1,
+      })),
+      {
+        type: 'line' as const,
+        label: isDuration ? 'Median' : 'Mean',
+        data: centralSeries,
+        borderColor: lineColor,
+        backgroundColor: lineColor,
+        borderDash: isDuration ? [6, 4] : [],
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: lineColor,
+        fill: false,
+        spanGaps: true,
+        // Always its own axis (y1), never shared with the tier-% bars (y) -
+        // RRS/ICS/ICI's mean happens to also sit on a 0-100 scale, but
+        // sharing the bars' axis squeezed the line against them. A
+        // dedicated axis is used for every indicator, consistently.
+        yAxisID: 'y1',
+        order: 0,
+      },
+    ];
+
+    this.trendChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: (ctx: any) => {
+              const value = ctx.parsed.y;
+              if (value === null || value === undefined) return `${ctx.dataset.label}: --`;
+              // Tier bars: whole-number-ish percentage. Mean/Median line:
+              // always 2dp, per the user's request, even for a round value
+              // like 60 (-> "60.00 min") rather than just "60 min".
+              if (ctx.dataset.stack === 'tier') return `${ctx.dataset.label}: ${value.toFixed(1)}%`;
+              const suffix = isDuration ? ' min' : '';
+              return `${ctx.dataset.label}: ${value.toFixed(2)}${suffix}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          min: 0,
+          max: 100,
+          title: { display: true, text: 'Tier share (%)' },
+        },
+        y1: {
+          position: 'right' as const,
+          grid: { drawOnChartArea: false },
+          // RRS/ICS/ICI's mean is 0-100 like the tier bars - pinned to the
+          // same range so the line's shape is comparable across indicators.
+          // Duration's median is in minutes, which isn't 0-100, so its axis
+          // auto-scales to the data instead.
+          ...(isDuration ? {} : { min: 0, max: 100 }),
+          title: { display: true, text: isDuration ? 'Median duration (min)' : 'Mean score' },
+        },
+      },
+    } as ChartOptions;
+  }
 
   // ── Derived state for the active card ──────────────────────────────────
 
@@ -276,14 +598,14 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
   }
 
   get activeCardLabel(): string {
-    if (this.activeCard === 'duration') return 'Avg Duration';
+    if (this.activeCard === 'duration') return 'Median Duration';
     if (this.activeCard === 'rrs')      return 'Avg RRS';
     if (this.activeCard === 'ici')      return 'ICI Score';
     return 'Avg ICS';
   }
   get activeCardDescription(): string {
     if (this.activeCard === 'duration')
-      return 'Average interview duration by age group and gender';
+      return 'Median interview duration by age group and gender';
     if (this.activeCard === 'rrs')
       return 'Respondent Reliability Score (0–100) by age group and gender';
     if (this.activeCard === 'ici')
@@ -293,9 +615,12 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
 
   // ── KPI card values ────────────────────────────────────────────────────
 
-  get overallDuration(): string      { return this.fmtMin(this.durationStats?.overall?.avg ?? null); }
+  // Median, not mean - see INDICATOR_INFO.duration's note for why
+  // (durations are right-skewed; the median is the representative "typical
+  // interview" statistic, matching the manuscript's own MID definition).
+  get overallDuration(): string      { return this.fmtMin(this.durationStats?.overall?.p50 ?? null); }
   get overallDurationCount(): number { return this.durationStats?.overall?.count ?? 0; }
-  get overallDurationTier(): StatusBadge | null { return this.thresholdSvc.classifyAid(this.durationStats?.overall?.avg ?? null); }
+  get overallDurationTier(): StatusBadge | null { return this.thresholdSvc.classifyAid(this.durationStats?.overall?.p50 ?? null); }
 
   get overallIcs(): string      { return this.fmtPct(this.icsStats?.overall?.avg ?? null); }
   get overallIcsCount(): number { return this.icsStats?.overall?.count ?? 0; }
@@ -320,6 +645,13 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
   get iciInterviewerCount(): number { return this.iciStats?.interviewers?.length ?? 0; }
 
   // ── Formatters ─────────────────────────────────────────────────────────
+
+  // Which raw stat the breakdown table's central "{{ activeCardLabel }} ± σ"
+  // column reads from - the median for Duration (see overallDuration's
+  // comment), the mean for every other indicator.
+  activeCentralValue(stat: DistStat): number | null {
+    return this.activeCard === 'duration' ? stat.p50 : stat.avg;
+  }
 
   fmtActiveValue(v: number | null): string {
     if (this.activeCard === 'duration') return this.fmtMin(v);
@@ -372,7 +704,7 @@ export class GeneralDqaComponent implements OnInit, OnDestroy {
 
   rrsRowTier(stat: DistStat):      StatusBadge | null { return this.thresholdSvc.classifyRrs(stat.avg); }
   icsRowTier(stat: DistStat):      StatusBadge | null { return this.thresholdSvc.classifyIcs(stat.avg); }
-  durationRowTier(stat: DistStat): StatusBadge | null { return this.thresholdSvc.classifyAid(stat.avg); }
+  durationRowTier(stat: DistStat): StatusBadge | null { return this.thresholdSvc.classifyAid(stat.p50); }
   iciRowTier(row: InterviewerIci | null): StatusBadge | null { return row ? this.thresholdSvc.classifyIci(row.ici) : null; }
 
   readonly SVG_W = SVG_W;

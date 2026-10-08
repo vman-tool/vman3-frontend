@@ -40,7 +40,7 @@
 
     <!-- 1 · Respondent Reliability Score (RRS) — CLICKABLE -->
     <div
-      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      class="relative rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
       [ngClass]="activeCard === 'rrs'
         ? 'bg-emerald-50/40 border-emerald-400 shadow-md ring-1 ring-emerald-300'
         : 'bg-white border-gray-100 shadow-sm hover:border-emerald-200 hover:shadow'"
@@ -51,9 +51,15 @@
         <span class="text-xs font-medium text-gray-500 leading-snug">
           Respondent<br>Reliability Score
         </span>
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
-              [ngClass]="activeCard === 'rrs' ? 'bg-emerald-100' : 'bg-emerald-50'">
-          <i class="ph ph-shield-check text-emerald-500 text-lg"></i>
+        <span class="flex items-center gap-1 shrink-0 ml-2">
+          <button type="button" class="info-icon-btn" (click)="openInfo('rrs', $event)"
+                  title="How is this calculated?" aria-label="How is RRS calculated?">
+            <i class="ph ph-info text-gray-400 text-base"></i>
+          </button>
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0"
+                [ngClass]="activeCard === 'rrs' ? 'bg-emerald-100' : 'bg-emerald-50'">
+            <i class="ph ph-shield-check text-emerald-500 text-lg"></i>
+          </span>
         </span>
       </div>
 
@@ -79,11 +85,17 @@
            [ngClass]="activeCard === 'rrs' ? 'text-emerald-500' : ''">
         <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
       </div>
+
+      <div class="info-popup-anchor" [class.open]="infoCard === 'rrs'">
+        <div class="info-popup-content" (click)="$event.stopPropagation()">
+          <ng-container *ngTemplateOutlet="infoPopupBody; context: { card: 'rrs' }"></ng-container>
+        </div>
+      </div>
     </div>
 
     <!-- 2 · Avg Informative Completeness Score (ICS) — CLICKABLE -->
     <div
-      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      class="relative rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
       [ngClass]="activeCard === 'ics'
         ? 'bg-blue-50/40 border-blue-400 shadow-md ring-1 ring-blue-300'
         : 'bg-white border-gray-100 shadow-sm hover:border-blue-200 hover:shadow'"
@@ -94,9 +106,15 @@
         <span class="text-xs font-medium text-gray-500 leading-snug">
           Informative<br>Completeness Score
         </span>
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
-              [ngClass]="activeCard === 'ics' ? 'bg-blue-100' : 'bg-blue-50'">
-          <i class="ph ph-checks text-blue-500 text-lg"></i>
+        <span class="flex items-center gap-1 shrink-0 ml-2">
+          <button type="button" class="info-icon-btn" (click)="openInfo('ics', $event)"
+                  title="How is this calculated?" aria-label="How is ICS calculated?">
+            <i class="ph ph-info text-gray-400 text-base"></i>
+          </button>
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0"
+                [ngClass]="activeCard === 'ics' ? 'bg-blue-100' : 'bg-blue-50'">
+            <i class="ph ph-checks text-blue-500 text-lg"></i>
+          </span>
         </span>
       </div>
 
@@ -123,11 +141,17 @@
            [ngClass]="activeCard === 'ics' ? 'text-blue-500' : ''">
         <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
       </div>
+
+      <div class="info-popup-anchor" [class.open]="infoCard === 'ics'">
+        <div class="info-popup-content" (click)="$event.stopPropagation()">
+          <ng-container *ngTemplateOutlet="infoPopupBody; context: { card: 'ics' }"></ng-container>
+        </div>
+      </div>
     </div>
 
     <!-- 3 · Internal Consistency Index (ICI) — CLICKABLE -->
     <div
-      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      class="relative rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
       [ngClass]="activeCard === 'ici'
         ? 'bg-violet-50/40 border-violet-400 shadow-md ring-1 ring-violet-300'
         : 'bg-white border-gray-100 shadow-sm hover:border-violet-200 hover:shadow'"
@@ -138,9 +162,15 @@
         <span class="text-xs font-medium text-gray-500 leading-snug">
           Internal<br>Consistency Index
         </span>
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
-              [ngClass]="activeCard === 'ici' ? 'bg-violet-100' : 'bg-violet-50'">
-          <i class="ph ph-arrows-left-right text-violet-500 text-lg"></i>
+        <span class="flex items-center gap-1 shrink-0 ml-2">
+          <button type="button" class="info-icon-btn" (click)="openInfo('ici', $event)"
+                  title="How is this calculated?" aria-label="How is ICI calculated?">
+            <i class="ph ph-info text-gray-400 text-base"></i>
+          </button>
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0"
+                [ngClass]="activeCard === 'ici' ? 'bg-violet-100' : 'bg-violet-50'">
+            <i class="ph ph-arrows-left-right text-violet-500 text-lg"></i>
+          </span>
         </span>
       </div>
 
@@ -165,11 +195,17 @@
            [ngClass]="activeCard === 'ici' ? 'text-violet-500' : ''">
         <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
       </div>
+
+      <div class="info-popup-anchor" [class.open]="infoCard === 'ici'">
+        <div class="info-popup-content" (click)="$event.stopPropagation()">
+          <ng-container *ngTemplateOutlet="infoPopupBody; context: { card: 'ici' }"></ng-container>
+        </div>
+      </div>
     </div>
 
-    <!-- 4 · Avg Interview Duration — CLICKABLE -->
+    <!-- 4 · Median Interview Duration — CLICKABLE -->
     <div
-      class="rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
+      class="relative rounded-lg border p-5 cursor-pointer transition-all duration-150 select-none flex flex-col"
       [ngClass]="activeCard === 'duration'
         ? 'bg-amber-50/40 border-amber-400 shadow-md ring-1 ring-amber-300'
         : 'bg-white border-gray-100 shadow-sm hover:border-amber-200 hover:shadow'"
@@ -178,11 +214,17 @@
 
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-medium text-gray-500 leading-snug">
-          Avg Interview<br>Duration
+          Median Interview<br>Duration
         </span>
-        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0 ml-2"
-              [ngClass]="activeCard === 'duration' ? 'bg-amber-100' : 'bg-amber-50'">
-          <i class="ph ph-timer text-amber-500 text-lg"></i>
+        <span class="flex items-center gap-1 shrink-0 ml-2">
+          <button type="button" class="info-icon-btn" (click)="openInfo('duration', $event)"
+                  title="How is this calculated?" aria-label="How is Median Interview Duration calculated?">
+            <i class="ph ph-info text-gray-400 text-base"></i>
+          </button>
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full shrink-0"
+                [ngClass]="activeCard === 'duration' ? 'bg-amber-100' : 'bg-amber-50'">
+            <i class="ph ph-timer text-amber-500 text-lg"></i>
+          </span>
         </span>
       </div>
 
@@ -199,13 +241,19 @@
             {{ overallDurationTier.label }}
           </span>
         </div>
-        <p class="text-xs text-gray-400">Mean across {{ overallDurationCount | number }} records</p>
+        <p class="text-xs text-gray-400">Median across {{ overallDurationCount | number }} records</p>
       </ng-container>
 
       <div class="mt-auto pt-2 text-xs font-medium flex items-center gap-1"
            [class.invisible]="activeCard !== 'duration'"
            [ngClass]="activeCard === 'duration' ? 'text-amber-500' : ''">
         <i class="ph ph-arrow-down text-xs"></i> Showing breakdown
+      </div>
+
+      <div class="info-popup-anchor" [class.open]="infoCard === 'duration'">
+        <div class="info-popup-content" (click)="$event.stopPropagation()">
+          <ng-container *ngTemplateOutlet="infoPopupBody; context: { card: 'duration' }"></ng-container>
+        </div>
       </div>
     </div>
 
@@ -296,7 +344,7 @@
               </td>
 
               <td class="px-4 py-3 text-right whitespace-nowrap">
-                <span class="text-sm font-semibold text-gray-800">{{ fmtActiveValue(row.stat.avg) }}</span>
+                <span class="text-sm font-semibold text-gray-800">{{ fmtActiveValue(activeCentralValue(row.stat)) }}</span>
                 <div class="text-xs text-gray-400 mt-0.5">{{ fmtActiveStddev(row.stat.stddev) }}</div>
               </td>
 
@@ -501,7 +549,7 @@
     <!-- Footer: ICI -->
     <div *ngIf="activeCard === 'ici' && !isIciLoading && !hasIciError"
          class="px-6 py-3 border-t border-gray-100 text-xs text-gray-400 flex flex-wrap gap-x-6 gap-y-1">
-      <span><i class="ph ph-info mr-1"></i>6 checks applied per record: pregnancy in male deceased · coughed blood without cough · symptom duration (fever, cough, diarrhoea, breathlessness) exceeds total illness duration.</span>
+      <span><i class="ph ph-info mr-1"></i>Up to 9 checks applied per record (fewer if this dataset is missing the fields a check needs): pregnancy/maternal questions for a male decedent · blood in cough without cough · symptom duration (fever, cough, diarrhoea, breathlessness) exceeding total illness duration · interview date preceding death date.</span>
       <span *ngIf="iciInterviewerCount > 1">
         <i class="ph ph-chart-bar mr-1"></i>High inter-interviewer variance indicates training gaps or fabrication. Low variance indicates a well-standardised field process.
       </span>
@@ -514,14 +562,99 @@
   <div class="bg-white rounded-lg shadow-sm border border-gray-100">
     <div class="px-6 py-4 border-b border-gray-100">
       <div class="text-base font-semibold text-gray-900">Trend Analysis</div>
-      <p class="text-xs text-gray-400 mt-0.5">Quality score evolution over time</p>
+      <p class="text-xs text-gray-400 mt-0.5">
+        {{ activeCardLabel }} over time - tier mix (bars, left axis) and {{ activeCard === 'duration' ? 'median duration' : 'mean score' }} ({{ activeCard === 'duration' ? 'dashed' : 'solid' }} line{{ activeCard === 'duration' ? ', right axis' : '' }})
+      </p>
     </div>
-    <div class="flex items-center justify-center h-48 text-gray-300">
-      <div class="text-center">
-        <i class="ph ph-chart-line text-5xl mb-2 block"></i>
-        <span class="text-sm">Chart will be rendered here</span>
+
+    <ng-container *ngIf="isTrendLoading">
+      <div class="flex items-center justify-center h-48 text-gray-300">
+        <svg class="w-6 h-6 animate-spin text-amber-500" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
       </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isTrendLoading && hasTrendError">
+      <div class="flex items-center justify-center h-48 text-red-400 text-sm">
+        <i class="ph ph-warning-circle mr-1"></i>Failed to load trend data. Check backend connectivity.
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isTrendLoading && !hasTrendError && !hasTrendData">
+      <div class="flex items-center justify-center h-48 text-gray-300">
+        <div class="text-center">
+          <i class="ph ph-chart-line text-5xl mb-2 block"></i>
+          <span class="text-sm">No trend data yet - run a DQA computation first.</span>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="hasTrendData" class="px-6 py-4" style="height: 280px;">
+      <canvas baseChart
+        [datasets]="trendChartDatasets" [labels]="trendChartLabels"
+        [options]="trendChartOptions" [legend]="trendChartLegend" [type]="trendChartType">
+      </canvas>
     </div>
   </div>
 
 </div>
+
+<!-- ── Indicator methodology popup body ─────────────────────────────────────
+     Shared by all 4 cards' .info-popup-anchor (see each card above) via
+     *ngTemplateOutlet, parameterized by `card` - defined once so the markup
+     isn't duplicated 4 times. Each anchor is positioned/sized relative to
+     its own card (position: relative on the card, position: absolute +
+     width: 100% on the anchor), so the popup slides down directly beneath
+     whichever card it belongs to, at that card's own width. -->
+<ng-template #infoPopupBody let-card="card">
+  <div class="flex items-start justify-between px-5 py-3 border-b border-gray-100">
+    <div class="text-sm font-semibold text-gray-900">{{ infoFor(card).name }}</div>
+    <button type="button" class="info-popup-close" (click)="closeInfo()" aria-label="Close">
+      <i class="ph ph-x text-base"></i>
+    </button>
+  </div>
+
+  <div class="px-5 py-4 space-y-4">
+    <p class="text-sm text-gray-600">{{ infoFor(card).summary }}</p>
+
+    <div>
+      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Formula</div>
+      <div class="text-sm font-mono bg-gray-50 border border-gray-100 rounded-md px-3 py-2 text-gray-700">
+        {{ infoFor(card).formula }}
+      </div>
+    </div>
+
+    <div *ngIf="infoFor(card).components as components">
+      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Components</div>
+      <ul class="text-sm text-gray-600 space-y-1.5">
+        <li *ngFor="let c of components">
+          <span class="font-medium text-gray-800">{{ c.label }}</span>
+          <span class="text-gray-500"> — {{ c.detail }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tier classification</div>
+      <div class="flex flex-wrap gap-2">
+        <span *ngFor="let t of infoFor(card).tiers"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-50 border border-gray-100 text-gray-600">
+          <strong class="text-gray-800">{{ t.label }}</strong> {{ t.range }}
+        </span>
+      </div>
+    </div>
+
+    <div>
+      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Notes</div>
+      <ul class="text-xs text-gray-500 space-y-1.5 list-disc list-outside pl-4">
+        <li *ngFor="let n of infoFor(card).notes">{{ n }}</li>
+      </ul>
+    </div>
+
+    <p class="text-xs text-gray-400 italic pt-1 border-t border-gray-100">
+      Source: "Four Practical Indicators for Real-Time Verbal Autopsy Data Quality Assessment: A Cross-National Validation Study" (section 2.3, Indicator Definitions).
+    </p>
+  </div>
+</ng-template>

@@ -33,6 +33,23 @@ export class ListRecordsComponent implements OnInit {
   error: string | null = null;
   locationLevel1Label: string = 'Region';
   locationLevel2Label: string = 'District';
+  // Plain field, not a getter - app-custom-dropdown's *ngFor over a getter
+  // that returns a new array literal every change-detection pass breaks
+  // trackBy identity and free-runs into NG0103 (same reasoning as every
+  // other options array in this codebase, e.g. groupLevelOptions in
+  // submissions.component.ts). Rebuilt via refreshSearchByOptions() once
+  // the real admin-level labels load.
+  // VA ID and Instance ID are two independently-configurable fields
+  // (Settings > Configuration > Field Mapping) - a value copied from the
+  // table may have come from either, so both are offered as distinct
+  // search-by options rather than one standing in for the other.
+  searchByOptions: { value: string; label: string }[] = [
+    { value: 'vaId', label: 'VA ID' },
+    { value: 'instanceId', label: 'Instance ID' },
+    { value: 'location_level1', label: 'Region' },
+    { value: 'location_level2', label: 'District' },
+    { value: 'interviewer_name', label: 'Interviewer' },
+  ];
   filterData: { locations: LocationSelection[]; startDate?: string; endDate?: string } = {
     locations: [],
     startDate: undefined,
@@ -66,12 +83,27 @@ export class ListRecordsComponent implements OnInit {
         if (config?.system_configs) {
           this.locationLevel1Label = config.system_configs.admin_level1 || this.locationLevel1Label;
           this.locationLevel2Label = config.system_configs.admin_level2 || this.locationLevel2Label;
+          this.refreshSearchByOptions();
         }
       },
       error: () => {
         // keep default labels if settings cannot be loaded
       },
     });
+  }
+
+  private refreshSearchByOptions(): void {
+    this.searchByOptions = [
+      { value: 'vaId', label: 'VA ID' },
+      { value: 'instanceId', label: 'Instance ID' },
+      { value: 'location_level1', label: this.locationLevel1Label },
+      { value: 'location_level2', label: this.locationLevel2Label },
+      { value: 'interviewer_name', label: 'Interviewer' },
+    ];
+  }
+
+  onSearchByChange(value: string): void {
+    this.searchBy = value;
   }
 
   loadRecords(): void {

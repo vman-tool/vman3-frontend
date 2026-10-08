@@ -221,9 +221,13 @@ export class GraphsComponent implements OnInit {
           this.dqaIciPassed    = snap.ici?.overall_passed ?? 0;
           this.dqaIciTier      = this.thresholdSvc.classifyIci(snap.ici?.overall_ici ?? null);
 
-          this.dqaDuration     = this.fmtDqaMin(snap.aid?.overall?.avg ?? null);
+          // Median, not mean - interview durations are right-skewed, so the
+          // median is the representative "typical interview" statistic
+          // (matches the General DQA page and the vman_dq manuscript's own
+          // Median Interview Duration (MID) definition).
+          this.dqaDuration     = this.fmtDqaMin(snap.aid?.overall?.p50 ?? null);
           this.dqaDurationCount = snap.aid?.overall?.count ?? 0;
-          this.dqaDurationTier  = this.thresholdSvc.classifyAid(snap.aid?.overall?.avg ?? null);
+          this.dqaDurationTier  = this.thresholdSvc.classifyAid(snap.aid?.overall?.p50 ?? null);
 
           clearLoading();
         } else if (snap?.status === 'running') {

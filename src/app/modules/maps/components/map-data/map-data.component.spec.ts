@@ -120,7 +120,7 @@ describe('MapDataComponent', () => {
     it('presents all 4 indicators plus None at once, enabled, once a snapshot is available', () => {
       setup({ data: { status: 'completed', computed_at: '2026-09-13T00:00:00Z' } });
       const radios = dqaRadios();
-      expect(dqaRadioLabels()).toEqual(['None', 'RRS', 'ICS', 'ICI', 'AID']);
+      expect(dqaRadioLabels()).toEqual(['None', 'RRS', 'ICS', 'ICI', 'MID']);
       expect(radios.every(r => !r.disabled)).toBe(true);
       expect(radios.find(r => r.value === 'none')?.checked).toBe(true);
     });
@@ -137,7 +137,7 @@ describe('MapDataComponent', () => {
       expect(mapDataService.getDqaMapPoints).toHaveBeenCalledTimes(1);
     });
 
-    describe('showing each indicator\'s calculated average on its own label', () => {
+    describe('showing each indicator\'s calculated summary stat on its own label', () => {
       const snapshotWithAverages = {
         data: {
           status: 'completed',
@@ -147,19 +147,22 @@ describe('MapDataComponent', () => {
           // ICI's overall figure is a top-level field (IciStats), not
           // nested under .overall.avg like the other three (GroupedStats).
           ici: { overall_ici: 97.5, overall_total: 100, overall_passed: 97, interviewers: [], checks_applied: [] },
+          // avg and p50 deliberately differ here so the MID assertion below
+          // actually proves the component reads p50 (the median), not avg
+          // (the mean) - see map-data.component.ts's dqaAverages comment.
           aid: { overall: { avg: 42.34, min_v: 0, max_v: 480, stddev: 10, p50: 40, count: 100 } },
         },
       };
 
-      it('appends the rounded (1dp) average to RRS/ICS/ICI, reading ICI from its own overall_ici field', () => {
+      it('appends the rounded (1dp) mean to RRS/ICS/ICI and the median to MID, reading ICI from its own overall_ici field', () => {
         setup(snapshotWithAverages);
-        expect(component.dqaAverages).toEqual({ rrs: 84.06, ics: 91.2, ici: 97.5, aid: 42.34 });
-        expect(dqaRadioLabels()).toEqual(['None', 'RRS 84.1', 'ICS 91.2', 'ICI 97.5', 'AID 42.3 min']);
+        expect(component.dqaAverages).toEqual({ rrs: 84.06, ics: 91.2, ici: 97.5, aid: 40 });
+        expect(dqaRadioLabels()).toEqual(['None', 'RRS 84.1', 'ICS 91.2', 'ICI 97.5', 'MID 40.0 min']);
       });
 
-      it('keeps the bare label for an indicator with no computable average', () => {
+      it('keeps the bare label for an indicator with no computable value', () => {
         setup({ data: { status: 'completed', computed_at: '2026-09-13T00:00:00Z', rrs: { overall: { avg: 84.06 } } } });
-        expect(dqaRadioLabels()).toEqual(['None', 'RRS 84.1', 'ICS', 'ICI', 'AID']);
+        expect(dqaRadioLabels()).toEqual(['None', 'RRS 84.1', 'ICS', 'ICI', 'MID']);
       });
     });
   });

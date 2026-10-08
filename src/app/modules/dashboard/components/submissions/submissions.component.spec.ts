@@ -54,8 +54,10 @@ describe('SubmissionsComponent', () => {
       adults: count,
       children: 0,
       neonates: 0,
+      age_unclassified: 0,
       male: 0,
       female: 0,
+      gender_unclassified: 0,
     });
 
     it('sums expected across rows that have it, ignoring unmapped rows', () => {
@@ -92,13 +94,102 @@ describe('SubmissionsComponent', () => {
   });
 
   describe('totalColumns', () => {
-    it('is 11 fixed columns plus one per admin level shown', () => {
+    it('is "Submitted" plus every currently visible toggleable column, plus one per admin level shown', () => {
+      // Default visibility hides firstSubmission/lastSubmission (2 of the
+      // 12 toggleable columns), so this is 1 (Submitted) + 10 visible + level.
       component.groupLevel = 1;
       expect(component.totalColumns).toBe(12);
       component.groupLevel = 2;
       expect(component.totalColumns).toBe(13);
       component.groupLevel = 3;
       expect(component.totalColumns).toBe(14);
+    });
+
+    it('grows by one when a hidden column is shown, shrinks by one when a visible column is hidden', () => {
+      component.groupLevel = 2;
+      const base = component.totalColumns;
+      component.toggleColumnVisibility('firstSubmission');
+      expect(component.totalColumns).toBe(base + 1);
+      component.toggleColumnVisibility('adults');
+      expect(component.totalColumns).toBe(base);
+    });
+  });
+
+  describe('column visibility + adaptive labels', () => {
+    it('defaults firstSubmission/lastSubmission to hidden and everything else to visible', () => {
+      expect(component.visibleColumns['firstSubmission']).toBe(false);
+      expect(component.visibleColumns['lastSubmission']).toBe(false);
+      for (const key of component.TOGGLE_COLUMN_ORDER) {
+        if (key === 'firstSubmission' || key === 'lastSubmission') continue;
+        expect(component.visibleColumns[key]).toBe(true);
+      }
+    });
+
+    it('toggleColumnVisibility flips a column and recomputes colWidths to still sum to ~100', () => {
+      const before = component.colWidths.reduce((a, b) => a + b, 0);
+      component.toggleColumnVisibility('expected');
+      expect(component.visibleColumns['expected']).toBe(false);
+      const after = component.colWidths.reduce((a, b) => a + b, 0);
+      expect(Math.round(after)).toBe(Math.round(before));
+    });
+
+    it('uses short labels while every toggleable column is visible (default state has 2 hidden, so this checks the fully-shown case)', () => {
+      component.toggleColumnVisibility('firstSubmission'); // show it -> all 12 now visible
+      component.toggleColumnVisibility('lastSubmission');
+      expect(component.useFullLabels).toBe(false);
+      expect(component.columnLabelFor('expected')).toBe('Expect.');
+      expect(component.columnLabelFor('completeness')).toBe('Compl.');
+      expect(component.columnLabelFor('age_unclassified')).toBe('UnClass.');
+    });
+
+    it('switches to full labels as soon as any toggleable column is hidden (the default state)', () => {
+      expect(component.useFullLabels).toBe(true);
+      expect(component.columnLabelFor('expected')).toBe('Expected');
+      expect(component.columnLabelFor('completeness')).toBe('Completeness');
+      expect(component.columnLabelFor('age_unclassified')).toBe('Unclassified (Age Group)');
+    });
+
+    it('columns menu toggles open/closed and closes on an outside click', () => {
+      component.columnsMenuOpen = false;
+      component.toggleColumnsMenu();
+      expect(component.columnsMenuOpen).toBe(true);
+
+      const outsideEl = document.createElement('div');
+      component.onDocumentClickForColumnsMenu({ composedPath: () => [outsideEl] } as unknown as MouseEvent);
+      expect(component.columnsMenuOpen).toBe(false);
+    });
+
+    it('columns menu stays open on a click inside its own wrapper', () => {
+      component.columnsMenuOpen = true;
+      const insideEl = document.createElement('div');
+      insideEl.classList.add('columns-menu-wrapper');
+      component.onDocumentClickForColumnsMenu({ composedPath: () => [insideEl] } as unknown as MouseEvent);
+      expect(component.columnsMenuOpen).toBe(true);
+    });
+  });
+
+  describe('getTotalAgeUnclassified / getTotalGenderUnclassified', () => {
+    const row = (age_unclassified: number, gender_unclassified: number) => ({
+      totalSubmitedToday: 0,
+      region: 'Dodoma',
+      count: 10,
+      firstSubmission: '2024-01-01',
+      lastSubmission: '2024-12-31',
+      expected: null,
+      completeness: null,
+      coverage: 12,
+      adults: 5, children: 3, neonates: 1, age_unclassified,
+      male: 4, female: 5, gender_unclassified,
+    });
+
+    it('sums age_unclassified across rows', () => {
+      component.dataSubmissions = [row(1, 0), row(3, 0)];
+      expect(component.getTotalAgeUnclassified()).toBe(4);
+    });
+
+    it('sums gender_unclassified across rows', () => {
+      component.dataSubmissions = [row(0, 2), row(0, 5)];
+      expect(component.getTotalGenderUnclassified()).toBe(7);
     });
   });
 
