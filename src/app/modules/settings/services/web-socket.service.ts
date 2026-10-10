@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 @Injectable({
@@ -7,6 +7,8 @@ import { Observable, Subject } from 'rxjs';
 export class WebSockettService {
   private socket: WebSocket | undefined;
   private messageSubject: Subject<string> = new Subject<string>();
+
+  constructor(private ngZone: NgZone) {}
 
   connect(url: string): void {
     this.socket = new WebSocket(url);
@@ -17,7 +19,17 @@ export class WebSockettService {
 
     this.socket.onmessage = (event) => {
       console.log('Message from server:', typeof event.data);
-      this.messageSubject.next(event.data); // Emit the received message to subscribers
+      // Explicit NgZone.run, rather than relying on zone.js's own WebSocket
+      // patch: a message handled outside the Angular zone still updates
+      // this.messageSubject's subscribers' state just fine, but Angular
+      // never schedules a re-render for it - the progress bar would sit at
+      // whatever it last painted until some unrelated event (a click, a
+      // timer elsewhere) happened to trigger change detection, at which
+      // point everything queued up in between would appear to "jump" at
+      // once. This guarantees a render is scheduled for every message.
+      this.ngZone.run(() => {
+        this.messageSubject.next(event.data); // Emit the received message to subscribers
+      });
     };
 
     this.socket.onerror = (event) => {

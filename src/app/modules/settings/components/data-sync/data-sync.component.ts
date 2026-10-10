@@ -1121,6 +1121,15 @@ export class DataSyncComponent implements OnInit, OnDestroy {
 
     this.isTaskRunning = true;
 
+    // Re-arm the "gone silent" watchdog on every live message, not just once
+    // when restoring progress after a page reload (startWsInactivityTimer's
+    // only other caller). Without this, a WS message is the only thing that
+    // ever clears it - if the connection drops mid-sync (a network blip, the
+    // backend restarting, a backgrounded tab throttling the socket) nothing
+    // notices: isTaskRunning stays true forever, the bar freezes at
+    // whatever it last showed, and the only way out was a manual refresh.
+    this.startWsInactivityTimer();
+
     this.localStorageSettingsService.setItemWithTTL(
       'odk_progress',
       {
@@ -1186,9 +1195,21 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Re-armed on every live progress message (see updateProgress), not just
+   * once when restoring a running task after a page reload - so it also
+   * catches a *live* sync going silent (WebSocket dropped mid-sync: a
+   * network blip, the backend restarting, a backgrounded tab throttling the
+   * socket), not only "the task finished while this tab was closed".
+   *
+   * Either way the recovery is the same: stop treating the task as running
+   * and pull the real status from the backend - a small, targeted refresh
+   * of just this page's own data, not a full browser reload. Without this,
+   * a dropped connection left the progress bar frozen at its last value
+   * forever, with no way out except a manual page refresh.
+   */
   private startWsInactivityTimer(): void {
     this.clearWsInactivityTimer();
-    // If no WS message arrives within 15 s the task has already finished
     this.wsInactivityTimer = setTimeout(() => {
       if (this.isTaskRunning) {
         this.isTaskRunning = false;

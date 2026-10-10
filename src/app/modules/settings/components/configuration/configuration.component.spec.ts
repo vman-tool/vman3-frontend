@@ -15,6 +15,7 @@ function makeComponent(overrides: { cachedQuestions?: any } = {}) {
     clearCache: jest.fn(),
     getExpectedDeaths: jest.fn().mockReturnValue(of({ data: { configured: false, max_level: 0, periods: [], tree: [] } })),
     updateExpectedDeaths: jest.fn().mockReturnValue(of({ data: { configured: true, max_level: 1, periods: [], tree: [] } })),
+    deleteExpectedDeaths: jest.fn().mockReturnValue(of({ data: { configured: true, max_level: 1, periods: [], tree: [] } })),
   } as any;
   const indexedDBService = {} as any;
   const genericIndexedDbService = {
@@ -26,6 +27,12 @@ function makeComponent(overrides: { cachedQuestions?: any } = {}) {
   const vaRecordsService = {} as any;
   const dataSyncService = {} as any;
   const snackBar = { open: jest.fn() } as any;
+  // Mimics MatDialogRef's relevant shape: .open(...) returns something with
+  // an afterClosed() observable - a test overrides the return value of
+  // dialog.open to control what the "user" chose.
+  const dialog = {
+    open: jest.fn().mockReturnValue({ afterClosed: () => of(null) }),
+  } as any;
 
   const component = new ConfigurationComponent(
     settingConfigService,
@@ -35,10 +42,11 @@ function makeComponent(overrides: { cachedQuestions?: any } = {}) {
     vaRecordsService,
     dataSyncService,
     new FormBuilder(),
-    snackBar
+    snackBar,
+    dialog
   );
 
-  return { component, settingConfigService, genericIndexedDbService, snackBar };
+  return { component, settingConfigService, genericIndexedDbService, snackBar, dialog };
 }
 
 describe('ConfigurationComponent', () => {
@@ -556,6 +564,92 @@ describe('ConfigurationComponent', () => {
 
         expect(component.editingDeathsCell).toBeNull();
         expect(component.editingDeathsValue).toBe('');
+      });
+    });
+
+    describe('deleting an administrative unit', () => {
+      function rootWithOneChild() {
+        const leaf = node({ key: 'w1', label: 'Sejeli Ward', is_leaf: true, children: [] });
+        const root = node({ key: 'r1', label: 'Dodoma', is_leaf: false, children: [leaf] });
+        return { root, leaf };
+      }
+
+      it('asks for confirmation, mentioning descendants for a non-leaf unit', () => {
+        const { component, dialog } = makeComponent();
+        const { root } = rootWithOneChild();
+
+        component.confirmDeleteDeaths(root);
+
+        expect(dialog.open).toHaveBeenCalled();
+        const dialogConfig = dialog.open.mock.calls[0][1];
+        expect(dialogConfig.data.modalMessage).toContain('Dodoma');
+        expect(dialogConfig.data.modalMessage).toContain('1 administrative unit');
+        expect(dialogConfig.data.confirmationButtonColor).toBe('red');
+      });
+
+      it('does not mention descendants for a leaf unit', () => {
+        const { component, dialog } = makeComponent();
+        const { leaf } = rootWithOneChild();
+
+        component.confirmDeleteDeaths(leaf);
+
+        const dialogConfig = dialog.open.mock.calls[0][1];
+        expect(dialogConfig.data.modalMessage).toBe('Are you sure you want to delete "Sejeli Ward"?');
+      });
+
+      it('does nothing when the confirmation is cancelled', () => {
+        const { component, dialog, settingConfigService } = makeComponent();
+        dialog.open.mockReturnValue({ afterClosed: () => of(null) });
+        const { root } = rootWithOneChild();
+
+        component.confirmDeleteDeaths(root);
+
+        expect(settingConfigService.deleteExpectedDeaths).not.toHaveBeenCalled();
+      });
+
+      it('deletes on confirmation and refreshes the tree/periods from the response', () => {
+        const { component, dialog, settingConfigService, snackBar } = makeComponent();
+        dialog.open.mockReturnValue({ afterClosed: () => of({ confirmed: true }) });
+        const newTree = [node({ key: 'r1', label: 'Dodoma', is_leaf: true, children: [], expected_deaths: {} })];
+        settingConfigService.deleteExpectedDeaths.mockReturnValue(
+          of({ message: 'Deleted Sejeli Ward.', data: { configured: true, max_level: 1, periods: ['2023'], tree: newTree } })
+        );
+        const { root, leaf } = rootWithOneChild();
+        component.expectedDeathsTree = [root];
+
+        component.confirmDeleteDeaths(leaf);
+
+        expect(settingConfigService.deleteExpectedDeaths).toHaveBeenCalledWith('w1');
+        expect(component.expectedDeathsTree).toEqual(newTree);
+        expect(component.expectedDeathsPeriods).toEqual(['2023']);
+        expect(component.deletingDeathsKey).toBeNull();
+        expect(snackBar.open).toHaveBeenCalledWith('Deleted Sejeli Ward.', 'Close', expect.any(Object));
+      });
+
+      it('sets deletingDeathsKey to the node being deleted while the request is in flight', () => {
+        const { component, dialog, settingConfigService } = makeComponent();
+        dialog.open.mockReturnValue({ afterClosed: () => of({ confirmed: true }) });
+        // Never resolves - lets the test observe the in-flight state.
+        settingConfigService.deleteExpectedDeaths.mockReturnValue({ subscribe: () => {} });
+        const { leaf } = rootWithOneChild();
+
+        component.confirmDeleteDeaths(leaf);
+
+        expect(component.deletingDeathsKey).toBe('w1');
+      });
+
+      it('shows the backend error and clears deletingDeathsKey on failure', () => {
+        const { component, dialog, settingConfigService, snackBar } = makeComponent();
+        dialog.open.mockReturnValue({ afterClosed: () => of({ confirmed: true }) });
+        settingConfigService.deleteExpectedDeaths.mockReturnValue(
+          throwError(() => ({ error: { detail: 'Unknown administrative unit.' } }))
+        );
+        const { root } = rootWithOneChild();
+
+        component.confirmDeleteDeaths(root);
+
+        expect(component.deletingDeathsKey).toBeNull();
+        expect(snackBar.open).toHaveBeenCalledWith('Unknown administrative unit.', 'Close', expect.any(Object));
       });
     });
   });

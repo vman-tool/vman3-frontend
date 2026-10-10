@@ -765,16 +765,17 @@
                 <th *ngFor="let period of visiblePeriods" scope="col" class="w-36 px-4 py-2.5 font-medium text-right">
                   Expected Deaths{{ period !== 'total' ? ' ' + period : '' }}
                 </th>
+                <th scope="col" class="w-16 px-4 py-2.5 font-medium text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="!visiblePeriods.length">
-                <td [attr.colspan]="2" class="px-4 py-8 text-center text-gray-400">
+                <td [attr.colspan]="3" class="px-4 py-8 text-center text-gray-400">
                   No years selected - choose at least one under "Years shown" above.
                 </td>
               </tr>
               <tr *ngIf="visiblePeriods.length && !filteredExpectedDeathsTree.length">
-                <td [attr.colspan]="2 + visiblePeriods.length" class="px-4 py-8 text-center text-gray-400">
+                <td [attr.colspan]="3 + visiblePeriods.length" class="px-4 py-8 text-center text-gray-400">
                   No administrative unit matches that search.
                 </td>
               </tr>
@@ -839,6 +840,14 @@
                   {{ deathsForPeriod(node, period) !== null ? (deathsForPeriod(node, period) | number) : '—' }}
                 </span>
               </ng-template>
+            </td>
+            <td class="px-4 py-2 text-center">
+              <button type="button" (click)="confirmDeleteDeaths(node)" [disabled]="deletingDeathsKey === node.key"
+                [attr.aria-label]="'Delete ' + node.label"
+                [title]="node.children.length ? 'Delete this unit and everything beneath it' : 'Delete this administrative unit'"
+                class="px-1 text-gray-400 hover:text-red-600 disabled:opacity-50">
+                <i class="text-base" [ngClass]="deletingDeathsKey === node.key ? 'ph ph-spinner animate-spin' : 'ph-trash'"></i>
+              </button>
             </td>
           </tr>
           <ng-container *ngIf="isExpandedDeaths(node.key)">
