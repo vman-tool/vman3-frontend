@@ -375,4 +375,16 @@ export class SettingConfigService {
         throw err;
       }));
   }
+
+  /** Delete an administrative unit and its whole subtree. Re-uploading the
+   * xForm it came from re-creates it fresh - this only removes it from
+   * storage, never from the file. */
+  deleteExpectedDeaths(key: string): Observable<any> {
+    return this.http
+      .delete<any>(`${this.configService.API_URL}/settings/expected-deaths/${encodeURIComponent(key)}`)
+      .pipe(catchError(err => {
+        console.error('expected deaths delete error:', err);
+        throw err;
+      }));
+  }
 }

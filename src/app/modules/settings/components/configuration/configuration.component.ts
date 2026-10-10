@@ -1,6 +1,7 @@
 import { ExpectedDeathsNode, FieldMapping, SystemConfig, SystemImages, VaSummaryCodOptions } from '../../interface';
 import { Component, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { OdkConfigModel, settingsConfigData } from '../../interface';
 import { SettingConfigService } from '../../services/settings_configs.service';
@@ -14,6 +15,7 @@ import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-record
 import { DataSyncService } from '../../services/data_sync.service';
 import { OBJECTKEY_ODK_QUESTIONS } from 'app/shared/constants/odk.constants';
 import { map } from 'rxjs';
+import { SharedConfirmationComponent } from 'app/shared/dialogs/shared-confirmation/shared-confirmation.component';
 
 
 @Component({
@@ -290,6 +292,60 @@ export class ConfigurationComponent {
     });
   }
 
+  // ── Delete an administrative unit (and its whole subtree) ───────────────
+
+  deletingDeathsKey: string | null = null;
+
+  /** Recursive count, for the confirmation message - lets the admin know up
+   * front that deleting a non-leaf unit also removes everything beneath it,
+   * rather than discovering that after confirming. */
+  private countDescendants(node: ExpectedDeathsNode): number {
+    return node.children.reduce((sum, child) => sum + 1 + this.countDescendants(child), 0);
+  }
+
+  confirmDeleteDeaths(node: ExpectedDeathsNode): void {
+    const descendants = this.countDescendants(node);
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = '50vw';
+    dialogConfig.panelClass = 'cdk-overlay-pane';
+    dialogConfig.data = {
+      modalMessage: descendants
+        ? `Are you sure you want to delete "${node.label}"? This will also delete the ${descendants} administrative unit(s) beneath it.`
+        : `Are you sure you want to delete "${node.label}"?`,
+      cancelButtonText: 'Cancel',
+      confirmationButtonText: 'Delete',
+      confirmationButtonColor: 'red',
+    };
+    this.dialog.open(SharedConfirmationComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => {
+        if (response) this.deleteDeaths(node);
+      },
+    });
+  }
+
+  private deleteDeaths(node: ExpectedDeathsNode): void {
+    this.deletingDeathsKey = node.key;
+    this.settingConfigService.deleteExpectedDeaths(node.key).subscribe({
+      next: (res: any) => {
+        this.deletingDeathsKey = null;
+        const data = res?.data;
+        this.expectedDeathsTree = data?.tree ?? [];
+        this.expectedDeathsMaxLevel = data?.max_level ?? 0;
+        this.expectedDeathsConfigured = !!data?.configured;
+        this.applyExpectedDeathsPeriods(data?.periods ?? []);
+        this.recomputeFilteredExpectedDeathsTree();
+        this.snackBar.open(res?.message ?? `Deleted ${node.label}.`, 'Close', { duration: 3000 });
+      },
+      error: (err: any) => {
+        this.deletingDeathsKey = null;
+        this.snackBar.open(
+          err?.error?.detail ?? err?.error?.message ?? 'Failed to delete.', 'Close', { duration: 4000 }
+        );
+      },
+    });
+  }
+
   /** Language shown in the fixed third column. English when available. */
   get dictionaryPrimaryLanguage(): string {
     if (!this.dictionaryLanguages.length) return '';
@@ -438,6 +494,7 @@ export class ConfigurationComponent {
     private dataSyncService: DataSyncService,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog,
   ) {
     this.odkApiConfigForm = this.fb.group({
       url: ['', [Validators.required, Validators.pattern(/^(https?:\/\/[^\s]+)$/)]],
