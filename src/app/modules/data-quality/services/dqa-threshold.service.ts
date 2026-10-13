@@ -99,9 +99,9 @@ export const DEFAULT_DQA_THRESHOLDS: DqaThresholds = {
   aid: {
     min_normal:  30,
     max_normal:  60,
-    tier_short:  { label: 'Too Short', color: 'red'  },
-    tier_normal: { label: 'Normal',    color: 'none' },
-    tier_long:   { label: 'Too Long',  color: 'red'  },
+    tier_short:  { label: 'Too Short', color: 'red'   },
+    tier_normal: { label: 'Normal',    color: 'green' },
+    tier_long:   { label: 'Too Long',  color: 'red'   },
   },
 };
 

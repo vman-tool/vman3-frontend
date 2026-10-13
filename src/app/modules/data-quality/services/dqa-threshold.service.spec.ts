@@ -45,18 +45,20 @@ describe('DqaThresholdService', () => {
   describe('colorFor - aid (Too Short / Normal / Too Long)', () => {
     // AID's own map palette (amber/green/red) is used here regardless of
     // the admin-configured badge color - see AID_MAP_COLORS: the default
-    // (and any config that leaves defaults alone) assigns 'red' to BOTH
-    // tier_short and tier_long and 'none' to tier_normal, which would make
-    // 2 of these 3 map colors collide (and collide again with the
-    // "Unclassified" gray) if colorFor used that field directly.
+    // assigns 'red' to BOTH tier_short and tier_long, which would make 2 of
+    // these 3 map colors collide if colorFor used that field directly
+    // instead of its own fixed palette (tier_normal's own default is now
+    // 'green', same as the map's, but an admin could still repoint it to
+    // 'red' or 'none' without the map losing its 3 distinct colors).
     it('flags a too-short interview distinctly from too-long (amber, not red)', () => {
       expect(service.colorFor('aid', 10)).toEqual({ label: 'Too Short', colorHex: '#f59e0b' });
     });
 
     it('colors a normal-length interview distinctly from Unclassified (green, not gray)', () => {
-      // tier_normal.color defaults to 'none' - classifyAid() would return
-      // null (dashboard shows no badge), but the map still needs a color
-      // for every point, so colorFor() must not return null here.
+      // The map always needs a color for every point regardless of the
+      // admin-configured badge color (colorFor never returns null here),
+      // so this stays true even for a deployment that sets tier_normal's
+      // own color to 'none' or something else.
       expect(service.colorFor('aid', 45)).toEqual({ label: 'Normal', colorHex: '#10b981' });
     });
 
@@ -82,6 +84,35 @@ describe('DqaThresholdService', () => {
         { label: 'Too Long', colorHex: '#ef4444' },
       ]);
       expect(new Set(legend.map(e => e.colorHex)).size).toBe(3);
+    });
+  });
+
+  describe('classifyAid', () => {
+    it('flags a too-short interview with a badge', () => {
+      expect(service.classifyAid(10)?.label).toBe('Too Short');
+    });
+
+    it('a normal-length interview gets a real (green) badge by default, not no badge at all', () => {
+      // Regression: tier_normal's default color used to be 'none', which
+      // made classifyAid() return null for a perfectly normal duration -
+      // the dashboard then showed "No Data" for it (the same fallback used
+      // for a row with nothing computed at all), which read as if the
+      // duration couldn't be classified rather than "this is fine". The
+      // default is now 'green', so a normal duration gets its own visible
+      // "Normal" badge, the same way RRS/ICS/ICI's own best tier does.
+      const badge = service.classifyAid(45);
+      expect(badge).not.toBeNull();
+      expect(badge?.label).toBe('Normal');
+      expect(badge?.bgClass).toBe('bg-emerald-500');
+    });
+
+    it('flags a too-long interview with a badge', () => {
+      expect(service.classifyAid(90)?.label).toBe('Too Long');
+    });
+
+    it('returns null for a null/undefined value, never a badge', () => {
+      expect(service.classifyAid(null)).toBeNull();
+      expect(service.classifyAid(undefined as any)).toBeNull();
     });
   });
 
