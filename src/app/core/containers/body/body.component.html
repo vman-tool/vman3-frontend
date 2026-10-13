@@ -1,14 +1,7 @@
-<div class="grid items-center pb-5 h-[10vh]" style="grid-template-columns: 300px 1fr 1fr;">
+<div class="grid items-center h-16" style="grid-template-columns: 300px 1fr;">
   <div class="flex items-center">
     <img [src]="systemImages.logo" alt="VMan3-icon"
       class="w-24 ml-5 {{ sidebarHidden ? 'w-0' : '' }}" />
-  </div>
-
-  <div class="relative">
-    <div class="ps-2 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
-      <span class="text-3xl font-semibold text-black">{{page_title}}</span> <br />
-      <span class="text-xl text-black">{{page_subtitle}}</span>
-    </div>
   </div>
 
   <div class="relative flex justify-end pr-5">
@@ -16,10 +9,14 @@
   </div>
 </div>
 
-<div class="flex mb-5 h-[calc(100vh-7vh)] overflow-hidden bg-white">
-  <app-sidebar class="{{ sidebarHidden ? 'hidden' : 'block' }} w-[250px]  duration-300"></app-sidebar>
+<div class="flex h-[calc(100vh-4rem)] overflow-hidden bg-white">
+  <app-sidebar class="{{ sidebarHidden ? 'hidden' : 'block' }} w-[250px] duration-300"></app-sidebar>
 
-  <div class="flex-grow {{ sidebarHidden ? 'ml-0 w-full' : ' ml-10 w-[calc(100%-250px)]' }} px-4 overflow-y-auto">
+  <div class="flex-grow {{ sidebarHidden ? 'ml-0 w-full' : 'ml-10 w-[calc(100%-250px)]' }} px-4 overflow-y-auto pb-16">
+    <div class="ps-2 pt-4 pb-2 {{ sidebarHidden ? 'lg:ml-[-150px]' : ''}}">
+      <span class="text-3xl font-semibold text-black">{{page_title}}</span><br />
+      <span class="text-xl text-black">{{page_subtitle}}</span>
+    </div>
     <router-outlet></router-outlet>
   </div>
 </div>

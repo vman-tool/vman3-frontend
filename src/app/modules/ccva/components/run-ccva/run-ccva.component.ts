@@ -28,6 +28,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
   malariaStatus: string = 'h'; // Default value
   ccvaAlgorithm: string = 'InterVA5'; // Default value
   hivStatus: string = 'h'; // Default value
+  covidStatus: string = 'v'; // Default value (Very Low) — only used with InterVA6
   charts = {};
   data?: any;
   progress: number = 0;
@@ -169,7 +170,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
     this.ngOnInit();
 
     // Prepare filter object based on the selected options
-    const filter = {
+    const filter: any = {
       start_date: this.dateRangeOption === 'custom' ? this.filter_startDate : null,
       end_date: this.dateRangeOption === 'custom' ? this.filter_endDate : null,
       top: this.dateRangeOption === '200' ? 200 : null,
@@ -178,6 +179,11 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
       hiv_status: this.hivStatus,
       date_type: this.selectedDateType,
     };
+
+    // Only include covid_status when InterVA6 is selected
+    if (this.ccvaAlgorithm === 'InterVA6') {
+      filter.covid_status = this.covidStatus;
+    }
 
     if (this.dataSource === 'csv') {
       this.uploadCSVAndRunCCVA(filter);

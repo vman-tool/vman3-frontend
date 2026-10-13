@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, map, catchError, of, tap } from 'rxjs';
 import { ErrorEmitters } from '../../../../core/emitters/error.emitters';
 import * as XLSX from 'xlsx';
 import * as FileSaver from 'file-saver';
@@ -15,6 +15,7 @@ const EXCEL_EXTENSION = '.xlsx';
 export class SubmissionsService {
   error?: string;
   success?: boolean;
+  private cache = new Map<string, any>();
 
   constructor(private http: HttpClient, private configService: ConfigService) {
     ErrorEmitters.errorEmitter.subscribe((error: any) => {
@@ -49,12 +50,14 @@ export class SubmissionsService {
     if (date_type) {
       params = params.set('date_type', date_type);
     }
-    return this.http
+    const cacheKey = params.toString();
+    const request$ = this.http
       .get<any>(`${this.configService.API_URL}/statistics/submissions`, {
         params,
       })
       .pipe(
         map((response: any) => response),
+        tap((data) => this.cache.set(cacheKey, data)),
         catchError((error: any) => {
           console.log('Error: ', error);
           return of({
@@ -65,6 +68,13 @@ export class SubmissionsService {
           });
         })
       );
+
+    if (this.cache.has(cacheKey)) {
+      request$.subscribe();
+      return of(this.cache.get(cacheKey));
+    }
+
+    return request$;
   }
   exportToExcel(data: SubmissionsDataModel[], fileName: string): void {
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
