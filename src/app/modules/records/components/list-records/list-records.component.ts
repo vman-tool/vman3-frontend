@@ -16,7 +16,9 @@ import { FilterService } from '../../../../shared/dialogs/filters/filter.service
   styleUrls: ['./list-records.component.scss'],
 })
 export class ListRecordsComponent implements OnInit {
+  title: string = 'VA Data';
   data: any[] = [];
+  isLoading: boolean = false;
   pageNumber: number = 1;
   limit: number = 10;
   totalRecords: number = 0;
@@ -48,6 +50,7 @@ export class ListRecordsComponent implements OnInit {
   }
 
   loadRecords(): void {
+    this.isLoading = true;
     this.listRecordsService
       .getRecordsData(
         this.pageNumber,
@@ -56,12 +59,21 @@ export class ListRecordsComponent implements OnInit {
         this.filterData.endDate,
         this.filterData.locations
       )
-      .subscribe((response) => {
-        this.data = response.data;
-        this.totalRecords = response.total;
-        this.message = response.message;
-        this.error = response.error;
-      });
+      .subscribe(
+        (response) => {
+          this.data = response.data;
+          this.totalRecords = response.total;
+          this.message = response.message;
+          this.error = response.error;
+        },
+        (error) => {
+          console.log('Error: ', error);
+          this.error = 'Failed to fetch records';
+        },
+        () => {
+          this.isLoading = false;
+        }
+      );
   }
 
   goToPreviousPage(): void {

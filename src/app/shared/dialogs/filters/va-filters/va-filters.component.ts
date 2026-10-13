@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DataFilterComponent } from '../data-filter/data-filter/data-filter.component';
 import { FilterService } from '../filter.service';
@@ -11,6 +11,7 @@ import { FilterService } from '../filter.service';
   styleUrl: './va-filters.component.scss',
 })
 export class VaFiltersComponent {
+  @Input() title: string = '';
   constructor(public dialog: MatDialog, private filterService: FilterService) {}
   openFilterDialog(): void {
     const dialogRef = this.dialog.open(DataFilterComponent, {
