@@ -9,6 +9,7 @@ import { ListRecordsComponent } from './components/list-records/list-records.com
 import { FormsModule } from '@angular/forms';
 import { DataFilterComponent } from '../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
 import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-filters.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-f
     SharedModule,
     FormsModule,
     MaterialModule,
+    MatProgressSpinnerModule,
     VaFiltersComponent,
   ],
   exports: [RecordsComponent],
