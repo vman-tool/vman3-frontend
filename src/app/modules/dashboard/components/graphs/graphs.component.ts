@@ -27,6 +27,7 @@ import {
 } from '../../../data-quality/services/general-dqa.service';
 import { DqaThresholdService, StatusBadge as TierBadge } from '../../../data-quality/services/dqa-threshold.service';
 import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
+import { SettingConfigService } from '../../../settings/services/settings_configs.service';
 
 @Component({
   standalone: false,
@@ -89,6 +90,29 @@ export class GraphsComponent implements OnInit {
     const d = this.coverageDays;
     if (!d || !this.dataOverview?.total) return '—';
     return Math.round((this.dataOverview.total / d) * 30.44).toLocaleString();
+  }
+
+  // Geographic Coverage card labels - this deployment's own admin-level
+  // names (e.g. "Province"/"District", "Region"/"District", "State"/
+  // "County"), not the fixed "Regions"/"Districts" wording this used to be
+  // hardcoded to, since that pairing doesn't hold for every country this
+  // app is deployed in. Pluralized the simple way (append "s") since every
+  // admin-level label configured so far is a plain noun; falls back to the
+  // generic admin-level-1/2 wording only if a deployment hasn't configured
+  // one, same fallback style used elsewhere (e.g. VaFiltersComponent).
+  adminLevel1Label = 'Admin Level 1';
+  adminLevel2Label = 'Admin Level 2';
+
+  get adminLevel1LabelPlural(): string {
+    return this.pluralize(this.adminLevel1Label);
+  }
+
+  get adminLevel2LabelPlural(): string {
+    return this.pluralize(this.adminLevel2Label);
+  }
+
+  private pluralize(label: string): string {
+    return label.endsWith('s') ? label : `${label}s`;
   }
 
   fmtDate(d: string | null | undefined): string {
@@ -177,6 +201,7 @@ export class GraphsComponent implements OnInit {
     private filterService: FilterService,
     private dqaService: GeneralDqaService,
     private thresholdSvc: DqaThresholdService,
+    private settingConfigService: SettingConfigService,
   ) {
     this.filterService = inject(FilterService);
     this.setupEffect();
@@ -192,6 +217,19 @@ export class GraphsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDqaKpis();
+    this.loadAdminLevelLabels();
+  }
+
+  loadAdminLevelLabels(): void {
+    // Cached by SettingConfigService (and already fetched by the
+    // <app-va-filters> sibling on this same page), so this is effectively
+    // a free cache hit, not an extra network round trip.
+    this.settingConfigService.getSettingsConfig().subscribe({
+      next: (data) => {
+        if (data?.system_configs?.admin_level1) this.adminLevel1Label = data.system_configs.admin_level1;
+        if (data?.system_configs?.admin_level2) this.adminLevel2Label = data.system_configs.admin_level2;
+      },
+    });
   }
 
   loadDqaKpis(): void {

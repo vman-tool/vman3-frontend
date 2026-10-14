@@ -301,14 +301,20 @@
       <table class="w-full">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Indicator</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Category</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Records</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Min</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">{{ activeCardLabel }} ± σ</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Max</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Distribution</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Status</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500">Indicator</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500">Category</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500">Records</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500">Min</th>
+            <!-- Average is only meaningful as its own column for Duration,
+                 where the central column shows the Median instead (skewed
+                 distribution - see activeCentralValue) - RRS/ICS already
+                 show their average as the central column itself. -->
+            <th *ngIf="activeCard === 'duration'"
+                class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500">Average Intv Duration</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500">{{ activeCardLabel }} ± σ</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500">Max</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500">Distribution</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500">Status</th>
           </tr>
         </thead>
 
@@ -321,6 +327,7 @@
               <td class="px-4 py-4"><div class="h-3.5 w-20 rounded bg-gray-100 animate-pulse"></div></td>
               <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
               <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
+              <td *ngIf="activeCard === 'duration'" class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
               <td class="px-4 py-4"><div class="h-3.5 w-16 rounded bg-gray-100 animate-pulse ml-auto"></div></td>
               <td class="px-4 py-4"><div class="h-3.5 w-12 rounded bg-gray-100 animate-pulse"></div></td>
               <td class="px-4 py-4"><div class="h-8  w-28 rounded bg-gray-100 animate-pulse"></div></td>
@@ -341,6 +348,10 @@
 
               <td class="px-4 py-3 text-right whitespace-nowrap">
                 <span class="text-sm text-gray-500">{{ fmtActiveValue(row.stat.min_v) }}</span>
+              </td>
+
+              <td *ngIf="activeCard === 'duration'" class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="text-sm text-gray-500">{{ fmtActiveValue(row.stat.avg) }}</span>
               </td>
 
               <td class="px-4 py-3 text-right whitespace-nowrap">
@@ -423,12 +434,12 @@
       <table class="w-full">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase w-10">#</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Interviewer</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Total VAs</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Errors Found</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">ICI Score</th>
-            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500 uppercase">Status</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500 w-10">#</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500">Interviewer</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500">Total VAs</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500">Errors Found</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-right text-gray-500">ICI Score</th>
+            <th class="px-4 py-3 text-xs font-medium tracking-wider text-left  text-gray-500">Status</th>
           </tr>
         </thead>
 

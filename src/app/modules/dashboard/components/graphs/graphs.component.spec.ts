@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 
 import { GraphsComponent } from './graphs.component';
 import { GeneralDqaService } from '../../../data-quality/services/general-dqa.service';
+import { SettingConfigService } from '../../../settings/services/settings_configs.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
@@ -110,6 +111,53 @@ describe('GraphsComponent', () => {
         expect(d.borderColor).toBeTruthy();
       });
       expect(barDatasets[0].backgroundColor).not.toBe(barDatasets[1].backgroundColor);
+    });
+  });
+
+  describe('Geographic Coverage labels (adminLevel1LabelPlural / adminLevel2LabelPlural)', () => {
+    // Regression test: these used to be hardcoded "Regions"/"Districts" in
+    // the template, which doesn't hold for every country this app is
+    // deployed in - they must reflect this deployment's own configured
+    // admin-level names instead.
+    it('defaults to generic admin-level wording before the config loads', () => {
+      expect(component.adminLevel1LabelPlural).toBe('Admin Level 1s');
+      expect(component.adminLevel2LabelPlural).toBe('Admin Level 2s');
+    });
+
+    it('uses this deployment\'s configured admin-level labels, pluralized, once loaded', () => {
+      const service = TestBed.inject(SettingConfigService);
+      jest.spyOn(service, 'getSettingsConfig').mockReturnValue(of({
+        system_configs: { admin_level1: 'Province', admin_level2: 'District' },
+      } as any));
+
+      component.loadAdminLevelLabels();
+
+      expect(component.adminLevel1LabelPlural).toBe('Provinces');
+      expect(component.adminLevel2LabelPlural).toBe('Districts');
+    });
+
+    it('does not double an already-plural-looking label', () => {
+      const service = TestBed.inject(SettingConfigService);
+      jest.spyOn(service, 'getSettingsConfig').mockReturnValue(of({
+        system_configs: { admin_level1: 'Districts', admin_level2: 'Region' },
+      } as any));
+
+      component.loadAdminLevelLabels();
+
+      expect(component.adminLevel1LabelPlural).toBe('Districts');
+      expect(component.adminLevel2LabelPlural).toBe('Regions');
+    });
+
+    it('keeps the previous label when a level is not configured for this deployment', () => {
+      const service = TestBed.inject(SettingConfigService);
+      jest.spyOn(service, 'getSettingsConfig').mockReturnValue(of({
+        system_configs: { admin_level1: '', admin_level2: 'District' },
+      } as any));
+
+      component.loadAdminLevelLabels();
+
+      expect(component.adminLevel1LabelPlural).toBe('Admin Level 1s');
+      expect(component.adminLevel2LabelPlural).toBe('Districts');
     });
   });
 });
