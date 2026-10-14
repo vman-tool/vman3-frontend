@@ -37,6 +37,16 @@ export class FilterService {
     date_type: string | undefined;
     ccva_graph_db_source: boolean;
   }) {
+    // VaFiltersComponent resets this to the same default values on every one
+    // of its own mounts (every page that embeds <app-va-filters>), as a new
+    // object literal each time. Signals compare by reference, so that
+    // "reset to the same defaults" was always treated as a change, firing
+    // every effect/subscriber that reads filterData() again even though
+    // nothing actually changed - the root cause of charts on those pages
+    // reloading/re-rendering multiple times on a single page load.
+    if (JSON.stringify(this._filterData()) === JSON.stringify(data)) {
+      return;
+    }
     this._filterData.set(data);
   }
 }
