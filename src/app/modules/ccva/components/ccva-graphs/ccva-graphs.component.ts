@@ -3,7 +3,6 @@ import {
   HostListener,
   inject,
   Input,
-  OnInit,
   ElementRef,
   ViewChild,
 } from '@angular/core';
@@ -21,7 +20,7 @@ import { LocationSelection } from 'app/shared/components/location-tree-select/lo
   templateUrl: './ccva-graphs.component.html',
   styleUrls: ['./ccva-graphs.component.scss'],
 })
-export class CcvaGraphsComponent implements OnInit {
+export class CcvaGraphsComponent {
   @Input() graphData: any;
   @Input() charts: { [key: string]: any } = {}; // Store chart instances
   isDropdownOpen: boolean = false;
@@ -184,14 +183,19 @@ export class CcvaGraphsComponent implements OnInit {
   };
   public barChartData: any[] = [];
   setupEffect() {
+    // effect() runs its callback once immediately on creation, which is
+    // this component's one-and-only initial load - there's deliberately no
+    // ngOnInit() calling loadGraphData() a second time (that used to
+    // happen here, plus Angular's own automatic ngOnInit call, so the
+    // graphs loaded/re-rendered twice from this file alone before even
+    // counting a filter change).
     effect(() => {
       this.filterData = this.filterService.filterData();
-      this.ngOnInit();
+      this.loadGraphData();
     });
   }
-  ngOnInit() {
+  loadGraphData() {
     this.isLoading = true;
-    console.log('CCVA Graphs Component: ngOnInit', this.graphData);
 
     this.route.params.subscribe((params) => {
       const taskId = params['id']; // Get 'id' from
@@ -381,7 +385,7 @@ export class CcvaGraphsComponent implements OnInit {
     this.filterData = this.filterService.filterData();
     this.filterData['ccva_graph_db_source'] = this.ccva_graph_db_source;
 
-    this.ngOnInit();
+    this.loadGraphData();
   }
   toggleGroup(group: keyof typeof this.GBD_COLORS): void {
     this.includeGroup[group] = !this.includeGroup[group];
@@ -392,6 +396,6 @@ export class CcvaGraphsComponent implements OnInit {
     this.graphData = [];
     // this.filterService.setFilterData(this.filterData);
     this.filterData = this.filterService.filterData();
-    this.ngOnInit();
+    this.loadGraphData();
   }
 }

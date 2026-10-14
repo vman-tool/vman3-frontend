@@ -31,7 +31,7 @@ export class RunCcvaComponent implements OnInit, OnDestroy {
 
   dataSource: 'available' | 'csv' = 'available';
   selectedFile: File | null = null;
-  isLogsExpanded: boolean = true;
+  isLogsExpanded: boolean = false;
   fieldMappingData?: FieldMapping;
   dateTypeOptions: { value: string; label: string }[] = [
     { value: 'submission_date', label: 'Submission Date' },
