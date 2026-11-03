@@ -56,7 +56,16 @@ export class GraphsComponent implements OnInit {
     last_submission: string | null;
     distinct_regions: number;
     distinct_districts: number;
+    consented: number;
   } | null = null;
+
+  get consentPercentage(): string {
+    const total = this.dataOverview?.total;
+    if (!total) return '—';
+    const consented = this.dataOverview?.consented ?? 0;
+    const pct = Math.round((consented / total) * 100);
+    return `${pct}% (${consented.toLocaleString()}/${total.toLocaleString()})`;
+  }
 
   get coverageDays(): number {
     if (!this.dataOverview?.first_submission || !this.dataOverview?.last_submission) return 0;
@@ -123,11 +132,25 @@ export class GraphsComponent implements OnInit {
   }
 
   // ── Bar chart ─────────────────────────────────────────────────────────────
-  public barChartLabels: string[] = [
+  private readonly monthAbbreviations = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
+  public barChartLabels: string[] = [...this.monthAbbreviations];
   public barChartData: any[] = [];
+
+  // This chart's own x-axis basis, independent of the global Date Type
+  // filter (va-filters) - submitted_date by default, or death_date when
+  // switched locally. Only this chart's query is re-run on a switch; the
+  // rest of the dashboard (age/gender distribution, dataset overview) keeps
+  // using the global filter's own date type, same as before.
+  monthlySubmissionsViewOptions: { value: string; label: string }[] = [
+    { value: 'submission_date', label: 'Submission Date' },
+    { value: 'death_date', label: 'Date of Death' },
+  ];
+  monthlySubmissionsViewMode: string = 'submission_date';
+  isMonthlySubmissionsLoading: boolean = false;
+
   public doughnutChartData: ChartData<'doughnut'> = {
     labels: ['Neonates', 'Children', 'Adults'],
     datasets: [{ data: [], backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'] }],
@@ -211,6 +234,7 @@ export class GraphsComponent implements OnInit {
     effect(() => {
       this.filterData = this.filterService.filterData();
       this.loadStatistics();
+      this.loadMonthlySubmissionsChart();
       this.loadMore();
     });
   }
@@ -228,6 +252,15 @@ export class GraphsComponent implements OnInit {
       next: (data) => {
         if (data?.system_configs?.admin_level1) this.adminLevel1Label = data.system_configs.admin_level1;
         if (data?.system_configs?.admin_level2) this.adminLevel2Label = data.system_configs.admin_level2;
+
+        // "Submission by DoD" only makes sense when this deployment actually
+        // maps a date-of-death field (field_mapping.death_date, often
+        // id10023) - without it the backend has no column to group by.
+        if (!data?.field_mapping?.death_date) {
+          this.monthlySubmissionsViewOptions = this.monthlySubmissionsViewOptions.filter(
+            (o) => o.value !== 'death_date'
+          );
+        }
       },
     });
   }
@@ -346,12 +379,27 @@ export class GraphsComponent implements OnInit {
   // Chart.js 4 supports a mixed `type: 'line'` dataset inside a `type: 'bar'`
   // chart natively, so no annotation plugin is needed for this.
   processBarChartData(monthly_submissions: MonthlySubmission[], monthlyTarget?: number | null) {
+    const rows = (monthly_submissions ?? []).filter((s) => s.year !== null && s.month !== null);
+    const distinctYears = new Set(rows.map((s) => s.year));
+
+    // A date field with a wide historical spread (e.g. date of death, which
+    // can go back decades) produces one bar dataset per distinct year. Laid
+    // out as colored sub-bars within 12 fixed month slots, more than a
+    // handful of years makes each bar a near-invisible sliver rather than a
+    // readable vertical bar. Past that point, switch to a single flat
+    // timeline (oldest to newest) instead - same bar chart style, still
+    // genuine vertical bars, just one bar per month actually present in the
+    // data rather than competing for a slice of 12 fixed slots.
+    if (distinctYears.size > this.barColorPalette.length) {
+      this.renderChronologicalBarChart(rows, monthlyTarget);
+      return;
+    }
+
+    this.barChartLabels = [...this.monthAbbreviations];
     const yearMap = new Map<number, number[]>();
-    monthly_submissions?.forEach((s) => {
-      if (s.year !== null && s.month !== null) {
-        if (!yearMap.has(s.year)) yearMap.set(s.year, new Array(12).fill(0));
-        yearMap.get(s.year)![s.month - 1] = s.count;
-      }
+    rows.forEach((s) => {
+      if (!yearMap.has(s.year!)) yearMap.set(s.year!, new Array(12).fill(0));
+      yearMap.get(s.year!)![s.month! - 1] = s.count;
     });
     const datasets: any[] = Array.from(yearMap.entries()).map(([year, counts], index) => {
       const color = this.barColorPalette[index % this.barColorPalette.length];
@@ -363,21 +411,40 @@ export class GraphsComponent implements OnInit {
       };
     });
     if (monthlyTarget != null) {
-      datasets.push({
-        type: 'line',
-        label: 'Target',
-        data: new Array(12).fill(monthlyTarget),
-        borderColor: '#DC2626',
-        backgroundColor: '#DC2626',
-        borderWidth: 2,
-        borderDash: [6, 4],
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        fill: false,
-        order: 0,
-      });
+      datasets.push(this.targetLineDataset(new Array(12).fill(monthlyTarget)));
     }
     this.barChartData = datasets;
+  }
+
+  private renderChronologicalBarChart(rows: MonthlySubmission[], monthlyTarget?: number | null) {
+    const sorted = [...rows].sort((a, b) => (a.year! - b.year!) || (a.month! - b.month!));
+    this.barChartLabels = sorted.map((s) => `${this.monthAbbreviations[s.month! - 1]} ${s.year}`);
+    const datasets: any[] = [{
+      data: sorted.map((s) => s.count),
+      label: 'Submissions',
+      backgroundColor: this.barColorPalette[0],
+      borderColor: this.barColorPalette[0],
+    }];
+    if (monthlyTarget != null) {
+      datasets.push(this.targetLineDataset(new Array(sorted.length).fill(monthlyTarget)));
+    }
+    this.barChartData = datasets;
+  }
+
+  private targetLineDataset(data: number[]) {
+    return {
+      type: 'line',
+      label: 'Target',
+      data,
+      borderColor: '#DC2626',
+      backgroundColor: '#DC2626',
+      borderWidth: 2,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      fill: false,
+      order: 0,
+    };
   }
 
   loadStatistics() {
@@ -391,7 +458,6 @@ export class GraphsComponent implements OnInit {
       )
       .subscribe(
         (data) => {
-          this.processBarChartData(data.data.monthly_submissions, data.data.monthly_target);
           this.doughnutChartData = {
             ...this.doughnutChartData,
             datasets: [{
@@ -423,6 +489,33 @@ export class GraphsComponent implements OnInit {
           this.isLoading = false;
         }
       );
+  }
+
+  onMonthlySubmissionsViewChange(value: string): void {
+    this.monthlySubmissionsViewMode = value;
+    this.loadMonthlySubmissionsChart();
+  }
+
+  loadMonthlySubmissionsChart(): void {
+    this.isMonthlySubmissionsLoading = true;
+    this.chartsService
+      .getChartfetchStatistics(
+        this.filterData.start_date,
+        this.filterData.end_date,
+        this.filterData.locations,
+        this.monthlySubmissionsViewMode
+      )
+      .subscribe({
+        next: (data) => {
+          this.processBarChartData(data.data.monthly_submissions, data.data.monthly_target);
+          this.isMonthlySubmissionsLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.errorMessage = error.message;
+          this.isMonthlySubmissionsLoading = false;
+        },
+      });
   }
 
   // ── Polar Area ────────────────────────────────────────────────────────────
