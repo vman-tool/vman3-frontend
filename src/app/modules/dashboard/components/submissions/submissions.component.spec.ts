@@ -168,6 +168,77 @@ describe('SubmissionsComponent', () => {
     });
   });
 
+  describe('column resize', () => {
+    // colKeys must track colWidths/the rendered <th>s 1:1, in the same
+    // left-to-right order, or a resize handle would grab the wrong column.
+    it('colKeys stays in lockstep with colWidths, in the same left-to-right order as the header', () => {
+      expect(component.colKeys.length).toBe(component.colWidths.length);
+      expect(component.colKeys[0]).toBe('region');
+      expect(component.colKeys).toContain('count');
+    });
+
+    it('every column but the last one can be resized', () => {
+      for (let i = 0; i < component.colKeys.length - 1; i++) {
+        expect(component.canResizeCol(component.colKeys[i])).toBe(true);
+      }
+      const lastKey = component.colKeys[component.colKeys.length - 1];
+      expect(component.canResizeCol(lastKey)).toBe(false);
+    });
+
+    function fakeTableWidth(px: number) {
+      (component as any).summaryTableRef = {
+        nativeElement: { getBoundingClientRect: () => ({ width: px }) },
+      };
+    }
+
+    it('dragging right grows the left column and shrinks its right neighbor by the same amount', () => {
+      fakeTableWidth(1000); // 1000px table -> 1% = 10px
+      const leftKey = component.colKeys[0];
+      const rightKey = component.colKeys[1];
+      const startLeft = component.colWidths[0];
+      const startRight = component.colWidths[1];
+
+      component.onResizeStart({ clientX: 100, preventDefault() {}, stopPropagation() {} } as any, leftKey);
+      expect(component.resizingColumn).toBe(leftKey);
+
+      component.onResizeMove({ clientX: 150 } as any); // +50px = +5%
+
+      expect(component.colWidths[0]).toBeCloseTo(startLeft + 5, 5);
+      expect(component.colWidths[1]).toBeCloseTo(startRight - 5, 5);
+      // Every other column is untouched, and the pair's combined width
+      // (so the whole row) is unchanged - width only moves between the
+      // two columns on either side of the dragged handle.
+      expect(component.colWidths[0] + component.colWidths[1]).toBeCloseTo(startLeft + startRight, 5);
+
+      component.onResizeEnd();
+      expect(component.resizingColumn).toBeNull();
+    });
+
+    it('does not shrink either column below the minimum width', () => {
+      fakeTableWidth(1000);
+      const leftKey = component.colKeys[0];
+      const startLeft = component.colWidths[0];
+      const startRight = component.colWidths[1];
+
+      component.onResizeStart({ clientX: 0, preventDefault() {}, stopPropagation() {} } as any, leftKey);
+      component.onResizeMove({ clientX: -10000 } as any); // huge drag left
+
+      expect(component.colWidths[0]).toBeGreaterThanOrEqual(5);
+      expect(component.colWidths[1]).toBeCloseTo(startLeft + startRight - 5, 5);
+    });
+
+    it('does nothing when starting a drag on the last (unresizable) column', () => {
+      const lastKey = component.colKeys[component.colKeys.length - 1];
+      const before = [...component.colWidths];
+
+      component.onResizeStart({ clientX: 100, preventDefault() {}, stopPropagation() {} } as any, lastKey);
+      expect(component.resizingColumn).toBeNull();
+
+      component.onResizeMove({ clientX: 200 } as any);
+      expect(component.colWidths).toEqual(before);
+    });
+  });
+
   describe('getTotalAgeUnclassified / getTotalGenderUnclassified', () => {
     const row = (age_unclassified: number, gender_unclassified: number) => ({
       totalSubmitedToday: 0,

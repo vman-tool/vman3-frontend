@@ -1,0 +1,18 @@
+// Draggable column-resize handle, sat over a header cell's right edge.
+// Width is intentionally entirely inside the cell (not straddling the
+// border) so it never gets clipped by the cell's own overflow-hidden.
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+  touch-action: none;
+}
+
+.col-resize-handle:hover,
+.col-resize-handle-active {
+  background-color: rgba(59, 130, 246, 0.45); // tailwind blue-500 @ 45%
+}

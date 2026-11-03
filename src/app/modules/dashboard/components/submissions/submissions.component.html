@@ -68,7 +68,8 @@
       </div>
     </div>
 
-    <div class="relative w-full overflow-auto border border-gray-200 rounded-lg dark:border-gray-700 h-[50vh]">
+    <div class="relative w-full overflow-auto border border-gray-200 rounded-lg dark:border-gray-700 h-[50vh]"
+         [class.select-none]="!!resizingColumn">
       <table #summaryTable class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
 
         <colgroup>
@@ -77,116 +78,148 @@
 
         <thead class="sticky top-0 z-10 text-xs font-medium tracking-wide text-gray-500 bg-gray-50 border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
+            <th scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
                 (click)="onSort('region')">
               <span class="flex items-center gap-1 min-w-0">
                 <span class="truncate">{{region ?? 'Region'}}</span>
                 <i [class]="sortIcon('region')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('region')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'region'"
+                    (mousedown)="onResizeStart($event, 'region')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="groupLevel >= 2" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
+            <th *ngIf="groupLevel >= 2" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
                 (click)="onSort('district')">
               <span class="flex items-center gap-1 min-w-0">
                 <span class="truncate">{{district ?? 'District'}}</span>
                 <i [class]="sortIcon('district')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('district')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'district'"
+                    (mousedown)="onResizeStart($event, 'district')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="groupLevel >= 3" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
+            <th *ngIf="groupLevel >= 3" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-left overflow-hidden"
                 (click)="onSort('ward')">
               <span class="flex items-center gap-1 min-w-0">
                 <span class="truncate">{{ward ?? 'Ward'}}</span>
                 <i [class]="sortIcon('ward')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('ward')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'ward'"
+                    (mousedown)="onResizeStart($event, 'ward')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right"
+            <th scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right"
                 (click)="onSort('count')">
               <span class="flex items-center justify-end gap-1">
                 Submitted <i [class]="sortIcon('count')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('count')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'count'"
+                    (mousedown)="onResizeStart($event, 'count')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['expected']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['expected']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('expected')" [title]="columnMeta['expected'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('expected') }}</span>
                 <i [class]="sortIcon('expected')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('expected')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'expected'"
+                    (mousedown)="onResizeStart($event, 'expected')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['completeness']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['completeness']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('completeness')" [title]="columnMeta['completeness'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('completeness') }}</span>
                 <i [class]="sortIcon('completeness')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('completeness')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'completeness'"
+                    (mousedown)="onResizeStart($event, 'completeness')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['firstSubmission']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
+            <th *ngIf="visibleColumns['firstSubmission']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
                 (click)="onSort('firstSubmission')" [title]="columnMeta['firstSubmission'].full">
               <span class="flex items-center justify-center gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('firstSubmission') }}</span>
                 <i [class]="sortIcon('firstSubmission')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('firstSubmission')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'firstSubmission'"
+                    (mousedown)="onResizeStart($event, 'firstSubmission')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['lastSubmission']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
+            <th *ngIf="visibleColumns['lastSubmission']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-center overflow-hidden"
                 (click)="onSort('lastSubmission')" [title]="columnMeta['lastSubmission'].full">
               <span class="flex items-center justify-center gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('lastSubmission') }}</span>
                 <i [class]="sortIcon('lastSubmission')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('lastSubmission')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'lastSubmission'"
+                    (mousedown)="onResizeStart($event, 'lastSubmission')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['coverage']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['coverage']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('coverage')" [title]="columnMeta['coverage'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('coverage') }}</span>
                 <i [class]="sortIcon('coverage')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('coverage')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'coverage'"
+                    (mousedown)="onResizeStart($event, 'coverage')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['adults']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['adults']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('adults')" [title]="columnMeta['adults'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('adults') }}</span>
                 <i [class]="sortIcon('adults')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('adults')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'adults'"
+                    (mousedown)="onResizeStart($event, 'adults')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['children']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['children']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('children')" [title]="columnMeta['children'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('children') }}</span>
                 <i [class]="sortIcon('children')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('children')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'children'"
+                    (mousedown)="onResizeStart($event, 'children')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['neonates']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['neonates']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('neonates')" [title]="columnMeta['neonates'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('neonates') }}</span>
                 <i [class]="sortIcon('neonates')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('neonates')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'neonates'"
+                    (mousedown)="onResizeStart($event, 'neonates')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['age_unclassified']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['age_unclassified']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('age_unclassified')" title="Records missing all age-group data (not adult, child, or neonate)">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('age_unclassified') }}</span>
                 <i [class]="sortIcon('age_unclassified')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('age_unclassified')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'age_unclassified'"
+                    (mousedown)="onResizeStart($event, 'age_unclassified')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['male']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['male']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('male')" [title]="columnMeta['male'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('male') }}</span>
                 <i [class]="sortIcon('male')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('male')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'male'"
+                    (mousedown)="onResizeStart($event, 'male')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['female']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['female']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('female')" [title]="columnMeta['female'].full">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('female') }}</span>
                 <i [class]="sortIcon('female')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('female')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'female'"
+                    (mousedown)="onResizeStart($event, 'female')" (click)="$event.stopPropagation()"></span>
             </th>
-            <th *ngIf="visibleColumns['gender_unclassified']" scope="col" class="px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
+            <th *ngIf="visibleColumns['gender_unclassified']" scope="col" class="relative px-4 py-2.5 font-medium cursor-pointer select-none text-right overflow-hidden"
                 (click)="onSort('gender_unclassified')" title="Records missing gender data (not male or female)">
               <span class="flex items-center justify-end gap-1 min-w-0">
                 <span class="truncate">{{ columnLabelFor('gender_unclassified') }}</span>
                 <i [class]="sortIcon('gender_unclassified')" class="shrink-0"></i>
               </span>
+              <span *ngIf="canResizeCol('gender_unclassified')" class="col-resize-handle" [class.col-resize-handle-active]="resizingColumn === 'gender_unclassified'"
+                    (mousedown)="onResizeStart($event, 'gender_unclassified')" (click)="$event.stopPropagation()"></span>
             </th>
           </tr>
         </thead>
