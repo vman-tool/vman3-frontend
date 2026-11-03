@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { GraphsComponent } from './graphs.component';
 import { GeneralDqaService } from '../../../data-quality/services/general-dqa.service';
 import { SettingConfigService } from '../../../settings/services/settings_configs.service';
+import { ChartsService } from '../../services/charts/charts.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
@@ -158,6 +159,160 @@ describe('GraphsComponent', () => {
 
       expect(component.adminLevel1LabelPlural).toBe('Admin Level 1s');
       expect(component.adminLevel2LabelPlural).toBe('Districts');
+    });
+  });
+
+  describe('Participation (consentedCount / notConsentedCount / consentPercentLabel)', () => {
+    it('defaults to 0/0/"—" before dataOverview has loaded', () => {
+      component.dataOverview = null;
+      expect(component.consentedCount).toBe(0);
+      expect(component.notConsentedCount).toBe(0);
+      expect(component.consentPercentLabel).toBe('—');
+    });
+
+    it('splits total into consented/not-consented and computes the percentage', () => {
+      component.dataOverview = {
+        total: 20, first_submission: null, last_submission: null,
+        distinct_regions: 0, distinct_districts: 0, consented: 10,
+      };
+      expect(component.consentedCount).toBe(10);
+      expect(component.notConsentedCount).toBe(10);
+      expect(component.consentPercentLabel).toBe('50%');
+    });
+
+    it('rounds the percentage to the nearest whole number', () => {
+      component.dataOverview = {
+        total: 4417, first_submission: null, last_submission: null,
+        distinct_regions: 0, distinct_districts: 0, consented: 4240,
+      };
+      expect(component.notConsentedCount).toBe(177);
+      expect(component.consentPercentLabel).toBe('96%');
+    });
+
+    it('treats a missing total as "—" rather than dividing by zero', () => {
+      component.dataOverview = {
+        total: 0, first_submission: null, last_submission: null,
+        distinct_regions: 0, distinct_districts: 0, consented: 0,
+      };
+      expect(component.notConsentedCount).toBe(0);
+      expect(component.consentPercentLabel).toBe('—');
+    });
+  });
+
+  describe('Submission Period Span (coverageDaysLabel / coverageMonthsLabel / coverageSpanLabel)', () => {
+    // coverageSpanLabel is what the template actually renders - a single
+    // space-joined string (no <br>), so the browser's own text wrapping
+    // decides whether "X days" and "~Y months" sit on one line or two,
+    // based on how much width the Span column actually has. A template
+    // `{{a}} <br> {{b}}` previously forced two lines unconditionally AND
+    // left stray leading/trailing whitespace around each line (from the
+    // template's own indentation), which threw off text-align: center
+    // between the two lines - a single clean interpolation avoids both.
+    it('is just the days label when the span is under a month (no months label to join)', () => {
+      component.dataOverview = {
+        total: 1, first_submission: '2026-01-01', last_submission: '2026-01-15',
+        distinct_regions: 0, distinct_districts: 0, consented: 0,
+      };
+      expect(component.coverageDaysLabel).toBe('14 days');
+      expect(component.coverageMonthsLabel).toBe('');
+      expect(component.coverageSpanLabel).toBe('14 days');
+    });
+
+    it('joins the days and ~months labels with ", " once the span reaches a month', () => {
+      component.dataOverview = {
+        total: 1, first_submission: '2026-02-24', last_submission: '2026-11-02',
+        distinct_regions: 0, distinct_districts: 0, consented: 0,
+      };
+      expect(component.coverageDaysLabel).toBe('251 days');
+      expect(component.coverageMonthsLabel).toBe('~ 8 months');
+      expect(component.coverageSpanLabel).toBe('251 days, ~ 8 months');
+    });
+
+    it('shows "—" when there is no data yet', () => {
+      component.dataOverview = null;
+      expect(component.coverageDaysLabel).toBe('—');
+      expect(component.coverageMonthsLabel).toBe('');
+      expect(component.coverageSpanLabel).toBe('—');
+    });
+  });
+
+  describe('Monthly Submissions view toggle (submission date vs. date of death)', () => {
+    // Regression: the "Monthly Submissions" card used to always group by
+    // whatever the global Date Type filter happened to be set to. It must
+    // now have its own independent control, defaulting to submission date,
+    // that re-queries just this chart without touching the rest of the
+    // dashboard (age/gender distribution, dataset overview).
+    it('defaults to grouping by submission date', () => {
+      expect(component.monthlySubmissionsViewMode).toBe('submission_date');
+    });
+
+    it('re-fetches with date_type=death_date and redraws the chart when switched to "Date of Death"', () => {
+      const service = TestBed.inject(ChartsService);
+      const spy = jest.spyOn(service, 'getChartfetchStatistics').mockReturnValue(of({
+        data: {
+          monthly_submissions: [{ month: 3, year: 1945, count: 7 }],
+          monthly_target: null,
+        },
+      }));
+
+      component.onMonthlySubmissionsViewChange('death_date');
+
+      expect(component.monthlySubmissionsViewMode).toBe('death_date');
+      expect(spy).toHaveBeenCalledWith(
+        component.filterData.start_date,
+        component.filterData.end_date,
+        component.filterData.locations,
+        'death_date'
+      );
+      expect(component.barChartData[0].data[2]).toBe(7); // March (index 2)
+    });
+
+    it('omits "Date of Death" from the options when death_date is not mapped for this deployment', () => {
+      const service = TestBed.inject(SettingConfigService);
+      jest.spyOn(service, 'getSettingsConfig').mockReturnValue(of({
+        system_configs: { admin_level1: 'Region', admin_level2: 'District' },
+        field_mapping: { death_date: null },
+      } as any));
+
+      component.loadAdminLevelLabels();
+
+      expect(component.monthlySubmissionsViewOptions.map(o => o.value)).not.toContain('death_date');
+    });
+  });
+
+  describe('processBarChartData - many distinct years', () => {
+    // Regression: a date field with a wide historical spread (e.g. date of
+    // death) used to put one colored bar dataset per distinct year inside
+    // 12 fixed month slots - with dozens of years, each bar became a
+    // near-invisible sliver instead of a readable vertical bar.
+    function manyYearsOfData(): { month: number; year: number; count: number }[] {
+      const rows = [];
+      for (let y = 1918; y <= 1983; y += 5) {
+        rows.push({ month: (y % 12) + 1, year: y, count: y % 50 });
+      }
+      return rows; // 14 distinct years > the 8-color palette
+    }
+
+    it('falls back to a single chronological series instead of one dataset per year', () => {
+      component.processBarChartData(manyYearsOfData() as any, null);
+
+      expect(component.barChartData.length).toBe(1);
+      expect(component.barChartData[0].data.length).toBe(manyYearsOfData().length);
+      expect(component.barChartLabels[0]).toMatch(/^\w{3} 1918$/);
+    });
+
+    it('still uses one dataset per year, with fixed Jan-Dec labels, when years are few', () => {
+      const rows = [
+        { month: 1, year: 2024, count: 3 },
+        { month: 2, year: 2025, count: 4 },
+      ];
+
+      component.processBarChartData(rows as any, null);
+
+      expect(component.barChartData.length).toBe(2);
+      expect(component.barChartLabels).toEqual([
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      ]);
     });
   });
 });

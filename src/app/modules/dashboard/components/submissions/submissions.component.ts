@@ -115,17 +115,92 @@ export class SubmissionsComponent {
   private static readonly LOCATION_WEIGHTS: Record<number, number> = { 1: 11, 2: 12, 3: 8 };
   private static readonly COUNT_WEIGHT = 6;
   colWidths: number[] = [];
+  // Column keys in the exact same left-to-right order as colWidths (and the
+  // header <th>s themselves) - lets a resize handle find its own and its
+  // right neighbor's index without hardcoding positions that shift as
+  // groupLevel/visibleColumns change which columns are actually rendered.
+  colKeys: string[] = [];
 
   private recomputeColWidths(): void {
+    const keys: string[] = ['region'];
     const weights: number[] = [SubmissionsComponent.LOCATION_WEIGHTS[1]];
-    if (this.groupLevel >= 2) weights.push(SubmissionsComponent.LOCATION_WEIGHTS[2]);
-    if (this.groupLevel >= 3) weights.push(SubmissionsComponent.LOCATION_WEIGHTS[3]);
+    if (this.groupLevel >= 2) { keys.push('district'); weights.push(SubmissionsComponent.LOCATION_WEIGHTS[2]); }
+    if (this.groupLevel >= 3) { keys.push('ward'); weights.push(SubmissionsComponent.LOCATION_WEIGHTS[3]); }
+    keys.push('count');
     weights.push(SubmissionsComponent.COUNT_WEIGHT);
     for (const key of this.TOGGLE_COLUMN_ORDER) {
-      if (this.visibleColumns[key]) weights.push(this.columnMeta[key].weight);
+      if (this.visibleColumns[key]) { keys.push(key); weights.push(this.columnMeta[key].weight); }
     }
     const total = weights.reduce((a, b) => a + b, 0);
     this.colWidths = weights.map(w => Math.round((w / total) * 1000) / 10);
+    this.colKeys = keys;
+  }
+
+  // ── Column resize (drag handles on header cells) ────────────────────────
+  // Widths stay percentages of the table's own width (not fixed pixels), so
+  // a manual resize keeps its proportions as the browser window/container
+  // is resized - the table doesn't need any extra "responsive" handling
+  // beyond what colWidths/[style.width.%] already provide.
+  private static readonly MIN_COL_WIDTH_PCT = 5;
+  resizingColumn: string | null = null;
+  private resizeState: {
+    leftIndex: number;
+    rightIndex: number;
+    startX: number;
+    startLeftWidth: number;
+    startRightWidth: number;
+    tableWidthPx: number;
+  } | null = null;
+
+  // No handle on the last visible column - there's no neighbor to its right
+  // to shrink/grow against while keeping colWidths summing to 100.
+  canResizeCol(key: string): boolean {
+    const i = this.colKeys.indexOf(key);
+    return i >= 0 && i < this.colKeys.length - 1;
+  }
+
+  onResizeStart(event: MouseEvent, key: string): void {
+    const leftIndex = this.colKeys.indexOf(key);
+    if (leftIndex < 0 || leftIndex >= this.colKeys.length - 1) return;
+    const tableEl = this.summaryTableRef?.nativeElement;
+    if (!tableEl) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.resizingColumn = key;
+    this.resizeState = {
+      leftIndex,
+      rightIndex: leftIndex + 1,
+      startX: event.clientX,
+      startLeftWidth: this.colWidths[leftIndex],
+      startRightWidth: this.colWidths[leftIndex + 1],
+      tableWidthPx: tableEl.getBoundingClientRect().width,
+    };
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onResizeMove(event: MouseEvent): void {
+    const state = this.resizeState;
+    if (!state) return;
+    const deltaPct = ((event.clientX - state.startX) / state.tableWidthPx) * 100;
+    const minW = SubmissionsComponent.MIN_COL_WIDTH_PCT;
+    let newLeft = state.startLeftWidth + deltaPct;
+    let newRight = state.startRightWidth - deltaPct;
+    // Keep both columns at or above the minimum, without changing their
+    // combined width - whichever side would dip below the minimum is
+    // clamped to it, and the other absorbs the difference instead.
+    if (newLeft < minW) { newRight -= (minW - newLeft); newLeft = minW; }
+    if (newRight < minW) { newLeft -= (minW - newRight); newRight = minW; }
+    newLeft = Math.max(minW, newLeft);
+    newRight = Math.max(minW, newRight);
+    this.colWidths = this.colWidths.map((w, i) =>
+      i === state.leftIndex ? newLeft : i === state.rightIndex ? newRight : w
+    );
+  }
+
+  @HostListener('document:mouseup')
+  onResizeEnd(): void {
+    this.resizeState = null;
+    this.resizingColumn = null;
   }
   // Rows exactly as the API returned them, before applying friendly admin-
   // unit labels - kept so relabels loaded later (see initial()) can be
