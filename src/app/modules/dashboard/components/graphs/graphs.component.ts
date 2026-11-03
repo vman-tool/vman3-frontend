@@ -59,12 +59,21 @@ export class GraphsComponent implements OnInit {
     consented: number;
   } | null = null;
 
-  get consentPercentage(): string {
+  // ── Participation (Consent / No Consent / Percent) ──────────────────────
+  get consentedCount(): number {
+    return this.dataOverview?.consented ?? 0;
+  }
+
+  get notConsentedCount(): number {
+    const total = this.dataOverview?.total;
+    if (!total) return 0;
+    return Math.max(0, total - this.consentedCount);
+  }
+
+  get consentPercentLabel(): string {
     const total = this.dataOverview?.total;
     if (!total) return '—';
-    const consented = this.dataOverview?.consented ?? 0;
-    const pct = Math.round((consented / total) * 100);
-    return `${pct}% (${consented.toLocaleString()}/${total.toLocaleString()})`;
+    return `${Math.round((this.consentedCount / total) * 100)}%`;
   }
 
   get coverageDays(): number {
@@ -75,12 +84,28 @@ export class GraphsComponent implements OnInit {
     return Math.max(0, Math.round((last.getTime() - first.getTime()) / 86_400_000));
   }
 
-  get coverageLabel(): string {
+  get coverageDaysLabel(): string {
     const d = this.coverageDays;
     if (d === 0) return '—';
-    if (d < 30) return `${d} day${d !== 1 ? 's' : ''}`;
+    return `${d} day${d !== 1 ? 's' : ''}`;
+  }
+
+  get coverageMonthsLabel(): string {
+    const d = this.coverageDays;
+    if (d < 30) return '';
     const months = Math.round(d / 30.44);
-    return `${d} days (≈ ${months} month${months !== 1 ? 's' : ''})`;
+    return `~ ${months} month${months !== 1 ? 's' : ''}`;
+  }
+
+  // One space-joined string (not a template <br>) so the browser's normal
+  // text wrapping decides the line break - two lines in this card's narrow
+  // Span column, naturally collapsing to one line wherever there's enough
+  // width for both. A single interpolation also avoids the stray leading/
+  // trailing whitespace a `{{a}} <br> {{b}}` template produces around each
+  // line, which was throwing off text-align: center between the two lines.
+  get coverageSpanLabel(): string {
+    const months = this.coverageMonthsLabel;
+    return months ? `${this.coverageDaysLabel}, ${months}` : this.coverageDaysLabel;
   }
 
   get avgPerDay(): string {

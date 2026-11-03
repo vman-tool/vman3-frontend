@@ -45,21 +45,30 @@
         <!-- Submission period -->
         <div class="section-block">
           <p class="section-label mb-1">Submission Period</p>
-          <div class="space-y-1">
-            <div class="stat-row"><span class="stat-key">First</span><span class="stat-val">{{ fmtDate(dataOverview.first_submission) }}</span></div>
-            <div class="stat-row"><span class="stat-key">Last</span><span class="stat-val">{{ fmtDate(dataOverview.last_submission) }}</span></div>
-            <div class="stat-row"><span class="stat-key">Span</span><span class="text-[11px] font-semibold text-emerald-600">{{ coverageLabel }}</span></div>
+          <div class="tri-col">
+            <div><span class="tri-label">First</span><span class="tri-val">{{ fmtDate(dataOverview.first_submission) }}</span></div>
+            <div><span class="tri-label">Last</span><span class="tri-val">{{ fmtDate(dataOverview.last_submission) }}</span></div>
+            <div><span class="tri-label">Span</span><span class="text-[11px] font-semibold leading-tight text-emerald-600">{{ coverageSpanLabel }}</span></div>
           </div>
         </div>
 
-        <!-- Avg submission rate -->
+        <!-- Average submission rate -->
         <div class="section-block">
-          <p class="section-label mb-1">Avg Submission Rate</p>
-          <div class="space-y-1">
-            <div class="stat-row"><span class="stat-key">Per day</span><span class="stat-val">{{ avgPerDay }}</span></div>
-            <div class="stat-row"><span class="stat-key">Per week</span><span class="stat-val">{{ avgPerWeek }}</span></div>
-            <div class="stat-row"><span class="stat-key">Per month</span><span class="stat-val">{{ avgPerMonth }}</span></div>
-            <div class="stat-row pt-1.5 mt-0.5 border-t border-gray-100"><span class="stat-key">Consent Percentage</span><span class="stat-val">{{ consentPercentage }}</span></div>
+          <p class="section-label mb-1">Average Submission Rate</p>
+          <div class="tri-col">
+            <div><span class="tri-label">Per day</span><span class="tri-val">{{ avgPerDay }}</span></div>
+            <div><span class="tri-label">Per week</span><span class="tri-val">{{ avgPerWeek }}</span></div>
+            <div><span class="tri-label">Per month</span><span class="tri-val">{{ avgPerMonth }}</span></div>
+          </div>
+        </div>
+
+        <!-- Participation -->
+        <div class="section-block">
+          <p class="section-label mb-1">Participation</p>
+          <div class="tri-col">
+            <div><span class="tri-label">Consent</span><span class="tri-val">{{ consentedCount | number }}</span></div>
+            <div><span class="tri-label">No Consent</span><span class="tri-val">{{ notConsentedCount | number }}</span></div>
+            <div><span class="tri-label">Percent</span><span class="text-[11px] font-semibold leading-tight text-emerald-600">{{ consentPercentLabel }}</span></div>
           </div>
         </div>
 

@@ -162,18 +162,22 @@ describe('GraphsComponent', () => {
     });
   });
 
-  describe('consentPercentage', () => {
-    it('shows "—" before dataOverview has loaded', () => {
+  describe('Participation (consentedCount / notConsentedCount / consentPercentLabel)', () => {
+    it('defaults to 0/0/"—" before dataOverview has loaded', () => {
       component.dataOverview = null;
-      expect(component.consentPercentage).toBe('—');
+      expect(component.consentedCount).toBe(0);
+      expect(component.notConsentedCount).toBe(0);
+      expect(component.consentPercentLabel).toBe('—');
     });
 
-    it('formats as "consented/total, pct%"', () => {
+    it('splits total into consented/not-consented and computes the percentage', () => {
       component.dataOverview = {
         total: 20, first_submission: null, last_submission: null,
         distinct_regions: 0, distinct_districts: 0, consented: 10,
       };
-      expect(component.consentPercentage).toBe('50% (10/20)');
+      expect(component.consentedCount).toBe(10);
+      expect(component.notConsentedCount).toBe(10);
+      expect(component.consentPercentLabel).toBe('50%');
     });
 
     it('rounds the percentage to the nearest whole number', () => {
@@ -181,7 +185,8 @@ describe('GraphsComponent', () => {
         total: 4417, first_submission: null, last_submission: null,
         distinct_regions: 0, distinct_districts: 0, consented: 4240,
       };
-      expect(component.consentPercentage).toBe('96% (4,240/4,417)');
+      expect(component.notConsentedCount).toBe(177);
+      expect(component.consentPercentLabel).toBe('96%');
     });
 
     it('treats a missing total as "—" rather than dividing by zero', () => {
@@ -189,7 +194,45 @@ describe('GraphsComponent', () => {
         total: 0, first_submission: null, last_submission: null,
         distinct_regions: 0, distinct_districts: 0, consented: 0,
       };
-      expect(component.consentPercentage).toBe('—');
+      expect(component.notConsentedCount).toBe(0);
+      expect(component.consentPercentLabel).toBe('—');
+    });
+  });
+
+  describe('Submission Period Span (coverageDaysLabel / coverageMonthsLabel / coverageSpanLabel)', () => {
+    // coverageSpanLabel is what the template actually renders - a single
+    // space-joined string (no <br>), so the browser's own text wrapping
+    // decides whether "X days" and "~Y months" sit on one line or two,
+    // based on how much width the Span column actually has. A template
+    // `{{a}} <br> {{b}}` previously forced two lines unconditionally AND
+    // left stray leading/trailing whitespace around each line (from the
+    // template's own indentation), which threw off text-align: center
+    // between the two lines - a single clean interpolation avoids both.
+    it('is just the days label when the span is under a month (no months label to join)', () => {
+      component.dataOverview = {
+        total: 1, first_submission: '2026-01-01', last_submission: '2026-01-15',
+        distinct_regions: 0, distinct_districts: 0, consented: 0,
+      };
+      expect(component.coverageDaysLabel).toBe('14 days');
+      expect(component.coverageMonthsLabel).toBe('');
+      expect(component.coverageSpanLabel).toBe('14 days');
+    });
+
+    it('joins the days and ~months labels with ", " once the span reaches a month', () => {
+      component.dataOverview = {
+        total: 1, first_submission: '2026-02-24', last_submission: '2026-11-02',
+        distinct_regions: 0, distinct_districts: 0, consented: 0,
+      };
+      expect(component.coverageDaysLabel).toBe('251 days');
+      expect(component.coverageMonthsLabel).toBe('~ 8 months');
+      expect(component.coverageSpanLabel).toBe('251 days, ~ 8 months');
+    });
+
+    it('shows "—" when there is no data yet', () => {
+      component.dataOverview = null;
+      expect(component.coverageDaysLabel).toBe('—');
+      expect(component.coverageMonthsLabel).toBe('');
+      expect(component.coverageSpanLabel).toBe('—');
     });
   });
 

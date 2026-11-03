@@ -30,6 +30,21 @@
 .stat-key  { @apply text-[11px] text-gray-400; }
 .stat-val  { @apply text-[11px] font-semibold text-gray-700; }
 
+/* Three evenly-spaced columns (Dataset Overview's Submission Period / Avg
+   Submission Rate / Participation rows) - a CSS divider (divide-x) stands
+   in for a literal "|" between columns, since a real pipe character's
+   width/vertical alignment varies with the surrounding text and font,
+   while a border rule stays a crisp, perfectly centered hairline at any
+   column width. */
+.tri-col {
+  @apply grid grid-cols-3 divide-x divide-gray-100;
+}
+.tri-col > div {
+  @apply flex flex-col items-center justify-center gap-0.5 px-1 text-center;
+}
+.tri-label { @apply text-[10px] text-gray-400 leading-tight; }
+.tri-val   { @apply text-[11px] font-semibold text-gray-700 leading-tight; }
+
 /* ── Download icon button ─────────────────────────────────────────────────── */
 .dl-btn {
   @apply p-1 rounded-md hover:bg-gray-100 transition-colors shrink-0 ml-2 cursor-pointer;
