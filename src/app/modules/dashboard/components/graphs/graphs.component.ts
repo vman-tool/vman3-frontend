@@ -506,6 +506,9 @@ export class GraphsComponent implements OnInit {
             }],
           };
           this.dataOverview = data.data.data_overview ?? null;
+          this.deathPyramidBuckets = data.data.death_pyramid?.buckets ?? [];
+          this.deathPyramidOtherSexExcluded = data.data.death_pyramid?.other_sex_excluded ?? 0;
+          this.buildDeathPyramidChart();
           this.isLoading = false;
           this.cdr.detectChanges();
         },
@@ -602,6 +605,64 @@ export class GraphsComponent implements OnInit {
       },
     },
   };
+
+  // ── Death Pyramid ─────────────────────────────────────────────────────────
+  deathPyramidBuckets: { bucket: string; male: number; female: number }[] = [];
+  deathPyramidOtherSexExcluded = 0;
+  includeUnknownAge = true;
+
+  public deathPyramidChartData: ChartData<'bar'> = { labels: [], datasets: [] };
+  public deathPyramidChartOptions: ChartOptions<'bar'> = {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: {
+          // Male values are stored negated so their bars extend left - never
+          // show that minus sign to the user.
+          callback: (v: number | string) => Math.abs(Number(v)).toLocaleString(),
+        },
+      },
+    },
+    plugins: {
+      legend: { display: true, position: 'bottom', align: 'center', fullSize: true },
+      tooltip: {
+        callbacks: {
+          label(context) {
+            const label = context.dataset.label || '';
+            const value = Math.abs(Number(context.raw) || 0);
+            return ` ${label}: ${value.toLocaleString()}`;
+          },
+        },
+      },
+    },
+  };
+
+  onToggleUnknownAge(): void {
+    this.includeUnknownAge = !this.includeUnknownAge;
+    this.buildDeathPyramidChart();
+  }
+
+  // Oldest ("80+") at the top, youngest ("0-4") at the bottom - standard
+  // population-pyramid reading order. "Unknown" (the backend's last bucket)
+  // is appended below "0-4" when shown; toggling it is a pure client-side
+  // filter over the already-fetched buckets, no re-fetch from the backend.
+  private buildDeathPyramidChart(): void {
+    const known = this.deathPyramidBuckets.filter((b) => b.bucket !== 'Unknown').reverse();
+    const unknown = this.includeUnknownAge
+      ? this.deathPyramidBuckets.filter((b) => b.bucket === 'Unknown')
+      : [];
+    const ordered = [...known, ...unknown];
+
+    this.deathPyramidChartData = {
+      labels: ordered.map((b) => b.bucket),
+      datasets: [
+        { label: 'Male', data: ordered.map((b) => -b.male || 0), backgroundColor: '#36A2EB' },
+        { label: 'Female', data: ordered.map((b) => b.female), backgroundColor: '#FF6384' },
+      ],
+    };
+  }
 
   async loadMore() {
     this.ccvaService.get_ccva_Results().subscribe({

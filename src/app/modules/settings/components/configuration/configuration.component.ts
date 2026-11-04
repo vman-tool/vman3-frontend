@@ -530,6 +530,7 @@ export class ConfigurationComponent {
       is_adult: ['', Validators.required],
       is_child: ['', Validators.required],
       is_neonate: ['', Validators.required],
+      age_years: [''],
       birth_date: [''],
       death_date: [''],
       interview_date: [''],

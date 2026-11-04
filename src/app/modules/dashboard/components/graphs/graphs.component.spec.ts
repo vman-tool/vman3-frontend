@@ -280,6 +280,69 @@ describe('GraphsComponent', () => {
     });
   });
 
+  describe('Death Pyramid (buildDeathPyramidChart / onToggleUnknownAge)', () => {
+    const buckets = [
+      { bucket: '0-4', male: 3, female: 2 },
+      { bucket: '5-9', male: 0, female: 1 },
+      { bucket: '80+', male: 4, female: 5 },
+      { bucket: 'Unknown', male: 2, female: 1 },
+    ];
+
+    it('orders oldest-at-top, youngest-at-bottom, with Unknown appended last, and negates male values', () => {
+      component.deathPyramidBuckets = buckets;
+      component.includeUnknownAge = true;
+      component.onToggleUnknownAge(); // off
+      component.onToggleUnknownAge(); // back on -> rebuilds with Unknown included
+
+      expect(component.deathPyramidChartData.labels).toEqual(['80+', '5-9', '0-4', 'Unknown']);
+      const male = component.deathPyramidChartData.datasets[0];
+      const female = component.deathPyramidChartData.datasets[1];
+      expect(male.label).toBe('Male');
+      expect(male.data).toEqual([-4, 0, -3, -2]);
+      expect(female.label).toBe('Female');
+      expect(female.data).toEqual([5, 1, 2, 1]);
+    });
+
+    it('drops the Unknown bucket (not just hides it) when the toggle is switched off, with no new HTTP call', () => {
+      component.deathPyramidBuckets = buckets;
+      component.includeUnknownAge = true;
+      const service = TestBed.inject(ChartsService);
+      const spy = jest.spyOn(service, 'getChartfetchStatistics');
+
+      component.onToggleUnknownAge();
+
+      expect(component.includeUnknownAge).toBe(false);
+      expect(component.deathPyramidChartData.labels).toEqual(['80+', '5-9', '0-4']);
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('loadStatistics - death_pyramid wiring', () => {
+    it('reads death_pyramid.buckets / other_sex_excluded from the response and rebuilds the chart', () => {
+      const service = TestBed.inject(ChartsService);
+      jest.spyOn(service, 'getChartfetchStatistics').mockReturnValue(of({
+        data: {
+          distribution_by_age: { neonates: 0, children: 0, adults: 0 },
+          distribution_by_gender: { male: 0, female: 0, other: 0 },
+          data_overview: null,
+          death_pyramid: {
+            buckets: [{ bucket: '0-4', male: 1, female: 2 }, { bucket: 'Unknown', male: 0, female: 0 }],
+            other_sex_excluded: 3,
+          },
+        },
+      }));
+
+      component.loadStatistics();
+
+      expect(component.deathPyramidBuckets).toEqual([
+        { bucket: '0-4', male: 1, female: 2 },
+        { bucket: 'Unknown', male: 0, female: 0 },
+      ]);
+      expect(component.deathPyramidOtherSexExcluded).toBe(3);
+      expect(component.deathPyramidChartData.labels).toContain('0-4');
+    });
+  });
+
   describe('processBarChartData - many distinct years', () => {
     // Regression: a date field with a wide historical spread (e.g. date of
     // death) used to put one colored bar dataset per distinct year inside
