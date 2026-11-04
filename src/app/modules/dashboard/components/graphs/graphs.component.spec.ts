@@ -280,7 +280,7 @@ describe('GraphsComponent', () => {
     });
   });
 
-  describe('Death Pyramid (buildDeathPyramidChart / onToggleUnknownAge)', () => {
+  describe('Death Pyramid (buildDeathPyramidChart)', () => {
     const buckets = [
       { bucket: '0-4', male: 3, female: 2 },
       { bucket: '5-9', male: 0, female: 1 },
@@ -288,32 +288,58 @@ describe('GraphsComponent', () => {
       { bucket: 'Unknown', male: 2, female: 1 },
     ];
 
-    it('orders oldest-at-top, youngest-at-bottom, with Unknown appended last, and negates male values', () => {
+    it('orders oldest-at-top, youngest-at-bottom, with an "Unknown Age" row/label just below "0-4", split both sides', () => {
       component.deathPyramidBuckets = buckets;
-      component.includeUnknownAge = true;
-      component.onToggleUnknownAge(); // off
-      component.onToggleUnknownAge(); // back on -> rebuilds with Unknown included
+      (component as any).buildDeathPyramidChart();
 
-      expect(component.deathPyramidChartData.labels).toEqual(['80+', '5-9', '0-4', 'Unknown']);
-      const male = component.deathPyramidChartData.datasets[0];
-      const female = component.deathPyramidChartData.datasets[1];
+      expect(component.deathPyramidChartData.labels).toEqual(['80+', '5-9', '0-4', 'Unknown Age']);
+      const [male, female] = component.deathPyramidChartData.datasets as any[];
       expect(male.label).toBe('Male');
-      expect(male.data).toEqual([-4, 0, -3, -2]);
+      expect(male.data).toEqual([-4, 0, -3, -2]); // Unknown Age row still carries its own male count, left side
       expect(female.label).toBe('Female');
-      expect(female.data).toEqual([5, 1, 2, 1]);
+      expect(female.data).toEqual([5, 1, 2, 1]); // ...and its own female count, right side
+      // Both sides recolor dark blue at the Unknown Age row (index 3) only.
+      expect(male.backgroundColor).toEqual(['#36A2EB', '#36A2EB', '#36A2EB', '#1E3A8A']);
+      expect(female.backgroundColor).toEqual(['#FF6384', '#FF6384', '#FF6384', '#1E3A8A']);
     });
 
-    it('drops the Unknown bucket (not just hides it) when the toggle is switched off, with no new HTTP call', () => {
+    it('still shows an Unknown Age row (zeroed) even when the backend sends no Unknown bucket', () => {
+      component.deathPyramidBuckets = [{ bucket: '0-4', male: 1, female: 0 }];
+      (component as any).buildDeathPyramidChart();
+
+      expect(component.deathPyramidChartData.labels).toEqual(['0-4', 'Unknown Age']);
+      const [male, female] = component.deathPyramidChartData.datasets as any[];
+      expect(male.data[1]).toBe(0);
+      expect(female.data[1]).toBe(0);
+    });
+
+    it('removes the "Unknown Age" row/label entirely (not just its bar) when its legend entry is clicked', () => {
       component.deathPyramidBuckets = buckets;
-      component.includeUnknownAge = true;
-      const service = TestBed.inject(ChartsService);
-      const spy = jest.spyOn(service, 'getChartfetchStatistics');
+      (component as any).buildDeathPyramidChart();
+      expect(component.deathPyramidChartData.labels).toContain('Unknown Age');
 
-      component.onToggleUnknownAge();
+      const onClick = (component.deathPyramidChartOptions.plugins!.legend as any).onClick;
+      const fakeChart = { isDatasetVisible: () => true, hide: jest.fn(), show: jest.fn() };
+      onClick(null, { text: 'Unknown Age', datasetIndex: 2 }, { chart: fakeChart });
 
-      expect(component.includeUnknownAge).toBe(false);
-      expect(component.deathPyramidChartData.labels).toEqual(['80+', '5-9', '0-4']);
-      expect(spy).not.toHaveBeenCalled();
+      expect(component.deathPyramidChartData.labels).toEqual(['80+', '5-9', '0-4']); // row gone, not just zeroed
+      expect(fakeChart.hide).not.toHaveBeenCalled(); // Unknown Age never goes through the default hide/show path
+
+      onClick(null, { text: 'Unknown Age', datasetIndex: 2 }, { chart: fakeChart });
+      expect(component.deathPyramidChartData.labels).toEqual(['80+', '5-9', '0-4', 'Unknown Age']); // back on
+    });
+
+    it('falls back to the default dataset hide/show for Male/Female legend clicks', () => {
+      component.deathPyramidBuckets = buckets;
+      (component as any).buildDeathPyramidChart();
+
+      const onClick = (component.deathPyramidChartOptions.plugins!.legend as any).onClick;
+      const fakeChart = { isDatasetVisible: jest.fn().mockReturnValue(true), hide: jest.fn(), show: jest.fn() };
+      const legendItem: any = { text: 'Male', datasetIndex: 0 };
+      onClick(null, legendItem, { chart: fakeChart });
+
+      expect(fakeChart.hide).toHaveBeenCalledWith(0);
+      expect(legendItem.hidden).toBe(true);
     });
   });
 

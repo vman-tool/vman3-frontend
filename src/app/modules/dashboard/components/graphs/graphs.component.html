@@ -124,16 +124,9 @@
   <div class="card col-span-12 lg:col-span-6 p-4 flex flex-col" id="death_pyramid">
     <div class="card-header">
       <span class="card-title">Death Pyramid</span>
-      <div class="flex items-center gap-2">
-        <label class="flex items-center gap-1 text-[10px] text-gray-400 cursor-pointer select-none">
-          <input type="checkbox" class="accent-blue-500 h-3 w-3"
-                 [checked]="includeUnknownAge" (change)="onToggleUnknownAge()">
-          Show unknown age
-        </label>
-        <button class="dl-btn" (click)="downloadChart('death_pyramid')" title="Download">
-          <img src="assets/icons/download.svg" class="h-3.5 opacity-40 hover:opacity-80" alt="Download" />
-        </button>
-      </div>
+      <button class="dl-btn" (click)="downloadChart('death_pyramid')" title="Download">
+        <img src="assets/icons/download.svg" class="h-3.5 opacity-40 hover:opacity-80" alt="Download" />
+      </button>
     </div>
     <div *ngIf="deathPyramidOtherSexExcluded" class="text-[10px] text-gray-400 mb-1">
       {{ deathPyramidOtherSexExcluded | number }} record(s) with unspecified sex not shown
