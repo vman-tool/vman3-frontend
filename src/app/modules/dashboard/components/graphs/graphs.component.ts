@@ -617,12 +617,20 @@ export class GraphsComponent implements OnInit {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
+      // Stacking (on both axes) is what makes this a pyramid rather than a
+      // grouped bar chart - without it, Chart.js draws Male and Female as
+      // two separate sub-bars offset within each category band, so the two
+      // sides of the same age group don't sit on the same line.
       x: {
+        stacked: true,
         ticks: {
           // Male values are stored negated so their bars extend left - never
           // show that minus sign to the user.
           callback: (v: number | string) => Math.abs(Number(v)).toLocaleString(),
         },
+      },
+      y: {
+        stacked: true,
       },
     },
     plugins: {
@@ -658,8 +666,14 @@ export class GraphsComponent implements OnInit {
     this.deathPyramidChartData = {
       labels: ordered.map((b) => b.bucket),
       datasets: [
-        { label: 'Male', data: ordered.map((b) => -b.male || 0), backgroundColor: '#36A2EB' },
-        { label: 'Female', data: ordered.map((b) => b.female), backgroundColor: '#FF6384' },
+        {
+          label: 'Male', data: ordered.map((b) => -b.male || 0), backgroundColor: '#36A2EB',
+          stack: 'pyramid', categoryPercentage: 1, barPercentage: 0.95,
+        },
+        {
+          label: 'Female', data: ordered.map((b) => b.female), backgroundColor: '#FF6384',
+          stack: 'pyramid', categoryPercentage: 1, barPercentage: 0.95,
+        },
       ],
     };
   }
