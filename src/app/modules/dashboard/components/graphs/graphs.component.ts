@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import {
   BubbleDataPoint,
+  Chart,
   ChartData,
   ChartOptions,
   ChartType,
@@ -609,7 +610,11 @@ export class GraphsComponent implements OnInit {
   // ── Death Pyramid ─────────────────────────────────────────────────────────
   deathPyramidBuckets: { bucket: string; male: number; female: number }[] = [];
   deathPyramidOtherSexExcluded = 0;
-  includeUnknownAge = true;
+
+  // Default on, so the gap in the data isn't hidden without an explicit
+  // choice. Driven entirely from the "Unknown Age" legend entry's onClick
+  // below, not a separate control.
+  private showUnknownAge = true;
 
   public deathPyramidChartData: ChartData<'bar'> = { labels: [], datasets: [] };
   public deathPyramidChartOptions: ChartOptions<'bar'> = {
@@ -617,16 +622,63 @@ export class GraphsComponent implements OnInit {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
+      // Stacking (on both axes) is what makes this a pyramid rather than a
+      // grouped bar chart - without it, Chart.js draws Male and Female as
+      // two separate sub-bars offset within each category band, so the two
+      // sides of the same age group don't sit on the same line.
       x: {
+        stacked: true,
         ticks: {
           // Male values are stored negated so their bars extend left - never
           // show that minus sign to the user.
           callback: (v: number | string) => Math.abs(Number(v)).toLocaleString(),
         },
       },
+      y: {
+        stacked: true,
+      },
     },
     plugins: {
-      legend: { display: true, position: 'bottom', align: 'center', fullSize: true },
+      legend: {
+        display: true, position: 'bottom', align: 'center', fullSize: true,
+        labels: {
+          // "Unknown Age" isn't its own dataset - it's the Unknown row's
+          // slice of the Male/Female bars, recolored dark blue - so it has
+          // no legend entry of its own by default. Inject one manually,
+          // alongside Chart.js's normal Male/Female entries.
+          generateLabels: (chart) => {
+            const defaults = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+            defaults.push({
+              text: 'Unknown Age',
+              fillStyle: '#1E3A8A',
+              strokeStyle: '#1E3A8A',
+              hidden: !this.showUnknownAge,
+              datasetIndex: -1,
+            } as any);
+            return defaults;
+          },
+        },
+        onClick: (_event, legendItem, legend) => {
+          // "Unknown Age" removes the whole row/label when clicked, not just
+          // the dataset's values - unlike Male/Female (and the Monthly
+          // Submissions chart's "Target" line), which use Chart.js's own
+          // hide/show-the-dataset default here replicated for them.
+          if (legendItem.text === 'Unknown Age') {
+            this.showUnknownAge = !this.showUnknownAge;
+            this.buildDeathPyramidChart();
+            return;
+          }
+          const index = legendItem.datasetIndex!;
+          const chart = legend.chart;
+          if (chart.isDatasetVisible(index)) {
+            chart.hide(index);
+            legendItem.hidden = true;
+          } else {
+            chart.show(index);
+            legendItem.hidden = false;
+          }
+        },
+      },
       tooltip: {
         callbacks: {
           label(context) {
@@ -639,27 +691,39 @@ export class GraphsComponent implements OnInit {
     },
   };
 
-  onToggleUnknownAge(): void {
-    this.includeUnknownAge = !this.includeUnknownAge;
-    this.buildDeathPyramidChart();
-  }
-
   // Oldest ("80+") at the top, youngest ("0-4") at the bottom - standard
-  // population-pyramid reading order. "Unknown" (the backend's last bucket)
-  // is appended below "0-4" when shown; toggling it is a pure client-side
-  // filter over the already-fetched buckets, no re-fetch from the backend.
+  // population-pyramid reading order. The "Unknown Age" row sits just below
+  // "0-4" when shown, and disappears entirely (not just its bars) when
+  // toggled off via its legend entry.
+  //
+  // "Unknown Age" isn't a 3rd dataset - it still splits by sex (a male bar
+  // extending left, a female bar extending right, same as every other row),
+  // just recolored dark blue at that one row, via Chart.js's per-point
+  // (array) backgroundColor support on the same Male/Female datasets. A
+  // dedicated 3rd dataset was tried first but only renders on one side
+  // (whichever sign its merged male+female total has), not both.
   private buildDeathPyramidChart(): void {
     const known = this.deathPyramidBuckets.filter((b) => b.bucket !== 'Unknown').reverse();
-    const unknown = this.includeUnknownAge
-      ? this.deathPyramidBuckets.filter((b) => b.bucket === 'Unknown')
-      : [];
-    const ordered = [...known, ...unknown];
+    const unknown = this.deathPyramidBuckets.find((b) => b.bucket === 'Unknown')
+      ?? { bucket: 'Unknown', male: 0, female: 0 };
+    const ordered = this.showUnknownAge ? [...known, unknown] : known;
+    const unknownIndex = this.showUnknownAge ? ordered.length - 1 : -1;
 
     this.deathPyramidChartData = {
-      labels: ordered.map((b) => b.bucket),
+      labels: ordered.map((b, i) => (i === unknownIndex ? 'Unknown Age' : b.bucket)),
       datasets: [
-        { label: 'Male', data: ordered.map((b) => -b.male || 0), backgroundColor: '#36A2EB' },
-        { label: 'Female', data: ordered.map((b) => b.female), backgroundColor: '#FF6384' },
+        {
+          label: 'Male',
+          data: ordered.map((b) => -b.male || 0),
+          backgroundColor: ordered.map((_, i) => (i === unknownIndex ? '#1E3A8A' : '#36A2EB')),
+          stack: 'pyramid', categoryPercentage: 1, barPercentage: 0.95,
+        },
+        {
+          label: 'Female',
+          data: ordered.map((b) => b.female),
+          backgroundColor: ordered.map((_, i) => (i === unknownIndex ? '#1E3A8A' : '#FF6384')),
+          stack: 'pyramid', categoryPercentage: 1, barPercentage: 0.95,
+        },
       ],
     };
   }
