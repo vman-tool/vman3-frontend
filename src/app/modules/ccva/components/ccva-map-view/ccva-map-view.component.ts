@@ -26,7 +26,7 @@ export interface CcvaMapPoint {
   locationLevel1: string | null;
 }
 
-type ColorableField = 'gender' | 'age_group' | 'cause1_broad' | 'cause1_major' | 'locationLevel1';
+type ColorableField = 'gender' | 'age_group' | 'cause1' | 'cause1_broad' | 'cause1_major' | 'locationLevel1';
 
 // Which map-point field a given Group By dimension colors markers by - only
 // the dimensions the (deliberately lightweight) /map-points payload
@@ -37,6 +37,7 @@ const COLOR_FIELD_BY_GROUP: Record<string, ColorableField> = {
   age_group: 'age_group',
   broad: 'cause1_broad',
   major: 'cause1_major',
+  cause_specific: 'cause1',
   region: 'locationLevel1',
 };
 

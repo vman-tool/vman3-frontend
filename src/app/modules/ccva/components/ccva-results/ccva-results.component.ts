@@ -108,6 +108,7 @@ export class CcvaResultsComponent implements OnInit {
     { value: 'age_group', label: 'Age Group' },
     { value: 'broad', label: 'Broad Category' },
     { value: 'major', label: 'Major Category' },
+    { value: 'cause_specific', label: 'Cause Specific' },
   ];
   groupBy = 'none';
   groupedData: CcvaGroupedRow[] = [];

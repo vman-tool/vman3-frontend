@@ -86,6 +86,12 @@ describe('CcvaMapViewComponent', () => {
         'Diseases of the circulatory system',
       ]);
     });
+
+    it('lists the distinct raw cause1 values present when grouped by cause_specific', () => {
+      component.points = points;
+      component.groupBy = 'cause_specific';
+      expect(component.legendEntries.map(e => e.label)).toEqual(['Malaria', 'Stroke']);
+    });
   });
 
   // Cluster bubbles - coloring/tooltip driven by the same breakdown, so a
