@@ -44,6 +44,53 @@ describe('CcvaMapViewComponent', () => {
     })).not.toThrow();
   });
 
+  // Maximize button / Escape-to-exit - a plain CSS overlay toggle (see
+  // ccva-map-fullscreen in the stylesheet), not the native Fullscreen API.
+  describe('fullscreen toggle', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      fixture.detectChanges();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('starts out of fullscreen', () => {
+      expect(component.isFullscreen).toBe(false);
+    });
+
+    it('toggleFullscreen flips the flag and re-measures the map after the layout settles', () => {
+      const invalidateSize = jest.spyOn((component as any).map, 'invalidateSize');
+
+      component.toggleFullscreen();
+      expect(component.isFullscreen).toBe(true);
+      jest.runAllTimers();
+      expect(invalidateSize).toHaveBeenCalled();
+
+      invalidateSize.mockClear();
+      component.toggleFullscreen();
+      expect(component.isFullscreen).toBe(false);
+      jest.runAllTimers();
+      expect(invalidateSize).toHaveBeenCalled();
+    });
+
+    it('Escape exits fullscreen', () => {
+      component.toggleFullscreen();
+      expect(component.isFullscreen).toBe(true);
+
+      component.onEscapeKeydown();
+
+      expect(component.isFullscreen).toBe(false);
+    });
+
+    it('Escape does nothing when not in fullscreen', () => {
+      expect(component.isFullscreen).toBe(false);
+      expect(() => component.onEscapeKeydown()).not.toThrow();
+      expect(component.isFullscreen).toBe(false);
+    });
+  });
+
   describe('legendEntries', () => {
     const points = [
       { va_id: 'uuid-1', lat: -6.3, lng: 34.8, gender: 'male', age_group: 'adult', cause1: 'Stroke', cause1_major: 'Diseases of the circulatory system', cause1_broad: 'Group II: Non-Communicable', locationLevel1: 'dodoma' },

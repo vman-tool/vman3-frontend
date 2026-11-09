@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, HostListener, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 // Same global-script Leaflet setup as maps/components/map-data - see that
 // component's comment for why the type-only markercluster import and the
 // `declare const L` (rather than `import * as L`) are both needed.
@@ -74,6 +74,10 @@ export class CcvaMapViewComponent implements AfterViewInit, OnChanges, OnDestroy
   // group value (not the display label, which gender/age_group capitalize).
   private hiddenGroupValues = new Set<string>();
 
+  // Toggled by the maximize button - a plain CSS overlay (see
+  // ccva-map-fullscreen in the stylesheet), not the native Fullscreen API.
+  isFullscreen = false;
+
   private map?: L.Map;
   private clusterGroup?: MarkerClusterGroup;
   private mapReady = false;
@@ -114,6 +118,23 @@ export class CcvaMapViewComponent implements AfterViewInit, OnChanges, OnDestroy
 
   ngOnDestroy(): void {
     this.map?.remove();
+  }
+
+  // Leaflet caches its container's size at init and after each resize - a
+  // plain CSS class toggle (no window resize event) leaves it still sized
+  // for the old layout until told otherwise, rendering a blank/mis-clipped
+  // map until the user pans/zooms. invalidateSize() re-measures the
+  // container; the 0ms delay just waits for the class change to actually
+  // reflow the DOM first.
+  toggleFullscreen(): void {
+    this.isFullscreen = !this.isFullscreen;
+    setTimeout(() => this.map?.invalidateSize(), 0);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKeydown(): void {
+    if (!this.isFullscreen) return;
+    this.toggleFullscreen();
   }
 
   // Re-runs iconCreateFunction for every visible cluster so the tooltip
