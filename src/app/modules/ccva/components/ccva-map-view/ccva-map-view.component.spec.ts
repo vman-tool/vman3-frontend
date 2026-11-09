@@ -94,6 +94,62 @@ describe('CcvaMapViewComponent', () => {
     });
   });
 
+  // Clicking a legend entry activates/deactivates it, same gesture as the
+  // Monthly Submission chart's legend - here there's no per-value Chart.js
+  // dataset to hide/show, so it drops that value's markers from the map
+  // (and its cluster bubbles) directly instead.
+  describe('legend entry toggling', () => {
+    const points = [
+      { va_id: 'uuid-1', lat: -6.3, lng: 34.8, gender: 'male', age_group: 'adult', cause1: 'Stroke', cause1_major: 'Diseases of the circulatory system', cause1_broad: 'Group II: Non-Communicable', locationLevel1: 'dodoma' },
+      { va_id: 'uuid-2', lat: -6.8, lng: 39.2, gender: 'female', age_group: 'child', cause1: 'Malaria', cause1_major: 'Certain infectious and parasitic diseases', cause1_broad: 'Group I: Communicable', locationLevel1: 'dar_es_salaam' },
+    ];
+
+    it('starts with every legend value active', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+
+      expect(component.legendEntries.every(e => !e.hidden)).toBe(true);
+    });
+
+    it('clicking a legend entry deactivates it and drops its markers from the map', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+
+      component.toggleLegendEntry('male');
+
+      expect(component.legendEntries.find(e => e.value === 'male')?.hidden).toBe(true);
+      const remaining = (component as any).clusterGroup.getLayers().map((m: any) => m.ccvaPoint.va_id);
+      expect(remaining).toEqual(['uuid-2']);
+    });
+
+    it('clicking a deactivated legend entry again reactivates it', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+
+      component.toggleLegendEntry('male');
+      component.toggleLegendEntry('male');
+
+      expect(component.legendEntries.find(e => e.value === 'male')?.hidden).toBe(false);
+      expect((component as any).clusterGroup.getLayers()).toHaveLength(2);
+    });
+
+    it('changing groupBy clears deactivated values from the previous dimension', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+      component.toggleLegendEntry('male');
+
+      component.groupBy = 'broad';
+      component.ngOnChanges({ groupBy: {} as any });
+
+      expect((component as any).hiddenGroupValues.size).toBe(0);
+      expect((component as any).clusterGroup.getLayers()).toHaveLength(2);
+    });
+  });
+
   // Cluster bubbles - coloring/tooltip driven by the same breakdown, so a
   // "concentration" of one category is visible on the bubble itself (not
   // just in the legend, which only ever described individual dots).

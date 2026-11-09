@@ -67,6 +67,13 @@ export class CcvaMapViewComponent implements AfterViewInit, OnChanges, OnDestroy
   // toggle addresses. The bubble coloring itself is unaffected either way.
   showBreakdownPopup = false;
 
+  // Legend entries clickable to activate/deactivate, same interaction as
+  // the Monthly Submission chart's legend - a deactivated value's points
+  // are dropped from the map entirely (not just dimmed), the same way
+  // Chart.js removes a hidden dataset from the chart. Keyed by the raw
+  // group value (not the display label, which gender/age_group capitalize).
+  private hiddenGroupValues = new Set<string>();
+
   private map?: L.Map;
   private clusterGroup?: MarkerClusterGroup;
   private mapReady = false;
@@ -93,6 +100,12 @@ export class CcvaMapViewComponent implements AfterViewInit, OnChanges, OnDestroy
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // A value deactivated under one Group By dimension means nothing once
+    // the dimension itself changes (e.g. "Group I" from Broad Category vs.
+    // "Male" from Gender could collide) - clear rather than carry it over.
+    if (changes['groupBy']) {
+      this.hiddenGroupValues.clear();
+    }
     if (!this.mapReady) return;
     if (changes['points'] || changes['groupBy']) {
       this.renderMarkers();
@@ -108,6 +121,25 @@ export class CcvaMapViewComponent implements AfterViewInit, OnChanges, OnDestroy
   // to re-add markers (points/groupBy haven't changed, just the toggle).
   onToggleBreakdownPopup(): void {
     this.clusterGroup?.refreshClusters();
+  }
+
+  // Legend entry click - activate/deactivate a group value, same gesture as
+  // the Monthly Submission chart's legend (Chart.js's own default dataset
+  // hide/show). There's no per-value Chart.js dataset here to hide/show, so
+  // this drops that value's markers from the map directly instead.
+  toggleLegendEntry(value: string): void {
+    if (this.hiddenGroupValues.has(value)) {
+      this.hiddenGroupValues.delete(value);
+    } else {
+      this.hiddenGroupValues.add(value);
+    }
+    this.renderMarkers();
+  }
+
+  private isPointHidden(point: CcvaMapPoint): boolean {
+    const field = this.colorField;
+    const value = field ? point[field] : null;
+    return !!value && this.hiddenGroupValues.has(value);
   }
 
   // The field on CcvaMapPoint the active Group By colors by, or undefined
@@ -233,8 +265,11 @@ export class CcvaMapViewComponent implements AfterViewInit, OnChanges, OnDestroy
       ? colorMapForValues(this.points.map(p => (p[field] as string) || '').filter(Boolean))
       : {};
 
+    let visibleCount = 0;
     for (const point of this.points) {
       if (point.lat == null || point.lng == null) continue;
+      if (this.isPointHidden(point)) continue;
+      visibleCount++;
       const color = this.markerColor(point);
       const popup = `
         <div style="min-width:200px;font-family:sans-serif;font-size:13px;line-height:1.6">
@@ -252,21 +287,27 @@ export class CcvaMapViewComponent implements AfterViewInit, OnChanges, OnDestroy
       this.clusterGroup.addLayer(marker);
     }
 
-    if (this.points.length > 0) {
+    if (visibleCount > 0) {
       this.map.fitBounds(this.clusterGroup.getBounds(), { padding: [30, 30] });
     }
   }
 
   // Legend entries for the current coloring - empty when the active Group
   // By dimension has no per-point color field (District/Ward/Major/None).
-  get legendEntries(): { label: string; color: string }[] {
+  // `value` is the raw group value (what toggleLegendEntry()/hiddenGroupValues
+  // key on); `hidden` drives the clicked-to-deactivate styling.
+  get legendEntries(): { label: string; color: string; value: string; hidden: boolean }[] {
     const field = this.colorField;
     if (!field) return [];
     if (this.groupBy === 'broad') {
-      return Object.entries(BROAD_CATEGORY_COLORS).map(([label, color]) => ({ label, color }));
+      return Object.entries(BROAD_CATEGORY_COLORS).map(([label, color]) => ({
+        label, color, value: label, hidden: this.hiddenGroupValues.has(label),
+      }));
     }
     const values = [...new Set(this.points.map(p => (p[field] as string) || '').filter(Boolean))].sort();
     const colorMap = colorMapForValues(values);
-    return values.map(value => ({ label: this.valueLabel(value), color: colorMap[value] }));
+    return values.map(value => ({
+      label: this.valueLabel(value), color: colorMap[value], value, hidden: this.hiddenGroupValues.has(value),
+    }));
   }
 }

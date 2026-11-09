@@ -3,10 +3,13 @@
 
   <div *ngIf="legendEntries.length > 0"
        class="absolute bottom-3 left-3 z-[1000] bg-white/95 rounded-lg shadow px-3 py-2 text-xs text-gray-700 max-w-[220px]">
-    <div *ngFor="let entry of legendEntries" class="flex items-center gap-1.5 py-0.5">
+    <button *ngFor="let entry of legendEntries" type="button"
+            class="flex items-center gap-1.5 py-0.5 w-full text-left bg-transparent border-0 p-0 cursor-pointer"
+            [class.opacity-40]="entry.hidden"
+            (click)="toggleLegendEntry(entry.value)">
       <span class="inline-block w-2.5 h-2.5 rounded-full shrink-0" [style.background]="entry.color"></span>
-      <span class="truncate">{{ entry.label }}</span>
-    </div>
+      <span class="truncate" [class.line-through]="entry.hidden">{{ entry.label }}</span>
+    </button>
     <label class="flex items-center gap-1.5 text-[10px] text-gray-500 mt-1.5 pt-1.5 border-t border-gray-100 cursor-pointer select-none">
       <input type="checkbox" class="h-3 w-3" [(ngModel)]="showBreakdownPopup" (ngModelChange)="onToggleBreakdownPopup()" />
       Show pop-up
