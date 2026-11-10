@@ -630,6 +630,13 @@ describe('CcvaResultsComponent (unit)', () => {
       expect(ccvaService.get_ccva_grouped_results).toHaveBeenCalledTimes(2);
     });
 
+    it('offers a Cause Specific Group By option', () => {
+      const { component } = makeComponent();
+      expect(component.groupByChoices).toEqual(
+        expect.arrayContaining([{ value: 'cause_specific', label: 'Cause Specific' }])
+      );
+    });
+
     it('groupLabel friendly-maps location groups, capitalizes gender/age_group, and falls back to Unclassified', () => {
       const { component } = makeComponent();
 
@@ -642,6 +649,9 @@ describe('CcvaResultsComponent (unit)', () => {
       component.groupBy = 'broad';
       expect(component.groupLabel({ group: 'Group I: Communicable', count: 1 })).toBe('Group I: Communicable');
       expect(component.groupLabel({ group: '', count: 1 })).toBe('Unclassified');
+
+      component.groupBy = 'cause_specific';
+      expect(component.groupLabel({ group: 'Stroke', count: 1 })).toBe('Stroke');
     });
 
     it('percentageFor computes a share of groupedTotal, and shows an em dash when total is 0', () => {

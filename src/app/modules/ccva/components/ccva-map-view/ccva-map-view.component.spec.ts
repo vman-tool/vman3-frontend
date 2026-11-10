@@ -44,6 +44,53 @@ describe('CcvaMapViewComponent', () => {
     })).not.toThrow();
   });
 
+  // Maximize button / Escape-to-exit - a plain CSS overlay toggle (see
+  // ccva-map-fullscreen in the stylesheet), not the native Fullscreen API.
+  describe('fullscreen toggle', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      fixture.detectChanges();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('starts out of fullscreen', () => {
+      expect(component.isFullscreen).toBe(false);
+    });
+
+    it('toggleFullscreen flips the flag and re-measures the map after the layout settles', () => {
+      const invalidateSize = jest.spyOn((component as any).map, 'invalidateSize');
+
+      component.toggleFullscreen();
+      expect(component.isFullscreen).toBe(true);
+      jest.runAllTimers();
+      expect(invalidateSize).toHaveBeenCalled();
+
+      invalidateSize.mockClear();
+      component.toggleFullscreen();
+      expect(component.isFullscreen).toBe(false);
+      jest.runAllTimers();
+      expect(invalidateSize).toHaveBeenCalled();
+    });
+
+    it('Escape exits fullscreen', () => {
+      component.toggleFullscreen();
+      expect(component.isFullscreen).toBe(true);
+
+      component.onEscapeKeydown();
+
+      expect(component.isFullscreen).toBe(false);
+    });
+
+    it('Escape does nothing when not in fullscreen', () => {
+      expect(component.isFullscreen).toBe(false);
+      expect(() => component.onEscapeKeydown()).not.toThrow();
+      expect(component.isFullscreen).toBe(false);
+    });
+  });
+
   describe('legendEntries', () => {
     const points = [
       { va_id: 'uuid-1', lat: -6.3, lng: 34.8, gender: 'male', age_group: 'adult', cause1: 'Stroke', cause1_major: 'Diseases of the circulatory system', cause1_broad: 'Group II: Non-Communicable', locationLevel1: 'dodoma' },
@@ -85,6 +132,68 @@ describe('CcvaMapViewComponent', () => {
         'Certain infectious and parasitic diseases',
         'Diseases of the circulatory system',
       ]);
+    });
+
+    it('lists the distinct raw cause1 values present when grouped by cause_specific', () => {
+      component.points = points;
+      component.groupBy = 'cause_specific';
+      expect(component.legendEntries.map(e => e.label)).toEqual(['Malaria', 'Stroke']);
+    });
+  });
+
+  // Clicking a legend entry activates/deactivates it, same gesture as the
+  // Monthly Submission chart's legend - here there's no per-value Chart.js
+  // dataset to hide/show, so it drops that value's markers from the map
+  // (and its cluster bubbles) directly instead.
+  describe('legend entry toggling', () => {
+    const points = [
+      { va_id: 'uuid-1', lat: -6.3, lng: 34.8, gender: 'male', age_group: 'adult', cause1: 'Stroke', cause1_major: 'Diseases of the circulatory system', cause1_broad: 'Group II: Non-Communicable', locationLevel1: 'dodoma' },
+      { va_id: 'uuid-2', lat: -6.8, lng: 39.2, gender: 'female', age_group: 'child', cause1: 'Malaria', cause1_major: 'Certain infectious and parasitic diseases', cause1_broad: 'Group I: Communicable', locationLevel1: 'dar_es_salaam' },
+    ];
+
+    it('starts with every legend value active', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+
+      expect(component.legendEntries.every(e => !e.hidden)).toBe(true);
+    });
+
+    it('clicking a legend entry deactivates it and drops its markers from the map', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+
+      component.toggleLegendEntry('male');
+
+      expect(component.legendEntries.find(e => e.value === 'male')?.hidden).toBe(true);
+      const remaining = (component as any).clusterGroup.getLayers().map((m: any) => m.ccvaPoint.va_id);
+      expect(remaining).toEqual(['uuid-2']);
+    });
+
+    it('clicking a deactivated legend entry again reactivates it', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+
+      component.toggleLegendEntry('male');
+      component.toggleLegendEntry('male');
+
+      expect(component.legendEntries.find(e => e.value === 'male')?.hidden).toBe(false);
+      expect((component as any).clusterGroup.getLayers()).toHaveLength(2);
+    });
+
+    it('changing groupBy clears deactivated values from the previous dimension', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      fixture.detectChanges();
+      component.toggleLegendEntry('male');
+
+      component.groupBy = 'broad';
+      component.ngOnChanges({ groupBy: {} as any });
+
+      expect((component as any).hiddenGroupValues.size).toBe(0);
+      expect((component as any).clusterGroup.getLayers()).toHaveLength(2);
     });
   });
 

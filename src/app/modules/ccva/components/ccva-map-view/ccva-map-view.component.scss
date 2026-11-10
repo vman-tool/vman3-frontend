@@ -3,6 +3,21 @@
   width: 100%;
 }
 
+// Maximize button toggles this instead of the native Fullscreen API - a
+// plain fixed-position overlay keeps the map above the rest of the page
+// (dropdowns, dialogs, etc.) without the browser's own fullscreen chrome,
+// and matches this codebase's general Tailwind-utility-class styling
+// elsewhere rather than introducing a :fullscreen pseudo-class convention.
+.ccva-map-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2000;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
 // Leaflet's default tooltip is a solid white box - overridden here to be
 // small and translucent so, when opted into via the "Show pop-up" checkbox,
 // it still doesn't fully hide the bubbles/basemap underneath it.
