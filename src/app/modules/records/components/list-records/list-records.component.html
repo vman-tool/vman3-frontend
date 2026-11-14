@@ -3,44 +3,42 @@
 
   <div class="relative w-full overflow-auto shadow-md sm:rounded-lg max-h-[75vh]">
 
-    <!-- ── Row 1: VA ID / instance ID / location search ───────────────────── -->
-    <div class="search-bar">
+    <!-- ── Search (left) + Filter By/Value + Columns (right), one row ─────── -->
+    <!-- Broad/Major/Specific Cause come from whichever CCVA run is marked
+         default (CCVA > Display Data > Set Default). The two sides are
+         independent flex-wrap groups rather than one flat row, so each
+         wraps to its own line on narrow screens instead of the two
+         colliding - label/button text collapses to icon-only below 640px
+         on top of that. -->
+    <div class="search-bar justify-between">
 
-      <div class="search-group">
-        <label class="search-label">
-          <i class="ph-magnifying-glass search-label-icon" title="Search by"></i>
-          <span class="search-label-text">Search by</span>
-        </label>
-        <app-custom-dropdown widthClass="w-32" [compact]="true" [options]="searchByOptions" [selectedValue]="searchBy"
-          (selectedValueChange)="onSearchByChange($event)">
-        </app-custom-dropdown>
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="search-group">
+          <label class="search-label">
+            <i class="ph-magnifying-glass search-label-icon" title="Search by"></i>
+            <span class="search-label-text">Search by</span>
+          </label>
+          <app-custom-dropdown widthClass="w-32" [compact]="true" [options]="searchByOptions" [selectedValue]="searchBy"
+            (selectedValueChange)="onSearchByChange($event)">
+          </app-custom-dropdown>
+        </div>
+
+        <div class="search-input-group">
+          <input
+            type="text"
+            [(ngModel)]="searchValue"
+            placeholder="Enter search value"
+            class="search-input" />
+          <button (click)="onSearch()" class="btn-search">
+            <i class="ph-magnifying-glass"></i> <span class="search-label-text">Search</span>
+          </button>
+          <button (click)="onClearSearch()" class="btn-clear">
+            <span class="search-label-text">Clear</span>
+            <i class="ph-x search-label-icon"></i>
+          </button>
+        </div>
       </div>
 
-      <div class="search-input-group">
-        <input
-          type="text"
-          [(ngModel)]="searchValue"
-          placeholder="Enter search value"
-          class="search-input" />
-        <button (click)="onSearch()" class="btn-search">
-          <i class="ph-magnifying-glass"></i> <span class="search-label-text">Search</span>
-        </button>
-        <button (click)="onClearSearch()" class="btn-clear">
-          <span class="search-label-text">Clear</span>
-          <i class="ph-x search-label-icon"></i>
-        </button>
-      </div>
-
-    </div>
-
-    <!-- ── Row 2: Filter By / Filter Value (left) and Columns (right) ─────── -->
-    <!-- Broad/Major Category and Algorithm come from whichever CCVA run is
-         marked default (CCVA > Display Data > Set Default) - Specific
-         Cause has too many distinct values for a useful dropdown, same
-         reasoning as CCVA's own Filter By. A dedicated row (not crammed
-         into row 1's single line) and icon-collapsing labels below sm
-         keep this from overlapping on narrow screens. -->
-    <div class="filter-bar flex items-center justify-between gap-3 p-3 border-b border-gray-200 flex-wrap">
       <div class="flex items-center gap-3 flex-wrap">
         <div class="search-group">
           <label class="search-label">
@@ -61,31 +59,41 @@
             (selectedValueChange)="onFilterValueChange($event)">
           </app-custom-dropdown>
         </div>
-      </div>
 
-      <div class="relative columns-menu-wrapper">
-        <button type="button" (click)="toggleColumnsMenu()"
-          class="h-[34px] px-3.5 flex items-center gap-1.5 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
-          <i class="ph-columns"></i> <span class="search-label-text">Columns</span>
-          <i class="ph-caret-down text-xs"></i>
-        </button>
-        <div *ngIf="columnsMenuOpen"
-             class="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 max-h-72 overflow-auto">
-          <label *ngFor="let col of columnsConfig" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-            <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.key)" />
-            {{ columnLabel(col.key) }}
-          </label>
+        <div class="relative columns-menu-wrapper">
+          <button type="button" (click)="toggleColumnsMenu()"
+            class="h-[34px] px-3.5 flex items-center gap-1.5 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
+            <i class="ph-columns"></i> <span class="search-label-text">Columns</span>
+            <i class="ph-caret-down text-xs"></i>
+          </button>
+          <div *ngIf="columnsMenuOpen"
+               class="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 max-h-72 overflow-auto">
+            <label *ngFor="let col of columnsConfig" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.key)" />
+              {{ columnLabel(col.key) }}
+            </label>
+          </div>
         </div>
       </div>
+
     </div>
     <!-- ── End search/filter controls ──────────────────────────────────── -->
 
+    <!-- table-fixed with no <colgroup>: every column shares width equally
+         EXCEPT the leading spacer and View, pinned narrow via w-6/w-14 below
+         - without that pin, hiding columns via the Columns menu grows those
+         two (otherwise-empty) slivers by the same equal share as every real
+         column, which is what was pushing data toward the middle and
+         leaving blank margins either side. Content columns fill exactly
+         what's left between those two pinned edges, however many are
+         visible, so VA ID always sits at the left margin and the last
+         visible content column always ends at the right margin. -->
     <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
 
       <thead class="sticky top-0 z-20 text-xs font-medium tracking-wide text-gray-500 bg-gray-50
                     border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="p-4"></th>
+          <th scope="col" class="w-6 p-0"></th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left">VA ID</th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('region')">{{ locationLevel1Label }}</th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('district')">{{ locationLevel2Label }}</th>
@@ -105,7 +113,7 @@
           <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaAlgorithm')" (click)="onSort('ccvaAlgorithm')">
             <span class="flex items-center gap-1">Algorithm <i [class]="sortIcon('ccvaAlgorithm')" class="shrink-0"></i></span>
           </th>
-          <th scope="col" class="px-4 py-2.5 font-medium text-center">View</th>
+          <th scope="col" class="w-14 px-2 py-2.5 font-medium text-center">View</th>
         </tr>
       </thead>
 
@@ -131,7 +139,7 @@
           *ngFor="let row of data; let i = index"
           class="border-b border-gray-100 last:border-0 text-gray-600 hover:bg-gray-50
                  transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
-          <td class="p-4"></td>
+          <td class="w-6 p-0"></td>
           <td class="px-4 py-2.5 text-gray-900 dark:text-white
                      max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
               [title]="row.vaId">{{ row.vaId }}</td>
@@ -154,7 +162,7 @@
               [title]="row.ccvaCauseSpecific">{{ row.ccvaCauseSpecific || '—' }}</td>
           <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaAlgorithm')"
               [title]="row.ccvaAlgorithm">{{ row.ccvaAlgorithm || '—' }}</td>
-          <td class="px-4 py-2.5 text-center">
+          <td class="w-14 px-2 py-2.5 text-center">
             <a class="font-medium text-blue-600 dark:text-blue-500
                       hover:underline hover:cursor-pointer"
                (click)="onOpenVA(row)">

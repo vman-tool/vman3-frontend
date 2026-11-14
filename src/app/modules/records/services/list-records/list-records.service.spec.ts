@@ -49,18 +49,18 @@ describe('ListRecordsService', () => {
     it('sends filter_by/filter_value only when both are given', () => {
       service.getRecordsData(
         1, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-        'ccvaAlgorithm', 'VManML10'
+        'ccvaCauseSpecific', 'Malaria'
       ).subscribe();
 
       const req = httpMock.expectOne(r => r.url === `${API_URL}/records`);
-      expect(req.request.params.get('filter_by')).toBe('ccvaAlgorithm');
-      expect(req.request.params.get('filter_value')).toBe('VManML10');
+      expect(req.request.params.get('filter_by')).toBe('ccvaCauseSpecific');
+      expect(req.request.params.get('filter_value')).toBe('Malaria');
       req.flush({ data: [], total: 0 });
     });
 
     it('omits the filter params when filter_value is missing', () => {
       service.getRecordsData(
-        1, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'ccvaAlgorithm'
+        1, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'ccvaCauseSpecific'
       ).subscribe();
 
       const req = httpMock.expectOne(r => r.url === `${API_URL}/records`);
@@ -75,12 +75,12 @@ describe('ListRecordsService', () => {
 
       const req = httpMock.expectOne(`${API_URL}/records/ccva-filter-options`);
       expect(req.request.method).toBe('GET');
-      req.flush({ data: { broad: [], major: [], algorithm: [] } });
+      req.flush({ data: { broad: [], major: [], specific: [] } });
     });
 
     it('falls back to empty option lists on error rather than erroring the caller', done => {
       service.getCcvaFilterOptions().subscribe(response => {
-        expect(response).toEqual({ data: { broad: [], major: [], algorithm: [] } });
+        expect(response).toEqual({ data: { broad: [], major: [], specific: [] } });
         done();
       });
 

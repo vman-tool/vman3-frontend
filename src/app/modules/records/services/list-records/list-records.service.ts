@@ -84,13 +84,14 @@ export class ListRecordsService {
     );
   }
 
-  // Distinct Broad/Major Category + Algorithm values for the Filter By
-  // dropdown - the full configured target cause list, not just whatever
-  // the currently default CCVA run happens to use (see the backend route's
-  // own comment for why).
+  // Distinct Broad/Major/Specific Cause values for the Filter By dropdown.
+  // Broad/Major come from the full configured target cause list, not just
+  // whatever the currently default CCVA run happens to use (see the
+  // backend route's own comment for why) - Specific Cause is the distinct
+  // values actually present (there's no fixed universe to enumerate).
   getCcvaFilterOptions(): Observable<any> {
     return this.http.get<any>(`${this.configService.API_URL}/records/ccva-filter-options`).pipe(
-      catchError(() => of({ data: { broad: [], major: [], algorithm: [] } }))
+      catchError(() => of({ data: { broad: [], major: [], specific: [] } }))
     );
   }
 

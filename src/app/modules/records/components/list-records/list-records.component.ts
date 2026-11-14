@@ -67,17 +67,15 @@ export class ListRecordsComponent implements OnInit {
 
   filterBy = 'none';
   filterValue = '';
-  // Specific Cause is excluded - too many distinct values for a useful
-  // dropdown, same reasoning as CCVA's own Filter By.
   filterByChoices: { value: string; label: string }[] = [
     { value: 'none', label: 'None' },
     { value: 'ccvaCauseBroad', label: 'Broad Category' },
     { value: 'ccvaCauseMajor', label: 'Major Category' },
-    { value: 'ccvaAlgorithm', label: 'Algorithm' },
+    { value: 'ccvaCauseSpecific', label: 'Specific Cause' },
   ];
   filterValueChoices: { value: string; label: string }[] = [{ value: '', label: 'All' }];
-  private ccvaFilterOptions: { broad: string[]; major: string[]; algorithm: string[] } = {
-    broad: [], major: [], algorithm: [],
+  private ccvaFilterOptions: { broad: string[]; major: string[]; specific: string[] } = {
+    broad: [], major: [], specific: [],
   };
 
   // Column visibility - same "Columns" menu gesture/placement as CCVA's own
@@ -123,7 +121,7 @@ export class ListRecordsComponent implements OnInit {
   private loadCcvaFilterOptions(): void {
     this.listRecordsService.getCcvaFilterOptions().subscribe({
       next: (response: any) => {
-        this.ccvaFilterOptions = { broad: [], major: [], algorithm: [], ...(response?.data ?? {}) };
+        this.ccvaFilterOptions = { broad: [], major: [], specific: [], ...(response?.data ?? {}) };
         this.updateFilterValueChoices();
       },
       error: () => {
@@ -136,7 +134,7 @@ export class ListRecordsComponent implements OnInit {
   private updateFilterValueChoices(): void {
     const key = this.filterBy === 'ccvaCauseBroad' ? 'broad'
       : this.filterBy === 'ccvaCauseMajor' ? 'major'
-      : this.filterBy === 'ccvaAlgorithm' ? 'algorithm'
+      : this.filterBy === 'ccvaCauseSpecific' ? 'specific'
       : null;
     const options = key ? this.ccvaFilterOptions[key] : [];
     this.filterValueChoices = [{ value: '', label: 'All' }, ...options.map(value => ({ value, label: value }))];

@@ -146,10 +146,10 @@ describe('ListRecordsComponent', () => {
   });
 
   describe('CCVA Filter By / Filter Value', () => {
-    it('loads the Broad/Major/Algorithm options on init', () => {
+    it('loads the Broad/Major/Specific Cause options on init', () => {
       const service = TestBed.inject(ListRecordsService);
       jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
-        data: { broad: ['Group I: Communicable'], major: ['Malaria'], algorithm: ['InterVA5', 'VManML10'] },
+        data: { broad: ['Group I: Communicable'], major: ['Malaria'], specific: ['Malaria', 'Stroke'] },
       }));
 
       fixture.detectChanges();
@@ -164,7 +164,7 @@ describe('ListRecordsComponent', () => {
     it('onFilterByChange resets filterValue, rebuilds the value choices, and reloads from page 1', () => {
       const service = TestBed.inject(ListRecordsService);
       jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
-        data: { broad: [], major: ['Malaria'], algorithm: [] },
+        data: { broad: [], major: ['Malaria'], specific: [] },
       }));
       fixture.detectChanges();
       component.filterValue = 'stale';
@@ -184,15 +184,31 @@ describe('ListRecordsComponent', () => {
       expect(loadSpy).toHaveBeenCalledTimes(1);
     });
 
+    it('loads the Specific Cause options for ccvaCauseSpecific', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
+        data: { broad: [], major: [], specific: ['Malaria', 'Stroke'] },
+      }));
+      fixture.detectChanges();
+
+      component.onFilterByChange('ccvaCauseSpecific');
+
+      expect(component.filterValueChoices).toEqual([
+        { value: '', label: 'All' },
+        { value: 'Malaria', label: 'Malaria' },
+        { value: 'Stroke', label: 'Stroke' },
+      ]);
+    });
+
     it('onFilterValueChange reloads from page 1', () => {
       fixture.detectChanges();
       component.pageNumber = 3;
       const loadSpy = jest.spyOn(component, 'loadRecords');
       loadSpy.mockClear();
 
-      component.onFilterValueChange('VManML10');
+      component.onFilterValueChange('Malaria');
 
-      expect(component.filterValue).toBe('VManML10');
+      expect(component.filterValue).toBe('Malaria');
       expect(component.pageNumber).toBe(1);
       expect(loadSpy).toHaveBeenCalledTimes(1);
     });
@@ -200,7 +216,7 @@ describe('ListRecordsComponent', () => {
     it('selecting None clears the value choices back to just "All"', () => {
       const service = TestBed.inject(ListRecordsService);
       jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
-        data: { broad: ['Group I: Communicable'], major: [], algorithm: [] },
+        data: { broad: ['Group I: Communicable'], major: [], specific: [] },
       }));
       fixture.detectChanges();
       component.onFilterByChange('ccvaCauseBroad');
@@ -208,6 +224,13 @@ describe('ListRecordsComponent', () => {
       component.onFilterByChange('none');
 
       expect(component.filterValueChoices).toEqual([{ value: '', label: 'All' }]);
+    });
+
+    it('offers Specific Cause instead of Algorithm as a Filter By choice', () => {
+      fixture.detectChanges();
+      expect(component.filterByChoices.map(c => c.value)).toEqual([
+        'none', 'ccvaCauseBroad', 'ccvaCauseMajor', 'ccvaCauseSpecific',
+      ]);
     });
   });
 
