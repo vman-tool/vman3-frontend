@@ -32,9 +32,8 @@
           <button (click)="onSearch()" class="btn-search">
             <i class="ph-magnifying-glass"></i> <span class="search-label-text">Search</span>
           </button>
-          <button (click)="onClearSearch()" class="btn-clear">
-            <span class="search-label-text">Clear</span>
-            <i class="ph-x search-label-icon"></i>
+          <button (click)="onClearSearch()" class="btn-clear" title="Clear">
+            <i class="ph-x"></i>
           </button>
         </div>
       </div>
@@ -60,10 +59,20 @@
           </app-custom-dropdown>
         </div>
 
+        <div class="search-group">
+          <label class="search-label">
+            <i class="ph-stack search-label-icon" title="Group By"></i>
+            <span class="search-label-text">Group By</span>
+          </label>
+          <app-custom-dropdown widthClass="w-36" [compact]="true" [options]="groupByChoices" [selectedValue]="groupBy"
+            (selectedValueChange)="onGroupByChange($event)">
+          </app-custom-dropdown>
+        </div>
+
         <div class="relative columns-menu-wrapper">
-          <button type="button" (click)="toggleColumnsMenu()"
-            class="h-[34px] px-3.5 flex items-center gap-1.5 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
-            <i class="ph-columns"></i> <span class="search-label-text">Columns</span>
+          <button type="button" (click)="toggleColumnsMenu()" title="Columns"
+            class="h-[34px] px-2.5 flex items-center gap-1 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
+            <i class="ph-columns"></i>
             <i class="ph-caret-down text-xs"></i>
           </button>
           <div *ngIf="columnsMenuOpen"
@@ -88,7 +97,7 @@
          what's left between those two pinned edges, however many are
          visible, so VA ID always sits at the left margin and the last
          visible content column always ends at the right margin. -->
-    <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
+    <table *ngIf="groupBy === 'none'" class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
 
       <thead class="sticky top-0 z-20 text-xs font-medium tracking-wide text-gray-500 bg-gray-50
                     border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
@@ -175,7 +184,7 @@
     </table>
 
     <div class="sticky bottom-0 z-20 px-5 py-2 bg-white border-t flex flex-col xs:flex-row"
-         *ngIf="totalRecords > 0">
+         *ngIf="groupBy === 'none' && totalRecords > 0">
       <mat-paginator
         [showFirstLastButtons]="true"
         [pageSizeOptions]="pageSizeOptions"
@@ -184,6 +193,38 @@
         [pageSize]="limit"
         (page)="onPageChange($event)">
       </mat-paginator>
+    </div>
+
+    <!-- ── Group By summary: Group/Count/Percentage ────────────────────────
+         Small result set (a handful of group values) - no pagination, same
+         reasoning as CCVA's own Display Data table's Group By. -->
+    <div class="relative" *ngIf="groupBy !== 'none'">
+      <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
+        <thead class="text-xs font-medium tracking-wide text-gray-500 bg-gray-50
+                      border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-4 py-2.5 font-medium text-left">{{ labelFromChoices(groupByChoices, groupBy) }}</th>
+            <th scope="col" class="px-4 py-2.5 font-medium text-right">Count</th>
+            <th scope="col" class="px-4 py-2.5 font-medium text-right">Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="groupedData.length === 0 && !isLoadingGrouped">
+            <td colspan="3" class="px-4 py-8 text-center text-gray-400">No record was found</td>
+          </tr>
+          <tr *ngFor="let row of groupedData"
+              class="border-b border-gray-100 last:border-0 text-gray-600 hover:bg-gray-50 transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
+            <td class="px-4 py-2.5 text-gray-900 dark:text-gray-200">{{ row.group }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ row.count | number }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ percentageFor(row) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="isLoadingGrouped"
+           class="absolute inset-0 z-10 flex items-center justify-center bg-white/60 pointer-events-none">
+        <i class="ph-spinner text-2xl text-gray-400 animate-spin"></i>
+      </div>
     </div>
 
   </div>

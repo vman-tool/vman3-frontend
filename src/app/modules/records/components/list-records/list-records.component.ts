@@ -78,6 +78,18 @@ export class ListRecordsComponent implements OnInit {
     broad: [], major: [], specific: [],
   };
 
+  // Group By - same 3 fields as Filter By, aliased to the exact same array
+  // so the two dropdowns' options never drift apart. When set, the
+  // individual-record table is replaced by a Group/Count/Percentage
+  // summary (same behavior as CCVA's own Display Data table's Group By),
+  // honoring every other active filter (date range/location/search/
+  // Filter By-Value) the same way the individual list does.
+  groupBy = 'none';
+  groupByChoices: { value: string; label: string }[] = this.filterByChoices;
+  groupedData: { group: string; count: number }[] = [];
+  groupedTotal = 0;
+  isLoadingGrouped = false;
+
   // Column visibility - same "Columns" menu gesture/placement as CCVA's own
   // Display Data table (ccva-results.component.ts), generalized to a list
   // rather than one fixed checkbox since there are several toggleable
@@ -108,14 +120,72 @@ export class ListRecordsComponent implements OnInit {
   setupEffect() {
     effect(() => {
       this.filterData = this.filterService.filterData();
-      this.loadRecords();
+      this.loadForCurrentView();
     });
   }
 
   ngOnInit(): void {
     this.loadSettingsLabels();
     this.loadCcvaFilterOptions();
+    this.loadForCurrentView();
+  }
+
+  // Dispatches to whichever view is currently active - the individual-
+  // record table (loadRecords) or the Group By summary (loadGroupedRecords)
+  // - used by every trigger that both views should react to (search,
+  // Filter By/Value, the global date/location filter). Plain sort/page
+  // changes stay on loadRecords() directly since their own controls only
+  // exist on the individual table, never visible while grouped.
+  private loadForCurrentView(): void {
+    if (this.groupBy !== 'none') {
+      this.loadGroupedRecords();
+      return;
+    }
     this.loadRecords();
+  }
+
+  onGroupByChange(value: string): void {
+    this.groupBy = value;
+    this.pageNumber = 1;
+    this.loadForCurrentView();
+  }
+
+  loadGroupedRecords(): void {
+    this.isLoadingGrouped = true;
+    this.listRecordsService
+      .getGroupedRecords(
+        this.groupBy,
+        this.filterData.startDate,
+        this.filterData.endDate,
+        this.filterData.locations,
+        this.searchBy,
+        this.searchValue,
+        this.filterBy !== 'none' ? this.filterBy : undefined,
+        this.filterBy !== 'none' ? this.filterValue || undefined : undefined
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.groupedData = response?.data ?? [];
+          this.groupedTotal = response?.total ?? 0;
+          this.error = response?.error ?? null;
+        },
+        error: () => {
+          this.error = 'Failed to fetch grouped records';
+        },
+        complete: () => {
+          this.isLoadingGrouped = false;
+        },
+      });
+  }
+
+  percentageFor(row: { group: string; count: number }): string {
+    return this.groupedTotal ? `${((row.count / this.groupedTotal) * 100).toFixed(1)}%` : '—';
+  }
+
+  // Group By summary table's first column header - "Broad Category" etc.,
+  // same lookup-by-value convention as CCVA's own grouped table.
+  labelFromChoices(choices: { value: string; label: string }[], value: string): string {
+    return choices.find(c => c.value === value)?.label || value;
   }
 
   private loadCcvaFilterOptions(): void {
@@ -145,13 +215,13 @@ export class ListRecordsComponent implements OnInit {
     this.filterValue = '';
     this.updateFilterValueChoices();
     this.pageNumber = 1;
-    this.loadRecords();
+    this.loadForCurrentView();
   }
 
   onFilterValueChange(value: string): void {
     this.filterValue = value;
     this.pageNumber = 1;
-    this.loadRecords();
+    this.loadForCurrentView();
   }
 
   // Shared by every sortable column header in the table template.
@@ -239,12 +309,12 @@ export class ListRecordsComponent implements OnInit {
 
   onSearch(): void {
     this.pageNumber = 1;
-    this.loadRecords();
+    this.loadForCurrentView();
   }
 
   onClearSearch(): void {
     this.searchValue = '';
-    this.loadRecords();
+    this.loadForCurrentView();
   }
 
   onOpenVA(va: any){

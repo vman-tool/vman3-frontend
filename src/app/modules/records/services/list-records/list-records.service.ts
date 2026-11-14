@@ -84,6 +84,49 @@ export class ListRecordsService {
     );
   }
 
+  // Group By's Broad/Major/Specific Cause summary (Group/Count/Percent) -
+  // same filter params as getRecordsData (date range/location/search/
+  // Filter By-Value) but no paging, same reasoning as CCVA's own grouped
+  // results (a handful of group values, not a page of records).
+  getGroupedRecords(
+    groupBy: string,
+    startDate?: string,
+    endDate?: string,
+    locations?: LocationSelection[],
+    searchBy?: string,
+    searchValue?: string,
+    filterBy?: string,
+    filterValue?: string
+  ): Observable<any> {
+    let params = new HttpParams().set('group_by', groupBy);
+
+    if (startDate) {
+      params = params.set('start_date', startDate);
+    }
+    if (endDate) {
+      params = params.set('end_date', endDate);
+    }
+    if (locations && locations.length > 0) {
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
+    }
+    if (searchValue) {
+      params = params.set('search_by', searchBy || '');
+      params = params.set('search_value', searchValue);
+    }
+    if (filterBy && filterValue) {
+      params = params.set('filter_by', filterBy).set('filter_value', filterValue);
+    }
+
+    return this.http.get<any>(`${this.configService.API_URL}/records/grouped`, { params }).pipe(
+      catchError((error: any) => of({
+        data: [],
+        message: 'Failed to fetch grouped records',
+        error: error.message,
+        total: 0,
+      }))
+    );
+  }
+
   // Distinct Broad/Major/Specific Cause values for the Filter By dropdown.
   // Broad/Major come from the full configured target cause list, not just
   // whatever the currently default CCVA run happens to use (see the

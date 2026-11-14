@@ -88,4 +88,37 @@ describe('ListRecordsService', () => {
       req.flush('error', { status: 500, statusText: 'Server Error' });
     });
   });
+
+  describe('getGroupedRecords', () => {
+    it('GETs the grouped endpoint with group_by and no paging params', () => {
+      service.getGroupedRecords('ccvaCauseBroad').subscribe();
+
+      const req = httpMock.expectOne(r => r.url === `${API_URL}/records/grouped`);
+      expect(req.request.params.get('group_by')).toBe('ccvaCauseBroad');
+      expect(req.request.params.has('page_number')).toBe(false);
+      req.flush({ data: [], total: 0 });
+    });
+
+    it('sends filter_by/filter_value only when both are given', () => {
+      service.getGroupedRecords(
+        'ccvaCauseBroad', undefined, undefined, undefined, undefined, undefined, 'ccvaCauseMajor', 'Malaria'
+      ).subscribe();
+
+      const req = httpMock.expectOne(r => r.url === `${API_URL}/records/grouped`);
+      expect(req.request.params.get('filter_by')).toBe('ccvaCauseMajor');
+      expect(req.request.params.get('filter_value')).toBe('Malaria');
+      req.flush({ data: [], total: 0 });
+    });
+
+    it('falls back to an empty result on error rather than erroring the caller', done => {
+      service.getGroupedRecords('ccvaCauseBroad').subscribe(response => {
+        expect(response.data).toEqual([]);
+        expect(response.total).toBe(0);
+        done();
+      });
+
+      const req = httpMock.expectOne(r => r.url === `${API_URL}/records/grouped`);
+      req.flush('error', { status: 500, statusText: 'Server Error' });
+    });
+  });
 });

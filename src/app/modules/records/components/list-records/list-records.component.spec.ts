@@ -303,4 +303,91 @@ describe('ListRecordsComponent', () => {
       expect(component.columnsMenuOpen).toBe(true);
     });
   });
+
+  // Group By - same 3 options as Filter By (aliased to the same array), on
+  // top of the individual-record table when set to a Group/Count/
+  // Percentage summary, same behavior as CCVA's own Display Data table.
+  describe('Group By', () => {
+    it('offers the exact same options as Filter By', () => {
+      fixture.detectChanges();
+      expect(component.groupByChoices).toBe(component.filterByChoices);
+    });
+
+    it('onGroupByChange loads the grouped summary instead of the individual list', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const groupedSpy = jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({ data: [], total: 0 }));
+      fixture.detectChanges();
+      component.pageNumber = 3;
+
+      component.onGroupByChange('ccvaCauseBroad');
+
+      expect(component.groupBy).toBe('ccvaCauseBroad');
+      expect(component.pageNumber).toBe(1);
+      expect(groupedSpy).toHaveBeenCalledWith(
+        'ccvaCauseBroad', undefined, undefined, [], 'vaId', '', undefined, undefined
+      );
+    });
+
+    it('loadGroupedRecords populates groupedData/groupedTotal from the response', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({
+        data: [{ group: 'Group I: Communicable', count: 7 }],
+        total: 10,
+      }));
+      fixture.detectChanges();
+
+      component.onGroupByChange('ccvaCauseBroad');
+
+      expect(component.groupedData).toEqual([{ group: 'Group I: Communicable', count: 7 }]);
+      expect(component.groupedTotal).toBe(10);
+      expect(component.isLoadingGrouped).toBe(false);
+    });
+
+    it('passes the active Filter By/Value through to the grouped request', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const groupedSpy = jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({ data: [], total: 0 }));
+      fixture.detectChanges();
+      component.filterBy = 'ccvaCauseMajor';
+      component.filterValue = 'Malaria';
+
+      component.onGroupByChange('ccvaCauseBroad');
+
+      expect(groupedSpy).toHaveBeenCalledWith(
+        'ccvaCauseBroad', undefined, undefined, [], 'vaId', '', 'ccvaCauseMajor', 'Malaria'
+      );
+    });
+
+    it('search/filter actions reload the grouped summary instead of the individual list once grouped', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const groupedSpy = jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({ data: [], total: 0 }));
+      const individualSpy = jest.spyOn(service, 'getRecordsData');
+      fixture.detectChanges();
+      component.groupBy = 'ccvaCauseBroad';
+      groupedSpy.mockClear();
+      individualSpy.mockClear();
+
+      component.onSearch();
+      expect(groupedSpy).toHaveBeenCalledTimes(1);
+
+      component.onFilterByChange('ccvaCauseMajor');
+      expect(groupedSpy).toHaveBeenCalledTimes(2);
+
+      expect(individualSpy).not.toHaveBeenCalled();
+    });
+
+    it('percentageFor computes a share of groupedTotal, and shows an em dash when total is 0', () => {
+      fixture.detectChanges();
+      component.groupedTotal = 0;
+      expect(component.percentageFor({ group: 'x', count: 5 })).toBe('—');
+
+      component.groupedTotal = 4;
+      expect(component.percentageFor({ group: 'x', count: 1 })).toBe('25.0%');
+    });
+
+    it('labelFromChoices looks up the display label for a Group By value', () => {
+      fixture.detectChanges();
+      expect(component.labelFromChoices(component.groupByChoices, 'ccvaCauseMajor')).toBe('Major Category');
+      expect(component.labelFromChoices(component.groupByChoices, 'not-a-real-value')).toBe('not-a-real-value');
+    });
+  });
 });
