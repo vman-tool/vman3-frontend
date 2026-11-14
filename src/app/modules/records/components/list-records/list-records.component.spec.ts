@@ -510,4 +510,71 @@ describe('ListRecordsComponent', () => {
       expect(component.groupChartSubtitle).toBe('Broad Category: Group I: Communicable');
     });
   });
+
+  // Group By summary table's own column-header sort - lost when the
+  // summary table replaced the individual-record table, restored here as
+  // a client-side sort (small result set), same reasoning as CCVA's own
+  // grouped table.
+  describe('sorting the Group By summary', () => {
+    it('onGroupByChange defaults the sort to largest-groups-first', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({ data: [], total: 0 }));
+      fixture.detectChanges();
+
+      component.onGroupByChange('ccvaCauseBroad');
+
+      expect(component.sortColumn).toBe('count');
+      expect(component.sortDirection).toBe('desc');
+    });
+
+    it('onSort on the grouped table sorts client-side without a network call', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const groupedSpy = jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({ data: [], total: 0 }));
+      fixture.detectChanges();
+      component.groupBy = 'ccvaCauseBroad';
+      component.groupedData = [
+        { group: 'Group I: Communicable', count: 9 },
+        { group: 'Group II: Non-Communicable', count: 4 },
+      ];
+      component.sortColumn = 'count';
+      component.sortDirection = 'desc';
+      groupedSpy.mockClear();
+
+      component.onSort('count'); // toggles desc -> asc
+
+      expect(component.groupedData).toEqual([
+        { group: 'Group II: Non-Communicable', count: 4 },
+        { group: 'Group I: Communicable', count: 9 },
+      ]);
+      expect(groupedSpy).not.toHaveBeenCalled();
+    });
+
+    it('onSort by the group label column sorts alphabetically', () => {
+      fixture.detectChanges();
+      component.groupBy = 'ccvaCauseBroad';
+      component.groupedData = [
+        { group: 'Group II: Non-Communicable', count: 4 },
+        { group: 'Group I: Communicable', count: 9 },
+      ];
+      component.sortColumn = null;
+
+      component.onSort('group');
+
+      expect(component.groupedData).toEqual([
+        { group: 'Group I: Communicable', count: 9 },
+        { group: 'Group II: Non-Communicable', count: 4 },
+      ]);
+    });
+
+    it('onSort still hits the server for the individual table (groupBy none)', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const individualSpy = jest.spyOn(service, 'getRecordsData');
+      fixture.detectChanges();
+      individualSpy.mockClear();
+
+      component.onSort('ccvaCauseBroad');
+
+      expect(individualSpy).toHaveBeenCalledTimes(1);
+    });
+  });
 });

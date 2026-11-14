@@ -200,6 +200,11 @@ export class ListRecordsComponent implements OnInit {
     if (this.groupBy === 'none' && (this.vizType === 'pie' || this.vizType === 'bar')) {
       this.vizType = 'table';
     }
+    // Reset to a sensible default (largest groups first) each time the
+    // grouping itself changes - the previous sort (e.g. a column from the
+    // individual table) likely doesn't apply to the new dimension's values.
+    this.sortColumn = 'count';
+    this.sortDirection = 'desc';
     this.pageNumber = 1;
     // Map points don't depend on groupBy (only their color-coding does,
     // handled reactively by app-va-record-map-view's own [groupBy] input) -
@@ -348,13 +353,21 @@ export class ListRecordsComponent implements OnInit {
     this.loadForCurrentView();
   }
 
-  // Shared by every sortable column header in the table template.
+  // Shared by every sortable column header in the table template - the
+  // individual-record table AND the Group By summary table.
   onSort(column: string): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortColumn = column;
       this.sortDirection = 'asc';
+    }
+    // The grouped summary table (Group/Count) sorts the already-fetched
+    // small array client-side - no need for a second round trip, same
+    // reasoning as CCVA's own grouped table.
+    if (this.groupBy !== 'none' && this.vizType === 'table') {
+      this.sortGroupedDataClientSide();
+      return;
     }
     this.loadRecords();
   }
@@ -364,6 +377,13 @@ export class ListRecordsComponent implements OnInit {
     return this.sortDirection === 'asc'
       ? 'ph ph-arrow-up text-gray-600 text-xs'
       : 'ph ph-arrow-down text-gray-600 text-xs';
+  }
+
+  private sortGroupedDataClientSide(): void {
+    const dir = this.sortDirection === 'asc' ? 1 : -1;
+    this.groupedData = [...this.groupedData].sort((a, b) =>
+      this.sortColumn === 'count' ? (a.count - b.count) * dir : a.group.localeCompare(b.group) * dir
+    );
   }
 
   loadSettingsLabels(): void {

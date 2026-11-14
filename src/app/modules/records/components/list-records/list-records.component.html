@@ -230,8 +230,12 @@
         <thead class="text-xs font-medium tracking-wide text-gray-500 bg-gray-50
                       border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-4 py-2.5 font-medium text-left">{{ labelFromChoices(groupByChoices, groupBy) }}</th>
-            <th scope="col" class="px-4 py-2.5 font-medium text-right">Count</th>
+            <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" (click)="onSort('group')">
+              <span class="flex items-center gap-1">{{ labelFromChoices(groupByChoices, groupBy) }} <i [class]="sortIcon('group')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium text-right cursor-pointer select-none" (click)="onSort('count')">
+              <span class="flex items-center justify-end gap-1">Count <i [class]="sortIcon('count')" class="shrink-0"></i></span>
+            </th>
             <th scope="col" class="px-4 py-2.5 font-medium text-right">Percentage</th>
           </tr>
         </thead>
