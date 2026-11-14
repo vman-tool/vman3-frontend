@@ -127,6 +127,48 @@ export class ListRecordsService {
     );
   }
 
+  // GPS points for the Map view - same filter params as getRecordsData
+  // (date range/location/search/Filter By-Value), no paging/sort (same
+  // reasoning as CCVA's own map-points: a capped, already-filtered set of
+  // points, not a page of records).
+  getTableMapPoints(
+    startDate?: string,
+    endDate?: string,
+    locations?: LocationSelection[],
+    searchBy?: string,
+    searchValue?: string,
+    filterBy?: string,
+    filterValue?: string
+  ): Observable<any> {
+    let params = new HttpParams();
+
+    if (startDate) {
+      params = params.set('start_date', startDate);
+    }
+    if (endDate) {
+      params = params.set('end_date', endDate);
+    }
+    if (locations && locations.length > 0) {
+      params = params.set('locations', JSON.stringify(locations.map(l => ({ field: l.field, value: l.value }))));
+    }
+    if (searchValue) {
+      params = params.set('search_by', searchBy || '');
+      params = params.set('search_value', searchValue);
+    }
+    if (filterBy && filterValue) {
+      params = params.set('filter_by', filterBy).set('filter_value', filterValue);
+    }
+
+    return this.http.get<any>(`${this.configService.API_URL}/records/table-map-points`, { params }).pipe(
+      catchError((error: any) => of({
+        data: [],
+        message: 'Failed to fetch map points',
+        error: error.message,
+        total: 0,
+      }))
+    );
+  }
+
   // Distinct Broad/Major/Specific Cause values for the Filter By dropdown.
   // Broad/Major come from the full configured target cause list, not just
   // whatever the currently default CCVA run happens to use (see the

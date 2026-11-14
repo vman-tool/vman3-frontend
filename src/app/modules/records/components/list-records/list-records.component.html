@@ -67,7 +67,36 @@
           </app-custom-dropdown>
         </div>
 
-        <div class="relative columns-menu-wrapper">
+        <!-- Table/Pie/Bar/Map switcher - same control/placement as CCVA's own
+             Display Data table, next to Group By. Pie/Bar chart the Group
+             By summary (disabled with a hint until one is chosen); Map is
+             independent of Group By - it's always available. -->
+        <div class="flex items-center gap-0.5 bg-gray-100 border border-gray-300 rounded p-0.5">
+          <button type="button" (click)="onVizTypeChange('table')" title="Table"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600"
+            [class.bg-white]="vizType === 'table'" [class.shadow-sm]="vizType === 'table'" [class.text-blue-600]="vizType === 'table'">
+            <i class="ph-table"></i>
+          </button>
+          <button type="button" (click)="onVizTypeChange('pie')" [disabled]="groupBy === 'none'"
+            [title]="groupBy === 'none' ? 'Choose a Group By to chart' : 'Pie chart'"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+            [class.bg-white]="vizType === 'pie'" [class.shadow-sm]="vizType === 'pie'" [class.text-blue-600]="vizType === 'pie'">
+            <i class="ph-chart-pie"></i>
+          </button>
+          <button type="button" (click)="onVizTypeChange('bar')" [disabled]="groupBy === 'none'"
+            [title]="groupBy === 'none' ? 'Choose a Group By to chart' : 'Bar chart'"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+            [class.bg-white]="vizType === 'bar'" [class.shadow-sm]="vizType === 'bar'" [class.text-blue-600]="vizType === 'bar'">
+            <i class="ph-chart-bar-horizontal"></i>
+          </button>
+          <button type="button" (click)="onVizTypeChange('map')" title="Map"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600"
+            [class.bg-white]="vizType === 'map'" [class.shadow-sm]="vizType === 'map'" [class.text-blue-600]="vizType === 'map'">
+            <i class="ph-map-pin"></i>
+          </button>
+        </div>
+
+        <div class="relative columns-menu-wrapper" *ngIf="vizType === 'table' && groupBy === 'none'">
           <button type="button" (click)="toggleColumnsMenu()" title="Columns"
             class="h-[34px] px-2.5 flex items-center gap-1 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
             <i class="ph-columns"></i>
@@ -95,7 +124,7 @@
          what's left between those two pinned edges, however many are
          visible, so VA ID always sits at the left margin and the last
          visible content column always ends at the right margin. -->
-    <table *ngIf="groupBy === 'none'" class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
+    <table *ngIf="vizType === 'table' && groupBy === 'none'" class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
 
       <thead class="sticky top-0 z-20 text-xs font-medium tracking-wide text-gray-500 bg-gray-50
                     border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
@@ -182,7 +211,7 @@
     </table>
 
     <div class="sticky bottom-0 z-20 px-5 py-2 bg-white border-t flex flex-col xs:flex-row"
-         *ngIf="groupBy === 'none' && totalRecords > 0">
+         *ngIf="vizType === 'table' && groupBy === 'none' && totalRecords > 0">
       <mat-paginator
         [showFirstLastButtons]="true"
         [pageSizeOptions]="pageSizeOptions"
@@ -196,7 +225,7 @@
     <!-- ── Group By summary: Group/Count/Percentage ────────────────────────
          Small result set (a handful of group values) - no pagination, same
          reasoning as CCVA's own Display Data table's Group By. -->
-    <div class="relative" *ngIf="groupBy !== 'none'">
+    <div class="relative" *ngIf="vizType === 'table' && groupBy !== 'none'">
       <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
         <thead class="text-xs font-medium tracking-wide text-gray-500 bg-gray-50
                       border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
@@ -223,6 +252,36 @@
            class="absolute inset-0 z-10 flex items-center justify-center bg-white/60 pointer-events-none">
         <i class="ph-spinner text-2xl text-gray-400 animate-spin"></i>
       </div>
+    </div>
+
+    <!-- ── Pie / Bar chart ──────────────────────────────────────────────── -->
+    <div class="relative p-4" *ngIf="vizType === 'pie' || vizType === 'bar'">
+      <div class="text-center mb-3">
+        <div class="text-lg font-semibold text-gray-900 leading-snug">{{ groupChartTitle }}</div>
+        <div class="text-xs text-gray-400 mt-0.5">{{ groupChartSubtitle }}</div>
+      </div>
+      <div class="w-full h-[420px]">
+        <canvas baseChart [datasets]="groupChartData" [labels]="groupChartLabels"
+          [options]="vizType === 'pie' ? groupPieChartOptions : groupBarChartOptions"
+          [type]="vizType === 'pie' ? 'pie' : 'bar'">
+        </canvas>
+      </div>
+
+      <div *ngIf="isLoadingGrouped"
+           class="absolute inset-0 z-10 flex items-center justify-center bg-white/60 pointer-events-none">
+        <i class="ph-spinner text-2xl text-gray-400 animate-spin"></i>
+      </div>
+      <div *ngIf="!isLoadingGrouped && groupedData.length === 0" class="text-center text-sm text-gray-400 py-8">
+        No record was found
+      </div>
+    </div>
+
+    <!-- ── Map ──────────────────────────────────────────────────────────── -->
+    <div class="p-4" *ngIf="vizType === 'map'">
+      <app-va-record-map-view [points]="mapPoints" [groupBy]="groupBy" [isLoading]="isLoadingMap"></app-va-record-map-view>
+      <p class="text-xs text-gray-400 mt-2">
+        Showing {{ mapPoints.length | number }} point{{ mapPoints.length === 1 ? '' : 's' }} with GPS coordinates matching the current search/filter.
+      </p>
     </div>
 
   </div>

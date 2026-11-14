@@ -5,7 +5,7 @@ import { AfterViewInit, Component, HostListener, Input, OnChanges, OnDestroy, Si
 import type { MarkerClusterGroup } from 'leaflet';
 import type {} from 'leaflet.markercluster';
 declare const L: typeof import('leaflet');
-import { BROAD_CATEGORY_COLORS, colorForGroup, colorMapForValues } from '../../utils/ccva-group-colors';
+import { BROAD_CATEGORY_COLORS, colorForGroup, colorMapForValues } from '../../../../shared/utils/group-colors';
 import {
   DonutBreakdownEntry,
   computeBreakdown,

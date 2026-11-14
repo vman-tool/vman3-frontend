@@ -6,16 +6,19 @@ import { RecordsRoutingModule } from './records-routing.module';
 
 import { RecordsComponent } from './records.component';
 import { ListRecordsComponent } from './components/list-records/list-records.component';
+import { VaRecordMapViewComponent } from './components/va-record-map-view/va-record-map-view.component';
 import { FormsModule } from '@angular/forms';
 import { DataFilterComponent } from '../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
 import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-filters.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
+import { BaseChartDirective } from 'ng2-charts';
 
 @NgModule({
   declarations: [
     RecordsComponent,
     ListRecordsComponent,
+    VaRecordMapViewComponent,
     DataFilterComponent,
     // VaFiltersComponent,
   ],
@@ -28,6 +31,7 @@ import { CustomDropdownComponent } from '../../shared/components/custom-dropdown
     MatProgressSpinnerModule,
     VaFiltersComponent,
     CustomDropdownComponent,
+    BaseChartDirective,
   ],
   exports: [RecordsComponent],
 })

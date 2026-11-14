@@ -6,6 +6,7 @@ import {
   OnInit,
   runInInjectionContext,
 } from '@angular/core';
+import { ChartDataset, ChartOptions } from 'chart.js';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ListRecordsService } from '../../services/list-records/list-records.service';
 import { DataFilterComponent } from '../../../../shared/dialogs/filters/data-filter/data-filter/data-filter.component';
@@ -13,6 +14,10 @@ import { FilterService } from '../../../../shared/services/filter.service';
 import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
+import { VaRecordMapPoint } from '../va-record-map-view/va-record-map-view.component';
+import { colorForGroup, colorMapForValues } from '../../../../shared/utils/group-colors';
+
+type VaRecordVizType = 'table' | 'pie' | 'bar' | 'map';
 @Component({
   standalone: false,
   selector: 'app-list-records',
@@ -94,6 +99,38 @@ export class ListRecordsComponent implements OnInit {
   groupedTotal = 0;
   isLoadingGrouped = false;
 
+  // Table/Pie/Bar/Map switcher, same control/placement as CCVA's own
+  // Display Data table (next to Group By). Pie/Bar chart the Group By
+  // summary, so they're only meaningful once a Group By is set (gated in
+  // onVizTypeChange() and the template); Map is independent of Group By -
+  // it fetches its own GPS points regardless, only their coloring depends
+  // on it (handled reactively by app-va-record-map-view's own [groupBy]
+  // input).
+  vizType: VaRecordVizType = 'table';
+  mapPoints: VaRecordMapPoint[] = [];
+  isLoadingMap = false;
+
+  public groupChartData: ChartDataset[] = [];
+  public groupChartLabels: string[] = [];
+  public groupBarChartOptions: ChartOptions = {
+    responsive: true,
+    indexAxis: 'y',
+    maintainAspectRatio: false,
+    scales: { x: { beginAtZero: true }, y: { beginAtZero: true } },
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: true, callbacks: { label: ctx => this.chartTooltipLabel(ctx) } },
+    },
+  };
+  public groupPieChartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: 'right' },
+      tooltip: { enabled: true, callbacks: { label: ctx => this.chartTooltipLabel(ctx) } },
+    },
+  };
+
   // Column visibility - same "Columns" menu gesture/placement as CCVA's own
   // Display Data table (ccva-results.component.ts), generalized to a list
   // rather than one fixed checkbox since there are several toggleable
@@ -136,13 +173,18 @@ export class ListRecordsComponent implements OnInit {
     this.loadForCurrentView();
   }
 
-  // Dispatches to whichever view is currently active - the individual-
-  // record table (loadRecords) or the Group By summary (loadGroupedRecords)
-  // - used by every trigger that both views should react to (search,
-  // Filter By/Value, the global date/location filter). Plain sort/page
-  // changes stay on loadRecords() directly since their own controls only
-  // exist on the individual table, never visible while grouped.
+  // Dispatches to whichever view is currently active - the Map (loadMapPoints),
+  // the Group By summary (loadGroupedRecords, which Table/Pie/Bar all chart
+  // from), or the individual-record table (loadRecords) - used by every
+  // trigger all views should react to (search, Filter By/Value, the global
+  // date/location filter). Plain sort/page changes stay on loadRecords()
+  // directly since their own controls only exist on the individual table,
+  // never visible while grouped or mapped.
   private loadForCurrentView(): void {
+    if (this.vizType === 'map') {
+      this.loadMapPoints();
+      return;
+    }
     if (this.groupBy !== 'none') {
       this.loadGroupedRecords();
       return;
@@ -151,8 +193,26 @@ export class ListRecordsComponent implements OnInit {
   }
 
   onGroupByChange(value: string): void {
+    if (value === this.groupBy) return;
     this.groupBy = value;
+    // Pie/Bar can't render without something to aggregate - fall back to
+    // Table rather than leaving a chart visualizing stale data.
+    if (this.groupBy === 'none' && (this.vizType === 'pie' || this.vizType === 'bar')) {
+      this.vizType = 'table';
+    }
     this.pageNumber = 1;
+    // Map points don't depend on groupBy (only their color-coding does,
+    // handled reactively by app-va-record-map-view's own [groupBy] input) -
+    // no need to refetch.
+    if (this.vizType === 'map') return;
+    this.loadForCurrentView();
+  }
+
+  // Shared by the viz switcher's Table/Pie/Bar/Map buttons.
+  onVizTypeChange(vizType: VaRecordVizType): void {
+    if (vizType === this.vizType) return;
+    if ((vizType === 'pie' || vizType === 'bar') && this.groupBy === 'none') return;
+    this.vizType = vizType;
     this.loadForCurrentView();
   }
 
@@ -174,12 +234,39 @@ export class ListRecordsComponent implements OnInit {
           this.groupedData = response?.data ?? [];
           this.groupedTotal = response?.total ?? 0;
           this.error = response?.error ?? null;
+          this.buildGroupChart();
         },
         error: () => {
           this.error = 'Failed to fetch grouped records';
         },
         complete: () => {
           this.isLoadingGrouped = false;
+        },
+      });
+  }
+
+  loadMapPoints(): void {
+    this.isLoadingMap = true;
+    this.listRecordsService
+      .getTableMapPoints(
+        this.filterData.startDate,
+        this.filterData.endDate,
+        this.filterData.locations,
+        this.searchBy,
+        this.searchValue,
+        this.filterBy !== 'none' ? this.filterBy : undefined,
+        this.filterBy !== 'none' ? this.filterValue || undefined : undefined
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.mapPoints = response?.data ?? [];
+          this.error = response?.error ?? null;
+        },
+        error: () => {
+          this.error = 'Failed to fetch map points';
+        },
+        complete: () => {
+          this.isLoadingMap = false;
         },
       });
   }
@@ -192,6 +279,37 @@ export class ListRecordsComponent implements OnInit {
   // same lookup-by-value convention as CCVA's own grouped table.
   labelFromChoices(choices: { value: string; label: string }[], value: string): string {
     return choices.find(c => c.value === value)?.label || value;
+  }
+
+  private buildGroupChart(): void {
+    const colorMap = colorMapForValues(this.groupedData.map(r => r.group));
+    this.groupChartLabels = this.groupedData.map(r => r.group);
+    this.groupChartData = [
+      {
+        label: 'count',
+        data: this.groupedData.map(r => r.count),
+        backgroundColor: this.groupedData.map(r => colorForGroup(this.groupBy, r.group, colorMap)),
+        borderWidth: 1,
+      },
+    ];
+  }
+
+  private chartTooltipLabel(context: any): string {
+    const value = Number(context.raw) || 0;
+    const total = (context.dataset.data as number[]).reduce((acc: number, v: any) => acc + Number(v), 0);
+    const percentage = total ? ((value / total) * 100).toFixed(1) + '%' : '—';
+    return `${context.label}: ${value.toLocaleString()} (${percentage})`;
+  }
+
+  get groupChartTitle(): string {
+    return `Distribution by ${this.labelFromChoices(this.groupByChoices, this.groupBy)}`;
+  }
+
+  get groupChartSubtitle(): string {
+    if (this.filterBy !== 'none' && this.filterValue) {
+      return `${this.labelFromChoices(this.filterByChoices, this.filterBy)}: ${this.filterValue}`;
+    }
+    return 'All records';
   }
 
   private loadCcvaFilterOptions(): void {

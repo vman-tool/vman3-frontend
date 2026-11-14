@@ -10,7 +10,7 @@ import { ViewVaComponent } from 'app/shared/dialogs/view-va/view-va.component';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { settingsConfigData } from 'app/modules/settings/interface';
 import { CcvaMapPoint } from '../ccva-map-view/ccva-map-view.component';
-import { colorForGroup, colorMapForValues } from '../../utils/ccva-group-colors';
+import { colorForGroup, colorMapForValues } from '../../../../shared/utils/group-colors';
 
 interface CcvaResultRow {
   va_id: string;

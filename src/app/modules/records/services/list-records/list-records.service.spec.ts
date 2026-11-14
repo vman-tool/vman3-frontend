@@ -121,4 +121,36 @@ describe('ListRecordsService', () => {
       req.flush('error', { status: 500, statusText: 'Server Error' });
     });
   });
+
+  describe('getTableMapPoints', () => {
+    it('GETs the table-map-points endpoint with no paging params', () => {
+      service.getTableMapPoints().subscribe();
+
+      const req = httpMock.expectOne(r => r.url === `${API_URL}/records/table-map-points`);
+      expect(req.request.params.has('page_number')).toBe(false);
+      req.flush({ data: [], total: 0 });
+    });
+
+    it('sends filter_by/filter_value only when both are given', () => {
+      service.getTableMapPoints(
+        undefined, undefined, undefined, undefined, undefined, 'ccvaCauseBroad', 'Group I: Communicable'
+      ).subscribe();
+
+      const req = httpMock.expectOne(r => r.url === `${API_URL}/records/table-map-points`);
+      expect(req.request.params.get('filter_by')).toBe('ccvaCauseBroad');
+      expect(req.request.params.get('filter_value')).toBe('Group I: Communicable');
+      req.flush({ data: [], total: 0 });
+    });
+
+    it('falls back to an empty result on error rather than erroring the caller', done => {
+      service.getTableMapPoints().subscribe(response => {
+        expect(response.data).toEqual([]);
+        expect(response.total).toBe(0);
+        done();
+      });
+
+      const req = httpMock.expectOne(r => r.url === `${API_URL}/records/table-map-points`);
+      req.flush('error', { status: 500, statusText: 'Server Error' });
+    });
+  });
 });

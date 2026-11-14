@@ -398,4 +398,116 @@ describe('ListRecordsComponent', () => {
       expect(component.labelFromChoices(component.groupByChoices, 'not-a-real-value')).toBe('not-a-real-value');
     });
   });
+
+  // Table/Pie/Bar/Map switcher - same control/behavior as CCVA's own
+  // Display Data table.
+  describe('viz switcher', () => {
+    it('starts on Table', () => {
+      fixture.detectChanges();
+      expect(component.vizType).toBe('table');
+    });
+
+    it('onVizTypeChange to Pie/Bar is a no-op while Group By is None', () => {
+      fixture.detectChanges();
+      const loadSpy = jest.spyOn(component, 'loadRecords');
+      loadSpy.mockClear();
+
+      component.onVizTypeChange('pie');
+
+      expect(component.vizType).toBe('table');
+      expect(loadSpy).not.toHaveBeenCalled();
+    });
+
+    it('onVizTypeChange to Pie/Bar loads the grouped summary once a Group By is set', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const groupedSpy = jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({ data: [], total: 0 }));
+      fixture.detectChanges();
+      component.groupBy = 'ccvaCauseBroad';
+      groupedSpy.mockClear();
+
+      component.onVizTypeChange('pie');
+
+      expect(component.vizType).toBe('pie');
+      expect(groupedSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('onVizTypeChange to Map loads map points instead of grouped/individual results', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const mapSpy = jest.spyOn(service, 'getTableMapPoints').mockReturnValue(of({ data: [], total: 0 }));
+      const individualSpy = jest.spyOn(service, 'getRecordsData');
+      fixture.detectChanges();
+      individualSpy.mockClear();
+
+      component.onVizTypeChange('map');
+
+      expect(component.vizType).toBe('map');
+      expect(mapSpy).toHaveBeenCalledTimes(1);
+      expect(individualSpy).not.toHaveBeenCalled();
+    });
+
+    it('switching Group By while on Map does not refetch map points (only their coloring changes)', () => {
+      const service = TestBed.inject(ListRecordsService);
+      const mapSpy = jest.spyOn(service, 'getTableMapPoints').mockReturnValue(of({ data: [], total: 0 }));
+      fixture.detectChanges();
+      component.vizType = 'map';
+      mapSpy.mockClear();
+
+      component.onGroupByChange('ccvaCauseBroad');
+
+      expect(mapSpy).not.toHaveBeenCalled();
+    });
+
+    it('switching Group By back to None while on Pie/Bar falls back to Table', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({ data: [], total: 0 }));
+      fixture.detectChanges();
+      component.groupBy = 'ccvaCauseBroad';
+      component.onVizTypeChange('pie');
+      expect(component.vizType).toBe('pie');
+
+      component.onGroupByChange('none');
+
+      expect(component.vizType).toBe('table');
+    });
+
+    it('loadMapPoints populates mapPoints from the response', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getTableMapPoints').mockReturnValue(of({
+        data: [{ vaId: 'uuid-1', lat: 1, lng: 2, region: 'dodoma', district: null, ccvaCauseBroad: null, ccvaCauseMajor: null, ccvaCauseSpecific: null, ccvaAlgorithm: null }],
+        total: 1,
+      }));
+      fixture.detectChanges();
+
+      component.onVizTypeChange('map');
+
+      expect(component.mapPoints.length).toBe(1);
+      expect(component.isLoadingMap).toBe(false);
+    });
+
+    it('buildGroupChart (via loadGroupedRecords) populates the chart data/labels', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getGroupedRecords').mockReturnValue(of({
+        data: [{ group: 'Group I: Communicable', count: 7 }, { group: 'Group II: Non-Communicable', count: 3 }],
+        total: 10,
+      }));
+      fixture.detectChanges();
+      component.groupBy = 'ccvaCauseBroad';
+
+      component.loadGroupedRecords();
+
+      expect(component.groupChartLabels).toEqual(['Group I: Communicable', 'Group II: Non-Communicable']);
+      expect(component.groupChartData[0].data).toEqual([7, 3]);
+    });
+
+    it('groupChartTitle/groupChartSubtitle reflect the active Group By and Filter By', () => {
+      fixture.detectChanges();
+      component.groupBy = 'ccvaCauseMajor';
+      expect(component.groupChartTitle).toBe('Distribution by Major Category');
+      expect(component.groupChartSubtitle).toBe('All records');
+
+      component.filterBy = 'ccvaCauseBroad';
+      component.filterValue = 'Group I: Communicable';
+      expect(component.groupChartSubtitle).toBe('Broad Category: Group I: Communicable');
+    });
+  });
 });

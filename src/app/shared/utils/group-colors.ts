@@ -1,6 +1,7 @@
-// Shared coloring for the Display Data table's grouped views (Pie/Bar chart
+// Shared coloring for CCVA's and VA Records' grouped views (Pie/Bar chart
 // slices, Map markers) - kept in one place so a given group value (e.g.
-// "Group III: Injuries") always renders the same color everywhere.
+// "Group III: Injuries") always renders the same color everywhere, in both
+// modules.
 
 // The 4 Broad Category values are a fixed, known set (see
 // backend/app/pcva/services/target_cause_categories.py) - direct string
@@ -34,12 +35,13 @@ export function colorMapForValues(values: string[]): Record<string, string> {
   return map;
 }
 
-// groupBy: the active Group By dimension ('broad', 'gender', ...).
+// groupBy: the active Group By dimension - CCVA's own vocabulary ('broad',
+// 'gender', ...) or VA Records' ('ccvaCauseBroad', 'ccvaCauseMajor', ...).
 // value: this row/slice's group label.
 // fallbackMap: a colorMapForValues() result, used for every dimension other
-// than 'broad'.
+// than Broad Category.
 export function colorForGroup(groupBy: string, value: string, fallbackMap: Record<string, string>): string {
-  if (groupBy === 'broad' && BROAD_CATEGORY_COLORS[value]) {
+  if ((groupBy === 'broad' || groupBy === 'ccvaCauseBroad') && BROAD_CATEGORY_COLORS[value]) {
     return BROAD_CATEGORY_COLORS[value];
   }
   return fallbackMap[value] || '#3b82f6';
