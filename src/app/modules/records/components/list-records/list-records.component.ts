@@ -56,6 +56,29 @@ export class ListRecordsComponent implements OnInit {
     endDate: undefined,
   };
 
+  // Broad/Major/Specific Cause + Algorithm - denormalized from whichever
+  // CCVA run is marked default (CCVA > Display Data > Set Default). A VA
+  // with no result under that run shows "-" for all 4 (see the table
+  // template). Sort is click-the-column-header, same gesture as every
+  // other sortable table in this app (e.g. CCVA's own Display Data table).
+  sortColumn: string | null = null;
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  filterBy = 'none';
+  filterValue = '';
+  // Specific Cause is excluded - too many distinct values for a useful
+  // dropdown, same reasoning as CCVA's own Filter By.
+  filterByChoices: { value: string; label: string }[] = [
+    { value: 'none', label: 'None' },
+    { value: 'ccvaCauseBroad', label: 'Broad Category' },
+    { value: 'ccvaCauseMajor', label: 'Major Category' },
+    { value: 'ccvaAlgorithm', label: 'Algorithm' },
+  ];
+  filterValueChoices: { value: string; label: string }[] = [{ value: '', label: 'All' }];
+  private ccvaFilterOptions: { broad: string[]; major: string[]; algorithm: string[] } = {
+    broad: [], major: [], algorithm: [],
+  };
+
   constructor(
     private listRecordsService: ListRecordsService,
     public dialog: MatDialog,
@@ -74,7 +97,62 @@ export class ListRecordsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSettingsLabels();
+    this.loadCcvaFilterOptions();
     this.loadRecords();
+  }
+
+  private loadCcvaFilterOptions(): void {
+    this.listRecordsService.getCcvaFilterOptions().subscribe({
+      next: (response: any) => {
+        this.ccvaFilterOptions = { broad: [], major: [], algorithm: [], ...(response?.data ?? {}) };
+        this.updateFilterValueChoices();
+      },
+      error: () => {
+        // Filter Value dropdown just stays empty - the rest of the table
+        // (including the 4 CCVA columns themselves) still works fine.
+      },
+    });
+  }
+
+  private updateFilterValueChoices(): void {
+    const key = this.filterBy === 'ccvaCauseBroad' ? 'broad'
+      : this.filterBy === 'ccvaCauseMajor' ? 'major'
+      : this.filterBy === 'ccvaAlgorithm' ? 'algorithm'
+      : null;
+    const options = key ? this.ccvaFilterOptions[key] : [];
+    this.filterValueChoices = [{ value: '', label: 'All' }, ...options.map(value => ({ value, label: value }))];
+  }
+
+  onFilterByChange(value: string): void {
+    this.filterBy = value;
+    this.filterValue = '';
+    this.updateFilterValueChoices();
+    this.pageNumber = 1;
+    this.loadRecords();
+  }
+
+  onFilterValueChange(value: string): void {
+    this.filterValue = value;
+    this.pageNumber = 1;
+    this.loadRecords();
+  }
+
+  // Shared by every sortable column header in the table template.
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.loadRecords();
+  }
+
+  sortIcon(column: string): string {
+    if (this.sortColumn !== column) return 'ph ph-arrows-down-up text-gray-300 text-xs';
+    return this.sortDirection === 'asc'
+      ? 'ph ph-arrow-up text-gray-600 text-xs'
+      : 'ph ph-arrow-down text-gray-600 text-xs';
   }
 
   loadSettingsLabels(): void {
@@ -119,7 +197,11 @@ export class ListRecordsComponent implements OnInit {
         this.filterData.endDate,
         this.filterData.locations,
         this.searchBy,
-        this.searchValue
+        this.searchValue,
+        this.sortColumn || undefined,
+        this.sortDirection,
+        this.filterBy !== 'none' ? this.filterBy : undefined,
+        this.filterBy !== 'none' ? this.filterValue || undefined : undefined
       )
       .subscribe({
         next: (response) => {

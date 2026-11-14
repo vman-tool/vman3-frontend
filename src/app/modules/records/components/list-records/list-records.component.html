@@ -27,6 +27,24 @@
         </button>
       </div>
 
+      <!-- Broad/Major Category and Algorithm come from whichever CCVA run
+           is marked default (CCVA > Display Data > Set Default) - Specific
+           Cause has too many distinct values for a useful dropdown, same
+           reasoning as CCVA's own Filter By. -->
+      <div class="search-group">
+        <label class="search-label">Filter By</label>
+        <app-custom-dropdown [options]="filterByChoices" [selectedValue]="filterBy"
+          (selectedValueChange)="onFilterByChange($event)">
+        </app-custom-dropdown>
+      </div>
+
+      <div class="search-group" *ngIf="filterBy !== 'none'">
+        <label class="search-label">Filter Value</label>
+        <app-custom-dropdown [options]="filterValueChoices" [selectedValue]="filterValue"
+          (selectedValueChange)="onFilterValueChange($event)">
+        </app-custom-dropdown>
+      </div>
+
     </div>
     <!-- ── End search controls ─────────────────────────────────────────── -->
 
@@ -34,14 +52,18 @@
 
       <colgroup>
         <col style="width:3%">
-        <col style="width:18%">
-        <col style="width:11%">
-        <col style="width:11%">
-        <col style="width:10%">
-        <col style="width:16%">
-        <col style="width:16%">
+        <col style="width:14%">
         <col style="width:9%">
-        <col style="width:6%">
+        <col style="width:9%">
+        <col style="width:8%">
+        <col style="width:12%">
+        <col style="width:10%">
+        <col style="width:7%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:10%">
+        <col style="width:7%">
+        <col style="width:5%">
       </colgroup>
 
       <thead class="sticky top-0 z-20 text-xs text-gray-700 uppercase bg-gray-50
@@ -55,6 +77,18 @@
           <th scope="col" class="px-6 py-3 text-left">Interviewer Name</th>
           <th scope="col" class="px-6 py-3 text-left">Questionnaire Type</th>
           <th scope="col" class="px-6 py-3 text-left">Gender</th>
+          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaCauseBroad')">
+            <span class="flex items-center gap-1">Broad Category <i [class]="sortIcon('ccvaCauseBroad')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaCauseMajor')">
+            <span class="flex items-center gap-1">Major Category <i [class]="sortIcon('ccvaCauseMajor')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaCauseSpecific')">
+            <span class="flex items-center gap-1">Specific Cause <i [class]="sortIcon('ccvaCauseSpecific')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaAlgorithm')">
+            <span class="flex items-center gap-1">Algorithm <i [class]="sortIcon('ccvaAlgorithm')" class="shrink-0"></i></span>
+          </th>
           <th scope="col" class="px-6 py-3 text-center">View</th>
         </tr>
       </thead>
@@ -63,13 +97,13 @@
 
         @if((data.length === 0 || !data || data === undefined) && !isLoading) {
           <tr class="bg-gray-200">
-            <td colspan="9" class="px-6 py-4 text-center">No record was found</td>
+            <td colspan="13" class="px-6 py-4 text-center">No record was found</td>
           </tr>
         }
 
         @if(isLoading) {
           <tr>
-            <td colspan="9" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
+            <td colspan="13" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
               <div class="flex items-center justify-center h-full">
                 <mat-spinner diameter="30" color="accent"></mat-spinner>
               </div>
@@ -97,6 +131,14 @@
           <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
               [title]="row.questionnaireType">{{ row.questionnaireType || '—' }}</td>
           <td class="px-6 py-4">{{ row.gender || '—' }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.ccvaCauseBroad">{{ row.ccvaCauseBroad || '—' }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.ccvaCauseMajor">{{ row.ccvaCauseMajor || '—' }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.ccvaCauseSpecific">{{ row.ccvaCauseSpecific || '—' }}</td>
+          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+              [title]="row.ccvaAlgorithm">{{ row.ccvaAlgorithm || '—' }}</td>
           <td class="px-6 py-4 text-center">
             <a class="font-medium text-blue-600 dark:text-blue-500
                       hover:underline hover:cursor-pointer"

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { ListRecordsComponent } from './list-records.component';
+import { ListRecordsService } from '../../services/list-records/list-records.service';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -92,6 +93,121 @@ describe('ListRecordsComponent', () => {
 
       expect(component.searchValue).toBe('');
       expect(loadSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // Broad/Major/Specific Cause + Algorithm - denormalized from whichever
+  // CCVA run is marked default (see list_data.py's
+  // _VA_RECORDS_CCVA_SORT_FIELDS/_VA_RECORDS_CCVA_FILTERABLE_FIELDS).
+  describe('onSort', () => {
+    it('sorts ascending on a new column, then toggles to descending on a second click', () => {
+      fixture.detectChanges();
+      const loadSpy = jest.spyOn(component, 'loadRecords');
+      loadSpy.mockClear();
+
+      component.onSort('ccvaCauseBroad');
+      expect(component.sortColumn).toBe('ccvaCauseBroad');
+      expect(component.sortDirection).toBe('asc');
+
+      component.onSort('ccvaCauseBroad');
+      expect(component.sortDirection).toBe('desc');
+
+      expect(loadSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('switching to a different column resets to ascending', () => {
+      fixture.detectChanges();
+      component.sortColumn = 'ccvaCauseBroad';
+      component.sortDirection = 'desc';
+
+      component.onSort('ccvaAlgorithm');
+
+      expect(component.sortColumn).toBe('ccvaAlgorithm');
+      expect(component.sortDirection).toBe('asc');
+    });
+  });
+
+  describe('sortIcon', () => {
+    it('is a neutral icon for a column that is not the active sort', () => {
+      fixture.detectChanges();
+      component.sortColumn = 'ccvaCauseBroad';
+      expect(component.sortIcon('ccvaAlgorithm')).toContain('arrows-down-up');
+    });
+
+    it('reflects the active sort direction', () => {
+      fixture.detectChanges();
+      component.sortColumn = 'ccvaCauseBroad';
+      component.sortDirection = 'asc';
+      expect(component.sortIcon('ccvaCauseBroad')).toContain('arrow-up');
+
+      component.sortDirection = 'desc';
+      expect(component.sortIcon('ccvaCauseBroad')).toContain('arrow-down');
+    });
+  });
+
+  describe('CCVA Filter By / Filter Value', () => {
+    it('loads the Broad/Major/Algorithm options on init', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
+        data: { broad: ['Group I: Communicable'], major: ['Malaria'], algorithm: ['InterVA5', 'VManML10'] },
+      }));
+
+      fixture.detectChanges();
+      component.onFilterByChange('ccvaCauseBroad');
+
+      expect(component.filterValueChoices).toEqual([
+        { value: '', label: 'All' },
+        { value: 'Group I: Communicable', label: 'Group I: Communicable' },
+      ]);
+    });
+
+    it('onFilterByChange resets filterValue, rebuilds the value choices, and reloads from page 1', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
+        data: { broad: [], major: ['Malaria'], algorithm: [] },
+      }));
+      fixture.detectChanges();
+      component.filterValue = 'stale';
+      component.pageNumber = 3;
+      const loadSpy = jest.spyOn(component, 'loadRecords');
+      loadSpy.mockClear();
+
+      component.onFilterByChange('ccvaCauseMajor');
+
+      expect(component.filterBy).toBe('ccvaCauseMajor');
+      expect(component.filterValue).toBe('');
+      expect(component.filterValueChoices).toEqual([
+        { value: '', label: 'All' },
+        { value: 'Malaria', label: 'Malaria' },
+      ]);
+      expect(component.pageNumber).toBe(1);
+      expect(loadSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('onFilterValueChange reloads from page 1', () => {
+      fixture.detectChanges();
+      component.pageNumber = 3;
+      const loadSpy = jest.spyOn(component, 'loadRecords');
+      loadSpy.mockClear();
+
+      component.onFilterValueChange('VManML10');
+
+      expect(component.filterValue).toBe('VManML10');
+      expect(component.pageNumber).toBe(1);
+      expect(loadSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('selecting None clears the value choices back to just "All"', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
+        data: { broad: ['Group I: Communicable'], major: [], algorithm: [] },
+      }));
+      fixture.detectChanges();
+      component.onFilterByChange('ccvaCauseBroad');
+
+      component.onFilterByChange('none');
+
+      expect(component.filterValueChoices).toEqual([{ value: '', label: 'All' }]);
     });
   });
 });
