@@ -18,7 +18,7 @@
             <i class="ph-magnifying-glass search-label-icon" title="Search by"></i>
             <span class="search-label-text">Search by</span>
           </label>
-          <app-custom-dropdown widthClass="w-32" [compact]="true" [options]="searchByOptions" [selectedValue]="searchBy"
+          <app-custom-dropdown widthClass="w-28" [compact]="true" [options]="searchByOptions" [selectedValue]="searchBy"
             (selectedValueChange)="onSearchByChange($event)">
           </app-custom-dropdown>
         </div>
@@ -30,8 +30,8 @@
             [disabled]="searchBy === 'none'"
             placeholder="Enter search value"
             class="search-input" />
-          <button (click)="onSearch()" [disabled]="searchBy === 'none'" class="btn-search">
-            <i class="ph-magnifying-glass"></i> <span class="search-label-text">Search</span>
+          <button (click)="onSearch()" [disabled]="searchBy === 'none'" class="btn-search" title="Search">
+            <i class="ph-magnifying-glass"></i>
           </button>
         </div>
       </div>
@@ -42,7 +42,7 @@
             <i class="ph-funnel search-label-icon" title="Filter By"></i>
             <span class="search-label-text">Filter By</span>
           </label>
-          <app-custom-dropdown widthClass="w-36" [compact]="true" [options]="filterByChoices" [selectedValue]="filterBy"
+          <app-custom-dropdown widthClass="w-32" [compact]="true" [options]="filterByChoices" [selectedValue]="filterBy"
             (selectedValueChange)="onFilterByChange($event)">
           </app-custom-dropdown>
         </div>
