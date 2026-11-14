@@ -90,6 +90,14 @@
   &::placeholder {
     color: #9ca3af;
   }
+
+  // Search By defaults to "None" - nothing meaningful to type into Search
+  // Value until a real field is chosen (onSearchByChange()).
+  &:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
 }
 
 .btn-search {
@@ -108,29 +116,10 @@
   &:hover {
     background: #1d4ed8;
   }
-}
 
-// Icon-only (an X, the standard "clear/close" glyph already used
-// elsewhere in this app - Phosphor has no broom icon) rather than an
-// icon+"Clear" text button, freeing up width in the search/filter row for
-// the Group By control added alongside Filter By/Columns.
-.btn-clear {
-  height: 34px;
-  width: 34px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  flex-shrink: 0;
-
-  &:hover {
-    background: #e5e7eb;
+  &:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
   }
 }
 

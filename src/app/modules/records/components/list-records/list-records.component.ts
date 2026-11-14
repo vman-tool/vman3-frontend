@@ -23,7 +23,10 @@ export class ListRecordsComponent implements OnInit {
   title: string = 'VA Data';
   data: any[] = [];
   isLoading: boolean = false;
-  searchBy: string = 'vaId';
+  // Defaults to "None" - no search field selected, so there's nothing
+  // meaningful to type into Search Value (disabled in the template while
+  // this is 'none'; see onSearchByChange()).
+  searchBy: string = 'none';
   searchValue: string = '';
   pageNumber: number = 0;
   pageSizeOptions = [10, 20, 50, 100]
@@ -45,6 +48,7 @@ export class ListRecordsComponent implements OnInit {
   // table may have come from either, so both are offered as distinct
   // search-by options rather than one standing in for the other.
   searchByOptions: { value: string; label: string }[] = [
+    { value: 'none', label: 'None' },
     { value: 'vaId', label: 'VA ID' },
     { value: 'instanceId', label: 'Instance ID' },
     { value: 'location_level1', label: 'Region' },
@@ -95,17 +99,19 @@ export class ListRecordsComponent implements OnInit {
   // rather than one fixed checkbox since there are several toggleable
   // columns here. VA ID and View are never in this list - always shown.
   columnsMenuOpen = false;
+  // Interviewer Name and Algorithm default off - least useful for most
+  // day-to-day reading of this table, still available in the Columns menu.
   columnsConfig: { key: string; visible: boolean }[] = [
     { key: 'region', visible: true },
     { key: 'district', visible: true },
     { key: 'interviewDay', visible: true },
-    { key: 'interviewerName', visible: true },
+    { key: 'interviewerName', visible: false },
     { key: 'questionnaireType', visible: true },
     { key: 'gender', visible: true },
     { key: 'ccvaCauseBroad', visible: true },
     { key: 'ccvaCauseMajor', visible: true },
     { key: 'ccvaCauseSpecific', visible: true },
-    { key: 'ccvaAlgorithm', visible: true },
+    { key: 'ccvaAlgorithm', visible: false },
   ];
 
   constructor(
@@ -259,6 +265,7 @@ export class ListRecordsComponent implements OnInit {
 
   private refreshSearchByOptions(): void {
     this.searchByOptions = [
+      { value: 'none', label: 'None' },
       { value: 'vaId', label: 'VA ID' },
       { value: 'instanceId', label: 'Instance ID' },
       { value: 'location_level1', label: this.locationLevel1Label },
@@ -267,8 +274,18 @@ export class ListRecordsComponent implements OnInit {
     ];
   }
 
+  // Switching to "None" clears the search outright (Search Value is
+  // disabled while it's active - nothing meaningful to search by) and
+  // reloads immediately, the same gesture the removed Clear button used
+  // to perform. Switching to any real field just updates the dropdown -
+  // Search stays a separate, explicit action for those, same as before.
   onSearchByChange(value: string): void {
     this.searchBy = value;
+    if (value === 'none') {
+      this.searchValue = '';
+      this.pageNumber = 1;
+      this.loadForCurrentView();
+    }
   }
 
   loadRecords(): void {
@@ -309,11 +326,6 @@ export class ListRecordsComponent implements OnInit {
 
   onSearch(): void {
     this.pageNumber = 1;
-    this.loadForCurrentView();
-  }
-
-  onClearSearch(): void {
-    this.searchValue = '';
     this.loadForCurrentView();
   }
 

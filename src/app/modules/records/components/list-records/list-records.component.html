@@ -27,13 +27,11 @@
           <input
             type="text"
             [(ngModel)]="searchValue"
+            [disabled]="searchBy === 'none'"
             placeholder="Enter search value"
             class="search-input" />
-          <button (click)="onSearch()" class="btn-search">
+          <button (click)="onSearch()" [disabled]="searchBy === 'none'" class="btn-search">
             <i class="ph-magnifying-glass"></i> <span class="search-label-text">Search</span>
-          </button>
-          <button (click)="onClearSearch()" class="btn-clear" title="Clear">
-            <i class="ph-x"></i>
           </button>
         </div>
       </div>

@@ -28,8 +28,10 @@ describe('ListRecordsComponent', () => {
   });
 
   describe('searchByOptions', () => {
-    it('defaults to the raw option values the backend search_field_map expects, with generic labels', () => {
+    it('defaults to None, selected, with no search field options yet', () => {
+      expect(component.searchBy).toBe('none');
       expect(component.searchByOptions).toEqual([
+        { value: 'none', label: 'None' },
         { value: 'vaId', label: 'VA ID' },
         { value: 'instanceId', label: 'Instance ID' },
         { value: 'location_level1', label: 'Region' },
@@ -48,6 +50,7 @@ describe('ListRecordsComponent', () => {
       fixture.detectChanges(); // triggers ngOnInit -> loadSettingsLabels()
 
       expect(component.searchByOptions).toEqual([
+        { value: 'none', label: 'None' },
         { value: 'vaId', label: 'VA ID' },
         { value: 'instanceId', label: 'Instance ID' },
         { value: 'location_level1', label: 'Zone' },
@@ -68,10 +71,26 @@ describe('ListRecordsComponent', () => {
       expect(component.searchBy).toBe('location_level1');
       expect(loadSpy).not.toHaveBeenCalled();
     });
+
+    it('switching to None clears the search value and reloads immediately - replaces the old Clear button', () => {
+      fixture.detectChanges();
+      component.searchBy = 'vaId';
+      component.searchValue = 'uuid:f92c094d';
+      const loadSpy = jest.spyOn(component, 'loadRecords');
+      loadSpy.mockClear();
+      component.pageNumber = 3;
+
+      component.onSearchByChange('none');
+
+      expect(component.searchBy).toBe('none');
+      expect(component.searchValue).toBe('');
+      expect(component.pageNumber).toBe(1);
+      expect(loadSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
-  describe('onSearch / onClearSearch', () => {
-    it('onSearch resets to page 1 and reloads', () => {
+  describe('onSearch', () => {
+    it('resets to page 1 and reloads', () => {
       fixture.detectChanges();
       const loadSpy = jest.spyOn(component, 'loadRecords');
       loadSpy.mockClear();
@@ -80,18 +99,6 @@ describe('ListRecordsComponent', () => {
       component.onSearch();
 
       expect(component.pageNumber).toBe(1);
-      expect(loadSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('onClearSearch empties the search value and reloads', () => {
-      fixture.detectChanges();
-      const loadSpy = jest.spyOn(component, 'loadRecords');
-      loadSpy.mockClear();
-      component.searchValue = 'uuid:f92c094d';
-
-      component.onClearSearch();
-
-      expect(component.searchValue).toBe('');
       expect(loadSpy).toHaveBeenCalledTimes(1);
     });
   });
@@ -237,10 +244,11 @@ describe('ListRecordsComponent', () => {
   // Space-saving "Columns" menu - same gesture/placement as CCVA's own
   // Display Data table.
   describe('column visibility', () => {
-    it('every toggleable column starts visible', () => {
+    it('every toggleable column starts visible except Interviewer Name and Algorithm', () => {
       fixture.detectChanges();
-      expect(component.columnsConfig.every(c => c.visible)).toBe(true);
       expect(component.isColumnVisible('ccvaCauseBroad')).toBe(true);
+      expect(component.isColumnVisible('interviewerName')).toBe(false);
+      expect(component.isColumnVisible('ccvaAlgorithm')).toBe(false);
     });
 
     it('toggleColumn flips just the given column', () => {
@@ -267,13 +275,13 @@ describe('ListRecordsComponent', () => {
 
     it('totalColumns counts the 3 fixed columns plus every currently-visible one', () => {
       fixture.detectChanges();
-      const fixedPlusAll = 3 + component.columnsConfig.length;
-      expect(component.totalColumns).toBe(fixedPlusAll);
+      const initialVisible = 3 + component.columnsConfig.filter(c => c.visible).length;
+      expect(component.totalColumns).toBe(initialVisible);
 
       component.toggleColumn('ccvaCauseBroad');
       component.toggleColumn('gender');
 
-      expect(component.totalColumns).toBe(fixedPlusAll - 2);
+      expect(component.totalColumns).toBe(initialVisible - 2);
     });
 
     it('toggleColumnsMenu opens and closes the menu', () => {
@@ -324,7 +332,7 @@ describe('ListRecordsComponent', () => {
       expect(component.groupBy).toBe('ccvaCauseBroad');
       expect(component.pageNumber).toBe(1);
       expect(groupedSpy).toHaveBeenCalledWith(
-        'ccvaCauseBroad', undefined, undefined, [], 'vaId', '', undefined, undefined
+        'ccvaCauseBroad', undefined, undefined, [], 'none', '', undefined, undefined
       );
     });
 
@@ -353,7 +361,7 @@ describe('ListRecordsComponent', () => {
       component.onGroupByChange('ccvaCauseBroad');
 
       expect(groupedSpy).toHaveBeenCalledWith(
-        'ccvaCauseBroad', undefined, undefined, [], 'vaId', '', 'ccvaCauseMajor', 'Malaria'
+        'ccvaCauseBroad', undefined, undefined, [], 'none', '', 'ccvaCauseMajor', 'Malaria'
       );
     });
 
