@@ -1,6 +1,7 @@
 import {
   Component,
   effect,
+  HostListener,
   inject,
   OnInit,
   runInInjectionContext,
@@ -78,6 +79,24 @@ export class ListRecordsComponent implements OnInit {
   private ccvaFilterOptions: { broad: string[]; major: string[]; algorithm: string[] } = {
     broad: [], major: [], algorithm: [],
   };
+
+  // Column visibility - same "Columns" menu gesture/placement as CCVA's own
+  // Display Data table (ccva-results.component.ts), generalized to a list
+  // rather than one fixed checkbox since there are several toggleable
+  // columns here. VA ID and View are never in this list - always shown.
+  columnsMenuOpen = false;
+  columnsConfig: { key: string; visible: boolean }[] = [
+    { key: 'region', visible: true },
+    { key: 'district', visible: true },
+    { key: 'interviewDay', visible: true },
+    { key: 'interviewerName', visible: true },
+    { key: 'questionnaireType', visible: true },
+    { key: 'gender', visible: true },
+    { key: 'ccvaCauseBroad', visible: true },
+    { key: 'ccvaCauseMajor', visible: true },
+    { key: 'ccvaCauseSpecific', visible: true },
+    { key: 'ccvaAlgorithm', visible: true },
+  ];
 
   constructor(
     private listRecordsService: ListRecordsService,
@@ -258,6 +277,60 @@ export class ListRecordsComponent implements OnInit {
   //     this.loadRecords();
   //   }
   // }
+
+  // ── Column visibility ────────────────────────────────────────────────────
+
+  // Region/District follow the configured admin-level names (same as the
+  // search-by labels); the rest are static. Looked up by key rather than
+  // stored as a frozen label on columnsConfig, so it stays correct if
+  // locationLevel1Label/locationLevel2Label load (loadSettingsLabels) after
+  // the menu has already rendered.
+  columnLabel(key: string): string {
+    switch (key) {
+      case 'region': return this.locationLevel1Label;
+      case 'district': return this.locationLevel2Label;
+      case 'interviewDay': return 'Interview Day';
+      case 'interviewerName': return 'Interviewer Name';
+      case 'questionnaireType': return 'Questionnaire Type';
+      case 'gender': return 'Gender';
+      case 'ccvaCauseBroad': return 'Broad Category';
+      case 'ccvaCauseMajor': return 'Major Category';
+      case 'ccvaCauseSpecific': return 'Specific Cause';
+      case 'ccvaAlgorithm': return 'Algorithm';
+      default: return key;
+    }
+  }
+
+  isColumnVisible(key: string): boolean {
+    return this.columnsConfig.find(c => c.key === key)?.visible ?? true;
+  }
+
+  toggleColumn(key: string): void {
+    const col = this.columnsConfig.find(c => c.key === key);
+    if (col) col.visible = !col.visible;
+  }
+
+  toggleColumnsMenu(): void {
+    this.columnsMenuOpen = !this.columnsMenuOpen;
+  }
+
+  // Closes the Columns menu on any click outside it - same
+  // composedPath()-based pattern (and the reason for it over
+  // event.target.closest()) as ccva-results.component.ts's identical menu.
+  @HostListener('document:click', ['$event'])
+  onDocumentClickForColumnsMenu(event: MouseEvent): void {
+    if (!this.columnsMenuOpen) return;
+    const path = event.composedPath() as HTMLElement[];
+    const inside = path.some(el => el?.classList?.contains?.('columns-menu-wrapper'));
+    if (!inside) this.columnsMenuOpen = false;
+  }
+
+  // 3 always-visible columns (leading spacer, VA ID, View) plus whichever
+  // of columnsConfig are currently toggled on - drives the colspan on the
+  // "No record was found"/loading rows.
+  get totalColumns(): number {
+    return 3 + this.columnsConfig.filter(c => c.visible).length;
+  }
 
   onPageChange(event: any) {
     this.pageNumber = this.pageNumber == 0 && this.pageNumber < event.pageIndex ? event.pageIndex + 1 : this.pageNumber !== 0 && this.pageNumber > event.pageIndex ? event.pageIndex - 1 : event.pageIndex;

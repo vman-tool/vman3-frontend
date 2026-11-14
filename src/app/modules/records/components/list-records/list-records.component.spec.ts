@@ -210,4 +210,74 @@ describe('ListRecordsComponent', () => {
       expect(component.filterValueChoices).toEqual([{ value: '', label: 'All' }]);
     });
   });
+
+  // Space-saving "Columns" menu - same gesture/placement as CCVA's own
+  // Display Data table.
+  describe('column visibility', () => {
+    it('every toggleable column starts visible', () => {
+      fixture.detectChanges();
+      expect(component.columnsConfig.every(c => c.visible)).toBe(true);
+      expect(component.isColumnVisible('ccvaCauseBroad')).toBe(true);
+    });
+
+    it('toggleColumn flips just the given column', () => {
+      fixture.detectChanges();
+
+      component.toggleColumn('ccvaCauseBroad');
+
+      expect(component.isColumnVisible('ccvaCauseBroad')).toBe(false);
+      expect(component.isColumnVisible('ccvaCauseMajor')).toBe(true);
+
+      component.toggleColumn('ccvaCauseBroad');
+      expect(component.isColumnVisible('ccvaCauseBroad')).toBe(true);
+    });
+
+    it('columnLabel follows the configured admin-level names for region/district', () => {
+      fixture.detectChanges();
+      component.locationLevel1Label = 'Zone';
+      component.locationLevel2Label = 'Council';
+
+      expect(component.columnLabel('region')).toBe('Zone');
+      expect(component.columnLabel('district')).toBe('Council');
+      expect(component.columnLabel('ccvaAlgorithm')).toBe('Algorithm');
+    });
+
+    it('totalColumns counts the 3 fixed columns plus every currently-visible one', () => {
+      fixture.detectChanges();
+      const fixedPlusAll = 3 + component.columnsConfig.length;
+      expect(component.totalColumns).toBe(fixedPlusAll);
+
+      component.toggleColumn('ccvaCauseBroad');
+      component.toggleColumn('gender');
+
+      expect(component.totalColumns).toBe(fixedPlusAll - 2);
+    });
+
+    it('toggleColumnsMenu opens and closes the menu', () => {
+      fixture.detectChanges();
+      expect(component.columnsMenuOpen).toBe(false);
+
+      component.toggleColumnsMenu();
+      expect(component.columnsMenuOpen).toBe(true);
+
+      component.toggleColumnsMenu();
+      expect(component.columnsMenuOpen).toBe(false);
+    });
+
+    it('a click outside the menu closes it; a click inside does not', () => {
+      fixture.detectChanges();
+      component.columnsMenuOpen = true;
+
+      const outside = document.createElement('div');
+      document.body.appendChild(outside);
+      component.onDocumentClickForColumnsMenu({ composedPath: () => [outside] } as any);
+      expect(component.columnsMenuOpen).toBe(false);
+
+      component.columnsMenuOpen = true;
+      const inside = document.createElement('div');
+      inside.classList.add('columns-menu-wrapper');
+      component.onDocumentClickForColumnsMenu({ composedPath: () => [inside] } as any);
+      expect(component.columnsMenuOpen).toBe(true);
+    });
+  });
 });

@@ -3,12 +3,15 @@
 
   <div class="relative w-full overflow-auto shadow-md sm:rounded-lg max-h-[75vh]">
 
-    <!-- ── Search controls ─────────────────────────────────────────────── -->
+    <!-- ── Row 1: VA ID / instance ID / location search ───────────────────── -->
     <div class="search-bar">
 
       <div class="search-group">
-        <label class="search-label">Search by</label>
-        <app-custom-dropdown [options]="searchByOptions" [selectedValue]="searchBy"
+        <label class="search-label">
+          <i class="ph-magnifying-glass search-label-icon" title="Search by"></i>
+          <span class="search-label-text">Search by</span>
+        </label>
+        <app-custom-dropdown widthClass="w-32" [compact]="true" [options]="searchByOptions" [selectedValue]="searchBy"
           (selectedValueChange)="onSearchByChange($event)">
         </app-custom-dropdown>
       </div>
@@ -20,90 +23,103 @@
           placeholder="Enter search value"
           class="search-input" />
         <button (click)="onSearch()" class="btn-search">
-          <i class="ph-magnifying-glass"></i> Search
+          <i class="ph-magnifying-glass"></i> <span class="search-label-text">Search</span>
         </button>
         <button (click)="onClearSearch()" class="btn-clear">
-          Clear
+          <span class="search-label-text">Clear</span>
+          <i class="ph-x search-label-icon"></i>
         </button>
-      </div>
-
-      <!-- Broad/Major Category and Algorithm come from whichever CCVA run
-           is marked default (CCVA > Display Data > Set Default) - Specific
-           Cause has too many distinct values for a useful dropdown, same
-           reasoning as CCVA's own Filter By. -->
-      <div class="search-group">
-        <label class="search-label">Filter By</label>
-        <app-custom-dropdown [options]="filterByChoices" [selectedValue]="filterBy"
-          (selectedValueChange)="onFilterByChange($event)">
-        </app-custom-dropdown>
-      </div>
-
-      <div class="search-group" *ngIf="filterBy !== 'none'">
-        <label class="search-label">Filter Value</label>
-        <app-custom-dropdown [options]="filterValueChoices" [selectedValue]="filterValue"
-          (selectedValueChange)="onFilterValueChange($event)">
-        </app-custom-dropdown>
       </div>
 
     </div>
-    <!-- ── End search controls ─────────────────────────────────────────── -->
 
-    <table class="w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
+    <!-- ── Row 2: Filter By / Filter Value (left) and Columns (right) ─────── -->
+    <!-- Broad/Major Category and Algorithm come from whichever CCVA run is
+         marked default (CCVA > Display Data > Set Default) - Specific
+         Cause has too many distinct values for a useful dropdown, same
+         reasoning as CCVA's own Filter By. A dedicated row (not crammed
+         into row 1's single line) and icon-collapsing labels below sm
+         keep this from overlapping on narrow screens. -->
+    <div class="filter-bar flex items-center justify-between gap-3 p-3 border-b border-gray-200 flex-wrap">
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="search-group">
+          <label class="search-label">
+            <i class="ph-funnel search-label-icon" title="Filter By"></i>
+            <span class="search-label-text">Filter By</span>
+          </label>
+          <app-custom-dropdown widthClass="w-36" [compact]="true" [options]="filterByChoices" [selectedValue]="filterBy"
+            (selectedValueChange)="onFilterByChange($event)">
+          </app-custom-dropdown>
+        </div>
 
-      <colgroup>
-        <col style="width:3%">
-        <col style="width:14%">
-        <col style="width:9%">
-        <col style="width:9%">
-        <col style="width:8%">
-        <col style="width:12%">
-        <col style="width:10%">
-        <col style="width:7%">
-        <col style="width:9%">
-        <col style="width:9%">
-        <col style="width:10%">
-        <col style="width:7%">
-        <col style="width:5%">
-      </colgroup>
+        <div class="search-group" *ngIf="filterBy !== 'none'">
+          <label class="search-label">
+            <i class="ph-list-checks search-label-icon" title="Filter Value"></i>
+            <span class="search-label-text">Filter Value</span>
+          </label>
+          <app-custom-dropdown widthClass="w-40" [compact]="true" [options]="filterValueChoices" [selectedValue]="filterValue"
+            (selectedValueChange)="onFilterValueChange($event)">
+          </app-custom-dropdown>
+        </div>
+      </div>
 
-      <thead class="sticky top-0 z-20 text-xs text-gray-700 uppercase bg-gray-50
-                    dark:bg-gray-700 dark:text-gray-400">
+      <div class="relative columns-menu-wrapper">
+        <button type="button" (click)="toggleColumnsMenu()"
+          class="h-[34px] px-3.5 flex items-center gap-1.5 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
+          <i class="ph-columns"></i> <span class="search-label-text">Columns</span>
+          <i class="ph-caret-down text-xs"></i>
+        </button>
+        <div *ngIf="columnsMenuOpen"
+             class="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 max-h-72 overflow-auto">
+          <label *ngFor="let col of columnsConfig" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+            <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.key)" />
+            {{ columnLabel(col.key) }}
+          </label>
+        </div>
+      </div>
+    </div>
+    <!-- ── End search/filter controls ──────────────────────────────────── -->
+
+    <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
+
+      <thead class="sticky top-0 z-20 text-xs font-medium tracking-wide text-gray-500 bg-gray-50
+                    border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
         <tr>
           <th scope="col" class="p-4"></th>
-          <th scope="col" class="px-6 py-3 text-left">VA ID</th>
-          <th scope="col" class="px-6 py-3 text-left">{{ locationLevel1Label }}</th>
-          <th scope="col" class="px-6 py-3 text-left">{{ locationLevel2Label }}</th>
-          <th scope="col" class="px-6 py-3 text-left">Interview Day</th>
-          <th scope="col" class="px-6 py-3 text-left">Interviewer Name</th>
-          <th scope="col" class="px-6 py-3 text-left">Questionnaire Type</th>
-          <th scope="col" class="px-6 py-3 text-left">Gender</th>
-          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaCauseBroad')">
+          <th scope="col" class="px-4 py-2.5 font-medium text-left">VA ID</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('region')">{{ locationLevel1Label }}</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('district')">{{ locationLevel2Label }}</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewDay')">Interview Day</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewerName')">Interviewer Name</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('questionnaireType')">Questionnaire Type</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('gender')">Gender</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseBroad')" (click)="onSort('ccvaCauseBroad')">
             <span class="flex items-center gap-1">Broad Category <i [class]="sortIcon('ccvaCauseBroad')" class="shrink-0"></i></span>
           </th>
-          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaCauseMajor')">
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseMajor')" (click)="onSort('ccvaCauseMajor')">
             <span class="flex items-center gap-1">Major Category <i [class]="sortIcon('ccvaCauseMajor')" class="shrink-0"></i></span>
           </th>
-          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaCauseSpecific')">
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseSpecific')" (click)="onSort('ccvaCauseSpecific')">
             <span class="flex items-center gap-1">Specific Cause <i [class]="sortIcon('ccvaCauseSpecific')" class="shrink-0"></i></span>
           </th>
-          <th scope="col" class="px-6 py-3 text-left cursor-pointer select-none" (click)="onSort('ccvaAlgorithm')">
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaAlgorithm')" (click)="onSort('ccvaAlgorithm')">
             <span class="flex items-center gap-1">Algorithm <i [class]="sortIcon('ccvaAlgorithm')" class="shrink-0"></i></span>
           </th>
-          <th scope="col" class="px-6 py-3 text-center">View</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-center">View</th>
         </tr>
       </thead>
 
       <tbody>
 
         @if((data.length === 0 || !data || data === undefined) && !isLoading) {
-          <tr class="bg-gray-200">
-            <td colspan="13" class="px-6 py-4 text-center">No record was found</td>
+          <tr class="bg-gray-50">
+            <td [attr.colspan]="totalColumns" class="px-4 py-8 text-center text-gray-400">No record was found</td>
           </tr>
         }
 
         @if(isLoading) {
           <tr>
-            <td colspan="13" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
+            <td [attr.colspan]="totalColumns" class="px-4 py-6 text-center bg-gray-50 animate-pulse">
               <div class="flex items-center justify-center h-full">
                 <mat-spinner diameter="30" color="accent"></mat-spinner>
               </div>
@@ -113,33 +129,32 @@
 
         <tr
           *ngFor="let row of data; let i = index"
-          [ngClass]="{ 'bg-white': i % 2 === 0, 'bg-gray-200': i % 2 !== 0 }"
-          class="border-b dark:bg-gray-800 dark:border-gray-700
-                 hover:bg-gray-50 dark:hover:bg-gray-600">
+          class="border-b border-gray-100 last:border-0 text-gray-600 hover:bg-gray-50
+                 transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
           <td class="p-4"></td>
-          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white
+          <td class="px-4 py-2.5 text-gray-900 dark:text-white
                      max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
               [title]="row.vaId">{{ row.vaId }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('region')"
               [title]="row.region">{{ row.region }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('district')"
               [title]="row.district">{{ row.district }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('interviewDay')"
               [title]="row.interviewDay">{{ row.interviewDay | date:'yyyy-MM-dd' }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('interviewerName')"
               [title]="row.interviewerName">{{ row.interviewerName }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('questionnaireType')"
               [title]="row.questionnaireType">{{ row.questionnaireType || '—' }}</td>
-          <td class="px-6 py-4">{{ row.gender || '—' }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('gender')">{{ row.gender || '—' }}</td>
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaCauseBroad')"
               [title]="row.ccvaCauseBroad">{{ row.ccvaCauseBroad || '—' }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaCauseMajor')"
               [title]="row.ccvaCauseMajor">{{ row.ccvaCauseMajor || '—' }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaCauseSpecific')"
               [title]="row.ccvaCauseSpecific">{{ row.ccvaCauseSpecific || '—' }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaAlgorithm')"
               [title]="row.ccvaAlgorithm">{{ row.ccvaAlgorithm || '—' }}</td>
-          <td class="px-6 py-4 text-center">
+          <td class="px-4 py-2.5 text-center">
             <a class="font-medium text-blue-600 dark:text-blue-500
                       hover:underline hover:cursor-pointer"
                (click)="onOpenVA(row)">
