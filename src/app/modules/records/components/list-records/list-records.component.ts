@@ -81,10 +81,12 @@ export class ListRecordsComponent implements OnInit {
     { value: 'ccvaCauseBroad', label: 'Broad Category' },
     { value: 'ccvaCauseMajor', label: 'Major Category' },
     { value: 'ccvaCauseSpecific', label: 'Specific Cause' },
+    { value: 'gender', label: 'Gender' },
+    { value: 'age_group', label: 'Age Group' },
   ];
   filterValueChoices: { value: string; label: string }[] = [{ value: '', label: 'All' }];
-  private ccvaFilterOptions: { broad: string[]; major: string[]; specific: string[] } = {
-    broad: [], major: [], specific: [],
+  private ccvaFilterOptions: { broad: string[]; major: string[]; specific: string[]; gender: string[]; age_group: string[] } = {
+    broad: [], major: [], specific: [], gender: [], age_group: [],
   };
 
   // Group By - same 3 fields as Filter By, aliased to the exact same array
@@ -320,7 +322,7 @@ export class ListRecordsComponent implements OnInit {
   private loadCcvaFilterOptions(): void {
     this.listRecordsService.getCcvaFilterOptions().subscribe({
       next: (response: any) => {
-        this.ccvaFilterOptions = { broad: [], major: [], specific: [], ...(response?.data ?? {}) };
+        this.ccvaFilterOptions = { broad: [], major: [], specific: [], gender: [], age_group: [], ...(response?.data ?? {}) };
         this.updateFilterValueChoices();
       },
       error: () => {
@@ -334,9 +336,20 @@ export class ListRecordsComponent implements OnInit {
     const key = this.filterBy === 'ccvaCauseBroad' ? 'broad'
       : this.filterBy === 'ccvaCauseMajor' ? 'major'
       : this.filterBy === 'ccvaCauseSpecific' ? 'specific'
+      : this.filterBy === 'gender' ? 'gender'
+      : this.filterBy === 'age_group' ? 'age_group'
       : null;
     const options = key ? this.ccvaFilterOptions[key] : [];
-    this.filterValueChoices = [{ value: '', label: 'All' }, ...options.map(value => ({ value, label: value }))];
+    // Gender comes back raw ("female"/"male", matching what's stored and
+    // what the filter has to == against) - capitalized here only for the
+    // label, same as the table's own Gender column already displays it.
+    this.filterValueChoices = [
+      { value: '', label: 'All' },
+      ...options.map(value => ({
+        value,
+        label: key === 'gender' ? value.charAt(0).toUpperCase() + value.slice(1) : value,
+      })),
+    ];
   }
 
   onFilterByChange(value: string): void {

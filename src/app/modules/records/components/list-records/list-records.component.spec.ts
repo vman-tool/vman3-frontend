@@ -233,10 +233,44 @@ describe('ListRecordsComponent', () => {
       expect(component.filterValueChoices).toEqual([{ value: '', label: 'All' }]);
     });
 
-    it('offers Specific Cause instead of Algorithm as a Filter By choice', () => {
+    it('loads Gender options capitalized for display, with the raw value kept for matching', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
+        data: { broad: [], major: [], specific: [], gender: ['female', 'male'] },
+      }));
+      fixture.detectChanges();
+
+      component.onFilterByChange('gender');
+
+      expect(component.filterValueChoices).toEqual([
+        { value: '', label: 'All' },
+        { value: 'female', label: 'Female' },
+        { value: 'male', label: 'Male' },
+      ]);
+    });
+
+    it('loads Age Group options as-is (already Title-case from the backend)', () => {
+      const service = TestBed.inject(ListRecordsService);
+      jest.spyOn(service, 'getCcvaFilterOptions').mockReturnValue(of({
+        data: { broad: [], major: [], specific: [], age_group: ['Neonate', 'Child', 'Adult', 'Unclassified'] },
+      }));
+      fixture.detectChanges();
+
+      component.onFilterByChange('age_group');
+
+      expect(component.filterValueChoices).toEqual([
+        { value: '', label: 'All' },
+        { value: 'Neonate', label: 'Neonate' },
+        { value: 'Child', label: 'Child' },
+        { value: 'Adult', label: 'Adult' },
+        { value: 'Unclassified', label: 'Unclassified' },
+      ]);
+    });
+
+    it('offers Specific Cause instead of Algorithm, plus Gender and Age Group, as Filter By choices', () => {
       fixture.detectChanges();
       expect(component.filterByChoices.map(c => c.value)).toEqual([
-        'none', 'ccvaCauseBroad', 'ccvaCauseMajor', 'ccvaCauseSpecific',
+        'none', 'ccvaCauseBroad', 'ccvaCauseMajor', 'ccvaCauseSpecific', 'gender', 'age_group',
       ]);
     });
   });

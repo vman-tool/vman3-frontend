@@ -21,20 +21,24 @@ export interface VaRecordMapPoint {
   lng: number;
   region: string | null;
   district: string | null;
+  gender: string | null;
+  ageGroup: string | null;
   ccvaCauseBroad: string | null;
   ccvaCauseMajor: string | null;
   ccvaCauseSpecific: string | null;
   ccvaAlgorithm: string | null;
 }
 
-type ColorableField = 'ccvaCauseBroad' | 'ccvaCauseMajor' | 'ccvaCauseSpecific';
+type ColorableField = 'gender' | 'ageGroup' | 'ccvaCauseBroad' | 'ccvaCauseMajor' | 'ccvaCauseSpecific';
 
-// The same 3 fields the table's own Group By offers - groupBy's value here
-// is already the exact point-field name (unlike CCVA, which uses its own
-// 'broad'/'major'/'cause_specific' vocabulary), so this is an identity map;
-// kept as an explicit Record (rather than casting groupBy directly) so an
-// unrecognized groupBy value - e.g. 'none' - safely yields `undefined`.
+// The same 5 fields the table's own Group By offers - groupBy's value is
+// already the exact point-field name for 3 of them (unlike CCVA, which
+// uses its own 'broad'/'major'/'cause_specific' vocabulary); Age Group is
+// the one exception ('age_group' groupBy -> 'ageGroup' point field,
+// matching the backend's camelCase map-points projection).
 const COLOR_FIELD_BY_GROUP: Record<string, ColorableField> = {
+  gender: 'gender',
+  age_group: 'ageGroup',
   ccvaCauseBroad: 'ccvaCauseBroad',
   ccvaCauseMajor: 'ccvaCauseMajor',
   ccvaCauseSpecific: 'ccvaCauseSpecific',
@@ -171,6 +175,17 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
     return COLOR_FIELD_BY_GROUP[this.groupBy];
   }
 
+  // Gender comes back raw ("female"/"male") - capitalized here only for
+  // display, same as the table's own Filter Value dropdown and Gender
+  // column. Age Group (and the CCVA cause fields) are already properly
+  // cased from the backend, so this is a no-op for them.
+  private valueLabel(value: string): string {
+    if (this.groupBy === 'gender') {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+    return value;
+  }
+
   private markerColor(point: VaRecordMapPoint): string {
     const field = this.colorField;
     if (!field) return '#3b82f6';
@@ -200,6 +215,7 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
       markers,
       marker => marker.vaPoint?.[field] as string | null | undefined,
       value => colorForGroup(this.groupBy, value, this.currentColorMap),
+      value => this.valueLabel(value),
     );
   }
 
@@ -291,6 +307,8 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
           <table style="width:100%;border-collapse:collapse">
             <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Region</td><td style="font-weight:500">${point.region ?? '—'}</td></tr>
             <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">District</td><td style="font-weight:500">${point.district ?? '—'}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Gender</td><td style="font-weight:500">${point.gender ? point.gender.charAt(0).toUpperCase() + point.gender.slice(1) : '—'}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Age Group</td><td style="font-weight:500">${point.ageGroup ?? '—'}</td></tr>
             <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Broad Category</td><td style="font-weight:500">${point.ccvaCauseBroad ?? '—'}</td></tr>
             <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Specific Cause</td><td style="font-weight:500">${point.ccvaCauseSpecific ?? '—'}</td></tr>
           </table>
@@ -321,7 +339,7 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
     const values = [...new Set(this.points.map(p => (p[field] as string) || '').filter(Boolean))].sort();
     const colorMap = colorMapForValues(values);
     return values.map(value => ({
-      label: value, color: colorMap[value], value, hidden: this.hiddenGroupValues.has(value),
+      label: this.valueLabel(value), color: colorMap[value], value, hidden: this.hiddenGroupValues.has(value),
     }));
   }
 }

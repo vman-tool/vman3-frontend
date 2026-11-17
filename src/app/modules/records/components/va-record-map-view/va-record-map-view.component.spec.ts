@@ -25,8 +25,8 @@ describe('VaRecordMapViewComponent', () => {
 
   it('renders without throwing when points are supplied before the first change detection', () => {
     component.points = [
-      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
-      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', gender: 'male', ageGroup: 'Adult', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', gender: 'female', ageGroup: 'Child', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
     ];
     expect(() => fixture.detectChanges()).not.toThrow();
   });
@@ -34,7 +34,7 @@ describe('VaRecordMapViewComponent', () => {
   it('re-renders on a later points/groupBy change without throwing', () => {
     fixture.detectChanges();
     component.points = [
-      { vaId: 'uuid-3', lat: 0, lng: 0, region: null, district: null, ccvaCauseBroad: null, ccvaCauseMajor: null, ccvaCauseSpecific: null, ccvaAlgorithm: null },
+      { vaId: 'uuid-3', lat: 0, lng: 0, region: null, district: null, gender: null, ageGroup: null, ccvaCauseBroad: null, ccvaCauseMajor: null, ccvaCauseSpecific: null, ccvaAlgorithm: null },
     ];
     component.groupBy = 'ccvaCauseBroad';
     expect(() => component.ngOnChanges({
@@ -92,8 +92,8 @@ describe('VaRecordMapViewComponent', () => {
 
   describe('legendEntries', () => {
     const points = [
-      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
-      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', gender: 'male', ageGroup: 'Adult', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', gender: 'female', ageGroup: 'Child', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
     ];
 
     it('is empty on None', () => {
@@ -126,6 +126,19 @@ describe('VaRecordMapViewComponent', () => {
       component.groupBy = 'ccvaCauseSpecific';
       expect(component.legendEntries.map(e => e.label)).toEqual(['Malaria', 'Stroke']);
     });
+
+    it('lists gender values capitalized when grouped by gender', () => {
+      component.points = points;
+      component.groupBy = 'gender';
+      expect(component.legendEntries.map(e => e.label)).toEqual(['Female', 'Male']);
+      expect(component.legendEntries.map(e => e.value)).toEqual(['female', 'male']);
+    });
+
+    it('lists age group values as-is when grouped by age_group', () => {
+      component.points = points;
+      component.groupBy = 'age_group';
+      expect(component.legendEntries.map(e => e.label)).toEqual(['Adult', 'Child']);
+    });
   });
 
   // Clicking a legend entry activates/deactivates it, same gesture as the
@@ -134,8 +147,8 @@ describe('VaRecordMapViewComponent', () => {
   // (and its cluster bubbles) directly instead.
   describe('legend entry toggling', () => {
     const points = [
-      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
-      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', gender: 'male', ageGroup: 'Adult', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', gender: 'female', ageGroup: 'Child', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
     ];
 
     it('starts with every legend value active', () => {
@@ -189,10 +202,10 @@ describe('VaRecordMapViewComponent', () => {
   // just in the legend, which only ever described individual dots).
   describe('cluster bubble coloring and hover breakdown', () => {
     const points = [
-      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
-      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
-      { vaId: 'uuid-3', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
-      { vaId: 'uuid-4', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', ccvaCauseBroad: null, ccvaCauseMajor: null, ccvaCauseSpecific: null, ccvaAlgorithm: null },
+      { vaId: 'uuid-1', lat: -6.3, lng: 34.8, region: 'dodoma', district: 'Dodoma Urban', gender: 'male', ageGroup: 'Adult', ccvaCauseBroad: 'Group II: Non-Communicable', ccvaCauseMajor: 'Diseases of the circulatory system', ccvaCauseSpecific: 'Stroke', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-2', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', gender: 'female', ageGroup: 'Child', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-3', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', gender: 'female', ageGroup: 'Child', ccvaCauseBroad: 'Group I: Communicable', ccvaCauseMajor: 'Certain infectious and parasitic diseases', ccvaCauseSpecific: 'Malaria', ccvaAlgorithm: 'InterVA5' },
+      { vaId: 'uuid-4', lat: -6.8, lng: 39.2, region: 'dar_es_salaam', district: 'Kinondoni', gender: 'female', ageGroup: 'Child', ccvaCauseBroad: null, ccvaCauseMajor: null, ccvaCauseSpecific: null, ccvaAlgorithm: null },
     ];
 
     function fakeMarkersFor(pts: typeof points) {

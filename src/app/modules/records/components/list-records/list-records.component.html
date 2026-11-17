@@ -15,8 +15,8 @@
       <div class="flex items-center gap-3 flex-wrap">
         <div class="search-group">
           <label class="search-label">
-            <i class="ph-magnifying-glass search-label-icon" title="Search by"></i>
-            <span class="search-label-text">Search by</span>
+            <i class="ph-magnifying-glass search-label-icon" title="Search By"></i>
+            <span class="search-label-text">Search By</span>
           </label>
           <app-custom-dropdown widthClass="w-28" [compact]="true" [options]="searchByOptions" [selectedValue]="searchBy"
             (selectedValueChange)="onSearchByChange($event)">
@@ -135,7 +135,7 @@
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('district')">{{ locationLevel2Label }}</th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewDay')">Interview Day</th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewerName')">Interviewer Name</th>
-          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('questionnaireType')">Questionnaire Type</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('questionnaireType')">Instrument Type</th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('gender')">Gender</th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseBroad')" (click)="onSort('ccvaCauseBroad')">
             <span class="flex items-center gap-1">Broad Category <i [class]="sortIcon('ccvaCauseBroad')" class="shrink-0"></i></span>
