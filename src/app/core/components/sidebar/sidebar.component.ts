@@ -46,6 +46,20 @@ export class SidebarComponent {
         icon_asset: '../../../../assets/icons/ind-record.svg',
         route: '/records',
         hasAccess: true,
+        subMenuItems: [
+          {
+            displayText: 'Table 1',
+            icon: 'ph ph-table',
+            route: '/table-1',
+            hasAccess: true,
+          },
+          {
+            displayText: 'Table 2',
+            icon: 'ph ph-gauge',
+            route: '/table-2',
+            hasAccess: true,
+          },
+        ],
       },
       {
         displayText: 'Data Quality',

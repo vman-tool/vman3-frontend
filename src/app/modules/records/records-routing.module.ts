@@ -10,11 +10,9 @@ const routes: Routes = [
     canActivate: [authGuard],
     component: RecordsComponent,
     children: [
-      {
-        // PCVA All Assigned Component
-        path: '',
-        component: ListRecordsComponent,
-      },
+      { path: '', redirectTo: 'table-1', pathMatch: 'full' },
+      { path: 'table-1', component: ListRecordsComponent, data: { mode: 'cause' } },
+      { path: 'table-2', component: ListRecordsComponent, data: { mode: 'dqa' } },
     ],
   },
 ];

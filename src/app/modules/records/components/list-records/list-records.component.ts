@@ -6,6 +6,7 @@ import {
   OnInit,
   runInInjectionContext,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ChartDataset, ChartOptions } from 'chart.js';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ListRecordsService } from '../../services/list-records/list-records.service';
@@ -16,8 +17,17 @@ import { SettingConfigService } from 'app/modules/settings/services/settings_con
 import { LocationSelection } from 'app/shared/components/location-tree-select/location-tree-select.component';
 import { VaRecordMapPoint } from '../va-record-map-view/va-record-map-view.component';
 import { colorForGroup, colorMapForValues } from '../../../../shared/utils/group-colors';
+import { GeneralDqaService } from 'app/modules/data-quality/services/general-dqa.service';
 
 type VaRecordVizType = 'table' | 'pie' | 'bar' | 'map';
+// Table 1 ('cause'): VA Records + Cause of Death by GBD. Table 2 ('dqa'):
+// the same VA records scored against the 4 Data Quality Indicators instead
+// - set by records-routing.module.ts's `data: { mode }` on each child
+// route, read in ngOnInit(). Everything else (search, the global date/
+// location filter, paging, sort, the viz switcher) is identical between
+// the two - only the "extra" Filter By/Group By dimensions and the
+// trailing table columns differ.
+type VaRecordsTableMode = 'cause' | 'dqa';
 @Component({
   standalone: false,
   selector: 'app-list-records',
@@ -25,6 +35,7 @@ type VaRecordVizType = 'table' | 'pie' | 'bar' | 'map';
   styleUrls: ['./list-records.component.scss'],
 })
 export class ListRecordsComponent implements OnInit {
+  mode: VaRecordsTableMode = 'cause';
   title: string = 'VA Data';
   data: any[] = [];
   isLoading: boolean = false;
@@ -76,30 +87,37 @@ export class ListRecordsComponent implements OnInit {
 
   filterBy = 'none';
   filterValue = '';
-  filterByChoices: { value: string; label: string }[] = [
-    { value: 'none', label: 'None' },
-    { value: 'ccvaCauseBroad', label: 'Broad Category' },
-    { value: 'ccvaCauseMajor', label: 'Major Category' },
-    { value: 'ccvaCauseSpecific', label: 'Specific Cause' },
-    { value: 'gender', label: 'Gender' },
-    { value: 'age_group', label: 'Age Group' },
-  ];
+  // Shared Gender/Age Group entries, plus the "extra" dimensions that
+  // depend on which table this is - set in ngOnInit() once `mode` is
+  // known, since a static field initializer runs before that. Group By
+  // is aliased to this exact same array (not a copy) so the two dropdowns
+  // never drift apart, same as before.
+  filterByChoices: { value: string; label: string; title?: string }[] = [];
   filterValueChoices: { value: string; label: string }[] = [{ value: '', label: 'All' }];
-  private ccvaFilterOptions: { broad: string[]; major: string[]; specific: string[]; gender: string[]; age_group: string[] } = {
+  private ccvaFilterOptions: {
+    broad: string[]; major: string[]; specific: string[]; gender: string[]; age_group: string[];
+    rrs: string[]; ics: string[]; ici: string[]; aid: string[];
+  } = {
     broad: [], major: [], specific: [], gender: [], age_group: [],
+    rrs: [], ics: [], ici: [], aid: [],
   };
 
-  // Group By - same 3 fields as Filter By, aliased to the exact same array
+  // Group By - same fields as Filter By, aliased to the exact same array
   // so the two dropdowns' options never drift apart. When set, the
   // individual-record table is replaced by a Group/Count/Percentage
   // summary (same behavior as CCVA's own Display Data table's Group By),
   // honoring every other active filter (date range/location/search/
   // Filter By-Value) the same way the individual list does.
   groupBy = 'none';
-  groupByChoices: { value: string; label: string }[] = this.filterByChoices;
+  groupByChoices: { value: string; label: string; title?: string }[] = [];
   groupedData: { group: string; count: number }[] = [];
   groupedTotal = 0;
   isLoadingGrouped = false;
+
+  // Table 2 only - true once we know DQA analytics hasn't completed a run
+  // yet, so these 4 columns/dimensions have nothing to show. null while
+  // the check itself is still in flight (no banner shown either way).
+  dqaAnalyticsStatus: 'completed' | 'running' | 'failed' | null = null;
 
   // Table/Pie/Bar/Map switcher, same control/placement as CCVA's own
   // Display Data table (next to Group By). Pie/Bar chart the Group By
@@ -138,8 +156,12 @@ export class ListRecordsComponent implements OnInit {
   // rather than one fixed checkbox since there are several toggleable
   // columns here. VA ID and View are never in this list - always shown.
   columnsMenuOpen = false;
-  // Interviewer Name and Algorithm default off - least useful for most
-  // day-to-day reading of this table, still available in the Columns menu.
+  // Interviewer Name and Algorithm default off (Table 1) - least useful
+  // for most day-to-day reading of this table, still available in the
+  // Columns menu. The trailing 4 columns depend on `mode` - set in
+  // ngOnInit() for the same reason filterByChoices/groupByChoices are.
+  // Unlike Algorithm, the DQA columns default ON - there's no equivalent
+  // "rarely useful" column among them, they're the whole point of Table 2.
   columnsConfig: { key: string; visible: boolean }[] = [
     { key: 'region', visible: true },
     { key: 'district', visible: true },
@@ -147,17 +169,15 @@ export class ListRecordsComponent implements OnInit {
     { key: 'interviewerName', visible: false },
     { key: 'questionnaireType', visible: true },
     { key: 'gender', visible: true },
-    { key: 'ccvaCauseBroad', visible: true },
-    { key: 'ccvaCauseMajor', visible: true },
-    { key: 'ccvaCauseSpecific', visible: true },
-    { key: 'ccvaAlgorithm', visible: false },
   ];
 
   constructor(
     private listRecordsService: ListRecordsService,
     public dialog: MatDialog,
     private filterService: FilterService,
-    private settingConfigService: SettingConfigService
+    private settingConfigService: SettingConfigService,
+    private generalDqaService: GeneralDqaService,
+    private route: ActivatedRoute
   ) {
     this.filterService = inject(FilterService);
     this.setupEffect();
@@ -170,9 +190,88 @@ export class ListRecordsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.mode = this.route.snapshot.data['mode'] === 'dqa' ? 'dqa' : 'cause';
+    this.setupModeSpecificChoices();
     this.loadSettingsLabels();
     this.loadCcvaFilterOptions();
     this.loadForCurrentView();
+    if (this.mode === 'dqa') {
+      this.loadDqaAnalyticsStatus();
+    }
+  }
+
+  // Builds the Filter By/Group By dimensions and trailing table columns
+  // for the active mode - Broad/Major/Specific Cause for Table 1 ('cause'),
+  // RRS/ICS/ICI/AID for Table 2 ('dqa'). Gender/Age Group are shared by
+  // both (first 7 columns + these 2 dimensions are identical between the
+  // two tables, per the feature's own design).
+  private setupModeSpecificChoices(): void {
+    // Gender/Age Group trail the mode's own "extra" dimensions, same
+    // ordering Table 1 already shipped with (ccvaCauseBroad/Major/
+    // Specific, then gender, then age_group).
+    const genderAndAgeGroup: { value: string; label: string; title?: string }[] = [
+      { value: 'gender', label: 'Gender' },
+      { value: 'age_group', label: 'Age Group' },
+    ];
+    if (this.mode === 'dqa') {
+      this.filterByChoices = [
+        { value: 'none', label: 'None' },
+        { value: 'dqaRrs', label: 'RRS', title: 'Response Rate Score' },
+        { value: 'dqaIcs', label: 'ICS', title: 'Internal Consistency Score' },
+        { value: 'dqaIci', label: 'ICI', title: 'Interviewer Consistency Index' },
+        { value: 'dqaAid', label: 'AID', title: 'Average Interview Duration' },
+        ...genderAndAgeGroup,
+      ];
+      this.columnsConfig = [
+        ...this.columnsConfig,
+        { key: 'dqaRrs', visible: true },
+        { key: 'dqaIcs', visible: true },
+        { key: 'dqaIci', visible: true },
+        { key: 'dqaAid', visible: true },
+      ];
+    } else {
+      this.filterByChoices = [
+        { value: 'none', label: 'None' },
+        { value: 'ccvaCauseBroad', label: 'Broad Category' },
+        { value: 'ccvaCauseMajor', label: 'Major Category' },
+        { value: 'ccvaCauseSpecific', label: 'Specific Cause' },
+        ...genderAndAgeGroup,
+      ];
+      this.columnsConfig = [
+        ...this.columnsConfig,
+        { key: 'ccvaCauseBroad', visible: true },
+        { key: 'ccvaCauseMajor', visible: true },
+        { key: 'ccvaCauseSpecific', visible: true },
+        { key: 'ccvaAlgorithm', visible: false },
+      ];
+    }
+    this.groupByChoices = this.filterByChoices;
+  }
+
+  // Table 2 only - checks whether the DQA analytics batch job has ever
+  // completed a run (General DQA's own snapshot endpoint - there's no
+  // separate "has it run" flag, `status`/`computed_at` null means never).
+  // A `'running'` run in progress is treated the same as "not ready yet"
+  // here - no polling, since the banner just needs to say "try again
+  // shortly", the running job's own progress UI already lives on General
+  // DQA.
+  private loadDqaAnalyticsStatus(): void {
+    this.generalDqaService.getAnalyticsSnapshot().subscribe({
+      next: (res) => {
+        this.dqaAnalyticsStatus = res?.data?.status ?? null;
+      },
+      error: () => {
+        this.dqaAnalyticsStatus = null;
+      },
+    });
+  }
+
+  // Shown above the table/chart/map when Table 2's scores aren't
+  // populated yet - true once we positively know the batch job hasn't
+  // completed (not while the check is still in flight, i.e. status still
+  // null).
+  get showDqaNotRunBanner(): boolean {
+    return this.mode === 'dqa' && this.dqaAnalyticsStatus !== null && this.dqaAnalyticsStatus !== 'completed';
   }
 
   // Dispatches to whichever view is currently active - the Map (loadMapPoints),
@@ -322,12 +421,16 @@ export class ListRecordsComponent implements OnInit {
   private loadCcvaFilterOptions(): void {
     this.listRecordsService.getCcvaFilterOptions().subscribe({
       next: (response: any) => {
-        this.ccvaFilterOptions = { broad: [], major: [], specific: [], gender: [], age_group: [], ...(response?.data ?? {}) };
+        this.ccvaFilterOptions = {
+          broad: [], major: [], specific: [], gender: [], age_group: [],
+          rrs: [], ics: [], ici: [], aid: [],
+          ...(response?.data ?? {}),
+        };
         this.updateFilterValueChoices();
       },
       error: () => {
         // Filter Value dropdown just stays empty - the rest of the table
-        // (including the 4 CCVA columns themselves) still works fine.
+        // (including the CCVA/DQA columns themselves) still works fine.
       },
     });
   }
@@ -338,6 +441,10 @@ export class ListRecordsComponent implements OnInit {
       : this.filterBy === 'ccvaCauseSpecific' ? 'specific'
       : this.filterBy === 'gender' ? 'gender'
       : this.filterBy === 'age_group' ? 'age_group'
+      : this.filterBy === 'dqaRrs' ? 'rrs'
+      : this.filterBy === 'dqaIcs' ? 'ics'
+      : this.filterBy === 'dqaIci' ? 'ici'
+      : this.filterBy === 'dqaAid' ? 'aid'
       : null;
     const options = key ? this.ccvaFilterOptions[key] : [];
     // Gender comes back raw ("female"/"male", matching what's stored and
@@ -528,8 +635,23 @@ export class ListRecordsComponent implements OnInit {
       case 'ccvaCauseMajor': return 'Major Category';
       case 'ccvaCauseSpecific': return 'Specific Cause';
       case 'ccvaAlgorithm': return 'Algorithm';
+      case 'dqaRrs': return 'RRS';
+      case 'dqaIcs': return 'ICS';
+      case 'dqaIci': return 'ICI';
+      case 'dqaAid': return 'AID';
       default: return key;
     }
+  }
+
+  // Table 2's score columns - "—" when this VA has no DQA run yet (null),
+  // otherwise the raw score with its natural unit (AID is minutes, the
+  // other 3 are percentages) - same raw-value convention as the map
+  // popup's formatDqaScore(), just without the tier label (the column
+  // header already names the indicator; a Group By bucket shows the tier
+  // if the user wants that view instead).
+  dqaScoreDisplay(value: number | null | undefined, field: 'dqaRrs' | 'dqaIcs' | 'dqaIci' | 'dqaAid'): string {
+    if (value === null || value === undefined) return '—';
+    return field === 'dqaAid' ? `${Math.round(value)} min` : `${value.toFixed(1)}%`;
   }
 
   isColumnVisible(key: string): boolean {

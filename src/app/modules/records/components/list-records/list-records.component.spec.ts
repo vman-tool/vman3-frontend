@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 import { ListRecordsComponent } from './list-records.component';
 import { ListRecordsService } from '../../services/list-records/list-records.service';
 import { SettingConfigService } from 'app/modules/settings/services/settings_configs.service';
+import { GeneralDqaService } from 'app/modules/data-quality/services/general-dqa.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
@@ -14,7 +16,13 @@ describe('ListRecordsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ListRecordsComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        // Defaults every test to Table 1 ('cause') unless a test overrides
+        // this itself - mirrors records-routing.module.ts's `data: { mode }`.
+        { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } },
+      ],
     })
       .compileComponents();
 
@@ -609,6 +617,77 @@ describe('ListRecordsComponent', () => {
       component.onSort('ccvaCauseBroad');
 
       expect(individualSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // Table 2 - set via records-routing.module.ts's `data: { mode: 'dqa' }`
+  // on the /table-2 route, read from ActivatedRoute.snapshot.data in
+  // ngOnInit(). A separate TestBed module (rather than reusing the outer
+  // one) since `mode` is read once at construction time, before any test
+  // body runs.
+  describe('Table 2 (DQA mode)', () => {
+    let dqaFixture: ComponentFixture<ListRecordsComponent>;
+    let dqaComponent: ListRecordsComponent;
+
+    beforeEach(async () => {
+      await TestBed.resetTestingModule()
+        .configureTestingModule({
+          declarations: [ListRecordsComponent],
+          providers: [
+            provideHttpClient(),
+            provideHttpClientTesting(),
+            { provide: ActivatedRoute, useValue: { snapshot: { data: { mode: 'dqa' } } } },
+          ],
+        })
+        .compileComponents();
+
+      dqaFixture = TestBed.createComponent(ListRecordsComponent);
+      dqaComponent = dqaFixture.componentInstance;
+    });
+
+    it('offers RRS/ICS/ICI/AID, plus Gender and Age Group, as Filter By/Group By choices', () => {
+      dqaFixture.detectChanges();
+      expect(dqaComponent.filterByChoices.map(c => c.value)).toEqual([
+        'none', 'dqaRrs', 'dqaIcs', 'dqaIci', 'dqaAid', 'gender', 'age_group',
+      ]);
+      expect(dqaComponent.groupByChoices).toBe(dqaComponent.filterByChoices);
+    });
+
+    it('shows the 4 DQA columns visible by default, with no Algorithm/CCVA cause columns', () => {
+      dqaFixture.detectChanges();
+      expect(dqaComponent.isColumnVisible('dqaRrs')).toBe(true);
+      expect(dqaComponent.isColumnVisible('dqaIcs')).toBe(true);
+      expect(dqaComponent.isColumnVisible('dqaIci')).toBe(true);
+      expect(dqaComponent.isColumnVisible('dqaAid')).toBe(true);
+      expect(dqaComponent.columnsConfig.some(c => c.key === 'ccvaCauseBroad')).toBe(false);
+      expect(dqaComponent.columnsConfig.some(c => c.key === 'ccvaAlgorithm')).toBe(false);
+    });
+
+    it('shows the "analytics not run" banner once the snapshot comes back incomplete', () => {
+      const dqaService = TestBed.inject(GeneralDqaService);
+      jest.spyOn(dqaService, 'getAnalyticsSnapshot').mockReturnValue(
+        of({ data: { status: 'running' } as any, message: '' })
+      );
+
+      dqaFixture.detectChanges();
+
+      expect(dqaComponent.showDqaNotRunBanner).toBe(true);
+    });
+
+    it('hides the banner once the snapshot comes back completed', () => {
+      const dqaService = TestBed.inject(GeneralDqaService);
+      jest.spyOn(dqaService, 'getAnalyticsSnapshot').mockReturnValue(
+        of({ data: { status: 'completed' } as any, message: '' })
+      );
+
+      dqaFixture.detectChanges();
+
+      expect(dqaComponent.showDqaNotRunBanner).toBe(false);
+    });
+
+    it('does not show the banner on Table 1 (cause mode)', () => {
+      fixture.detectChanges();
+      expect(component.showDqaNotRunBanner).toBe(false);
     });
   });
 });

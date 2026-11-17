@@ -1,6 +1,14 @@
 <div class="bg-white rounded-lg">
   <app-va-filters [title]="title"></app-va-filters>
 
+  <!-- DQA analytics hasn't completed a run yet - Table 2's scores have
+       nothing to show. Points to where to actually run it rather than
+       duplicating that control here. -->
+  <div *ngIf="showDqaNotRunBanner" class="mx-4 mt-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-800 flex items-center gap-2">
+    <i class="ph-warning-circle text-amber-500"></i>
+    Data Quality Analytics hasn't been run yet - run it from Data Quality &gt; General DQA to see scores here.
+  </div>
+
   <div class="relative w-full overflow-auto shadow-md sm:rounded-lg max-h-[75vh]">
 
     <!-- ── Search (left) + Filter By/Value + Columns (right), one row ─────── -->
@@ -149,6 +157,18 @@
           <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaAlgorithm')" (click)="onSort('ccvaAlgorithm')">
             <span class="flex items-center gap-1">Algorithm <i [class]="sortIcon('ccvaAlgorithm')" class="shrink-0"></i></span>
           </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaRrs')" (click)="onSort('dqaRrs')" title="Response Rate Score">
+            <span class="flex items-center gap-1">RRS <i [class]="sortIcon('dqaRrs')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaIcs')" (click)="onSort('dqaIcs')" title="Internal Consistency Score">
+            <span class="flex items-center gap-1">ICS <i [class]="sortIcon('dqaIcs')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaIci')" (click)="onSort('dqaIci')" title="Interviewer Consistency Index">
+            <span class="flex items-center gap-1">ICI <i [class]="sortIcon('dqaIci')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaAid')" (click)="onSort('dqaAid')" title="Average Interview Duration">
+            <span class="flex items-center gap-1">AID <i [class]="sortIcon('dqaAid')" class="shrink-0"></i></span>
+          </th>
           <th scope="col" class="w-14 px-2 py-2.5 font-medium text-center">View</th>
         </tr>
       </thead>
@@ -198,6 +218,10 @@
               [title]="row.ccvaCauseSpecific">{{ row.ccvaCauseSpecific || '—' }}</td>
           <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaAlgorithm')"
               [title]="row.ccvaAlgorithm">{{ row.ccvaAlgorithm || '—' }}</td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaRrs')">{{ dqaScoreDisplay(row.dqaRrs, 'dqaRrs') }}</td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIcs')">{{ dqaScoreDisplay(row.dqaIcs, 'dqaIcs') }}</td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIci')">{{ dqaScoreDisplay(row.dqaIci, 'dqaIci') }}</td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaAid')">{{ dqaScoreDisplay(row.dqaAid, 'dqaAid') }}</td>
           <td class="w-14 px-2 py-2.5 text-center">
             <a class="font-medium text-blue-600 dark:text-blue-500
                       hover:underline hover:cursor-pointer"

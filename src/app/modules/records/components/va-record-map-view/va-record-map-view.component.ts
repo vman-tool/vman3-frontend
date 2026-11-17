@@ -14,6 +14,7 @@ import {
   donutClusterIconHtml,
   clusterTooltipHtml,
 } from '../../../../shared/utils/cluster-donut';
+import { DqaThresholdService, TierColor } from '../../../data-quality/services/dqa-threshold.service';
 
 export interface VaRecordMapPoint {
   vaId: string;
@@ -27,9 +28,14 @@ export interface VaRecordMapPoint {
   ccvaCauseMajor: string | null;
   ccvaCauseSpecific: string | null;
   ccvaAlgorithm: string | null;
+  dqaRrs: number | null;
+  dqaIcs: number | null;
+  dqaIci: number | null;
+  dqaAid: number | null;
 }
 
 type ColorableField = 'gender' | 'ageGroup' | 'ccvaCauseBroad' | 'ccvaCauseMajor' | 'ccvaCauseSpecific';
+type DqaField = 'dqaRrs' | 'dqaIcs' | 'dqaIci' | 'dqaAid';
 
 // The same 5 fields the table's own Group By offers - groupBy's value is
 // already the exact point-field name for 3 of them (unlike CCVA, which
@@ -42,6 +48,21 @@ const COLOR_FIELD_BY_GROUP: Record<string, ColorableField> = {
   ccvaCauseBroad: 'ccvaCauseBroad',
   ccvaCauseMajor: 'ccvaCauseMajor',
   ccvaCauseSpecific: 'ccvaCauseSpecific',
+};
+
+// Table 2's 4 DQA dimensions - groupBy's value is already the exact
+// point-field name (dqaRrs/dqaIcs/dqaIci/dqaAid), same convention as
+// COLOR_FIELD_BY_GROUP above. Unlike those categorical fields, these hold
+// a raw score (the backend's map-points projection deliberately only sends
+// raw scores, not tier labels - see list_data.py's
+// fetch_va_records_map_points) - DQA_INDICATOR_BY_FIELD below maps each to
+// the DqaThresholdService indicator key used to classify that raw score
+// into a tier client-side, mirroring the Data Map's own DQA coloring.
+const DQA_INDICATOR_BY_FIELD: Record<DqaField, 'rrs' | 'ics' | 'ici' | 'aid'> = {
+  dqaRrs: 'rrs',
+  dqaIcs: 'ics',
+  dqaIci: 'ici',
+  dqaAid: 'aid',
 };
 
 // A Leaflet marker carrying the VaRecordMapPoint it was built from, so a
@@ -94,6 +115,8 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
   });
+
+  constructor(private dqaThresholdService: DqaThresholdService) {}
 
   ngAfterViewInit(): void {
     this.map = L.map('va-record-map', { zoomControl: true }).setView([0, 0], 3);
@@ -164,15 +187,34 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
   }
 
   private isPointHidden(point: VaRecordMapPoint): boolean {
+    const tier = this.tierFor(point);
+    if (tier) return this.hiddenGroupValues.has(tier.label);
     const field = this.colorField;
     const value = field ? point[field] : null;
     return !!value && this.hiddenGroupValues.has(value);
   }
 
   // The field on VaRecordMapPoint the active Group By colors by, or
-  // undefined when nothing is grouped (None).
+  // undefined when nothing is grouped (None) or when it's a DQA dimension
+  // (handled by dqaField/tierFor instead).
   private get colorField(): ColorableField | undefined {
     return COLOR_FIELD_BY_GROUP[this.groupBy];
+  }
+
+  // The raw-score field a DQA Group By dimension reads from, or undefined
+  // for every non-DQA dimension (including None).
+  private get dqaField(): DqaField | undefined {
+    return (DQA_INDICATOR_BY_FIELD as Record<string, string>)[this.groupBy] ? (this.groupBy as DqaField) : undefined;
+  }
+
+  // Classifies a point's raw DQA score into a tier (label + fixed color),
+  // the same thresholds/labels used everywhere else DQA scores are shown
+  // (General DQA dashboard, Data Map). Returns null outside a DQA Group By,
+  // or when this point has no score for it yet (DQA analytics not run).
+  private tierFor(point: VaRecordMapPoint): TierColor | null {
+    const field = this.dqaField;
+    if (!field) return null;
+    return this.dqaThresholdService.colorFor(DQA_INDICATOR_BY_FIELD[field], point[field]);
   }
 
   // Gender comes back raw ("female"/"male") - capitalized here only for
@@ -187,6 +229,8 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
   }
 
   private markerColor(point: VaRecordMapPoint): string {
+    const tier = this.tierFor(point);
+    if (tier) return tier.colorHex;
     const field = this.colorField;
     if (!field) return '#3b82f6';
     const value = point[field];
@@ -209,6 +253,13 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
   // basis for a cluster bubble's pie slices AND its hover breakdown, so the
   // two always agree exactly.
   private breakdownFor(markers: VaRecordMarker[]): BreakdownEntry[] {
+    if (this.dqaField) {
+      return computeBreakdown(
+        markers,
+        marker => (marker.vaPoint ? this.tierFor(marker.vaPoint)?.label : undefined),
+        value => this.currentColorMap[value] ?? '#9ca3af',
+      );
+    }
     const field = this.colorField;
     if (!field) return [];
     return computeBreakdown(
@@ -266,8 +317,7 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
     const sz = Math.round(Math.min(64, Math.max(34, 28 + Math.log2(count) * 7)));
     const fs = sz < 42 ? 12 : sz < 54 ? 13 : 14;
 
-    const field = this.colorField;
-    if (!field) {
+    if (!this.colorField && !this.dqaField) {
       cluster.unbindTooltip?.();
       return this.plainClusterIcon(count, sz, fs);
     }
@@ -290,10 +340,17 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
     if (!this.map || !this.clusterGroup) return;
     this.clusterGroup.clearLayers();
 
+    const dqaField = this.dqaField;
     const field = this.colorField;
-    this.currentColorMap = field
-      ? colorMapForValues(this.points.map(p => (p[field] as string) || '').filter(Boolean))
-      : {};
+    if (dqaField) {
+      this.currentColorMap = Object.fromEntries(
+        this.dqaThresholdService.legendFor(DQA_INDICATOR_BY_FIELD[dqaField]).map(t => [t.label, t.colorHex])
+      );
+    } else {
+      this.currentColorMap = field
+        ? colorMapForValues(this.points.map(p => (p[field] as string) || '').filter(Boolean))
+        : {};
+    }
 
     let visibleCount = 0;
     for (const point of this.points) {
@@ -311,6 +368,10 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
             <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Age Group</td><td style="font-weight:500">${point.ageGroup ?? '—'}</td></tr>
             <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Broad Category</td><td style="font-weight:500">${point.ccvaCauseBroad ?? '—'}</td></tr>
             <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">Specific Cause</td><td style="font-weight:500">${point.ccvaCauseSpecific ?? '—'}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">RRS</td><td style="font-weight:500">${this.formatDqaScore('dqaRrs', point)}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">ICS</td><td style="font-weight:500">${this.formatDqaScore('dqaIcs', point)}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">ICI</td><td style="font-weight:500">${this.formatDqaScore('dqaIci', point)}</td></tr>
+            <tr><td style="color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap">AID</td><td style="font-weight:500">${this.formatDqaScore('dqaAid', point)}</td></tr>
           </table>
         </div>
       `;
@@ -324,11 +385,31 @@ export class VaRecordMapViewComponent implements AfterViewInit, OnChanges, OnDes
     }
   }
 
+  // Popup row for one of the 4 DQA scores - shown on every point
+  // regardless of the active Group By (same reasoning as Broad/Specific
+  // Cause already being shown unconditionally above), with its tier label
+  // from DqaThresholdService alongside the raw score. "—" when DQA
+  // analytics hasn't been run yet for this record (null score).
+  private formatDqaScore(field: DqaField, point: VaRecordMapPoint): string {
+    const raw = point[field];
+    if (raw === null || raw === undefined) return '—';
+    const indicator = DQA_INDICATOR_BY_FIELD[field];
+    const tier = this.dqaThresholdService.colorFor(indicator, raw);
+    const value = indicator === 'aid' ? `${Math.round(raw)} min` : `${raw.toFixed(1)}%`;
+    return tier ? `${value} (${tier.label})` : value;
+  }
+
   // Legend entries for the current coloring - empty when nothing is
   // grouped (None). `value` is the raw group value (what
   // toggleLegendEntry()/hiddenGroupValues key on); `hidden` drives the
   // clicked-to-deactivate styling.
   get legendEntries(): { label: string; color: string; value: string; hidden: boolean }[] {
+    const dqaField = this.dqaField;
+    if (dqaField) {
+      return this.dqaThresholdService.legendFor(DQA_INDICATOR_BY_FIELD[dqaField]).map(t => ({
+        label: t.label, color: t.colorHex, value: t.label, hidden: this.hiddenGroupValues.has(t.label),
+      }));
+    }
     const field = this.colorField;
     if (!field) return [];
     if (this.groupBy === 'ccvaCauseBroad') {

@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './custom-dropdown.component.html',
 })
 export class CustomDropdownComponent {
-  @Input() options: { value: string; label: string }[] = []; // Dropdown options
+  @Input() options: { value: string; label: string; title?: string }[] = []; // Dropdown options
   @Input() selectedValue: string | undefined = ''; // Selected value
   @Output() selectedValueChange = new EventEmitter<string>(); // Emit changes
   @Input() widthClass = 'w-40';  // default Tailwind width
