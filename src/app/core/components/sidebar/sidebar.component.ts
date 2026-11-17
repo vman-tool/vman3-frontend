@@ -3,7 +3,6 @@ import { AuthService } from '../../services/authentication/auth.service';
 import { Router } from '@angular/router';
 import { lastValueFrom, map } from 'rxjs';
 import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
@@ -22,10 +21,9 @@ export class SidebarComponent {
   selectedSubMenu: number = 0;
 
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private router: Router,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService,
     private genericIndexedDBService: GenericIndexedDbService
   ) {
   }

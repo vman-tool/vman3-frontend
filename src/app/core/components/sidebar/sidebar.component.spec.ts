@@ -45,7 +45,6 @@ describe('SidebarComponent (unit)', () => {
         of(overrides.questionsResponse ?? { data: [{ name: 'id10019' }] })
       ),
     } as any;
-    const indexedDBService = {} as any;
     const genericIndexedDBService = {
       addDataAsObjectValues: jest.fn().mockResolvedValue(undefined),
       addDataAsIs: jest.fn().mockResolvedValue(undefined),
@@ -55,7 +54,6 @@ describe('SidebarComponent (unit)', () => {
       authService,
       router,
       vaRecordsService,
-      indexedDBService,
       genericIndexedDBService
     );
 

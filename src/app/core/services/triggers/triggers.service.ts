@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { Observable, Subject, catchError, map, mergeMap, of, tap } from 'rxjs';
 import { ConfigService } from 'app/app.service';
 import { ErrorEmitters } from 'app/core/emitters/error.emitters';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 
 @Injectable({
   providedIn: 'root',

@@ -17,7 +17,6 @@ function makeComponent(overrides: { cachedQuestions?: any } = {}) {
     updateExpectedDeaths: jest.fn().mockReturnValue(of({ data: { configured: true, max_level: 1, periods: [], tree: [] } })),
     deleteExpectedDeaths: jest.fn().mockReturnValue(of({ data: { configured: true, max_level: 1, periods: [], tree: [] } })),
   } as any;
-  const indexedDBService = {} as any;
   const genericIndexedDbService = {
     getData: jest.fn().mockResolvedValue(overrides.cachedQuestions ?? []),
   } as any;
@@ -36,7 +35,6 @@ function makeComponent(overrides: { cachedQuestions?: any } = {}) {
 
   const component = new ConfigurationComponent(
     settingConfigService,
-    indexedDBService,
     genericIndexedDbService,
     authService,
     vaRecordsService,
