@@ -294,6 +294,15 @@ describe('ListRecordsComponent', () => {
       expect(component.isColumnVisible('ccvaAlgorithm')).toBe(false);
     });
 
+    it('offers the 4 DQA columns too (for cross-viewing), hidden by default on Table 1', () => {
+      fixture.detectChanges();
+      expect(component.columnsConfig.some(c => c.key === 'dqaRrs')).toBe(true);
+      expect(component.isColumnVisible('dqaRrs')).toBe(false);
+      expect(component.isColumnVisible('dqaIcs')).toBe(false);
+      expect(component.isColumnVisible('dqaIci')).toBe(false);
+      expect(component.isColumnVisible('dqaAid')).toBe(false);
+    });
+
     it('toggleColumn flips just the given column', () => {
       fixture.detectChanges();
 
@@ -654,14 +663,17 @@ describe('ListRecordsComponent', () => {
       expect(dqaComponent.groupByChoices).toBe(dqaComponent.filterByChoices);
     });
 
-    it('shows the 4 DQA columns visible by default, with no Algorithm/CCVA cause columns', () => {
+    it('shows the 4 DQA columns visible by default, with the Cause of Death columns present but hidden (cleaner table, still toggleable)', () => {
       dqaFixture.detectChanges();
       expect(dqaComponent.isColumnVisible('dqaRrs')).toBe(true);
       expect(dqaComponent.isColumnVisible('dqaIcs')).toBe(true);
       expect(dqaComponent.isColumnVisible('dqaIci')).toBe(true);
       expect(dqaComponent.isColumnVisible('dqaAid')).toBe(true);
-      expect(dqaComponent.columnsConfig.some(c => c.key === 'ccvaCauseBroad')).toBe(false);
-      expect(dqaComponent.columnsConfig.some(c => c.key === 'ccvaAlgorithm')).toBe(false);
+      expect(dqaComponent.isColumnVisible('ccvaCauseBroad')).toBe(false);
+      expect(dqaComponent.isColumnVisible('ccvaCauseMajor')).toBe(false);
+      expect(dqaComponent.isColumnVisible('ccvaCauseSpecific')).toBe(false);
+      expect(dqaComponent.isColumnVisible('ccvaAlgorithm')).toBe(false);
+      expect(dqaComponent.columnsConfig.some(c => c.key === 'ccvaCauseBroad')).toBe(true);
     });
 
     it('shows the "analytics not run" banner once the snapshot comes back incomplete', () => {

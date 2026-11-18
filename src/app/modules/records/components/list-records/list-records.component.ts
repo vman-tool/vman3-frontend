@@ -210,11 +210,20 @@ export class ListRecordsComponent implements OnInit {
     }
   }
 
-  // Builds the Filter By/Group By dimensions and trailing table columns
-  // for the active mode - Broad/Major/Specific Cause for Table 1 ('cause'),
-  // RRS/ICS/ICI/AID for Table 2 ('dqa'). Gender/Age Group are shared by
-  // both (first 7 columns + these 2 dimensions are identical between the
-  // two tables, per the feature's own design).
+  // Builds the Filter By/Group By dimensions for the active mode -
+  // Broad/Major/Specific Cause for Table 1 ('cause'), RRS/ICS/ICI/AID for
+  // Table 2 ('dqa'). Gender/Age Group are shared by both (first 7 columns
+  // + these 2 dimensions are identical between the two tables, per the
+  // feature's own design).
+  //
+  // The table COLUMNS are different from the dimensions above: every row
+  // already carries both the 4 cause columns and the 4 DQA columns
+  // regardless of mode (map_to_data_response always returns both), so
+  // both tables offer all 8 as toggleable Columns-menu entries rather than
+  // only the ones matching `mode` - just defaulted the other table's set
+  // to hidden, so each table opens clean (cause-focused or DQA-focused)
+  // while still letting a user cross-view the other table's indicators
+  // without switching tabs.
   private setupModeSpecificChoices(): void {
     // Gender/Age Group trail the mode's own "extra" dimensions, same
     // ordering Table 1 already shipped with (ccvaCauseBroad/Major/
@@ -223,7 +232,8 @@ export class ListRecordsComponent implements OnInit {
       { value: 'gender', label: 'Gender' },
       { value: 'age_group', label: 'Age Group' },
     ];
-    if (this.mode === 'dqa') {
+    const dqaIsDefault = this.mode === 'dqa';
+    if (dqaIsDefault) {
       this.filterByChoices = [
         { value: 'none', label: 'None' },
         { value: 'dqaRrs', label: 'RRS', title: 'Response Rate Score' },
@@ -231,13 +241,6 @@ export class ListRecordsComponent implements OnInit {
         { value: 'dqaIci', label: 'ICI', title: 'Interviewer Consistency Index' },
         { value: 'dqaAid', label: 'AID', title: 'Average Interview Duration' },
         ...genderAndAgeGroup,
-      ];
-      this.columnsConfig = [
-        ...this.columnsConfig,
-        { key: 'dqaRrs', visible: true },
-        { key: 'dqaIcs', visible: true },
-        { key: 'dqaIci', visible: true },
-        { key: 'dqaAid', visible: true },
       ];
     } else {
       this.filterByChoices = [
@@ -247,15 +250,20 @@ export class ListRecordsComponent implements OnInit {
         { value: 'ccvaCauseSpecific', label: 'Specific Cause' },
         ...genderAndAgeGroup,
       ];
-      this.columnsConfig = [
-        ...this.columnsConfig,
-        { key: 'ccvaCauseBroad', visible: true },
-        { key: 'ccvaCauseMajor', visible: true },
-        { key: 'ccvaCauseSpecific', visible: true },
-        { key: 'ccvaAlgorithm', visible: false },
-      ];
     }
     this.groupByChoices = this.filterByChoices;
+
+    this.columnsConfig = [
+      ...this.columnsConfig,
+      { key: 'ccvaCauseBroad', visible: !dqaIsDefault },
+      { key: 'ccvaCauseMajor', visible: !dqaIsDefault },
+      { key: 'ccvaCauseSpecific', visible: !dqaIsDefault },
+      { key: 'ccvaAlgorithm', visible: false },
+      { key: 'dqaRrs', visible: dqaIsDefault },
+      { key: 'dqaIcs', visible: dqaIsDefault },
+      { key: 'dqaIci', visible: dqaIsDefault },
+      { key: 'dqaAid', visible: dqaIsDefault },
+    ];
   }
 
   // Table 2 only - checks whether the DQA analytics batch job has ever
