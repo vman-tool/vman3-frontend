@@ -238,10 +238,14 @@ export class SidebarComponent {
     this.selectedItem =
       this.selectedItem === menuIndex && !subMenuIndex ? undefined : menuIndex;
 
+    // A real submenu click (Table 1/Table 2, General DQA/CCVA Errors,
+    // etc.) is the only thing that marks a submenu "active" - clicking
+    // the main menu header above it only expands/collapses the list (see
+    // the template's [routerLink], which no longer navigates for a menu
+    // item that owns a submenu), so it must leave selectedSubMenu alone
+    // rather than defaulting to the first entry every time.
     if (subMenuIndex) {
       this.selectedSubMenu = menuIndex + subMenuIndex;
-    } else {
-      this.selectedSubMenu = menuIndex + 1;
     }
   }
 
