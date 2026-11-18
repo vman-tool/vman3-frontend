@@ -151,12 +151,20 @@
         <tr>
           <th scope="col" class="w-6 p-0"></th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left">VA ID</th>
-          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('region')">{{ locationLevel1Label }}</th>
-          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('district')">{{ locationLevel2Label }}</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('region')" (click)="onSort('region')">
+            <span class="flex items-center gap-1">{{ locationLevel1Label }} <i [class]="sortIcon('region')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('district')" (click)="onSort('district')">
+            <span class="flex items-center gap-1">{{ locationLevel2Label }} <i [class]="sortIcon('district')" class="shrink-0"></i></span>
+          </th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewDay')">Interview Day</th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewerName')">Interviewer Name</th>
-          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('questionnaireType')">Instrument Type</th>
-          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('gender')">Gender</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('questionnaireType')" (click)="onSort('questionnaireType')">
+            <span class="flex items-center gap-1">Instrument Type <i [class]="sortIcon('questionnaireType')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('gender')" (click)="onSort('gender')">
+            <span class="flex items-center gap-1">Gender <i [class]="sortIcon('gender')" class="shrink-0"></i></span>
+          </th>
           <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseBroad')" (click)="onSort('ccvaCauseBroad')">
             <span class="flex items-center gap-1">Broad Category <i [class]="sortIcon('ccvaCauseBroad')" class="shrink-0"></i></span>
           </th>
