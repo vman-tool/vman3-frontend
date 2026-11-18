@@ -689,5 +689,53 @@ describe('ListRecordsComponent', () => {
       fixture.detectChanges();
       expect(component.showDqaNotRunBanner).toBe(false);
     });
+
+    // Scores show as quality-tier badges (Excellent/Good/Critical etc.) by
+    // default, not the raw percentage/minutes - toggled on via the "%"
+    // button next to the Columns menu.
+    describe('score badges', () => {
+      it('dqaBadge classifies a score into the shipped default tier labels', () => {
+        expect(dqaComponent.dqaBadge(90, 'dqaRrs')?.label).toBe('Excellent');
+        expect(dqaComponent.dqaBadge(30, 'dqaRrs')?.label).toBe('Critical');
+        expect(dqaComponent.dqaBadge(45, 'dqaAid')?.label).toBe('Normal');
+      });
+
+      it('dqaBadge returns null when this record has no score yet', () => {
+        expect(dqaComponent.dqaBadge(null, 'dqaRrs')).toBeNull();
+        expect(dqaComponent.dqaBadge(undefined, 'dqaIcs')).toBeNull();
+      });
+
+      it('renders the tier badge in the table, not the raw number, by default', () => {
+        dqaComponent.data = [{ dqaRrs: 90, dqaIcs: null, dqaIci: 60, dqaAid: 45 } as any];
+        dqaFixture.detectChanges();
+
+        const text = dqaFixture.nativeElement.textContent;
+        expect(text).toContain('Excellent'); // dqaRrs: 90
+        expect(text).toContain('No Data');    // dqaIcs: null
+        expect(text).not.toContain('90.0%');
+      });
+
+      it('toggleDqaPercentages shows the raw value alongside the badge once turned on', () => {
+        dqaComponent.data = [{ dqaRrs: 90, dqaIcs: null, dqaIci: 60, dqaAid: 45 } as any];
+        dqaFixture.detectChanges();
+
+        dqaComponent.toggleDqaPercentages();
+        dqaFixture.detectChanges();
+
+        const text = dqaFixture.nativeElement.textContent;
+        expect(dqaComponent.showDqaPercentages).toBe(true);
+        expect(text).toContain('Excellent');
+        expect(text).toContain('90.0%');
+        expect(text).toContain('45 min');
+      });
+
+      it('the "%" toggle button only appears on Table 2, not Table 1', () => {
+        dqaFixture.detectChanges();
+        expect(dqaFixture.nativeElement.querySelector('[title="Show raw scores"]')).toBeTruthy();
+
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('[title="Show raw scores"]')).toBeFalsy();
+      });
+    });
   });
 });

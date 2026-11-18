@@ -104,6 +104,18 @@
           </button>
         </div>
 
+        <!-- Table 2 only - scores show as quality-tier badges by default
+             (Excellent/Good/Critical etc.); this toggles the raw
+             percentage/minutes value on alongside the badge. -->
+        <button type="button" *ngIf="mode === 'dqa' && vizType === 'table' && groupBy === 'none'"
+          (click)="toggleDqaPercentages()" [title]="showDqaPercentages ? 'Hide raw scores' : 'Show raw scores'"
+          class="h-[34px] px-2.5 flex items-center gap-1 text-sm rounded border"
+          [class.bg-blue-50]="showDqaPercentages" [class.text-blue-600]="showDqaPercentages" [class.border-blue-300]="showDqaPercentages"
+          [class.bg-gray-100]="!showDqaPercentages" [class.text-gray-700]="!showDqaPercentages" [class.border-gray-300]="!showDqaPercentages">
+          <i class="ph-percent"></i>
+          <span class="hidden sm:inline">%</span>
+        </button>
+
         <div class="relative columns-menu-wrapper" *ngIf="vizType === 'table' && groupBy === 'none'">
           <button type="button" (click)="toggleColumnsMenu()" title="Columns"
             class="h-[34px] px-2.5 flex items-center gap-1 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
@@ -218,10 +230,18 @@
               [title]="row.ccvaCauseSpecific">{{ row.ccvaCauseSpecific || '—' }}</td>
           <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaAlgorithm')"
               [title]="row.ccvaAlgorithm">{{ row.ccvaAlgorithm || '—' }}</td>
-          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaRrs')">{{ dqaScoreDisplay(row.dqaRrs, 'dqaRrs') }}</td>
-          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIcs')">{{ dqaScoreDisplay(row.dqaIcs, 'dqaIcs') }}</td>
-          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIci')">{{ dqaScoreDisplay(row.dqaIci, 'dqaIci') }}</td>
-          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaAid')">{{ dqaScoreDisplay(row.dqaAid, 'dqaAid') }}</td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaRrs')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaRrs, field: 'dqaRrs' }"></ng-container>
+          </td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIcs')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaIcs, field: 'dqaIcs' }"></ng-container>
+          </td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIci')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaIci, field: 'dqaIci' }"></ng-container>
+          </td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaAid')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaAid, field: 'dqaAid' }"></ng-container>
+          </td>
           <td class="w-14 px-2 py-2.5 text-center">
             <a class="font-medium text-blue-600 dark:text-blue-500
                       hover:underline hover:cursor-pointer"
@@ -233,6 +253,26 @@
 
       </tbody>
     </table>
+
+    <!-- One shared template for all 4 DQA score cells - the quality-tier
+         badge (Excellent/Good/Critical, Too Short/Normal/Too Long) is the
+         default view; the raw percentage/minutes value only shows once
+         "Show %" is toggled on, right after the badge. A gray "No Data"
+         pill (no badge, DQA analytics not run for this record yet) is the
+         same convention General DQA's own per-record badge table uses. -->
+    <ng-template #dqaCell let-value="value" let-field="field">
+      <span class="inline-flex items-center gap-1.5">
+        <ng-container *ngIf="dqaBadge(value, field) as tier; else noDqaData">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold" [ngClass]="[tier.bgClass, tier.textClass]">
+            {{ tier.label }}
+          </span>
+        </ng-container>
+        <ng-template #noDqaData>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No Data</span>
+        </ng-template>
+        <span *ngIf="showDqaPercentages" class="text-xs text-gray-500">{{ dqaScoreDisplay(value, field) }}</span>
+      </span>
+    </ng-template>
 
     <div class="sticky bottom-0 z-20 px-5 py-2 bg-white border-t flex flex-col xs:flex-row"
          *ngIf="vizType === 'table' && groupBy === 'none' && totalRecords > 0">

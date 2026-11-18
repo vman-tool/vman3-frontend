@@ -18,6 +18,7 @@ import { LocationSelection } from 'app/shared/components/location-tree-select/lo
 import { VaRecordMapPoint } from '../va-record-map-view/va-record-map-view.component';
 import { colorForGroup, colorMapForValues } from '../../../../shared/utils/group-colors';
 import { GeneralDqaService } from 'app/modules/data-quality/services/general-dqa.service';
+import { DqaThresholdService, StatusBadge } from 'app/modules/data-quality/services/dqa-threshold.service';
 
 type VaRecordVizType = 'table' | 'pie' | 'bar' | 'map';
 // Table 1 ('cause'): VA Records + Cause of Death by GBD. Table 2 ('dqa'):
@@ -171,12 +172,19 @@ export class ListRecordsComponent implements OnInit {
     { key: 'gender', visible: true },
   ];
 
+  // Table 2's score columns show the quality-tier badge (Excellent/Good/
+  // Critical, Too Short/Normal/Too Long) by default, not the raw percentage/
+  // minutes - the badge is what's actionable at a glance; the exact number
+  // is still available, just off by default, toggled on here.
+  showDqaPercentages = false;
+
   constructor(
     private listRecordsService: ListRecordsService,
     public dialog: MatDialog,
     private filterService: FilterService,
     private settingConfigService: SettingConfigService,
     private generalDqaService: GeneralDqaService,
+    private dqaThresholdService: DqaThresholdService,
     private route: ActivatedRoute
   ) {
     this.filterService = inject(FilterService);
@@ -646,12 +654,33 @@ export class ListRecordsComponent implements OnInit {
   // Table 2's score columns - "—" when this VA has no DQA run yet (null),
   // otherwise the raw score with its natural unit (AID is minutes, the
   // other 3 are percentages) - same raw-value convention as the map
-  // popup's formatDqaScore(), just without the tier label (the column
-  // header already names the indicator; a Group By bucket shows the tier
-  // if the user wants that view instead).
+  // popup's formatDqaScore(). Shown only when showDqaPercentages is on
+  // (off by default - the badge from dqaBadge() below is the primary,
+  // at-a-glance view).
   dqaScoreDisplay(value: number | null | undefined, field: 'dqaRrs' | 'dqaIcs' | 'dqaIci' | 'dqaAid'): string {
     if (value === null || value === undefined) return '—';
     return field === 'dqaAid' ? `${Math.round(value)} min` : `${value.toFixed(1)}%`;
+  }
+
+  // The quality-tier badge (Excellent/Good/Critical, or Too Short/Normal/
+  // Too Long for AID) for one record's score - same admin-configured
+  // thresholds/labels used everywhere else DQA scores are shown (General
+  // DQA dashboard, the Data Map, this table's own map view). Null when
+  // this VA has no score yet (DQA analytics not run) - the template shows
+  // a gray "No Data" pill for that case, same convention as General DQA's
+  // own per-record badge table.
+  dqaBadge(value: number | null | undefined, field: 'dqaRrs' | 'dqaIcs' | 'dqaIci' | 'dqaAid'): StatusBadge | null {
+    const v = value ?? null;
+    switch (field) {
+      case 'dqaRrs': return this.dqaThresholdService.classifyRrs(v);
+      case 'dqaIcs': return this.dqaThresholdService.classifyIcs(v);
+      case 'dqaIci': return this.dqaThresholdService.classifyIci(v);
+      case 'dqaAid': return this.dqaThresholdService.classifyAid(v);
+    }
+  }
+
+  toggleDqaPercentages(): void {
+    this.showDqaPercentages = !this.showDqaPercentages;
   }
 
   isColumnVisible(key: string): boolean {
