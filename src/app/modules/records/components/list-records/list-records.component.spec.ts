@@ -286,9 +286,10 @@ describe('ListRecordsComponent', () => {
   // Space-saving "Columns" menu - same gesture/placement as CCVA's own
   // Display Data table.
   describe('column visibility', () => {
-    it('every toggleable column starts visible except Interviewer Name and Algorithm', () => {
+    it('every toggleable column starts visible except Interview Day, Interviewer Name, and Algorithm', () => {
       fixture.detectChanges();
       expect(component.isColumnVisible('ccvaCauseBroad')).toBe(true);
+      expect(component.isColumnVisible('interviewDay')).toBe(false);
       expect(component.isColumnVisible('interviewerName')).toBe(false);
       expect(component.isColumnVisible('ccvaAlgorithm')).toBe(false);
     });

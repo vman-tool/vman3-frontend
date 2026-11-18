@@ -157,16 +157,18 @@ export class ListRecordsComponent implements OnInit {
   // rather than one fixed checkbox since there are several toggleable
   // columns here. VA ID and View are never in this list - always shown.
   columnsMenuOpen = false;
-  // Interviewer Name and Algorithm default off (Table 1) - least useful
-  // for most day-to-day reading of this table, still available in the
-  // Columns menu. The trailing 4 columns depend on `mode` - set in
-  // ngOnInit() for the same reason filterByChoices/groupByChoices are.
-  // Unlike Algorithm, the DQA columns default ON - there's no equivalent
-  // "rarely useful" column among them, they're the whole point of Table 2.
+  // Interview Day, Interviewer Name, and Algorithm default off (shared by
+  // both tables - Interview Day/Interviewer Name are in the first 7
+  // columns common to Table 1 and Table 2) - least useful for most
+  // day-to-day reading of this table, still available in the Columns
+  // menu. The trailing 4 columns depend on `mode` - set in ngOnInit() for
+  // the same reason filterByChoices/groupByChoices are. Unlike Algorithm,
+  // the DQA columns default ON - there's no equivalent "rarely useful"
+  // column among them, they're the whole point of Table 2.
   columnsConfig: { key: string; visible: boolean }[] = [
     { key: 'region', visible: true },
     { key: 'district', visible: true },
-    { key: 'interviewDay', visible: true },
+    { key: 'interviewDay', visible: false },
     { key: 'interviewerName', visible: false },
     { key: 'questionnaireType', visible: true },
     { key: 'gender', visible: true },
