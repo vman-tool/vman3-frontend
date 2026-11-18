@@ -10,7 +10,6 @@ import { lastValueFrom, map, Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { WebSockettService } from '../../services/web-socket.service';
 import { ConfigService } from '../../../../app.service';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { LocalStorageSettingsService } from '../../services/local_storage.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
 import { AuthService } from 'app/core/services/authentication/auth.service';
@@ -151,7 +150,6 @@ export class DataSyncComponent implements OnInit, OnDestroy {
     private localStorageSettingsService: LocalStorageSettingsService,
     private configService: ConfigService,
     private webSockettService: WebSockettService,
-    private indexedDBService: IndexedDBService,
     // private genericIndexedDbService: GenericIndexedDbService,
     // private vaRecordsService: VaRecordsService,
     private authService: AuthService,

@@ -1,75 +1,209 @@
 <div class="bg-white rounded-lg">
   <app-va-filters [title]="title"></app-va-filters>
 
+  <!-- DQA analytics hasn't completed a run yet - Table 2's scores have
+       nothing to show. Points to where to actually run it rather than
+       duplicating that control here. -->
+  <div *ngIf="showDqaNotRunBanner" class="mx-4 mt-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-800 flex items-center gap-2">
+    <i class="ph-warning-circle text-amber-500"></i>
+    Data Quality Analytics hasn't been run yet - run it from Data Quality &gt; General DQA to see scores here.
+  </div>
+
   <div class="relative w-full overflow-auto shadow-md sm:rounded-lg max-h-[75vh]">
 
-    <!-- ── Search controls ─────────────────────────────────────────────── -->
-    <div class="search-bar">
+    <!-- ── Search (left) + Filter By/Value + Columns (right), one row ─────── -->
+    <!-- Broad/Major/Specific Cause come from whichever CCVA run is marked
+         default (CCVA > Display Data > Set Default). The two sides are
+         independent flex-wrap groups rather than one flat row, so each
+         wraps to its own line on narrow screens instead of the two
+         colliding - label/button text collapses to icon-only below 640px
+         on top of that. -->
+    <div class="search-bar justify-between">
 
-      <div class="search-group">
-        <label class="search-label">Search by</label>
-        <app-custom-dropdown [options]="searchByOptions" [selectedValue]="searchBy"
-          (selectedValueChange)="onSearchByChange($event)">
-        </app-custom-dropdown>
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="search-group">
+          <label class="search-label">
+            <i class="ph-magnifying-glass search-label-icon" title="Search By"></i>
+            <span class="search-label-text">Search By</span>
+          </label>
+          <app-custom-dropdown widthClass="w-28" [compact]="true" [options]="searchByOptions" [selectedValue]="searchBy"
+            (selectedValueChange)="onSearchByChange($event)">
+          </app-custom-dropdown>
+        </div>
+
+        <div class="search-input-group">
+          <input
+            type="text"
+            [(ngModel)]="searchValue"
+            [disabled]="searchBy === 'none'"
+            placeholder="Enter search value"
+            class="search-input" />
+          <button (click)="onSearch()" [disabled]="searchBy === 'none'" class="btn-search" title="Search">
+            <i class="ph-magnifying-glass"></i>
+          </button>
+        </div>
       </div>
 
-      <div class="search-input-group">
-        <input
-          type="text"
-          [(ngModel)]="searchValue"
-          placeholder="Enter search value"
-          class="search-input" />
-        <button (click)="onSearch()" class="btn-search">
-          <i class="ph-magnifying-glass"></i> Search
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="search-group">
+          <label class="search-label">
+            <i class="ph-funnel search-label-icon" title="Filter By"></i>
+            <span class="search-label-text">Filter By</span>
+          </label>
+          <app-custom-dropdown widthClass="w-32" [compact]="true" [options]="filterByChoices" [selectedValue]="filterBy"
+            (selectedValueChange)="onFilterByChange($event)">
+          </app-custom-dropdown>
+        </div>
+
+        <div class="search-group" *ngIf="filterBy !== 'none'">
+          <label class="search-label">
+            <i class="ph-list-checks search-label-icon" title="Filter Value"></i>
+            <span class="search-label-text">Filter Value</span>
+          </label>
+          <app-custom-dropdown widthClass="w-40" [compact]="true" [options]="filterValueChoices" [selectedValue]="filterValue"
+            (selectedValueChange)="onFilterValueChange($event)">
+          </app-custom-dropdown>
+        </div>
+
+        <div class="search-group">
+          <label class="search-label">
+            <i class="ph-stack search-label-icon" title="Group By"></i>
+            <span class="search-label-text">Group By</span>
+          </label>
+          <app-custom-dropdown widthClass="w-36" [compact]="true" [options]="groupByChoices" [selectedValue]="groupBy"
+            (selectedValueChange)="onGroupByChange($event)">
+          </app-custom-dropdown>
+        </div>
+
+        <!-- Table/Pie/Bar/Map switcher - same control/placement as CCVA's own
+             Display Data table, next to Group By. Pie/Bar chart the Group
+             By summary (disabled with a hint until one is chosen); Map is
+             independent of Group By - it's always available. -->
+        <div class="flex items-center gap-0.5 bg-gray-100 border border-gray-300 rounded p-0.5">
+          <button type="button" (click)="onVizTypeChange('table')" title="Table"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600"
+            [class.bg-white]="vizType === 'table'" [class.shadow-sm]="vizType === 'table'" [class.text-blue-600]="vizType === 'table'">
+            <i class="ph-table"></i>
+          </button>
+          <button type="button" (click)="onVizTypeChange('pie')" [disabled]="groupBy === 'none'"
+            [title]="groupBy === 'none' ? 'Choose a Group By to chart' : 'Pie chart'"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+            [class.bg-white]="vizType === 'pie'" [class.shadow-sm]="vizType === 'pie'" [class.text-blue-600]="vizType === 'pie'">
+            <i class="ph-chart-pie"></i>
+          </button>
+          <button type="button" (click)="onVizTypeChange('bar')" [disabled]="groupBy === 'none'"
+            [title]="groupBy === 'none' ? 'Choose a Group By to chart' : 'Bar chart'"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+            [class.bg-white]="vizType === 'bar'" [class.shadow-sm]="vizType === 'bar'" [class.text-blue-600]="vizType === 'bar'">
+            <i class="ph-chart-bar-horizontal"></i>
+          </button>
+          <button type="button" (click)="onVizTypeChange('map')" title="Map"
+            class="h-[28px] w-[30px] flex items-center justify-center rounded text-gray-600"
+            [class.bg-white]="vizType === 'map'" [class.shadow-sm]="vizType === 'map'" [class.text-blue-600]="vizType === 'map'">
+            <i class="ph-map-pin"></i>
+          </button>
+        </div>
+
+        <!-- Table 2 only - scores show as quality-tier badges by default
+             (Excellent/Good/Critical etc.); this toggles the raw
+             percentage/minutes value on alongside the badge. -->
+        <button type="button" *ngIf="mode === 'dqa' && vizType === 'table' && groupBy === 'none'"
+          (click)="toggleDqaPercentages()" [title]="showDqaPercentages ? 'Hide raw scores' : 'Show raw scores'"
+          class="h-[34px] px-2.5 flex items-center gap-1 text-sm rounded border"
+          [class.bg-blue-50]="showDqaPercentages" [class.text-blue-600]="showDqaPercentages" [class.border-blue-300]="showDqaPercentages"
+          [class.bg-gray-100]="!showDqaPercentages" [class.text-gray-700]="!showDqaPercentages" [class.border-gray-300]="!showDqaPercentages">
+          <i class="ph-percent"></i>
+          <span class="hidden sm:inline">%</span>
         </button>
-        <button (click)="onClearSearch()" class="btn-clear">
-          Clear
-        </button>
+
+        <div class="relative columns-menu-wrapper" *ngIf="vizType === 'table' && groupBy === 'none'">
+          <button type="button" (click)="toggleColumnsMenu()" title="Columns"
+            class="h-[34px] px-2.5 flex items-center gap-1 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">
+            <i class="ph-columns"></i>
+            <i class="ph-caret-down text-xs"></i>
+          </button>
+          <div *ngIf="columnsMenuOpen"
+               class="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 max-h-72 overflow-auto">
+            <label *ngFor="let col of columnsConfig" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox" [checked]="col.visible" (change)="toggleColumn(col.key)" />
+              {{ columnLabel(col.key) }}
+            </label>
+          </div>
+        </div>
       </div>
 
     </div>
-    <!-- ── End search controls ─────────────────────────────────────────── -->
+    <!-- ── End search/filter controls ──────────────────────────────────── -->
 
-    <table class="w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
+    <!-- table-fixed with no <colgroup>: every column shares width equally
+         EXCEPT the leading spacer and View, pinned narrow via w-6/w-14 below
+         - without that pin, hiding columns via the Columns menu grows those
+         two (otherwise-empty) slivers by the same equal share as every real
+         column, which is what was pushing data toward the middle and
+         leaving blank margins either side. Content columns fill exactly
+         what's left between those two pinned edges, however many are
+         visible, so VA ID always sits at the left margin and the last
+         visible content column always ends at the right margin. -->
+    <table *ngIf="vizType === 'table' && groupBy === 'none'" class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
 
-      <colgroup>
-        <col style="width:3%">
-        <col style="width:18%">
-        <col style="width:11%">
-        <col style="width:11%">
-        <col style="width:10%">
-        <col style="width:16%">
-        <col style="width:16%">
-        <col style="width:9%">
-        <col style="width:6%">
-      </colgroup>
-
-      <thead class="sticky top-0 z-20 text-xs text-gray-700 uppercase bg-gray-50
-                    dark:bg-gray-700 dark:text-gray-400">
+      <thead class="sticky top-0 z-20 text-xs font-medium tracking-wide text-gray-500 bg-gray-50
+                    border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="p-4"></th>
-          <th scope="col" class="px-6 py-3 text-left">VA ID</th>
-          <th scope="col" class="px-6 py-3 text-left">{{ locationLevel1Label }}</th>
-          <th scope="col" class="px-6 py-3 text-left">{{ locationLevel2Label }}</th>
-          <th scope="col" class="px-6 py-3 text-left">Interview Day</th>
-          <th scope="col" class="px-6 py-3 text-left">Interviewer Name</th>
-          <th scope="col" class="px-6 py-3 text-left">Questionnaire Type</th>
-          <th scope="col" class="px-6 py-3 text-left">Gender</th>
-          <th scope="col" class="px-6 py-3 text-center">View</th>
+          <th scope="col" class="w-6 p-0"></th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left">VA ID</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('region')" (click)="onSort('region')">
+            <span class="flex items-center gap-1">{{ locationLevel1Label }} <i [class]="sortIcon('region')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('district')" (click)="onSort('district')">
+            <span class="flex items-center gap-1">{{ locationLevel2Label }} <i [class]="sortIcon('district')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewDay')">Interview Day</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left" *ngIf="isColumnVisible('interviewerName')">Interviewer Name</th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('questionnaireType')" (click)="onSort('questionnaireType')">
+            <span class="flex items-center gap-1">Instrument Type <i [class]="sortIcon('questionnaireType')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('gender')" (click)="onSort('gender')">
+            <span class="flex items-center gap-1">Gender <i [class]="sortIcon('gender')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseBroad')" (click)="onSort('ccvaCauseBroad')">
+            <span class="flex items-center gap-1">Broad Category <i [class]="sortIcon('ccvaCauseBroad')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseMajor')" (click)="onSort('ccvaCauseMajor')">
+            <span class="flex items-center gap-1">Major Category <i [class]="sortIcon('ccvaCauseMajor')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaCauseSpecific')" (click)="onSort('ccvaCauseSpecific')">
+            <span class="flex items-center gap-1">Specific Cause <i [class]="sortIcon('ccvaCauseSpecific')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('ccvaAlgorithm')" (click)="onSort('ccvaAlgorithm')">
+            <span class="flex items-center gap-1">Algorithm <i [class]="sortIcon('ccvaAlgorithm')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaRrs')" (click)="onSort('dqaRrs')" title="Response Rate Score">
+            <span class="flex items-center gap-1">RRS <i [class]="sortIcon('dqaRrs')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaIcs')" (click)="onSort('dqaIcs')" title="Internal Consistency Score">
+            <span class="flex items-center gap-1">ICS <i [class]="sortIcon('dqaIcs')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaIci')" (click)="onSort('dqaIci')" title="Interviewer Consistency Index">
+            <span class="flex items-center gap-1">ICI <i [class]="sortIcon('dqaIci')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" *ngIf="isColumnVisible('dqaAid')" (click)="onSort('dqaAid')" title="Average Interview Duration">
+            <span class="flex items-center gap-1">AID <i [class]="sortIcon('dqaAid')" class="shrink-0"></i></span>
+          </th>
+          <th scope="col" class="w-14 px-2 py-2.5 font-medium text-center">View</th>
         </tr>
       </thead>
 
       <tbody>
 
         @if((data.length === 0 || !data || data === undefined) && !isLoading) {
-          <tr class="bg-gray-200">
-            <td colspan="9" class="px-6 py-4 text-center">No record was found</td>
+          <tr class="bg-gray-50">
+            <td [attr.colspan]="totalColumns" class="px-4 py-8 text-center text-gray-400">No record was found</td>
           </tr>
         }
 
         @if(isLoading) {
           <tr>
-            <td colspan="9" class="px-6 py-6 text-center bg-gray-200 animate-pulse">
+            <td [attr.colspan]="totalColumns" class="px-4 py-6 text-center bg-gray-50 animate-pulse">
               <div class="flex items-center justify-center h-full">
                 <mat-spinner diameter="30" color="accent"></mat-spinner>
               </div>
@@ -79,25 +213,44 @@
 
         <tr
           *ngFor="let row of data; let i = index"
-          [ngClass]="{ 'bg-white': i % 2 === 0, 'bg-gray-200': i % 2 !== 0 }"
-          class="border-b dark:bg-gray-800 dark:border-gray-700
-                 hover:bg-gray-50 dark:hover:bg-gray-600">
-          <td class="p-4"></td>
-          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white
+          class="border-b border-gray-100 last:border-0 text-gray-600 hover:bg-gray-50
+                 transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
+          <td class="w-6 p-0"></td>
+          <td class="px-4 py-2.5 text-gray-900 dark:text-white
                      max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
               [title]="row.vaId">{{ row.vaId }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('region')"
               [title]="row.region">{{ row.region }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('district')"
               [title]="row.district">{{ row.district }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('interviewDay')"
               [title]="row.interviewDay">{{ row.interviewDay | date:'yyyy-MM-dd' }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('interviewerName')"
               [title]="row.interviewerName">{{ row.interviewerName }}</td>
-          <td class="px-6 py-4 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('questionnaireType')"
               [title]="row.questionnaireType">{{ row.questionnaireType || '—' }}</td>
-          <td class="px-6 py-4">{{ row.gender || '—' }}</td>
-          <td class="px-6 py-4 text-center">
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('gender')">{{ row.gender || '—' }}</td>
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaCauseBroad')"
+              [title]="row.ccvaCauseBroad">{{ row.ccvaCauseBroad || '—' }}</td>
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaCauseMajor')"
+              [title]="row.ccvaCauseMajor">{{ row.ccvaCauseMajor || '—' }}</td>
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaCauseSpecific')"
+              [title]="row.ccvaCauseSpecific">{{ row.ccvaCauseSpecific || '—' }}</td>
+          <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('ccvaAlgorithm')"
+              [title]="row.ccvaAlgorithm">{{ row.ccvaAlgorithm || '—' }}</td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaRrs')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaRrs, field: 'dqaRrs' }"></ng-container>
+          </td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIcs')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaIcs, field: 'dqaIcs' }"></ng-container>
+          </td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaIci')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaIci, field: 'dqaIci' }"></ng-container>
+          </td>
+          <td class="px-4 py-2.5" *ngIf="isColumnVisible('dqaAid')">
+            <ng-container *ngTemplateOutlet="dqaCell; context: { value: row.dqaAid, field: 'dqaAid' }"></ng-container>
+          </td>
+          <td class="w-14 px-2 py-2.5 text-center">
             <a class="font-medium text-blue-600 dark:text-blue-500
                       hover:underline hover:cursor-pointer"
                (click)="onOpenVA(row)">
@@ -109,8 +262,28 @@
       </tbody>
     </table>
 
+    <!-- One shared template for all 4 DQA score cells - the quality-tier
+         badge (Excellent/Good/Critical, Too Short/Normal/Too Long) is the
+         default view; the raw percentage/minutes value only shows once
+         "Show %" is toggled on, right after the badge. A gray "No Data"
+         pill (no badge, DQA analytics not run for this record yet) is the
+         same convention General DQA's own per-record badge table uses. -->
+    <ng-template #dqaCell let-value="value" let-field="field">
+      <span class="inline-flex items-center gap-1.5">
+        <ng-container *ngIf="dqaBadge(value, field) as tier; else noDqaData">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold" [ngClass]="[tier.bgClass, tier.textClass]">
+            {{ tier.label }}
+          </span>
+        </ng-container>
+        <ng-template #noDqaData>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No Data</span>
+        </ng-template>
+        <span *ngIf="showDqaPercentages" class="text-xs text-gray-500">{{ dqaScoreDisplay(value, field) }}</span>
+      </span>
+    </ng-template>
+
     <div class="sticky bottom-0 z-20 px-5 py-2 bg-white border-t flex flex-col xs:flex-row"
-         *ngIf="totalRecords > 0">
+         *ngIf="vizType === 'table' && groupBy === 'none' && totalRecords > 0">
       <mat-paginator
         [showFirstLastButtons]="true"
         [pageSizeOptions]="pageSizeOptions"
@@ -119,6 +292,72 @@
         [pageSize]="limit"
         (page)="onPageChange($event)">
       </mat-paginator>
+    </div>
+
+    <!-- ── Group By summary: Group/Count/Percentage ────────────────────────
+         Small result set (a handful of group values) - no pagination, same
+         reasoning as CCVA's own Display Data table's Group By. -->
+    <div class="relative" *ngIf="vizType === 'table' && groupBy !== 'none'">
+      <table class="w-full table-fixed text-sm text-left text-gray-600 dark:text-gray-400">
+        <thead class="text-xs font-medium tracking-wide text-gray-500 bg-gray-50
+                      border-b border-gray-200 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-4 py-2.5 font-medium text-left cursor-pointer select-none" (click)="onSort('group')">
+              <span class="flex items-center gap-1">{{ labelFromChoices(groupByChoices, groupBy) }} <i [class]="sortIcon('group')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium text-right cursor-pointer select-none" (click)="onSort('count')">
+              <span class="flex items-center justify-end gap-1">Count <i [class]="sortIcon('count')" class="shrink-0"></i></span>
+            </th>
+            <th scope="col" class="px-4 py-2.5 font-medium text-right">Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="groupedData.length === 0 && !isLoadingGrouped">
+            <td colspan="3" class="px-4 py-8 text-center text-gray-400">No record was found</td>
+          </tr>
+          <tr *ngFor="let row of groupedData"
+              class="border-b border-gray-100 last:border-0 text-gray-600 hover:bg-gray-50 transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
+            <td class="px-4 py-2.5 text-gray-900 dark:text-gray-200">{{ row.group }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ row.count | number }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ percentageFor(row) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="isLoadingGrouped"
+           class="absolute inset-0 z-10 flex items-center justify-center bg-white/60 pointer-events-none">
+        <i class="ph-spinner text-2xl text-gray-400 animate-spin"></i>
+      </div>
+    </div>
+
+    <!-- ── Pie / Bar chart ──────────────────────────────────────────────── -->
+    <div class="relative p-4" *ngIf="vizType === 'pie' || vizType === 'bar'">
+      <div class="text-center mb-3">
+        <div class="text-lg font-semibold text-gray-900 leading-snug">{{ groupChartTitle }}</div>
+        <div class="text-xs text-gray-400 mt-0.5">{{ groupChartSubtitle }}</div>
+      </div>
+      <div class="w-full h-[420px]">
+        <canvas baseChart [datasets]="groupChartData" [labels]="groupChartLabels"
+          [options]="vizType === 'pie' ? groupPieChartOptions : groupBarChartOptions"
+          [type]="vizType === 'pie' ? 'pie' : 'bar'">
+        </canvas>
+      </div>
+
+      <div *ngIf="isLoadingGrouped"
+           class="absolute inset-0 z-10 flex items-center justify-center bg-white/60 pointer-events-none">
+        <i class="ph-spinner text-2xl text-gray-400 animate-spin"></i>
+      </div>
+      <div *ngIf="!isLoadingGrouped && groupedData.length === 0" class="text-center text-sm text-gray-400 py-8">
+        No record was found
+      </div>
+    </div>
+
+    <!-- ── Map ──────────────────────────────────────────────────────────── -->
+    <div class="p-4" *ngIf="vizType === 'map'">
+      <app-va-record-map-view [points]="mapPoints" [groupBy]="groupBy" [isLoading]="isLoadingMap"></app-va-record-map-view>
+      <p class="text-xs text-gray-400 mt-2">
+        Showing {{ mapPoints.length | number }} point{{ mapPoints.length === 1 ? '' : 's' }} with GPS coordinates matching the current search/filter.
+      </p>
     </div>
 
   </div>

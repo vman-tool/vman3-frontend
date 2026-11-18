@@ -3,7 +3,6 @@ import { AuthService } from '../../services/authentication/auth.service';
 import { Router } from '@angular/router';
 import { lastValueFrom, map } from 'rxjs';
 import { VaRecordsService } from 'app/modules/pcva/services/va-records/va-records.service';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
 import { GenericIndexedDbService } from 'app/shared/services/indexedDB/generic-indexed-db.service';
 import { OBJECTSTORE_VA_QUESTIONS } from 'app/shared/constants/indexedDB.constants';
@@ -22,10 +21,9 @@ export class SidebarComponent {
   selectedSubMenu: number = 0;
 
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private router: Router,
     private vaRecordsService: VaRecordsService,
-    private indexedDBService: IndexedDBService,
     private genericIndexedDBService: GenericIndexedDbService
   ) {
   }
@@ -48,6 +46,20 @@ export class SidebarComponent {
         icon_asset: '../../../../assets/icons/ind-record.svg',
         route: '/records',
         hasAccess: true,
+        subMenuItems: [
+          {
+            displayText: 'Table 1',
+            icon: 'ph ph-table',
+            route: '/table-1',
+            hasAccess: true,
+          },
+          {
+            displayText: 'Table 2',
+            icon: 'ph ph-gauge',
+            route: '/table-2',
+            hasAccess: true,
+          },
+        ],
       },
       {
         displayText: 'Data Quality',
@@ -226,10 +238,14 @@ export class SidebarComponent {
     this.selectedItem =
       this.selectedItem === menuIndex && !subMenuIndex ? undefined : menuIndex;
 
+    // A real submenu click (Table 1/Table 2, General DQA/CCVA Errors,
+    // etc.) is the only thing that marks a submenu "active" - clicking
+    // the main menu header above it only expands/collapses the list (see
+    // the template's [routerLink], which no longer navigates for a menu
+    // item that owns a submenu), so it must leave selectedSubMenu alone
+    // rather than defaulting to the first entry every time.
     if (subMenuIndex) {
       this.selectedSubMenu = menuIndex + subMenuIndex;
-    } else {
-      this.selectedSubMenu = menuIndex + 1;
     }
   }
 

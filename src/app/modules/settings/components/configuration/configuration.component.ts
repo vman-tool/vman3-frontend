@@ -5,7 +5,6 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { OdkConfigModel, settingsConfigData } from '../../interface';
 import { SettingConfigService } from '../../services/settings_configs.service';
-import { IndexedDBService } from 'app/shared/services/indexedDB/indexed-db.service';
 import { forkJoin, lastValueFrom } from 'rxjs';
 import { AuthService } from 'app/core/services/authentication/auth.service';
 import * as privileges from 'app/shared/constants/privileges.constants';
@@ -487,7 +486,6 @@ export class ConfigurationComponent {
 
   constructor(
     private settingConfigService: SettingConfigService,
-    private indexedDBService: IndexedDBService,
     private genericIndexedDbService: GenericIndexedDbService,
     private authService: AuthService,
     private vaRecordsService: VaRecordsService,

@@ -45,7 +45,6 @@ describe('SidebarComponent (unit)', () => {
         of(overrides.questionsResponse ?? { data: [{ name: 'id10019' }] })
       ),
     } as any;
-    const indexedDBService = {} as any;
     const genericIndexedDBService = {
       addDataAsObjectValues: jest.fn().mockResolvedValue(undefined),
       addDataAsIs: jest.fn().mockResolvedValue(undefined),
@@ -55,7 +54,6 @@ describe('SidebarComponent (unit)', () => {
       authService,
       router,
       vaRecordsService,
-      indexedDBService,
       genericIndexedDBService
     );
 
@@ -108,6 +106,43 @@ describe('SidebarComponent (unit)', () => {
       const menuItem = { route: '/dashboard' };
 
       expect(instance.getCollapsedRoute(menuItem)).toBe('/dashboard');
+    });
+  });
+
+  // Clicking a main menu item (VA Records, Data Quality, PCVA, Settings)
+  // used to also select its first submenu (selectedSubMenu defaulted to
+  // menuIndex + 1), which combined with the template's [routerLink] meant
+  // clicking the header auto-navigated into Table 1/General DQA/Coders/
+  // Configurations. The template no longer puts a routerLink on a header
+  // that owns a submenu, and onSelectMenu must now only toggle expand/
+  // collapse (selectedItem) without touching selectedSubMenu at all - only
+  // an actual submenu click (subMenuIndex given) does that.
+  describe('onSelectMenu', () => {
+    it('clicking a main menu header toggles it open without selecting any submenu', () => {
+      const { instance } = makeComponent();
+
+      instance.onSelectMenu(2); // e.g. "Data Quality", no subMenuIndex
+
+      expect(instance.selectedItem).toBe(2);
+      expect(instance.selectedSubMenu).toBe(0); // unchanged from its initial value
+    });
+
+    it('clicking the already-open main menu header collapses it again', () => {
+      const { instance } = makeComponent();
+      instance.onSelectMenu(2);
+
+      instance.onSelectMenu(2);
+
+      expect(instance.selectedItem).toBeUndefined();
+    });
+
+    it('clicking a submenu entry selects both the main item and that submenu', () => {
+      const { instance } = makeComponent();
+
+      instance.onSelectMenu(2, 1); // e.g. Data Quality > CCVA Errors
+
+      expect(instance.selectedItem).toBe(2);
+      expect(instance.selectedSubMenu).toBe(3);
     });
   });
 
