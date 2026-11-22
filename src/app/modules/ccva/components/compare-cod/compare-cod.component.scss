@@ -1,0 +1,8 @@
+// app-custom-dropdown's compact mode (py-1 text-xs) renders noticeably
+// shorter than the h-[34px] VA ID input / Search / Clear buttons on the row
+// above it - same override as ccva-results.component.scss, scoped here to
+// just the dropdowns on this component's Filter By / Filter Value /
+// Algorithm row.
+:host ::ng-deep .ccva-filter-row app-custom-dropdown select {
+  height: 34px;
+}

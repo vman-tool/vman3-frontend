@@ -15,10 +15,10 @@
           <th scope="col" class="px-6 py-2.5 font-medium">Elapsed Time</th>
           <th scope="col" class="px-6 py-2.5 font-medium">Start Range</th>
           <th scope="col" class="px-6 py-2.5 font-medium">End Range</th>
-          <th scope="col" class="px-6 py-2.5 font-medium">Default Status</th>
+          <th scope="col" class="px-6 py-2.5 font-medium">Status</th>
           <!-- selection tick: no heading, sized just for the icon -->
           <th scope="col" class="w-8 px-2 py-2.5"><span class="sr-only">Selected</span></th>
-          <th scope="col" class="px-6 py-2.5 font-medium">Actions</th>
+          <th scope="col" class="px-6 py-2.5 font-medium"><span class="sr-only">Actions</span></th>
         </tr>
       </thead>
       <tbody>
@@ -77,9 +77,9 @@
           <!-- stopPropagation so using the menu doesn't also toggle the row -->
           <td class="px-6 py-2.5" (click)="$event.stopPropagation()">
             <button
-              class="px-2.5 py-1 text-xs font-medium text-gray-600 border border-gray-200 rounded hover:bg-gray-100 hover:text-gray-900"
-              (click)="toggleDropdown(i, row, $event)">
-              Actions
+              class="p-1.5 text-gray-500 border border-gray-200 rounded hover:bg-gray-100 hover:text-gray-900"
+              (click)="toggleDropdown(i, row, $event)" aria-label="Row actions">
+              <i class="ph ph-dots-three text-base"></i>
             </button>
           </td>
         </tr>
@@ -112,8 +112,11 @@
 
   <!-- Row actions menu - a single fixed-position portal rendered outside the
        overflow-x-auto wrapper above, so it floats over the page instead of
-       being clipped by that wrapper for rows near the table's edge. -->
-  <div *ngIf="dropdownOpen !== null && dropdownRow" class="fixed z-50 w-48 py-2 bg-white rounded-lg shadow-xl"
+       being clipped by that wrapper for rows near the table's edge.
+       toggleDropdown() flips this above the trigger button when there isn't
+       room below (bottom-of-page rows); max-h/overflow-y here is a second,
+       independent safety net in case the viewport is too short even for that. -->
+  <div *ngIf="dropdownOpen !== null && dropdownRow" class="fixed z-50 w-48 py-2 bg-white rounded-lg shadow-xl max-h-[calc(100vh-1rem)] overflow-y-auto"
     [style.top.px]="dropdownPosition.top" [style.left.px]="dropdownPosition.left"
     (click)="$event.stopPropagation()">
     <a (click)="onRowClick(dropdownRow.id); closeDropdown()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
@@ -121,6 +124,13 @@
     </a>
     <a (click)="onDisplayData(dropdownRow)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
       Display Data
+    </a>
+    <a (click)="compareCoD()" class="block px-4 py-2 text-sm cursor-pointer"
+      [ngClass]="selectedRows.length === 2
+        ? 'text-blue-700 hover:bg-blue-50 font-medium'
+        : 'text-gray-400 hover:bg-gray-50'">
+      Compare COD
+      <span *ngIf="selectedRows.length !== 2" class="text-xs font-normal ml-1">(select 2)</span>
     </a>
     <a (click)="compareCSMF()" class="block px-4 py-2 text-sm cursor-pointer"
       [ngClass]="selectedRows.length === 2

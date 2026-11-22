@@ -7,6 +7,7 @@ import { ListCcvaComponent } from './components/list-ccva/list-ccva.component';
 import { ViewCcvaComponent } from './components/view-ccva/view-ccva.component';
 import { CompareCcvaComponent } from './components/compare-ccva/compare-ccva.component';
 import { CcvaResultsComponent } from './components/ccva-results/ccva-results.component';
+import { CompareCodComponent } from './components/compare-cod/compare-cod.component';
 
 const routes: Routes = [
   {
@@ -18,6 +19,7 @@ const routes: Routes = [
       { path: 'view/:id',       component: ViewCcvaComponent },
       { path: 'data/:task_id',  component: CcvaResultsComponent },
       { path: 'compare/:id1/:id2', component: CompareCcvaComponent },
+      { path: 'compare-cod/:task_id_1/:task_id_2', component: CompareCodComponent },
       { path: '',               component: ListCcvaComponent },
     ],
   },

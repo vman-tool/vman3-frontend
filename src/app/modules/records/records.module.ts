@@ -12,6 +12,7 @@ import { DataFilterComponent } from '../../shared/dialogs/filters/data-filter/da
 import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-filters.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
+import { CopyableIdComponent } from '../../shared/components/copyable-id/copyable-id.component';
 import { BaseChartDirective } from 'ng2-charts';
 
 @NgModule({
@@ -31,6 +32,7 @@ import { BaseChartDirective } from 'ng2-charts';
     MatProgressSpinnerModule,
     VaFiltersComponent,
     CustomDropdownComponent,
+    CopyableIdComponent,
     BaseChartDirective,
   ],
   exports: [RecordsComponent],
