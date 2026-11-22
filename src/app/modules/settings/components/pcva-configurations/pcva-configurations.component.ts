@@ -59,7 +59,21 @@ export class PcvaConfigurationsComponent {
 
   ngOnInit(){
     this.pcvaSettingsService.getPCVAConfigurations().subscribe((response: any) => {
-      this.config.set(response?.data ? response?.data : this.config);
+      // Before any configuration has ever been saved, the backend returns
+      // data: [] (an empty array, not null) - which is truthy in JS, so the
+      // old `response?.data ? response?.data : this.config` check picked
+      // the empty array over the component's own sensible defaults. The
+      // signal's value became [], and the very next updateConfig() call
+      // spread that into {} (an empty array/object spreads to no own
+      // properties), silently dropping vaAssignmentLimit/concordanceLevel -
+      // both required fields on the backend - from every save from then on,
+      // which the backend rejected with a 422 the UI only ever showed as
+      // "contact your IT administrator". Only replace the defaults with a
+      // real, non-array configuration object.
+      const data = response?.data;
+      if (data && !Array.isArray(data)) {
+        this.config.set(data);
+      }
     });
   }
 
