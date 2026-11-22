@@ -635,19 +635,30 @@
                   <span class="font-medium text-amber-700">away from</span> it. Longer
                   bars moved it further. Bars compare within this record only.
                 </p>
+                <div class="grid grid-cols-[1fr_minmax(90px,140px)_96px] gap-3 px-0.5 mb-1 text-[11px] tracking-wide text-gray-400 uppercase">
+                  <span>Variable</span>
+                  <span>Response</span>
+                  <span class="text-right">Direction</span>
+                </div>
                 <div class="space-y-1.5">
-                  <div *ngFor="let c of ml.contributions" class="flex gap-3 items-center">
-                    <span class="flex-1 text-sm text-gray-700 truncate" [title]="c.variable + ' — ' + c.label">
+                  <div *ngFor="let c of ml.contributions"
+                    class="grid grid-cols-[1fr_minmax(90px,140px)_96px] gap-3 items-center">
+                    <span class="text-sm text-gray-700 truncate" [title]="c.variable + ' — ' + c.label">
                       {{ c.label }}
                     </span>
-                    <span class="w-24 text-xs text-right"
-                      [ngClass]="c.weight > 0 ? 'text-blue-700' : 'text-amber-700'">
-                      {{ c.direction }}
+                    <span class="text-sm text-gray-900 capitalize truncate" [title]="c.response">
+                      {{ c.response || '—' }}
                     </span>
-                    <div class="w-24 h-2 bg-gray-100 rounded overflow-hidden shrink-0">
-                      <div class="h-full rounded"
-                        [ngClass]="c.weight > 0 ? 'bg-blue-500' : 'bg-amber-500'"
-                        [style.width.%]="contributionWidth(c, ml.contributions)"></div>
+                    <div class="flex gap-2 items-center justify-end">
+                      <span class="text-xs"
+                        [ngClass]="c.weight > 0 ? 'text-blue-700' : 'text-amber-700'">
+                        {{ c.direction }}
+                      </span>
+                      <div class="w-10 h-2 bg-gray-100 rounded overflow-hidden shrink-0">
+                        <div class="h-full rounded"
+                          [ngClass]="c.weight > 0 ? 'bg-blue-500' : 'bg-amber-500'"
+                          [style.width.%]="contributionWidth(c, ml.contributions)"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
