@@ -238,6 +238,24 @@ export class ListCcvaComponent implements OnInit {
     return this.selectedRows.some(r => r.id === row.id);
   }
 
+  // Compare CoD navigates on task_id (ccva_results is keyed by task_id, not
+  // the ccva-entry id compareCSMF uses) - same key onDisplayData() uses.
+  compareCoD(): void {
+    this.closeDropdown();
+    if (this.selectedRows.length !== 2) {
+      this.snackBar.open('Select exactly 2 runs using the checkboxes to compare.', 'Close', {
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        duration: 3500,
+      });
+      return;
+    }
+    this.router.navigate(
+      ['/ccva/compare-cod', this.selectedRows[0].task_id, this.selectedRows[1].task_id],
+      { queryParams: { algo1: this.selectedRows[0].algorithm, algo2: this.selectedRows[1].algorithm } }
+    );
+  }
+
   compareCSMF(): void {
     this.closeDropdown();
     if (this.selectedRows.length !== 2) {
@@ -262,7 +280,24 @@ export class ListCcvaComponent implements OnInit {
       return;
     }
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    this.dropdownPosition = { top: rect.bottom + 4, left: rect.right - 192 }; // 192px = w-48
+    const left = rect.right - 192; // 192px = w-48
+
+    // The menu always has the same 6 items (Display CSMF, Display Data,
+    // Compare CSMF, Set/Clear Default, Download Data, Delete - exactly one
+    // of Set/Clear shows at a time), so a fixed height estimate is reliable.
+    // For a row near the bottom of the page, opening downward (the default)
+    // would push the last items (Download Data, Delete) off-screen with no
+    // way to reach them - flip the menu above the button instead whenever
+    // there isn't enough room below. The template's max-height/overflow-y is
+    // a second, independent safety net for the rare case even this estimate
+    // falls short.
+    const MENU_HEIGHT_ESTIMATE = 240;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const top = spaceBelow < MENU_HEIGHT_ESTIMATE
+      ? Math.max(8, rect.top - 4 - MENU_HEIGHT_ESTIMATE)
+      : rect.bottom + 4;
+
+    this.dropdownPosition = { top, left };
     this.dropdownRow = row;
     this.dropdownOpen = index;
   }

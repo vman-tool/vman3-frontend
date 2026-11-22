@@ -16,8 +16,10 @@ import { VaFiltersComponent } from '../../shared/dialogs/filters/va-filters/va-f
 import { ViewCcvaComponent } from './components/view-ccva/view-ccva.component';
 import { CompareCcvaComponent } from './components/compare-ccva/compare-ccva.component';
 import { CustomDropdownComponent } from '../../shared/components/custom-dropdown/custom-dropdown.component';
+import { CopyableIdComponent } from '../../shared/components/copyable-id/copyable-id.component';
 import { CcvaResultsComponent } from './components/ccva-results/ccva-results.component';
 import { CcvaMapViewComponent } from './components/ccva-map-view/ccva-map-view.component';
+import { CompareCodComponent } from './components/compare-cod/compare-cod.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +31,7 @@ import { CcvaMapViewComponent } from './components/ccva-map-view/ccva-map-view.c
     CompareCcvaComponent,
     CcvaResultsComponent,
     CcvaMapViewComponent,
+    CompareCodComponent,
   ],
   imports: [
     CommonModule,
@@ -42,6 +45,7 @@ import { CcvaMapViewComponent } from './components/ccva-map-view/ccva-map-view.c
     CcvaRoutingModule,
     VaFiltersComponent,
     CustomDropdownComponent,
+    CopyableIdComponent,
   ],
   // exports: [CcvaGraphsComponent],
 })

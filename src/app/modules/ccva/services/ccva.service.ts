@@ -125,6 +125,52 @@ export class CcvaService {
     return this.http.get(`${this.configService.API_URL}/ccva/${taskId}/filter-options`, {});
   }
 
+  // "Compare CoD": the individual VA-level classifications for TWO runs,
+  // inner-joined by VA id so each row carries both algorithms' Cause 1/2 +
+  // probability side by side. Same pagination/search/sort shape as
+  // get_ccva_individual_results, plus filterAlgo ('1' or '2') which of the
+  // two runs filterValue's Cause Specific filter applies to.
+  get_ccva_compare_results(
+    taskId1: string,
+    taskId2: string,
+    pageNumber: number = 1,
+    limit: number = 10,
+    searchVaId?: string,
+    filterBy?: string,
+    filterValue?: string,
+    filterAlgo?: string,
+    sortBy?: string,
+    sortDir: 'asc' | 'desc' = 'asc'
+  ) {
+    let params = new HttpParams()
+      .set('page_number', pageNumber.toString())
+      .set('limit', limit.toString())
+      .set('sort_dir', sortDir);
+    if (searchVaId) {
+      params = params.set('search_va_id', searchVaId);
+    }
+    if (filterBy && filterValue) {
+      params = params.set('filter_by', filterBy).set('filter_value', filterValue);
+      if (filterAlgo) {
+        params = params.set('filter_algo', filterAlgo);
+      }
+    }
+    if (sortBy) {
+      params = params.set('sort_by', sortBy);
+    }
+    return this.http.get(
+      `${this.configService.API_URL}/ccva/compare/${taskId1}/${taskId2}/results`, { params }
+    );
+  }
+
+  // Filter Value choices for the Compare CoD table, plus the matched/task1/
+  // task2 record-count transparency numbers shown above that table.
+  get_ccva_compare_filter_options(taskId1: string, taskId2: string) {
+    return this.http.get(
+      `${this.configService.API_URL}/ccva/compare/${taskId1}/${taskId2}/filter-options`, {}
+    );
+  }
+
   // Counts of the (already filtered) individual results grouped by one
   // dimension - backs the Display Data table's Group By + Table/Pie/Bar
   // views. Same search/filter params as get_ccva_individual_results, minus
