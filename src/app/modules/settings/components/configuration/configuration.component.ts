@@ -469,17 +469,27 @@ export class ConfigurationComponent {
   mlModelLoading = false;
   mlModelError = '';
   mlUploadFile: File | null = null;
-  mlUploadVersion = '';
-  mlUploadNotes = '';
-  mlUploadAccuracy: number | null = null;
-  mlUploadF1Macro: number | null = null;
-  mlUploadF1Weighted: number | null = null;
-  mlUploadCvF1Macro: number | null = null;
-  mlUploadNTraining: number | null = null;
-  mlUploadNTest: number | null = null;
   mlUploading = false;
   mlUploadSuccess = '';
   mlUploadError = '';
+  // Nothing here is hand-typed anymore - version, notes, and every metric are
+  // always read from the file itself (whoever trained the model controls
+  // this, not whoever happens to upload it). Populated by
+  // validateSelectedFile() right after a file is chosen (not after upload),
+  // so what's about to be deployed is visible before you commit to it.
+  // uploadMlModel() is only enabled once this is non-null.
+  mlValidating = false;
+  mlValidated: { version: string; algorithm: string; notes: string; metrics: any } | null = null;
+  // Last successful upload/restore's resolved values, shown in the success
+  // banner - same shape, different moment (confirmation vs. pre-upload preview).
+  mlUploadDetected: { version: string; notes: string; metrics: any } | null = null;
+
+  // Model Versions table: active entry + history, newest first, paginated.
+  mlVersionsPage = 0;
+  readonly mlVersionsPageSize = 4;
+  mlVersionMenuOpenFor: string | null = null; // archive path of the row whose ⋮ menu is open ('active' for the live one)
+  mlVersionActionError = '';
+  mlVersionActionBusy = false;
 
   // Cache state to prevent unnecessary reloads
   private dataLoaded = false;
@@ -1097,46 +1107,70 @@ export class ConfigurationComponent {
     this.mlUploadFile = input.files?.[0] ?? null;
     this.mlUploadSuccess = '';
     this.mlUploadError = '';
+    this.mlUploadDetected = null;
+    this.mlValidated = null;
+    if (this.mlUploadFile) {
+      this.validateSelectedFile();
+    }
+  }
+
+  /** Inspects the selected file immediately (no deploy) so detected metrics,
+   * or a clear validation error, show up right after picking the file -
+   * not only after clicking Upload. See settings_routes.py's /ml-model/validate. */
+  validateSelectedFile(): void {
+    if (!this.mlUploadFile) { return; }
+    const form = new FormData();
+    form.append('file', this.mlUploadFile);
+
+    this.mlValidating = true;
+    this.mlUploadError = '';
+    this.mlValidated = null;
+
+    this.settingConfigService.validateMlModel(form).subscribe({
+      next: (res: any) => {
+        const d = res?.data ?? {};
+        this.mlValidated = { version: d.version, algorithm: d.algorithm, notes: d.notes, metrics: d.metrics };
+        this.mlValidating = false;
+      },
+      error: (err: any) => {
+        this.mlUploadError = err?.error?.detail ?? 'This file could not be validated.';
+        this.mlUploadFile = null; // invalid file - don't leave it selected/uploadable
+        this.mlValidating = false;
+      },
+    });
   }
 
   uploadMlModel(): void {
-    if (!this.mlUploadFile) { this.mlUploadError = 'Please select a .pkl file.'; return; }
-    if (!this.mlUploadVersion.trim()) { this.mlUploadError = 'Version is required.'; return; }
-    if (this.mlUploadAccuracy === null || this.mlUploadF1Macro === null ||
-        this.mlUploadF1Weighted === null || this.mlUploadNTraining === null || this.mlUploadNTest === null) {
-      this.mlUploadError = 'All metric fields are required.'; return;
+    if (!this.mlUploadFile || !this.mlValidated) {
+      this.mlUploadError = 'Select a valid .pkl file first.';
+      return;
     }
 
+    // Nothing to send but the file itself - version/notes/metrics are all
+    // read from it server-side (see /ml-model/validate above and
+    // upload_ml_model in settings_routes.py).
     const form = new FormData();
     form.append('file', this.mlUploadFile);
-    form.append('version', this.mlUploadVersion.trim());
-    form.append('notes', this.mlUploadNotes.trim());
-    form.append('accuracy', String(this.mlUploadAccuracy));
-    form.append('f1_macro', String(this.mlUploadF1Macro));
-    form.append('f1_weighted', String(this.mlUploadF1Weighted));
-    form.append('n_training_samples', String(this.mlUploadNTraining));
-    form.append('n_test_samples', String(this.mlUploadNTest));
-    if (this.mlUploadCvF1Macro !== null) {
-      form.append('cv_f1_macro', String(this.mlUploadCvF1Macro));
-    }
 
     this.mlUploading = true;
     this.mlUploadSuccess = '';
     this.mlUploadError = '';
+    this.mlUploadDetected = null;
 
     this.settingConfigService.uploadMlModel(form).subscribe({
       next: (res: any) => {
         this.mlModelInfo = res?.data ?? this.mlModelInfo;
-        this.mlUploadSuccess = `Model v${this.mlUploadVersion} uploaded successfully.`;
+        this.mlVersionsPage = 0;
+        this.mlUploadSuccess = `Model ${res?.data?.version} uploaded successfully.`;
+        if (res?.data) {
+          this.mlUploadDetected = {
+            version: res.data.version,
+            notes: res.data.notes,
+            metrics: res.data.metrics,
+          };
+        }
         this.mlUploadFile = null;
-        this.mlUploadVersion = '';
-        this.mlUploadNotes = '';
-        this.mlUploadAccuracy = null;
-        this.mlUploadF1Macro = null;
-        this.mlUploadF1Weighted = null;
-        this.mlUploadCvF1Macro = null;
-        this.mlUploadNTraining = null;
-        this.mlUploadNTest = null;
+        this.mlValidated = null;
         this.mlUploading = false;
       },
       error: (err: any) => {
@@ -1149,5 +1183,121 @@ export class ConfigurationComponent {
   fmtPct(v: number | null | undefined): string {
     if (v == null) return '—';
     return (v * 100).toFixed(1) + '%';
+  }
+
+  // ── Model Versions table: active + history combined, paginated ─────────────
+
+  /** Active entry first (synthetic row, archive=null, isActive=true), then
+   * history newest-replaced-first (the registry stores it oldest-first). */
+  get mlAllVersions(): any[] {
+    if (!this.mlModelInfo) { return []; }
+    const active = {
+      archive: null,
+      version: this.mlModelInfo.version,
+      algorithm: this.mlModelInfo.algorithm,
+      trained_at: this.mlModelInfo.trained_at,
+      replaced_at: null,
+      isActive: true,
+    };
+    const history = (this.mlModelInfo.history ?? []).slice().reverse()
+      .map((h: any) => ({ ...h, isActive: false }));
+    return [active, ...history];
+  }
+
+  get mlVersionsTotalPages(): number {
+    return Math.max(1, Math.ceil(this.mlAllVersions.length / this.mlVersionsPageSize));
+  }
+
+  get mlPagedVersions(): any[] {
+    const start = this.mlVersionsPage * this.mlVersionsPageSize;
+    return this.mlAllVersions.slice(start, start + this.mlVersionsPageSize);
+  }
+
+  mlVersionsPrevPage(): void {
+    if (this.mlVersionsPage > 0) { this.mlVersionsPage--; }
+  }
+
+  mlVersionsNextPage(): void {
+    if (this.mlVersionsPage < this.mlVersionsTotalPages - 1) { this.mlVersionsPage++; }
+  }
+
+  toggleVersionMenu(key: string, event?: Event): void {
+    event?.stopPropagation();
+    this.mlVersionMenuOpenFor = this.mlVersionMenuOpenFor === key ? null : key;
+  }
+
+  @HostListener('document:click')
+  closeVersionMenu(): void {
+    this.mlVersionMenuOpenFor = null;
+  }
+
+  confirmRestoreVersion(row: any): void {
+    this.mlVersionMenuOpenFor = null;
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = '50vw';
+    dialogConfig.panelClass = 'cdk-overlay-pane';
+    dialogConfig.data = {
+      modalMessage: `Re-deploy ${row.version} (${row.algorithm})? The current active model `
+        + `(${this.mlModelInfo?.version}) will be archived, not lost - you can restore it again later.`,
+      cancelButtonText: 'Cancel',
+      confirmationButtonText: 'Reload',
+      confirmationButtonColor: 'blue',
+    };
+    this.dialog.open(SharedConfirmationComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => { if (response) this.restoreVersion(row.archive); },
+    });
+  }
+
+  private restoreVersion(archive: string): void {
+    this.mlVersionActionError = '';
+    this.mlVersionActionBusy = true;
+    this.settingConfigService.restoreMlModelVersion(archive).subscribe({
+      next: (res: any) => {
+        this.mlModelInfo = res?.data ?? this.mlModelInfo;
+        this.mlVersionsPage = 0;
+        this.mlVersionActionBusy = false;
+      },
+      error: (err: any) => {
+        this.mlVersionActionError = err?.error?.detail ?? 'Could not restore that version.';
+        this.mlVersionActionBusy = false;
+      },
+    });
+  }
+
+  confirmDeleteVersion(row: any): void {
+    this.mlVersionMenuOpenFor = null;
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = '50vw';
+    dialogConfig.panelClass = 'cdk-overlay-pane';
+    dialogConfig.data = {
+      modalMessage: `Permanently delete ${row.version} (${row.algorithm})? This removes the archived `
+        + `file and cannot be undone.`,
+      cancelButtonText: 'Cancel',
+      confirmationButtonText: 'Delete',
+      confirmationButtonColor: 'red',
+    };
+    this.dialog.open(SharedConfirmationComponent, dialogConfig).afterClosed().subscribe({
+      next: (response) => { if (response) this.deleteVersion(row.archive); },
+    });
+  }
+
+  private deleteVersion(archive: string): void {
+    this.mlVersionActionError = '';
+    this.mlVersionActionBusy = true;
+    this.settingConfigService.deleteMlModelVersion(archive).subscribe({
+      next: (res: any) => {
+        this.mlModelInfo = res?.data ?? this.mlModelInfo;
+        // If deleting emptied the current page (e.g. last row on the last
+        // page), step back a page rather than showing a page with 0 rows.
+        if (this.mlVersionsPage > 0 && this.mlPagedVersions.length === 0) { this.mlVersionsPage--; }
+        this.mlVersionActionBusy = false;
+      },
+      error: (err: any) => {
+        this.mlVersionActionError = err?.error?.detail ?? 'Could not delete that version.';
+        this.mlVersionActionBusy = false;
+      },
+    });
   }
 }

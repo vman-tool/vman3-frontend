@@ -281,6 +281,35 @@ export class SettingConfigService {
       }));
   }
 
+  /** Inspects a .pkl without deploying it - returns detected metrics, or a
+   * clear validation error, before the admin commits to uploading. */
+  validateMlModel(formData: FormData): Observable<any> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/ml-model/validate`, formData)
+      .pipe(catchError(err => {
+        console.error('ml model validate error:', err);
+        throw err;
+      }));
+  }
+
+  restoreMlModelVersion(archive: string): Observable<any> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/ml-model/restore`, { archive })
+      .pipe(catchError(err => {
+        console.error('ml model restore error:', err);
+        throw err;
+      }));
+  }
+
+  deleteMlModelVersion(archive: string): Observable<any> {
+    return this.http
+      .post<any>(`${this.configService.API_URL}/settings/ml-model/delete-version`, { archive })
+      .pipe(catchError(err => {
+        console.error('ml model delete-version error:', err);
+        throw err;
+      }));
+  }
+
   /**
    * Read the stored VA data dictionary. Does not contact ODK Central.
    *

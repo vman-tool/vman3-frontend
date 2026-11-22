@@ -1,0 +1,13 @@
+<span (click)="toggle($event)" [title]="value || ''"
+      class="copyable-id-wrapper cursor-pointer hover:text-blue-700 hover:underline decoration-dotted">{{ value }}</span>
+
+<div *ngIf="open"
+     class="copyable-id-wrapper fixed z-50 min-w-[200px] max-w-[360px] py-2 px-3 bg-white border border-gray-200 rounded-lg shadow-xl text-xs"
+     [style.top.px]="position.top" [style.left.px]="position.left">
+  <div class="mb-1.5 text-gray-900 font-medium break-all select-all">{{ value }}</div>
+  <button type="button" (click)="copy($event)"
+          class="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium">
+    <i [class]="copied ? 'ph-check-circle' : 'ph-copy'"></i>
+    {{ copied ? 'Copied!' : 'Copy VA ID' }}
+  </button>
+</div>

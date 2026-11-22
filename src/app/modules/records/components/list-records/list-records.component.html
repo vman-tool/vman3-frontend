@@ -217,8 +217,9 @@
                  transition-colors duration-100 dark:border-gray-700 dark:hover:bg-gray-700">
           <td class="w-6 p-0"></td>
           <td class="px-4 py-2.5 text-gray-900 dark:text-white
-                     max-w-0 overflow-hidden whitespace-nowrap text-ellipsis"
-              [title]="row.vaId">{{ row.vaId }}</td>
+                     max-w-0 overflow-hidden whitespace-nowrap text-ellipsis">
+            <app-copyable-id [value]="row.vaId"></app-copyable-id>
+          </td>
           <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('region')"
               [title]="row.region">{{ row.region }}</td>
           <td class="px-4 py-2.5 max-w-0 overflow-hidden whitespace-nowrap text-ellipsis" *ngIf="isColumnVisible('district')"

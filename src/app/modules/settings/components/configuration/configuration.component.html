@@ -1113,7 +1113,12 @@
             <h3 class="text-base font-semibold text-gray-800">
               Deployed Model
               <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-200">
-                v{{ mlModelInfo.version }}
+                {{ mlModelInfo.version }}
+              </span>
+              <span *ngIf="mlModelInfo.metrics_auto_detected"
+                class="ml-1 px-2 py-0.5 text-xs font-medium bg-violet-50 text-violet-700 rounded-full border border-violet-200"
+                title="These metrics were read directly from the uploaded .pkl's own metadata, not typed into the upload form.">
+                auto-detected from file
               </span>
             </h3>
             <p class="mt-0.5 text-xs text-gray-400">
@@ -1156,16 +1161,62 @@
           <span><strong class="text-gray-700">{{ mlModelInfo.source_file }}</strong></span>
         </div>
 
-        <!-- Version history -->
-        <div *ngIf="mlModelInfo.history?.length" class="mt-2">
-          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Previous Versions</h4>
-          <div class="divide-y divide-gray-100 rounded-lg border border-gray-100 overflow-hidden text-xs">
-            <div *ngFor="let h of mlModelInfo.history" class="flex items-center justify-between px-4 py-2.5 bg-white text-gray-500">
-              <span class="font-medium text-gray-700">v{{ h.version }}</span>
-              <span>{{ h.algorithm }}</span>
-              <span>Trained {{ h.trained_at }}</span>
-              <span class="text-gray-400">Replaced {{ h.replaced_at | date:'MMM d, y':'UTC' }}</span>
-              <span class="font-mono text-gray-400">{{ h.archive }}</span>
+        <!-- Model Versions: active + archived history, one unified list -->
+        <div class="mt-2">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Model Versions</h4>
+
+          <div *ngIf="mlVersionActionError" class="mb-2 px-3 py-2 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
+            {{ mlVersionActionError }}
+          </div>
+
+          <div class="rounded-lg border border-gray-100 overflow-visible">
+            <!-- Fixed to 4 rows at a time; pagination below handles the rest. -->
+            <div class="divide-y divide-gray-100">
+              <div *ngFor="let row of mlPagedVersions" class="relative flex items-center gap-3 px-4 py-2.5 bg-white text-xs text-gray-500">
+                <span class="font-medium text-gray-700 w-14 shrink-0">{{ row.version }}</span>
+                <span class="w-24 shrink-0 truncate">{{ row.algorithm }}</span>
+                <span class="flex-1 truncate">Trained {{ row.trained_at }}</span>
+                <span class="flex-1 truncate text-gray-400">
+                  {{ row.isActive ? '' : ('Replaced ' + (row.replaced_at | date:'MMM d, y':'UTC')) }}
+                </span>
+
+                <!-- ⋮ actions menu -->
+                <div class="relative shrink-0" *ngIf="dataAccess?.updateSystemConfigs">
+                  <button (click)="toggleVersionMenu(row.archive || 'active', $event)"
+                    class="p-1 text-gray-400 rounded hover:bg-gray-100 hover:text-gray-600 focus:outline-none">
+                    <i class="ph ph-dots-three text-base"></i>
+                  </button>
+                  <div *ngIf="mlVersionMenuOpenFor === (row.archive || 'active')"
+                    (click)="$event.stopPropagation()"
+                    class="absolute right-0 z-10 mt-1 w-44 bg-white rounded-md shadow-lg border border-gray-100 py-1">
+                    <button (click)="confirmRestoreVersion(row)" [disabled]="row.isActive || mlVersionActionBusy"
+                      class="flex items-center w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+                      <i class="ph ph-clock-counter-clockwise mr-1.5"></i> Reload this version
+                    </button>
+                    <button (click)="confirmDeleteVersion(row)" [disabled]="row.isActive || mlVersionActionBusy"
+                      [title]="row.isActive ? 'The currently deployed model can\'t be deleted' : ''"
+                      class="flex items-center w-full px-3 py-1.5 text-left text-xs text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+                      <i class="ph ph-trash mr-1.5"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination - only shown once there's more than one page of 4 -->
+            <div *ngIf="mlAllVersions.length > mlVersionsPageSize"
+              class="flex items-center justify-between px-4 py-2 bg-gray-50 border-t border-gray-100 text-xs text-gray-500">
+              <span>Page {{ mlVersionsPage + 1 }} of {{ mlVersionsTotalPages }}</span>
+              <div class="flex gap-1">
+                <button (click)="mlVersionsPrevPage()" [disabled]="mlVersionsPage === 0"
+                  class="px-2 py-1 rounded border border-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+                  <i class="ph ph-caret-left"></i>
+                </button>
+                <button (click)="mlVersionsNextPage()" [disabled]="mlVersionsPage >= mlVersionsTotalPages - 1"
+                  class="px-2 py-1 rounded border border-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+                  <i class="ph ph-caret-right"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1180,69 +1231,61 @@
 
         <!-- Success / error banners -->
         <div *ngIf="mlUploadSuccess" class="mb-3 px-4 py-2.5 text-sm text-emerald-700 bg-emerald-50 rounded-lg border border-emerald-200">
-          {{ mlUploadSuccess }}
+          <div>{{ mlUploadSuccess }}</div>
+          <!-- What the backend actually used - impossible to miss here, vs. the
+               metrics card further up the page silently updating off-screen. -->
+          <p *ngIf="mlUploadDetected?.notes" class="mt-2 text-xs italic text-emerald-600">{{ mlUploadDetected!.notes }}</p>
+          <div *ngIf="mlUploadDetected?.metrics" class="mt-2 pt-2 border-t border-emerald-100 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <span class="font-medium text-violet-700">
+              <i class="ph ph-magic-wand"></i>
+              Auto-detected from file:
+            </span>
+            <span>Accuracy {{ fmtPct(mlUploadDetected!.metrics.accuracy) }}</span>
+            <span>F1 Macro {{ fmtPct(mlUploadDetected!.metrics.f1_macro) }}</span>
+            <span>F1 Weighted {{ fmtPct(mlUploadDetected!.metrics.f1_weighted) }}</span>
+            <span *ngIf="mlUploadDetected!.metrics.cv_f1_macro != null">CV F1 Macro {{ fmtPct(mlUploadDetected!.metrics.cv_f1_macro) }}</span>
+            <span>{{ mlUploadDetected!.metrics.n_training_samples | number }} training samples</span>
+            <span>{{ mlUploadDetected!.metrics.n_test_samples | number }} test samples</span>
+          </div>
         </div>
         <div *ngIf="mlUploadError" class="mb-3 px-4 py-2.5 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
           {{ mlUploadError }}
         </div>
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <!-- File picker -->
-          <div class="sm:col-span-2">
-            <label class="block mb-1 text-xs font-medium text-gray-600">Model file (.pkl)</label>
-            <input type="file" accept=".pkl" (change)="onMlFileSelect($event)"
-              class="block w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-            <p *ngIf="mlUploadFile" class="mt-1 text-xs text-gray-400">{{ mlUploadFile.name }}</p>
-          </div>
+        <!-- File picker -->
+        <div class="mb-4">
+          <label class="block mb-1 text-xs font-medium text-gray-600">Model file (.pkl)</label>
+          <input type="file" accept=".pkl" (change)="onMlFileSelect($event)"
+            class="block w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+          <p *ngIf="mlUploadFile" class="mt-1 text-xs text-gray-400">{{ mlUploadFile.name }}</p>
+        </div>
 
-          <!-- Version -->
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">Version <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="mlUploadVersion" placeholder="e.g. 1.1.0"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-          </div>
+        <!-- Validating the just-selected file -->
+        <div *ngIf="mlValidating" class="mb-4 flex items-center gap-2 text-sm text-gray-500">
+          <div class="w-4 h-4 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+          Validating file…
+        </div>
 
-          <!-- Notes -->
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">Notes</label>
-            <input type="text" [(ngModel)]="mlUploadNotes" placeholder="What changed in this version?"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+        <!-- Detected metrics - shown as soon as a valid file is selected, before
+             Upload is even clicked. Metrics are never hand-typed: they're always
+             read from the file itself (see settings_routes.py's /ml-model/validate). -->
+        <div *ngIf="mlValidated && !mlValidating" class="mb-4 px-4 py-3 text-sm text-violet-700 bg-violet-50 rounded-lg border border-violet-200">
+          <div class="font-medium">
+            <i class="ph ph-magic-wand mr-1"></i>
+            Detected from file — {{ mlValidated.version }} ({{ mlValidated.algorithm }})
           </div>
-
-          <!-- Metrics -->
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">Accuracy (0–1) <span class="text-red-500">*</span></label>
-            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadAccuracy"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-          </div>
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">F1 Macro (0–1) <span class="text-red-500">*</span></label>
-            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadF1Macro"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-          </div>
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">F1 Weighted (0–1) <span class="text-red-500">*</span></label>
-            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadF1Weighted"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-          </div>
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">CV F1 Macro (optional)</label>
-            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="mlUploadCvF1Macro"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-          </div>
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">Training samples <span class="text-red-500">*</span></label>
-            <input type="number" min="0" [(ngModel)]="mlUploadNTraining"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-          </div>
-          <div>
-            <label class="block mb-1 text-xs font-medium text-gray-600">Test samples <span class="text-red-500">*</span></label>
-            <input type="number" min="0" [(ngModel)]="mlUploadNTest"
-              class="block w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          <p *ngIf="mlValidated.notes" class="mt-1 text-xs text-violet-600 italic">{{ mlValidated.notes }}</p>
+          <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-violet-600">
+            <span>Accuracy {{ fmtPct(mlValidated.metrics.accuracy) }}</span>
+            <span>F1 Macro {{ fmtPct(mlValidated.metrics.f1_macro) }}</span>
+            <span>F1 Weighted {{ fmtPct(mlValidated.metrics.f1_weighted) }}</span>
+            <span *ngIf="mlValidated.metrics.cv_f1_macro != null">CV F1 Macro {{ fmtPct(mlValidated.metrics.cv_f1_macro) }}</span>
+            <span>{{ mlValidated.metrics.n_training_samples | number }} training samples</span>
+            <span>{{ mlValidated.metrics.n_test_samples | number }} test samples</span>
           </div>
         </div>
 
-        <button (click)="uploadMlModel()" [disabled]="mlUploading || !mlUploadFile"
+        <button (click)="uploadMlModel()" [disabled]="mlUploading || mlValidating || !mlValidated"
           class="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500">
           <svg *ngIf="mlUploading" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
