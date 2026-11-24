@@ -73,7 +73,7 @@ const AGREEMENT_VALUE_CHOICES: { value: string; label: string }[] = [
 
 // Same convention as compare-ccva.component.ts's ALGO_LABELS.
 const ALGO_LABELS: { [key: string]: string } = {
-  VManML10: 'VMan ML 1.0',
+  VManML10: 'VMan MLM v1.0',
   InterVA5: 'InterVA5',
 };
 
@@ -162,7 +162,7 @@ export class CompareCodComponent implements OnInit {
     return (algorithm && ALGO_LABELS[algorithm]) ?? algorithm ?? '—';
   }
 
-  // "Cause 1: InterVA5" / "Cause 1: VMan ML 1.0" style headers, per the
+  // "Cause 1: InterVA5" / "Cause 1: VMan MLM v1.0" style headers, per the
   // user's requested terminology.
   get cause1HeaderAlgo1(): string { return `Cause 1: ${this.algoLabel(this.algo1)}`; }
   get cause1HeaderAlgo2(): string { return `Cause 1: ${this.algoLabel(this.algo2)}`; }

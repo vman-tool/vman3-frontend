@@ -56,7 +56,7 @@ export class CompareCcvaComponent implements OnInit {
   };
 
   readonly ALGO_LABELS: { [key: string]: string } = {
-    VManML10: 'VMan ML 1.0',
+    VManML10: 'VMan MLM v1.0',
     InterVA5: 'InterVA5',
   };
 

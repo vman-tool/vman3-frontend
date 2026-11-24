@@ -72,11 +72,11 @@
             <label for="ccvaAlgorithm" class="block mb-1 text-sm font-medium text-gray-700">CCVA Algorithm</label>
             <app-custom-dropdown id="ccvaAlgorithm" [options]="[
             { value: 'InterVA5', label: 'InterVA5' },
-            { value: 'VManML10', label: 'VMan ML 1.0' }
+            { value: 'VManML10', label: 'VMan MLM v1.0' }
           ]" [(selectedValue)]="ccvaAlgorithm"></app-custom-dropdown>
           </div>
 
-          <!-- VMan ML 1.0 threshold parameters (shown only when VManML10 is selected) -->
+          <!-- VMan MLM v1.0 threshold parameters (shown only when VManML10 is selected) -->
           <ng-container *ngIf="ccvaAlgorithm === 'VManML10'">
             <div class="">
               <label for="dkThreshold" class="block mb-1 text-sm font-medium text-gray-700">DK Threshold
